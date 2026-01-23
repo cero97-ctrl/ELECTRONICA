@@ -1,0 +1,291 @@
+\documentclass{article}
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[american]{circuitikz}
+\usepackage{array, booktabs} % Para tablas mejoradas
+\usepackage{enumitem} % Para listas personalizadas
+\usepackage{fancyhdr} % Para encabezados y pies de página
+\usepackage{titlesec} % Para personalizar secciones
+\usepackage{float} % Para mejor control de posicionamiento de figuras
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm, headheight=15pt}
+\setlength{\parindent}{0pt} % Sin sangría
+\setlength{\parskip}{0.5em} % Espacio entre párrafos
+
+% --- Configuración de encabezados y pies ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{El Puente de Wheatstone}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Configuración de secciones ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+% --- Configuración de listas ---
+\setlist[enumerate]{itemsep=0.2em, topsep=0.5em}
+\setlist[itemize]{itemsep=0.2em, topsep=0.5em}
+
+% --- Configuración de hyperref ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    citecolor=red,
+    pdftitle={El Puente de Wheatstone},
+    pdfauthor={Prof. César Rodríguez}
+}
+
+% --- Título y Autor ---
+\title{\Huge El Puente de Wheatstone \\ \Large Un circuito fundamental en mediciones eléctricas}
+\author{Prof. César Rodríguez \\ Departamento de Electrónica}
+\date{\today}
+
+\begin{document}
+
+% --- Portada ---
+\begin{titlepage}
+    \centering
+    {\Huge\bfseries El Puente de Wheatstone\par}
+    \vspace{1cm}
+    {\Large Un circuito fundamental en mediciones eléctricas\par}
+    \vspace{2cm}
+    {\Large Prof. César Rodríguez\par}
+    \vspace{1cm}
+    \includegraphics[width=0.4\textwidth]{example-image} % Reemplazar con imagen real si se desea
+    \vfill
+    {\large \today\par}
+\end{titlepage}
+
+% --- Tabla de contenidos ---
+\tableofcontents
+\newpage
+
+% --- Contenido principal ---
+\section{Introducción al Puente de Wheatstone}
+
+El \textbf{Puente de Wheatstone} es uno de los circuitos más clásicos e ingeniosos de la electrónica, fundamental para la medición precisa de resistencias. Nombrado en honor a Sir Charles Wheatstone, quien popularizó su uso en 1843, este circuito representa un hito en la historia de las mediciones eléctricas.
+
+\subsection{Concepto Básico}
+Es un circuito eléctrico compuesto por cuatro resistencias dispuestas en una configuración de ``puente'' o ``diamante''. Se utiliza para medir el valor de una resistencia desconocida comparándola con tres resistencias de valor conocido. Su gran ventaja radica en la alta precisión que puede alcanzar, siendo capaz de medir variaciones muy pequeñas de resistencia.
+
+\section{Principio de Funcionamiento}
+
+El circuito se alimenta con una fuente de tensión continua (DC) aplicada entre dos vértices opuestos. En los otros dos vértices opuestos se conecta un instrumento de medición sensible, tradicionalmente un galvanómetro, aunque en aplicaciones modernas puede ser un voltímetro de alta impedancia.
+
+\subsection{El Equilibrio del Puente}
+El principio clave es el \textbf{equilibrio del puente}. El puente se considera \emph{equilibrado} o \emph{balanceado} cuando la corriente que pasa a través del galvanómetro es exactamente cero, lo que implica que no existe diferencia de potencial entre los puntos C y D del diagrama.
+
+Cuando se alcanza esta condición, se cumple la siguiente relación matemática:
+\begin{equation}
+\frac{R_1}{R_2} = \frac{R_3}{R_x}
+\label{eq:equilibrio}
+\end{equation}
+
+A partir de esta ecuación, si conocemos los valores de $R_1$, $R_2$ y $R_3$, podemos despejar y calcular el valor de la resistencia desconocida $R_x$:
+\begin{equation}
+R_x = R_3 \cdot \frac{R_2}{R_1}
+\label{eq:rx}
+\end{equation}
+
+\subsection{Diagrama del Circuito}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[scale=1.2, transform shape, european resistors]
+        % Nodos
+        \node[circ] at (0,2) (A) {};
+        \node[circ] at (0,-2) (B) {};
+        \node[circ] at (-2,0) (C) {};
+        \node[circ] at (2,0) (D) {};
+
+        % Fuente de alimentación
+        \draw (B) to[V, v=$V_s$, invert] (A);
+        
+        % Resistencias
+        \draw (A) to[R, l=$R_1$, *-*] (C);
+        \draw (C) to[R, l=$R_2$, *-*] (B);
+        \draw (A) to[R, l=$R_3$, *-*] (D);
+        \draw (D) to[R, l=$R_x$, *-*] (B);
+        
+        % Galvanómetro
+        \draw (C) to[rmeter, t=G, *-*] (D);
+        
+        % Etiquetas de nodos
+        \node[above] at (A) {A};
+        \node[below] at (B) {B};
+        \node[left] at (C) {C};
+        \node[right] at (D) {D};
+    \end{circuitikz}
+    \caption{Diagrama esquemático del Puente de Wheatstone. Las resistencias $R_1$, $R_2$ y $R_3$ son conocidas, mientras que $R_x$ es la resistencia desconocida a medir.}
+    \label{fig:puente}
+\end{figure}
+
+\subsection{Procedimiento de Medición}
+En la práctica, para lograr el equilibrio se sigue este procedimiento:
+\begin{enumerate}
+    \item Se seleccionan $R_1$ y $R_3$ como resistencias fijas de valores precisos y conocidos.
+    \item Se utiliza $R_2$ como una resistencia variable de precisión (potenciómetro o caja de décadas).
+    \item Se ajusta cuidadosamente el valor de $R_2$ hasta que el galvanómetro $G$ indique corriente nula.
+    \item Se registra el valor de $R_2$ en el equilibrio y se aplica la ecuación \eqref{eq:rx} para calcular $R_x$.
+\end{enumerate}
+
+\section{Análisis del Puente Desequilibrado}
+
+Cuando el puente no está en equilibrio ($\frac{R_1}{R_2} \neq \frac{R_3}{R_x}$), aparece una diferencia de potencial entre los nodos C y D, generando una corriente a través del galvanómetro. Esta \emph{tensión de desequilibrio}, $V_{CD}$, es la base de las aplicaciones del puente como sensor.
+
+\subsection{Aplicación del Teorema de Thévenin}
+El análisis del circuito desequilibrado se simplifica mediante el \textbf{Teorema de Thévenin} aplicado entre los terminales C y D.
+
+\begin{table}[H]
+    \centering
+    \caption{Parámetros del equivalente de Thévenin}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Parámetro} & \textbf{Expresión} \\
+        \midrule
+        Tensión de Thévenin ($V_{\mathrm{th}}$) & $V_s \left( \dfrac{R_2}{R_1 + R_2} - \dfrac{R_x}{R_3 + R_x} \right)$ \\
+        \addlinespace
+        Resistencia de Thévenin ($R_{\mathrm{th}}$) & $\dfrac{R_1 R_2}{R_1 + R_2} + \dfrac{R_3 R_x}{R_3 + R_x}$ \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:thevenin}
+\end{table}
+
+\subsubsection{Cálculo de $V_{\mathrm{th}}$}
+La tensión de Thévenin corresponde a la tensión en circuito abierto entre C y D:
+\begin{align}
+V_C &= V_s \cdot \frac{R_2}{R_1 + R_2} \\
+V_D &= V_s \cdot \frac{R_x}{R_3 + R_x} \\
+V_{\mathrm{th}} &= V_{CD} = V_C - V_D = V_s \left( \frac{R_2}{R_1 + R_2} - \frac{R_x}{R_3 + R_x} \right)
+\end{align}
+
+\subsubsection{Cálculo de $R_{\mathrm{th}}$}
+La resistencia de Thévenin se obtiene cortocircuitando la fuente $V_s$:
+\begin{equation}
+R_{\mathrm{th}} = (R_1 \parallel R_2) + (R_3 \parallel R_x) = \frac{R_1 R_2}{R_1 + R_2} + \frac{R_3 R_x}{R_3 + R_x}
+\end{equation}
+
+\subsubsection{Corriente a través del Galvanómetro}
+Con el circuito equivalente de Thévenin, la corriente que circula por el galvanómetro de resistencia interna $R_G$ es:
+\begin{equation}
+I_G = \frac{V_{\mathrm{th}}}{R_{\mathrm{th}} + R_G}
+\end{equation}
+En aplicaciones modernas, el galvanómetro se reemplaza por amplificadores de alta impedancia, por lo que $I_G \approx 0$ y la tensión medida es prácticamente $V_{\mathrm{th}}$.
+
+\section{Aplicaciones Prácticas}
+
+\subsection{Medición Precisas de Resistencia}
+El puente de Wheatstone permite mediciones con precisiones del orden de 0.1\% o mejores, siendo ideal para:
+\begin{itemize}
+    \item Calibración de instrumentos
+    \item Medición de resistencias de bajo valor (miliohmímetro)
+    \item Determinación de coeficientes de temperatura de resistencias
+\end{itemize}
+
+\subsection{Sensores Basados en Puente de Wheatstone}
+La mayoría de los sensores resistivos utilizan este principio:
+
+\begin{table}[H]
+    \centering
+    \caption{Tipos de sensores que utilizan puente de Wheatstone}
+    \begin{tabular}{p{0.25\textwidth}p{0.6\textwidth}}
+        \toprule
+        \textbf{Sensor} & \textbf{Aplicación y Características} \\
+        \midrule
+        Galgas extensiométricas & Medición de deformación, fuerza y presión. Cambian su resistencia al deformarse. \\
+        \addlinespace
+        Termistores (NTC/PTC) & Medición de temperatura. Su resistencia varía con la temperatura. \\
+        \addlinespace
+        Fotorresistencias (LDR) & Detección de luz. Su resistencia disminuye con la intensidad luminosa. \\
+        \addlinespace
+        Sensores de humedad & Medición de humedad relativa mediante cambios resistivos. \\
+        \addlinespace
+        Celdas de carga & Medición de peso y fuerza en básculas y sistemas industriales. \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:sensores}
+\end{table}
+
+\subsection{Configuraciones Típicas}
+\begin{itemize}
+    \item \textbf{Puente de cuarto de puente}: Solo un brazo es variable (el sensor)
+    \item \textbf{Puente de medio puente}: Dos brazos son sensores complementarios
+    \item \textbf{Puente completo}: Los cuatro brazos son sensores, maximizando la sensibilidad
+\end{itemize}
+
+\section{Ejemplo Práctico}
+
+\subsection{Problema}
+Determinar el valor de una resistencia desconocida $R_x$ usando un puente de Wheatstone con los siguientes valores:
+\begin{itemize}
+    \item $R_1 = 100\,\Omega$
+    \item $R_3 = 150\,\Omega$
+    \item $R_2 = 75\,\Omega$ (valor en el equilibrio)
+\end{itemize}
+
+\subsection{Solución}
+Aplicando la ecuación de equilibrio:
+\begin{align*}
+R_x &= R_3 \cdot \frac{R_2}{R_1} \\
+R_x &= 150\,\Omega \cdot \frac{75\,\Omega}{100\,\Omega} \\
+R_x &= 150\,\Omega \cdot 0.75 \\
+R_x &= 112.5\,\Omega
+\end{align*}
+
+\section{Conclusiones}
+
+El Puente de Wheatstone sigue siendo una herramienta fundamental en la electrónica y la instrumentación debido a:
+\begin{itemize}
+    \item Su \textbf{simplicidad conceptual} y facilidad de implementación
+    \item La \textbf{alta precisión} que permite en mediciones resistivas
+    \item Su \textbf{versatilidad} como base para múltiples tipos de sensores
+    \item La \textbf{robustez} del principio de medición por comparación
+\end{itemize}
+
+Su evolución desde un instrumento de laboratorio hasta la base de sistemas de medición industrial demuestra la vigencia de principios fundamentales bien aplicados.
+
+% --- Bibliografía ---
+\newpage
+\begin{thebibliography}{9}
+\bibitem{wheatstone1843}
+Wheatstone, C. (1843). ``An Account of Several New Instruments and Processes for Determining the Constants of a Voltaic Circuit''. \emph{Philosophical Transactions of the Royal Society}.
+
+\bibitem{horowitz2015}
+Horowitz, P., \& Hill, W. (2015). \emph{The Art of Electronics}. Cambridge University Press.
+
+\bibitem{sedra2004}
+Sedra, A. S., \& Smith, K. C. (2004). \emph{Microelectronic Circuits}. Oxford University Press.
+
+\bibitem{fraden2010}
+Fraden, J. (2010). \emph{Handbook of Modern Sensors}. Springer.
+\end{thebibliography}
+
+% --- Apéndice (opcional) ---
+\appendix
+\section{Deducción de la Condición de Equilibrio}
+Para un puente balanceado ($I_G = 0$), las caídas de tensión en $R_1$ y $R_2$ deben ser proporcionales a las de $R_3$ y $R_x$. Considerando que:
+\begin{align*}
+V_{AC} &= I_1 R_1 \\
+V_{CB} &= I_1 R_2 \\
+V_{AD} &= I_3 R_3 \\
+V_{DB} &= I_3 R_x
+\end{align*}
+Dado que $V_C = V_D$ en equilibrio, tenemos:
+\begin{align*}
+\frac{V_{AC}}{V_{CB}} &= \frac{V_{AD}}{V_{DB}} \\
+\frac{R_1}{R_2} &= \frac{R_3}{R_x}
+\end{align*}
+QED.
+
+\end{document}

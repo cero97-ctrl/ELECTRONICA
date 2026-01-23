@@ -1,0 +1,133 @@
+\documentclass[12pt, a4paper]{article}
+
+% PAQUETES BÁSICOS
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+
+% PAQUETE PARA DIBUJAR CIRCUITOS
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+
+% CONFIGURACIÓN DE LA PÁGINA
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=20mm,
+    top=20mm,
+    right=20mm,
+    bottom=20mm,
+    headheight=15pt
+}
+
+% CONFIGURACIÓN DEL ENCABEZADO
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{125}
+\fancyhead[R]{Prácticas de electricidad}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+\section*{Ley de corriente de Kirchhoff}
+
+\noindent que entra en la unión (se supone que es +) y a la corriente que sale de la unión (se supone que es —).
+
+\begin{enumerate}[label=\arabic*., start=3]
+    \item Con el convenio de 2, la ley de Kirchhoff se enuncia como sigue: La suma algébrica de las corrientes que entran y salen en una unión es 0; así, en la figura 20-1, unión A
+    \[
+        I_T - I_1 - I_2 - I_3 = 0
+    \]
+\end{enumerate}
+
+\subsection*{AUTOEXAMEN}
+\begin{enumerate}[label=\arabic*.]
+    \item En la figura 20-1 la corriente que entra en la unión es 0,55 A. La corriente $I_1 = 0,25$ A, $I_2 = 0,1$ A. La corriente $I_3$ debe pues ser igual a \underline{\hspace{2cm}} A.
+    \item En la figura 20-1 la corriente que sale de la unión B es 1,25 A. La suma de corrientes $I_1, I_2$ e $I_3$ debe ser \underline{\hspace{2cm}} A.
+    \item En la unión B (fig. 20-1) las polaridades que se deben asignar a las corrientes para aplicar la ley de corriente de Kirchhoff son: $I_1$ es \underline{\hspace{1cm}}; $I_2$ es \underline{\hspace{1cm}}; $I_3$ es \underline{\hspace{1cm}}; e $I_T$ es \underline{\hspace{1cm}}.
+    \item La ecuación que expresa la relación entre las corrientes en la unión A de la figura 20-3 es \underline{\hspace{4cm}}.
+    \item En la figura 20-3, $I_2 = 10$ A, $I_3 = 4$ A, $I_4 = 4$ A, $I_5 = 4$ A. $I_1 = \underline{\hspace{2cm}}$ A.
+\end{enumerate}
+
+\vspace{1cm}
+
+\section*{PROCEDIMIENTO}
+    \subsection*{Ley de Corriente}
+    \textbf{NOTA:} Antes de conectar el miliamperímetro para medir la corriente, desconectar la fuente de alimentación abriendo el interruptor S. Hacer esto mismo cada vez que se traslade el medidor. Observar la polaridad de éste.
+    
+    \begin{enumerate}[label=\arabic*.]
+        \item Conectar el circuito de la figura 20-4 con $V=40$ V. Utilizar los valores $R_1, R_2$, etc., de la tabla 20-1. Medir y anotar en la tabla 20-2 las corrientes $I_T$ en A; $I_2, I_3$ e $I_T$ en B; $I_T$ en C, e $I_5, I_6, I_7$ e $I_T$ en D. Sumar las corrientes $I_2$ e $I_3$ y anotar la suma en la columna correspondiente. Sumar también las corrientes $I_5, I_6$ e $I_7$ y anotar la suma en la columna correspondiente.
+        \item Conectar el circuito de la figura 20-1 empleando los valores $R_1 = 330~\Omega$, $R_2 = 470~\Omega$ y $R_3 = 1.200~\Omega$. Ajustar la salida de la fuente de alimentación para que $V=40$ V. Medir y anotar en la tabla 20-3 las corrientes $I_T$ en A; $I_1, I_2, I_3$ e $I_T$ en B. Sumar las corrientes $I_1, I_2$ e $I_3$ y anotar la suma en la tabla 20-3.
+    \end{enumerate}
+
+    \subsection*{Problema de diseño (adicional)}
+    \begin{enumerate}[label=\arabic*., start=3]
+        \item Diseñar un circuito serie-paralelo con tres ramas en el circuito paralelo, de modo que las corrientes en las ramas $I_1, I_2$ e $I_3$ estén en la relación 1:2:3 (aproximadamente) y la corriente total en el circuito sea 6 mA. Emplear las resistencias mencionadas en esta práctica que den la mayor aproximación a la relación deseada. Dibujar un esquema del circuito indicando los valores de las resistencias elegidas y la tensión de diseño V. Presentar todos los cálculos. Medir las corrientes necesarias y anotarlas en la tabla 20-4. Anotar también la relación de corrientes $I_1:I_2:I_3$.
+    \end{enumerate}
+    
+    \subsection*{PREGUNTAS}
+    \begin{enumerate}[label=\arabic*.]
+        \item ¿Cómo es la suma de $I_2$ e $I_3$ del apartado 1 comparada con $I_T$ en A? ¿$I_T$ en B? Explicar las discrepancias.
+    \end{enumerate}
+
+\vspace{1cm}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[european, scale=0.9, transform shape]
+        % Source path to A
+        \draw (0,0) to[battery1, l=$V$, invert] (0,3) coordinate[label=above:A] (A);
+        
+        % Ammeter It entering A
+        %\draw (3,3) -- (3,4) to[ammeter, l=$I_T$] (3,3); % Just illustrating "before A"? Text says "It en A".  Actually, standard practice is in series.
+        % Re-reading text: "Measure currents It in A". Usually implies measuring current entering A.
+        % Let's place ammeter in series before node A.
+        
+        % Actually, the text says "Measure ... It in A; I2, I3 and It in B". 
+        % The drawing description in original code had complex structure. Let's simplify to a clear series-parallel layout.
+        
+        % Path from Source to Node A
+        \draw (0,3) to[R=$R_1$] (2,3) to[ammeter, l=$I_T$] (4,3) coordinate[label=above:A] (A);
+
+        % PARALLEL SECTION 1 (Between A and B)
+        % Top branch: R2 and Ammeter I2
+        \draw (A) -- (4,5) to[R=$R_2$] (7,5) to[ammeter, l=$I_2$] (8,5) -- (8,3) coordinate[label=above:B] (B);
+        
+        % Middle branch: R4 (Assuming just R4 based on previous code usually this is a mixing of series/parallel)
+        % Original code: A to R4 to B.
+        \draw (A) to[R=$R_4$] (B);
+        
+        % Bottom branch: R3 + Ammeter I3
+        \draw (A) -- (4,1) to[R=$R_3$] (7,1) to[ammeter, l=$I_3$] (8,1) -- (B);
+        
+        % SERIES SECTION (Between B and C)
+        \draw (B) to[ammeter, l=$I_T$] (10,3) coordinate[label=above:C] (C);
+        
+        % PARALLEL SECTION 2 (Between C and D)
+        % Top branch: R5 + Ammeter I5
+        \draw (C) -- (10,5) to[R=$R_5$] (13,5) to[ammeter, l=$I_5$] (14,5) -- (14,3) coordinate[label=above:D] (D);
+        
+        % Middle branch: R6 + Ammeter I6 (Original code had R8 in series with C->D in "main path")
+        % Let's follow original code logic: C -> R8 -> D is main path? 
+        % Wait, original code: (C) to[R=$R_6$] ... (D) mid branch.
+        \draw (C) -- (10,3) to[R=$R_6$] (12,3) to[ammeter, l=$I_6$] (14,3);
+        
+        % Bottom branch: R7 + Ammeter I7
+        \draw (C) -- (10,1) to[R=$R_7$] (13,1) to[ammeter, l=$I_7$] (14,1) -- (D);
+
+        % RETURN PATH
+        \draw (D) to[R=$R_8$] (16,3) -- (16,0);
+        \draw (0,0) to [cspst, l=S] (16,0);
+                     
+        % Ground
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{Circuito experimental para la verificación de la ley de corriente de Kirchhoff.}
+    \label{fig:20-4}
+\end{figure}
+
+\end{document}

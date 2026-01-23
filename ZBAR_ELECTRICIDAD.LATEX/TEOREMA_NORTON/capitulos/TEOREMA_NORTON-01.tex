@@ -1,0 +1,29 @@
+%\section{PAGINA 1}
+\section{Objetivos}
+\begin{enumerate}
+    \item Determinar analíticamente los valores \( I_N \) (corriente del generador de Norton) y \( R_N \) (resistencia del generador de Norton) en un circuito de c.c. que contiene una o dos fuentes de tensión.
+    \item Verificar experimentalmente los valores \( I_N \) y \( R_N \) propuestos por el teorema de Norton en la solución de redes complicadas de c.c. que contienen dos fuentes de tensión.
+\end{enumerate}
+
+\section{Información Preliminar}
+\section*{Teorema de Norton}
+El teorema de Thévenin simplifica el análisis de las redes complicadas reduciendo el circuito original a un circuito sencillo equivalente que comprende una fuente de tensión constante, el generador de Thévenin (\( V_{TH} \)) en serie con una resistencia interna \( R_{TH} \). Este generador entrega corriente a la resistencia del circuito de carga que deseamos estudiar. Entonces es fácil determinar la corriente en la carga y la tensión aplicada entre los terminales de ésta. El teorema de Norton utiliza una técnica análoga de simplificación. Sin embargo, el generador de Norton es una fuente de corriente constante.
+
+El teorema de Norton enuncia que cualquier red de dos terminales puede ser reemplazada por un circuito sencillo equivalente consistente en un generador de corriente constante \( I_N \), shuntado por una resistencia interna \( R_N \). La figura 27-1 a representa la red original como una unidad (bloque) terminada por una resistencia de carga \( R_L \). La figura 27-1 b muestra el circuito equivalente de Norton. La corriente de Norton \( I_N \) se distribuye entre la resistencia shunt \( R_N \) y la carga \( R_L \). La corriente \( I_L \) en \( R_L \) se puede hallar por la fórmula
+
+\[
+I_L = \frac{I_N \times R_N}{R_N + R_L}
+\tag{27-1}
+\]
+
+Las reglas para determinar las constantes del circuito equivalente de Norton son las siguientes:
+
+\begin{enumerate}
+    \item La corriente constante \( I_N \) es la que debería circular en el cortocircuito entre los terminales de resistencia de carga si esta resistencia fuese reemplazada por un cortocircuito.
+    \item La resistencia de Norton \( R_N \) es la que aparece entre los terminales de la carga abierta, hacia la red original, cuando las fuentes de tensión existentes en el circuito son reemplazadas por su resistencia interna. Así \( R_N \) se define de la misma manera exactamente que \( R_{TH} \) en el teorema de Thévenin.
+\end{enumerate}
+
+\section{Aplicaciones}
+Consideremos el circuito de la figura 27-2 a. Deseamos hallar la corriente \( I_L \) en \( R_L \). Podemos calcular \( I_L \) mediante la aplicación de las leyes de Ohm y Kirchhoff o bien por el teorema de Thévenin, pero vamos a hallar primero \( I_L \) por el teorema de Norton.
+
+El desarrollo del circuito equivalente de Norton para la figura 27-2 a se puede

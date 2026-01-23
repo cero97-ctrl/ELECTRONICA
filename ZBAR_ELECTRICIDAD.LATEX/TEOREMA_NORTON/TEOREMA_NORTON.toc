@@ -1,0 +1,21 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Objetivos}{2}{section.1}%
+\contentsline {section}{\numberline {2}Información Preliminar}{2}{section.2}%
+\contentsline {section}{\numberline {3}Aplicaciones}{2}{section.3}%
+\contentsline {section}{\numberline {4}Resolución de las Redes de c.c. con DOS o MAS Generadores.}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Resolución de circuito por métodos de análisis}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Enunciado del problema}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Resolución por leyes de Kirchhoff}{7}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Enunciado del problema}{8}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Resolución por leyes de Kirchhoff}{8}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Resolución por el teorema de Thévenin}{8}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Resolución por el teorema de Norton}{9}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Conclusiones}{9}{subsection.4.8}%
+\contentsline {section}{\numberline {5}Análisis Usando el Teorema de Norton}{11}{section.5}%
+\contentsline {section}{\numberline {6}Resumen}{11}{section.6}%
+\contentsline {section}{\numberline {7}Autoexamen}{12}{section.7}%
+\contentsline {section}{\numberline {8}Materiales Necesarios}{13}{section.8}%
+\contentsline {section}{\numberline {9}Procedimiento}{13}{section.9}%
+\contentsline {section}{\numberline {10}Adicional}{14}{section.10}%
+\contentsline {section}{\numberline {11}Preguntas}{14}{section.11}%
+\contentsline {section}{\numberline {12}Respuestas a las preguntas de autoexamen}{15}{section.12}%

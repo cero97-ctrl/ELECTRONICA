@@ -1,0 +1,252 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{circuitikz}
+\usepackage{comment}
+\usetikzlibrary{arrows.meta, babel}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    pdftitle={Análisis Teórico: Regulador Zener},
+}
+
+%=============== DOCUMENTO ===============
+
+\begin{document}
+
+\title{Análisis Teórico de Circuitos con Diodos}
+\author{Prof. César Rodríguez con asistencia de Gemini Code Assist}
+\date{\today}
+\maketitle
+
+\section*{Análisis del Circuito Regulador de Tensión con Diodo Zener (Parte 1)}
+
+Este documento presenta el análisis teórico del circuito regulador de tensión con diodo 
+Zener propuesto en la 'Parte 1' del 'Procedimiento Experimental' de la guía de laboratorio 
+`PRACTICA SEMANA 7`. El objetivo es determinar la tensión en la resistencia de carga 
+$R_L$ ($V_{out}$) en función de la tensión de entrada $V_{in}$.
+
+El circuito bajo análisis es el siguiente:
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape] % Circuito mejorado para mayor claridad
+    \draw (0,2) to[sV, l=$V_{in}$] (0,0) node[ground]{};
+    \draw (0,2) to[R, l=$R_S$] (3,2);
+    \draw (3,2) to[zD, *-*, l_=$D_Z$] (3,0) node[ground]{};
+    \draw (3,2) to[R, l=$R_L$] (5,2) to[short] (5,0) node[ground]{};
+    \draw (3,2) node[above] {$V_{out}$};
+\end{circuitikz}
+\end{center}
+
+Donde:
+\begin{itemize}
+    \item $V_{in}$: Tensión de entrada.
+    \item $R_S$: Resistencia en serie.
+    \item $D_Z$: Diodo Zener con tensión de ruptura $V_Z$.
+    \item $R_L$: Resistencia de carga.
+    \item $V_{out}$: Tensión de salida a través de $R_L$ y $D_Z$.
+\end{itemize}
+
+\section*{Análisis de Operación}
+
+El circuito opera en dos regiones principales, dependiendo del estado del diodo Zener.
+
+\subsection*{Caso 1: Diodo Zener APAGADO (No en ruptura)}
+
+Esta región ocurre cuando la tensión de entrada $V_{in}$ es baja y la tensión a través del diodo Zener es menor que su tensión de ruptura $V_Z$. En este caso, el diodo Zener se comporta como un circuito abierto (ignorando la pequeña corriente de fuga en inversa).
+
+El circuito se simplifica a un divisor de tensión formado por $R_S$ y $R_L$. La tensión de salida $V_{out}$ se calcula como:
+
+\begin{equation}
+    V_{out} = V_{in} \cdot \frac{R_L}{R_S + R_L}
+\end{equation}
+
+El diodo Zener comenzará a conducir (entrará en ruptura) cuando la tensión $V_{out}$ alcance $V_Z$. Podemos encontrar la tensión de entrada mínima ($V_{in,th}$) para que el Zener se active:
+
+\begin{equation}
+    V_Z = V_{in,th} \cdot \frac{R_L}{R_S + R_L} \implies V_{in,th} = V_Z \cdot \frac{R_S + R_L}{R_L}
+\end{equation}
+
+Por lo tanto, esta región es válida para $V_{in} < V_{in,th}$.
+
+\subsection*{Caso 2: Diodo Zener ENCENDIDO (En ruptura)}
+
+Esta región se activa cuando la tensión de entrada $V_{in}$ es igual o superior a $V_{in,th}$. En este punto, el diodo Zener entra en su región de ruptura inversa y mantiene una tensión casi constante $V_Z$ a través de sus terminales.
+
+En esta región, la tensión de salida $V_{out}$ se regula a la tensión Zener:
+
+\begin{equation}
+    V_{out} = V_Z
+\end{equation}
+
+Esta región es válida para $V_{in} \ge V_{in,th}$.
+
+\section*{Conclusión: Tensión de Salida en Función de la Tensión de Entrada}
+Combinando ambos casos, la tensión de salida $V_{out}$ en función de la tensión de entrada $V_{in}$ se puede expresar como una función por partes:
+
+\begin{equation}
+    V_{out}(V_{in}) = 
+    \begin{cases} 
+        V_{in} \cdot \frac{R_L}{R_S + R_L} & \text{si } V_{in} < V_Z \cdot \frac{R_S + R_L}{R_L} \\
+        V_Z & \text{si } V_{in} \ge V_Z \cdot \frac{R_S + R_L}{R_L}
+    \end{cases}
+\end{equation}
+
+Esta ecuación describe cómo el circuito regulador mantiene una tensión de salida constante $V_Z$ una vez que la tensión de entrada supera un umbral mínimo, y cómo se comporta como un simple divisor de tensión por debajo de ese umbral.
+
+\newpage
+
+\section{Análisis del Circuito Transitorio (Parte 2)}
+
+Se analiza el circuito propuesto en la "Parte 2" de la guía, cuyo objetivo es estudiar el comportamiento transitorio de un diodo de señal.
+
+El circuito es el siguiente:
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape]
+    % Fuente AC
+    \draw (0,0) node[ground]{} 
+        to[sV, l=$V_{in}$] (0,2) 
+        
+    % Resistencia (con formato de texto correcto para la unidad)
+    % Usamos \text{k} para que no salga cursiva
+        to[R, l=$R_1{=}1\text{k}\Omega$] (3,2) 
+        
+    % Diodo (etiqueta en modo texto normal es correcta)
+        to[D, l=1N4148] (3,0) 
+        node[ground]{};
+        
+    % Opcional: Si quieres visualizar la salida Vout sobre el diodo
+    \draw (3,2) to[short, -o] (4,2) node[right] {$V_{out}$};
+\end{circuitikz}
+\end{center}
+
+La tensión de salida $V_{out}$ es la tensión que cae sobre el diodo ($V_D$). Para determinar $V_{out}$ en función de $V_{in}$, utilizaremos el \textbf{modelo de caída de tensión constante} para el diodo. En este modelo, se asume que el diodo tiene una caída de tensión fija $V_{on}$ (típicamente 0.7V para diodos de silicio como el 1N4148) cuando está conduciendo.
+
+\subsection*{Caso 1: Diodo APAGADO (Polarización Inversa)}
+
+El diodo se comporta como un interruptor abierto cuando la tensión de entrada no es suficiente para polarizarlo en directa. Esto ocurre si $V_{in} \le V_{on}$.
+
+En esta condición, no fluye corriente a través del circuito ($I_D = 0$). Al no haber corriente, no hay caída de tensión en la resistencia $R_1$. Aplicando la ley de tensiones de Kirchhoff (LVK) al lazo, la tensión de salida es igual a la de entrada.
+
+\begin{equation}
+    V_{out} = V_{in} \quad (\text{para } V_{in} \le V_{on})
+\end{equation}
+
+\subsection*{Caso 2: Diodo ENCENDIDO (Polarización Directa)}
+
+El diodo se comporta como un interruptor cerrado con una fuente de tensión constante $V_{on}$ cuando la tensión de entrada supera este umbral. Esto ocurre si $V_{in} > V_{on}$.
+
+En esta condición, el diodo "fija" la tensión en sus terminales a $V_{on}$, sin importar cuán grande sea $V_{in}$.
+
+\begin{equation}
+    V_{out} = V_{on} \approx 0.7\text{V} \quad (\text{para } V_{in} > V_{on})
+\end{equation}
+
+Este comportamiento es característico de un \textbf{circuito recortador (clipper)}, donde la tensión de salida sigue a la de entrada hasta un cierto nivel, y a partir de ahí se mantiene constante.
+
+\subsection*{Conclusión: Función por Partes}
+La relación entre $V_{out}$ y $V_{in}$ se describe como:
+\begin{equation}
+    V_{out}(V_{in}) = 
+    \begin{cases} 
+        V_{in} & \text{si } V_{in} \le V_{on} \\
+        V_{on} & \text{si } V_{in} > V_{on}
+    \end{cases}
+\end{equation}
+
+\newpage
+
+\section{Análisis de Pequeña Señal (Parte 3)}
+
+En esta sección se analiza el circuito de la "Parte 3", cuyo objetivo es verificar el concepto de \textbf{resistencia dinámica ($r_d$)} de un diodo. El circuito superpone una pequeña señal AC ($v_{ac}$) sobre una polarización DC ($V_{DC}$).
+
+El circuito es el siguiente:
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape]
+    % Rama Izquierda: Fuentes en Serie
+    % Dividí la altura total (3) en dos partes iguales (1.5 cada una)
+    \draw (0,0) node[ground]{} 
+        to[V, l=$V_{DC}{=}10\text{V}$] (0,1.5)  % Fuente DC (Batería)
+        to[sV, l=$v_{ac}$] (0,3)                % Fuente AC (Sinusoidal)
+        
+    % Rama Superior: Resistencia
+    % Usamos \text{k} para la unidad correcta
+        to[R, l=$R_1{=}1\text{k}\Omega$] (3,3) 
+        
+    % Rama Derecha: Diodo
+        to[D, l=1N4148] (3,0) 
+        node[ground]{};
+
+    % (Opcional) Terminal de salida para mayor claridad
+    \draw (3,3) to[short, -o] (4,3) node[right] {$V_{out}$};
+\end{circuitikz}
+\end{center}
+
+La tensión total de entrada es $V_{in}(t) = V_{DC} + v_{ac}(t)$. La tensión de salida $V_{out}(t)$ es la tensión en el diodo, $V_D(t)$. Para analizar este circuito, aplicamos el principio de \textbf{superposición}, separando el análisis en DC y AC.
+
+\subsection{Análisis DC (Punto de Operación Q)}
+
+Para el análisis DC, las fuentes AC se anulan (se convierten en cortocircuitos). El circuito se reduce a una fuente $V_{DC}$ en serie con la resistencia $R_1$ y el diodo. El objetivo es encontrar la corriente de polarización DC, $I_{DQ}$.
+
+Usando el modelo de caída de tensión constante para el diodo ($V_D \approx V_{on} \approx 0.7$V), aplicamos la Ley de Voltajes de Kirchhoff (LVK):
+
+\begin{equation}
+    V_{DC} = I_{DQ} \cdot R_1 + V_{on}
+\end{equation}
+
+Despejando la corriente de polarización $I_{DQ}$:
+
+\begin{equation}
+    I_{DQ} = \frac{V_{DC} - V_{on}}{R_1}
+\end{equation}
+
+Esta corriente $I_{DQ}$ establece el \textbf{punto de operación (Q-point)} del diodo.
+
+\subsection{Análisis AC (Pequeña Señal)}
+
+Para el análisis AC, las fuentes DC se anulan (se convierten en cortocircuitos). El diodo se reemplaza por su modelo de pequeña señal: la \textbf{resistencia dinámica $r_d$}.
+
+El valor de $r_d$ depende del punto de operación y se calcula como:
+\begin{equation}
+    r_d = \frac{V_T}{I_{DQ}}
+\end{equation}
+donde $V_T$ es la tensión térmica (aproximadamente 25mV a temperatura ambiente).
+
+El circuito equivalente AC es un simple divisor de tensión formado por $R_1$ y $r_d$, alimentado por la fuente $v_{ac}$. La tensión de salida AC, $v_{out}$, es la tensión que cae en $r_d$:
+
+\begin{equation}
+    v_{out} = v_{ac} \cdot \frac{r_d}{R_1 + r_d}
+\end{equation}
+
+\subsection{Conclusión: Tensión de Salida Total}
+
+La tensión de salida total $V_{out}(t)$ es la superposición de la componente DC y la componente AC:
+
+\begin{equation}
+    V_{out}(t) = V_{DQ} + v_{out}(t)
+\end{equation}
+
+Sustituyendo las expresiones encontradas:
+
+\begin{equation}
+    V_{out}(t) = V_{on} + v_{ac}(t) \cdot \frac{r_d}{R_1 + r_d}
+\end{equation}
+
+Donde $r_d$ se calcula usando la corriente $I_{DQ}$ del análisis DC. Esta ecuación muestra que la salida consiste en una tensión DC constante ($V_{on}$) sobre la cual se monta una versión \textbf{atenuada} de la señal AC de entrada. La atenuación depende de la relación entre $R_1$ y la resistencia dinámica $r_d$, que a su vez depende de la polarización DC ($V_{DC}$).
+
+\end{document}

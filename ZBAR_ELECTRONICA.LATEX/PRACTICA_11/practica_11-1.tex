@@ -1,0 +1,1339 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[spanish]{babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{comment}
+
+% Improved typography and tables
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{siunitx}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{circuitikz}
+\usetikzlibrary{babel, positioning, decorations.pathmorphing}
+
+% Configuration
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=blue!70!black,
+    urlcolor=blue!70!black
+}
+
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\sisetup{
+    output-decimal-marker = {,},
+    per-mode = symbol
+}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{PRACTICA 11 DE ZBAR: ESTUDIO DEL TRANSISTOR}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+% Custom Cover Page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\LARGE\bfseries UDO/NúCLEO DE SUCRE \par}
+    \vspace{0.5cm}
+    {\large Departamento de Física\par}
+    {\large Laboratorio de Electrónica\par}
+
+    \vspace{3cm}
+
+    {\Huge\bfseries PRáCTICA 2\par}
+    \vspace{1cm}
+    {\LARGE\bfseries ESTUDIO DEL TRANSISTOR\par}
+
+    \vfill
+
+    \begin{figure}[h]
+        \centering
+        \begin{circuitikz}[scale=1.5]
+            % PNP Transistor Symbol
+            \draw (0,0) node[pnp, scale=2] (Q1) {};
+            \node[above=0.3cm] at (Q1.E) {\large E};
+            \node[below=0.3cm] at (Q1.C) {\large C};
+            \node[left=0.3cm] at (Q1.B) {\large B};
+        \end{circuitikz}
+    \end{figure}
+
+    \vfill
+
+    {\large Laboratorio de Electrónica\par}
+    \vspace{1cm}
+    {\large \today\par}
+
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\listoffigures
+\newpage
+
+\listoftables
+\newpage
+
+
+\section{Objetivos}
+\begin{enumerate}
+    \item Conocer los fundamentos del transistor.
+    \item Medir los efectos sobre la corriente emisor-base de la polarización directa (normal) y
+          de la polarización inversa en el circuito emisor-base.
+    \item Medir los efectos sobre la corriente de colector de las polarizaciones directa e inversa
+          en el circuito emisor-base.
+    \item Medir \( I_{CBO} \).
+\end{enumerate}
+
+
+
+\section{Información Preliminar}
+
+\subsection{El transistor: dispositivo de tres elementos}
+
+Hasta ahora hemos tratado de los dispositivos electrónicos de dos elementos o electrodos: los diodos
+de semiconductores. Hemos encontrado una diversidad de diodos con sus características
+peculiares, que sirven para diferentes propósitos. En nuestros experimentos hemos empleado diodos como
+rectificadores de corriente alterna, como reguladores de tensión y corriente, y como limitadores. En esta
+Práctica vamos a conocer un dispositivo electrónico de tres elementos, el transistor, cuyas características
+amplían considerablemente el campo de aplicaciones de la electrónica.
+
+El interés científico de los semiconductores condujo al invento del transistor. Este dispositivo
+semiconductor puede realizar funciones tales como amplificación, detección y oscilación. Una ventaja
+del transistor es que es pequeño y ligero, lo que permite la miniaturización del equipo electrónico,
+y además es sólido. Por lo tanto, la microfonía no constituye un problema como en los tubos de vacío.
+No tiene filamentos y por consiguiente no requiere potencia para filamento. El transistor funciona con
+tensiones de alimentación bajas y utiliza poca potencia. No requiere período alguno de calentamiento y
+funciona tan pronto como se le aplica la potencia. Un transistor tiene menos conexiones y por consiguiente
+sus circuitos son básicamente más sencillos que los de un tubo. Un inconveniente de los transistores es
+su sensibilidad al calor, pero en cambio una ventaja es que no generan tanto calor como los tubos.
+
+Existen muchos tipos de transistores que pueden ser clasificados según el material básico con que están
+formados. En esta categoría encontramos los transistores de germanio y de silicio. También pueden ser
+clasificados los transistores de acuerdo con su proceso de construcción. En esta categoría encontramos
+varios tipos de transistores de unión o contacto tales como los fabricados por el proceso llamado de
+crecimiento, contacto de aleación, de efecto de campo, mesa, mesa epitaxial y los transistores planares
+y de puntas de contacto. Los transistores se pueden clasificar también por el número de sus elementos.
+Entonces tenemos el tríodo o transistor de tres elementos y el tetrodo o transistor de cuatro elementos.
+Por último se pueden clasificar de acuerdo con su aptitud para disipar potencias. En cuanto a esto existe
+un amplio margen, desde el tipo de baja potencia (menos de \SI{50}{\milli\watt}) hasta el de alta potencia
+\SI{2}{\watt} y más).
+
+Los transistores se fabrican en diferentes formas y tamaños (fig.~\ref{fig:11-1}). También hay variantes
+en cuanto a las disposiciones de la base y la manera de montar los transistores en el circuito.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2, transform shape]
+        % TO-92 Package (Plastic)
+        \begin{scope}[shift={(0,0)}]
+            % Leads
+            \draw[gray, thick] (-0.3, -1.5) -- (-0.3, 0);
+            \draw[gray, thick] (0, -1.5) -- (0, 0);
+            \draw[gray, thick] (0.3, -1.5) -- (0.3, 0);
+
+            % Body (D-shape cylinder approximation)
+            \draw[fill=black!80] (-0.5, 0) arc (180:0:0.5) -- (0.5, 0) -- (0.5, 0.8) arc (0:180:0.5) -- cycle;
+            \draw[fill=black!70] (-0.5, 0) -- (0.5, 0) -- (0.5, -0.1) -- (-0.5, -0.1) -- cycle; % Bottom
+            \fill[black!90] (-0.5,0) rectangle (0.5, 0.8);
+            \node[white, font=\tiny] at (0, 0.4) {TO-92};
+            \node[below] at (0, -1.6) {Pequeña Señal};
+        \end{scope}
+
+        % TO-5 Package (Metal Can)
+        \begin{scope}[shift={(3,0)}]
+            % Leads
+            \draw[gray, thick] (-0.2, -1.5) -- (-0.2, 0);
+            \draw[gray, thick] (0.2, -1.5) -- (0.2, 0);
+            \draw[gray, thick] (0, -1.5) -- (0, -0.2); % Middle lead shorter/hidden typically, but drawn for clarity
+
+            % Body (Cylinder)
+            \draw[fill=gray!40] (0,0) circle (0.5); % Top view effectively or rim
+            \shade[left color=gray!30, right color=gray!60] (-0.5,0) rectangle (0.5, 0.8);
+            \draw[gray] (-0.5,0) -- (-0.5,0.8);
+            \draw[gray] (0.5,0) -- (0.5,0.8);
+            \draw[fill=gray!20] (0,0.8) ellipse (0.5 and 0.1);
+
+            % Tab
+            \draw[fill=gray!50] (-0.6, 0.1) rectangle (-0.5, 0.3);
+
+            \node[font=\tiny] at (0, 0.4) {TO-5};
+            \node[below] at (0, -1.6) {Metálico};
+        \end{scope}
+
+        % TO-220 Package (Power)
+        \begin{scope}[shift={(6,0.3)}]
+            % Leads
+            \draw[gray, thick] (-0.3, -1.8) -- (-0.3, -0.5);
+            \draw[gray, thick] (0, -1.8) -- (0, -0.5);
+            \draw[gray, thick] (0.3, -1.8) -- (0.3, -0.5);
+
+            % Metal Tab
+            \draw[fill=gray!40] (-0.5, 0.5) rectangle (0.5, 1.5);
+            \draw[fill=white] (0, 1.2) circle (0.15); % Mounting hole
+
+            % Plastic Body
+            \draw[fill=black!80] (-0.5, -0.5) rectangle (0.5, 0.5);
+
+            \node[white, font=\tiny] at (0, 0) {TO-220};
+            \node[below] at (0, -1.9) {Potencia};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{Algunas formas de transistor (TO-92, TO-5, TO-220).}
+    \label{fig:11-1}
+\end{figure}
+
+Algunos están montados en zócalo, como los antiguos tubos de vacío. Los zócalos se adaptan a la base de sustentación del
+transistor. Algunos transistores tienen conductores flexibles para soldarlos directamente en el circuito.
+
+La fig.~\ref{fig:11-2} es una vista en corte parcial de un transistor muy antiguo llamado de puntas
+de contacto. Esta figura muestra un pequeño cristal de germanio y dos hilos delgados que hacen contacto
+con el cristal. Estos elementos están encapsulados en una envolvente a prueba de humedad.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.5]
+        % Case Outline (Cutaway)
+        \draw[thick, fill=gray!10] (-1.5,0) -- (-1.5,3) arc(180:0:1.5) -- (1.5,0) -- cycle;
+
+        % Cutaway Window
+        \draw[fill=white, rounded corners] (-1, 0.5) rectangle (1, 2.8);
+
+        % Internal Structure
+        % Base Support (Metal)
+        \draw[fill=gray!40] (-0.8, 0.5) rectangle (0.8, 0.8);
+        \node[font=\tiny, below] at (0, 0.5) {Base de Montaje};
+
+        % Germanium Crystal (N-type typically)
+        \draw[fill=black!70] (-0.4, 0.8) rectangle (0.4, 1.0);
+        \node[right, font=\tiny] at (0.4, 0.9) {Cristal Germanio};
+
+        % Whiskers
+        \draw[thick] (-0.5, 2.5) .. controls (-0.5, 1.5) and (-0.1, 1.5) .. (-0.1, 1.0);
+        \draw[thick] (0.5, 2.5) .. controls (0.5, 1.5) and (0.1, 1.5) .. (0.1, 1.0);
+
+        % Whisker Supports / Leads
+        \draw[thick, gray] (-0.5, 2.5) -- (-0.5, 3.2);
+        \draw[thick, gray] (0.5, 2.5) -- (0.5, 3.2);
+
+        % Labels
+        \node[font=\tiny] at (0, 1.8) {Puntas de Contacto};
+        \draw[->, thin] (0, 1.7) -- (-0.15, 1.2);
+        \draw[->, thin] (0, 1.7) -- (0.15, 1.2);
+
+    \end{tikzpicture}
+    \caption{Vista en corte parcial de un transistor con puntas de contacto.}
+    \label{fig:11-2}
+\end{figure}
+
+Los conductores terminales de estos elementos salen a través de la envolvente para establecer las conexiones
+en el circuito. Los transistores de puntas de contacto están actualmente obsoletos.
+
+La fig.~\ref{fig:11-3} es una vista en corte de un transistor de unión o contacto de aleación, y muestra una
+delgada pastilla de cristal semiconductor. En cada cara de la base están aleados gránulos de indio. Los dos
+gránulos y el cristal semiconductor constituyen los elementos de este transistor. Los elementos están encerrados
+en una envolvente herméticamente sellada y los conductores terminales salen de la envolvente para conectarlos
+en el circuito.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.5]
+        % Base Wafer (N-Type Germanium)
+        \draw[fill=gray!20] (-2, 0) rectangle (2, 0.4);
+        \node at (0, 0.2) {\tiny N-Type};
+        \node[left, font=\tiny] at (-2.5, 0.2) {Base (Germanio)};
+
+        % Emitter Pellet (Indium, P-Type) - Top
+        \draw[fill=gray!60] (-0.5, 0.4) arc (180:0:0.5) -- cycle;
+        \node[above, font=\tiny] at (0.6, 0.9) {Emisor (Indio)};
+
+        % Collector Pellet (Indium, P-Type) - Bottom (Usually larger)
+        \draw[fill=gray!60] (0.7, 0) arc (0:-180:0.7) -- cycle;
+        \node[below, font=\tiny] at (0.7, -0.7) {Colector (Indio)};
+
+        % Leads
+        % Emitter Lead
+        \draw[thick] (0, 0.9) -- (0, 1.5);
+        \node[above] at (0, 1.5) {E};
+
+        % Collector Lead
+        \draw[thick] (0, -0.7) -- (0, -1.5);
+        \node[below] at (0, -1.5) {C};
+
+        % Base Lead (Connection to the wafer)
+        \draw[thick] (-2, 0.2) -- (-2.5, 0.2);
+        \draw[thick] (-2.5, -1.0) -- (-2.5, 1.0); % Base tab/ring representation
+        \node[below] at (-3, 0.2) {B};
+
+        % Junctions
+        \draw[red, dashed] (-0.5, 0.4) -- (0.5, 0.4); % E-B Junction area
+        \draw[red, dashed] (-0.7, 0) -- (0.7, 0);   % C-B Junction area
+
+    \end{tikzpicture}
+    \caption{Vista en corte de un transistor de unión o contacto de aleación .}
+    \label{fig:11-3}
+\end{figure}
+
+\subsection{Transistores de unión}
+
+Los transistores son realmente una extensión del diodo semiconductor. El transistor PNP ilustrado en
+la fig.~\ref{fig:11-4} es un ejemplo.
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-4
+    \begin{tikzpicture}[scale=0.8]
+        % P-N-P Block
+        % Emitter (P)
+        \draw[fill=cyan!20] (0,0) rectangle (2,4);
+        \node at (1,2) {\Large P};
+        \node[left] at (-1,2) {\textbf{EMISOR}};
+
+        % Base (N) - Thin
+        \draw[fill=red!20] (2,0) rectangle (2.5,4);
+        \node at (2.25,2) {\small N};
+        \node[above] at (2.25,4) {\textbf{BASE}};
+
+        % Collector (P)
+        \draw[fill=cyan!20] (2.5,0) rectangle (4.5,4);
+        \node at (3.5,2) {\Large P};
+        \node[right] at (5.5,2) {\textbf{COLECTOR}};
+
+        % External Box
+        \draw[thick] (0,0) rectangle (4.5,4);
+
+        % Leads
+        \draw[thick] (-1,2) -- (0,2); % Emitter Lead
+        \draw[thick] (2.25,0) -- (2.25,-1); % Base Lead
+        \draw[thick] (4.5,2) -- (5.5,2); % Collector Lead
+    \end{tikzpicture}
+    \caption{Transistor PNP de unión.}
+    \label{fig:11-4}
+\end{figure}
+
+Este transistor de unión está formado por un emparedado de una tira muy delgada de silicio de tipo N
+entre dos tiras «anchas» de silicio de tipo P. De las placas metálicas individuales salen tres conductores
+que hacen contacto con los cristales semiconductores respectivos. Todo el conjunto está alojado en una
+cápsula o envolvente hermética a la humedad. La geometría de los transistores de unión difiere de la
+representada en la fig.~\ref{fig:11-4}, dependiendo del método de construcción de la unión. Por otra
+parte, las características de los diversos tipos de transistores de unión dependen del método de fabricación.
+
+En la fig.~\ref{fig:11-4} la lámina o pastilla P de la izquierda se designa «emisor», la lámina N central
+se designa «base» y la lámina P de la derecha se designa «colector». La base tiene aproximadamente un espesor
+de 1 mil (\SI{0.001}{in}, o sea \SI{0.025}{\mm}). En lo que respecta a la polarización, este transistor
+puede ser considerado como conjunto de dos diodos. El emisor y la base constituyen un diodo, el colector y
+la base constituyen el otro diodo. Cuando se le utiliza como amplificador, el transistor está polarizado
+como en la fig.~\ref{fig:11-5}. El diodo emisor-base está polarizado en sentido directo o de baja
+resistencia por \( V_{EE} \). El diodo colector-base está polarizado en sentido inverso o de alta resistencia
+por \( V_{CC} \).
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-5
+    \begin{circuitikz}[scale=0.8]
+        % P-N-P Block
+        \draw[fill=cyan!20] (0,0) rectangle (2,2); \node at (1,1) {P}; % Emitter
+        \draw[fill=red!20] (2,0) rectangle (2.5,2); \node at (2.25,1) {\scriptsize N}; % Base
+        \draw[fill=cyan!20] (2.5,0) rectangle (4.5,2); \node at (3.5,1) {P}; % Collector
+
+        % Leads and Circuit
+        \draw (-1,1) -- (0,1); % Emitter Lead
+        \draw (4.5,1) -- (5.5,1); % Collector Lead
+        \draw (2.25,0) -- (2.25,-0.5); % Base Lead (internal start)
+
+        % Circuit Loop Left (Emitter-Base)
+        \draw (-1,1) -- (-1,-2)
+        to[battery1, l=$V_{EE}$] (2.25,-2)
+        -- (2.25, -0.5);
+
+        % Circuit Loop Right (Collector-Base)
+        \draw (5.5,1) -- (5.5,-2)
+        to[battery1, l=$V_{CC}$, invert] (2.25,-2);
+
+        % Labels
+        \node[above] at (-1,1) {Emisor};
+        \node[above] at (2.25,2) {Base};
+        \node[above] at (5.6,1) {Colector};
+    \end{circuitikz}
+    \caption{Polarización de un transistor PNP.}
+    \label{fig:11-5}
+\end{figure}
+
+Los huecos son los portadores mayoritarios de corriente en el diodo emisor-base y emanan del emisor
+del tipo P. Si no estuviese presente el colector, el flujo de corriente en la sección emisor-base
+tendría lugar de la manera descrita en la Práctica 1. Sin embargo, la presencia del colector de tipo
+P y su conexión al terminal negativo de la batería de colector \( V_{CC} \) altera radicalmente la
+trayectoria o camino del flujo de la corriente de huecos. Sólo un pequeño porcentaje de los huecos
+emitidos por el emisor se combinan con los electrones libres en la base. Los otros huecos
+(aproximadamente 95\%) atraviesan el cristal muy delgado de la base y son atraídos por el terminal
+negativo de la batería en el colector. El circuito emisor-colector está completado externamente a
+través de las dos baterías \( V_{EE} \) y \( V_{CC} \) conectadas en serie aditiva. De esta descripción
+del flujo de corriente en un transistor se deduce (fig. 11-5) que el emisor es la fuente de los portadores
+de corriente, que la corriente emisor-base es muy pequeña y que la corriente emisor-colector es muy intensa.
+También se deduce que los cambios de la polarización emisor-base darán por resultado variaciones de la
+corriente de emisor. Así pues, un aumento de la polarización directa dará por resultado un aumento de
+la corriente de emisor y por tanto de la corriente de colector. La corriente de base aumentará o
+disminuirá muy poco cuando aumente o disminuya la corriente de emisor. Es pues evidente que la corriente
+de colector se puede controlar fácilmente variando la polarización emisor-base. Las designaciones
+«emisor» y «colector» se pueden ahora asociar fácilmente con sus funciones.
+
+También puede estar fabricado un transistor de unión con la configuración NPN como en la
+fig.~\ref{fig:11-6}. Lo mismo que en el caso precedente, la polarización emisor-base debe tener sentido
+directo y la de colector-base sentido inverso. A causa de que aquí se utiliza un cristal de tipo N como
+emisor y uno de tipo P como base, las polaridades de la batería deben estar invertidas, con respecto
+a la polarización de un transistor PNP. En el transistor NPN los electrones son los portadores mayoritarios
+de corriente. En el transistor PNP los portadores mayoritarios son los huecos.
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-6
+    \begin{circuitikz}[scale=0.8]
+        % N-P-N Block
+        \draw[fill=red!20] (0,0) rectangle (2,2); \node at (1,1) {N}; % Emitter
+        \draw[fill=cyan!20] (2,0) rectangle (2.5,2); \node at (2.25,1) {\scriptsize P}; % Base
+        \draw[fill=red!20] (2.5,0) rectangle (4.5,2); \node at (3.5,1) {N}; % Collector
+
+        % Leads and Circuit
+        \draw (-1,1) -- (0,1); % Emitter Lead
+        \draw (4.5,1) -- (5.5,1); % Collector Lead
+        \draw (2.25,0) -- (2.25,-0.5); % Base Lead
+
+        % Circuit Loop Left (Emitter-Base)
+        \draw (-1,1) -- (-1,-2) to[battery1, l=$V_{EE}$, invert] (2.25,-2) -- (2.25,-0.5);
+
+        % Circuit Loop Right (Collector-Base)
+        \draw (5.5,1) -- (5.5,-2) to[battery1, l=$V_{CC}$] (2.25,-2);
+
+        % Labels
+        \node[above] at (-1,1) {Emisor};
+        \node[above] at (2.25,2) {Base};
+        \node[above] at (5.6,1) {Colector};
+    \end{circuitikz}
+    \caption{Polarización de un transistor NPN.}
+    \label{fig:11-6}
+\end{figure}
+
+Un esquema sencillo para recordar las conexiones de los polos o terminales de la batería aplicados
+a un transistor es el siguiente: las polaridades de la batería aplicadas al emisor y la base tienen
+por iniciales respectivamente las dos primeras letras de la designación del tipo. Así pues, en el tipo
+PNP el emisor recibe la polaridad P (positiva) y la base recibe la polaridad N (negativa). Análogamente,
+en el tipo NPN, el emisor recibe la polaridad N (negativa) y la base la polaridad P (positiva).
+El colector recibe una polaridad de batería opuesta a la designación de su tipo de impureza. El colector
+de tipo P recibe pues la polaridad N (negativa) de la batería y el colector de tipo N recibe la
+polaridad P (positiva).
+
+La fig.~\ref{fig:11-7} es un diagrama que indica el sentido del flujo de electrones en el circuito
+exterior de un transistor PNP. Se puede considerar que en el circuito exterior se establece una corriente
+o flujo de electrones y que dentro del cristal del tipo P hay un flujo de huecos. La corriente designada
+por \( I_{CBO} \) es muy pequeña y aquí no trataremos de ella. La corriente en el circuito de emisor es
+la «total» y se divide en la corriente de base y la corriente de colector. Es importante señalar que la
+corriente emisor-base (determinada por la tensión de polarización base-emisor) es realmente la causa
+de la corriente emisor-colector. Como veremos más adelante, la corriente emisor-base también controla
+la corriente emisor-colector.
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-7
+    \begin{circuitikz}[scale=0.8]
+        % P-N-P Block
+        \draw[fill=cyan!20] (0,0) rectangle (2,2); \node at (1,1) {P}; % Emitter
+        \draw[fill=red!20] (2,0) rectangle (2.5,2); \node at (2.25,1) {\scriptsize N}; % Base
+        \draw[fill=cyan!20] (2.5,0) rectangle (4.5,2); \node at (3.5,1) {P}; % Collector
+
+        % Leads
+        \draw (-1,1) -- (0,1); % Emitter Lead
+        \draw (4.5,1) -- (5.5,1); % Collector Lead
+        \draw (2.25,0) -- (2.25,-0.5); % Base Lead (internal start)
+
+        % Circuit Loop Left (Emitter-Base)
+        \draw (-1,1) -- (-1,-2)
+        to[battery1, l=$V_{EE}$] (2.25,-2)
+        -- (2.25, -0.5);
+
+        % Circuit Loop Right (Collector-Base)
+        \draw (5.5,1) -- (5.5,-2)
+        to[battery1, l=$V_{CC}$, invert] (2.25,-2);
+
+        % Electron Flow Arrows
+        \draw[->, thick, blue] (2.25, -1.5) -- (2.25, -0.8) node[midway, right] {$e^-$}; % Into Base (from VEE)
+        \draw[->, thick, blue] (-1, 0.5) -- (-1, -0.5) node[midway, left] {$e^-$}; % Out of Emitter (to VEE)
+
+        \draw[->, thick, blue] (5.5, -0.5) -- (5.5, 0.5) node[midway, right] {$e^-$}; % Into Collector (from VCC)
+        \draw[->, thick, blue] (2.25, -0.8) -- (2.25, -1.5); % Out of Base (to VCC)
+
+        % Labels
+        \node[above] at (-1,1) {Emisor};
+        \node[above] at (2.25,2) {Base};
+        \node[above] at (5.6,1) {Colector};
+    \end{circuitikz}
+    \caption{Flujo de electrones en el circuito externo de un transistor PNP.}
+    \label{fig:11-7}
+\end{figure}
+
+La fig.~\ref{fig:11-8} es un diagrama simplificado que indica el sentido del flujo de electrones en el
+circuito exterior de un transistor NPN. Comparado con el de la fig.~\ref{fig:11-7} se observa que el sentido del
+flujo de electrones en el circuito exterior de un transistor NPN es opuesto al del tipo PNP.
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-8
+    \begin{circuitikz}[scale=0.8]
+        % N-P-N Block
+        \draw[fill=red!20] (0,0) rectangle (2,2); \node at (1,1) {N}; % Emitter
+        \draw[fill=cyan!20] (2,0) rectangle (2.5,2); \node at (2.25,1) {\scriptsize P}; % Base
+        \draw[fill=red!20] (2.5,0) rectangle (4.5,2); \node at (3.5,1) {N}; % Collector
+
+        % Leads
+        \draw (-1,1) -- (0,1); % Emitter Lead
+        \draw (4.5,1) -- (5.5,1); % Collector Lead
+        \draw (2.25,0) -- (2.25,-0.5); % Base Lead
+
+        % Circuit Loop Left (Emitter-Base)
+        \draw (-1,1) -- (-1,-2)
+        to[battery1, l=$V_{EE}$, invert] (2.25,-2)
+        -- (2.25, -0.5);
+
+        % Circuit Loop Right (Collector-Base)
+        \draw (5.5,1) -- (5.5,-2)
+        to[battery1, l=$V_{CC}$] (2.25,-2);
+
+        % Electron Flow Arrows
+        \draw[->, thick, blue] (-1, -0.5) -- (-1, 0.5) node[midway, left] {$e^-$};
+
+        \draw[->, thick, blue] (5.5, 0.5) -- (5.5, -0.5) node[midway, right] {$e^-$};
+
+        \draw[->, thick, blue] (2.25, -0.8) -- (2.25, -1.5); % To V_EE (+)
+        \draw[->, thick, blue] (2.25, -1.5) -- (2.25, -0.8); % From V_CC (-)
+
+        % Labels
+        \node[above] at (-1,1) {Emisor};
+        \node[above] at (2.25,2) {Base};
+        \node[above] at (5.6,1) {Colector};
+    \end{circuitikz}
+    \caption{Flujo de electrones en el circuito externo de un transistor NPN.}
+    \label{fig:11-8}
+\end{figure}
+
+\subsection{\texorpdfstring{\( I_{CBO} \)}{I\_CBO} y el embalamiento térmico}
+
+Una característica importante del circuito colector-base es \( I_{CO} \) (llamada también
+\( I_{CBO} \)), corriente de colector que se establece estando la unión colector-base polarizada
+en sentido inverso y la de emisor-base en cortocircuito. Esta corriente de fuga (\( I_{CBO} \)) es
+debida a los portadores minoritarios en la base y en el colector. \( I_{CBO} \) es del orden de
+algunos microamperios para el germanio y de algunos nanoamperios para el silicio, y aumenta con
+la temperatura.
+
+Un factor importante que afecta al funcionamiento de un transistor es su temperatura de trabajo.
+El transistor es muy sensible a los cambios de temperatura. Cuando ésta aumenta, la corriente también
+aumenta y ésta a su vez hace que el calor aumente. Si esta reacción en cadena, que se llama
+«embalamiento», no se interrumpe, puede conducir a la destrucción completa del transistor a causa
+del exceso de calor. En el diseño de los circuitos de transistor se evita el embalamiento térmico
+mediante las disposiciones de realimentación negativa que estudiaremos. El margen normal de temperatura
+dentro del cual puede funcionar un transistor en condiciones de seguridad está especificado por el
+fabricante. Los transistores de silicio toleran más el calor que los de germanio, y su margen
+térmico de funcionamiento es mucho más amplio.
+
+\begin{figure}[h]
+    \centering
+    % TikZ replacement for Fig 11-9
+    \begin{circuitikz}[scale=1.2]
+        \draw (0,0) node[pnp, text width=1cm] (Q1) {} node[below=0.5cm of Q1] {(a) PNP};
+        \node[above] at (Q1.E) {E};
+        \node[below] at (Q1.C) {C};
+        \node[left] at (Q1.B) {B};
+
+        \draw (4,0) node[npn, text width=1cm] (Q2) {} node[below=0.5cm of Q2] {(b) NPN};
+        \node[below] at (Q2.E) {E};
+        \node[above] at (Q2.C) {C};
+        \node[left] at (Q2.B) {B};
+    \end{circuitikz}
+    \caption{Símbolo esquemático de transistores (a) PNP y (b) NPN.}
+    \label{fig:11-9}
+\end{figure}
+
+\subsection{Símbolo de transistor, zócalo y montura}
+
+Los símbolos de transistores PNP y NPN están indicados en las fig.~\ref{fig:11-9} a y b, donde el
+elemento correspondiente a la flecha es el emisor y el otro simétrico es el colector. El transistor
+PNP se caracteriza porque la flecha del emisor está dirigida hacia la base mientras que en el tipo
+NPN la flecha está dirigida en sentido contrario a la base.
+
+Hay dos disposiciones generales de terminales del transistor. En la primera se emplean conductores
+largos y flexibles.
+Ejemplo es el transistor representado en la fig.~\ref{fig:11-10}a. Los tres conductores están alineados
+y corresponden a emisor, base y colector, en este orden. La separación del terminal de colector es mayor
+que la de los otros dos elementos. En una variante de este sistema se utilizan también tres conductores
+alineados y el conductor se identifica por un punto rojo pintado cerca de la caja, como en la
+fig.~\ref{fig:11-10}b. El método usual para conectar los transistores de las fig.~\ref{fig:11-10} a y b en el
+circuito es soldar los conductores flexibles a los terminales correspondientes del circuito.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+        % (a) Identification by lead spacing
+        \begin{scope}[shift={(0,0)}]
+            % Case Outline (Bottom View - Ellipse/Circle)
+            \draw[thick, fill=gray!20] (0,0) ellipse (1.2 and 1);
+
+            % Leads
+            \node[circle, fill=black, inner sep=1.5pt, label=below:E] (E) at (-0.6, -0.2) {};
+            \node[circle, fill=black, inner sep=1.5pt, label=below:B] (B) at (0, -0.2) {};
+            \node[circle, fill=black, inner sep=1.5pt, label=below:C] (C) at (0.8, -0.2) {};
+
+            % Spacing indications
+            \draw[<->, blue, thin] (E) -- (B) node[midway, above=-2pt] {\tiny $x$};
+            \draw[<->, blue, thin] (B) -- (C) node[midway, above=-2pt] {\tiny $>x$};
+
+            \node[below=1cm] at (0,-0.5) {(a)};
+        \end{scope}
+
+        % (b) Identification by colored dot
+        \begin{scope}[shift={(4,0)}]
+            % Case Outline
+            \draw[thick, fill=gray!20] (0,0) ellipse (1.2 and 1);
+
+            % Leads (Equal spacing)
+            \node[circle, fill=black, inner sep=1.5pt, label=below:E] (E2) at (-0.6, -0.2) {};
+            \node[circle, fill=black, inner sep=1.5pt, label=below:B] (B2) at (0, -0.2) {};
+            \node[circle, fill=black, inner sep=1.5pt, label=below:C] (C2) at (0.6, -0.2) {};
+
+            % Red Dot
+            \fill[red] (0.9, 0) circle (0.15);
+            \node[red, right] at (1.2, 0) {\tiny Punto Rojo};
+
+            \node[below=1cm] at (0,-0.5) {(b)};
+
+            % Lead indication for Red Dot (often C)
+            \draw[->, red, dashed] (0.9, -0.1) -- (C2);
+        \end{scope}
+
+    \end{tikzpicture}
+    \caption{Métodos para identificar los terminales de los transistores.}
+    \label{fig:11-10}
+\end{figure}
+
+En el segundo método se utilizan patillas rígidas a las que están conectados los conductores interiores,
+como en la fig.~\ref{fig:11-11}a. Este es un tipo enchufable de transistor y requiere un zócalo o enchufe
+para conectarlo. Otra disposición de terminales permite elegir el primero o el segundo método de montaje.
+En este caso el transistor está provisto de conductores flexibles soldados a patillas rígidas (fig. 11-2).
+Los conductores flexibles se emplean cuando haya que soldar el transistor en el circuito. Si se quiere
+emplear el zócalo, se quitan fácilmente los conductores flexibles con alicates. También se usa un tipo
+triangular de zócalo (figs.~\ref{fig:11-11}b y c). Otras disposiciones típicas de terminales están
+representadas en la fig.~\ref{fig:11-12}.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+        % (a) Plug-in Transistor (Side View)
+        \begin{scope}[shift={(0,0)}]
+            % Pins
+            \draw[thick, gray] (-0.3, -1) -- (-0.3, 0);
+            \draw[thick, gray] (0, -1) -- (0, 0);
+            \draw[thick, gray] (0.3, -1) -- (0.3, 0);
+
+            % Body
+            \draw[fill=gray!30] (-0.5, 0) rectangle (0.5, 0.8);
+            \draw[fill=gray!10] (0, 0.8) ellipse (0.5 and 0.1);
+            \node at (0, 0.4) {\tiny Transistor};
+            \node[below=1.2cm] at (0,0) {(a) Transistor};
+        \end{scope}
+
+        % (b) Base Diagram (Bottom View)
+        \begin{scope}[shift={(3,0)}]
+            \draw[thick] (0,0.1) circle (1.1);
+            \node at (0,1.4) {\tiny Vista Inferior};
+
+            % Triangular Pin Layout
+            % Isosceles triangle.
+            \node[circle, fill=black, inner sep=2pt, label=left:E] (E) at (-0.4, -0.2) {};
+            \node[circle, fill=black, inner sep=2pt, label=right:C] (C) at (0.4, -0.2) {};
+            \node[circle, fill=black, inner sep=2pt, label=above:B] (B) at (0, 0.5) {};
+
+            \draw[dashed] (E) -- (B) -- (C) -- cycle;
+            \node[below=1.2cm] at (0,0) {(b) Base};
+        \end{scope}
+
+        % (c) Socket (Top View)
+        \begin{scope}[shift={(6,0)}]
+            \draw[fill=black!10] (-0.8, -0.8) rectangle (0.8, 0.8);
+            \node at (0,1) {\tiny Zócalo};
+
+            % Holes
+            \fill[white, draw=black] (-0.4, -0.2) circle (0.1);
+            \fill[white, draw=black] (0.4, -0.2) circle (0.1);
+            \fill[white, draw=black] (0, 0.5) circle (0.1);
+
+            \node[below=1.2cm] at (0,0) {(c) Zócalo};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{(a) Transistor enchufable. Identificación de la base triangular;
+        (b) diagrama de la base (vista inferior);
+        (c) zócalo (CBS).}
+    \label{fig:11-11}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+        % (a) TO-3 (Power) - Bottom View
+        \begin{scope}[shift={(0,0)}]
+            % Diamond Shape
+            \draw[thick, fill=gray!30] (0, 1) -- (1.5, 0) -- (0, -1) -- (-1.5, 0) -- cycle;
+            \draw[fill=white] (-1.2, 0) circle (0.1); % Mounting hole
+            \draw[fill=white] (1.2, 0) circle (0.1); % Mounting hole
+
+            % Pins (Offset from center usually)
+            \node[circle, fill=black, inner sep=2pt, label=below:E] (E) at (-0.4, 0.3) {};
+            \node[circle, fill=black, inner sep=2pt, label=below:B] (B) at (0.4, 0.3) {};
+            \node at (0, -0.5) {C (Caja)};
+
+            \node[below=1.8cm] at (0,0) {(a) TO-3 (Vista Inf.)};
+        \end{scope}
+
+        % (b) TO-220 - Front View
+        \begin{scope}[shift={(3.5,0)}]
+            % Heatsink Tab
+            \draw[fill=gray!40] (-0.6, 0.5) rectangle (0.6, 1.2);
+            \draw[fill=white] (0, 0.9) circle (0.1); % Hole
+
+            % Plastic Body
+            \draw[fill=black!80] (-0.6, -0.5) rectangle (0.6, 0.5);
+
+            % Pins
+            \draw[thick, gray] (-0.4, -0.5) -- (-0.4, -1.2) node[below, black] {\tiny B};
+            \draw[thick, gray] (0, -0.5) -- (0, -1.2) node[below, black] {\tiny C};
+            \draw[thick, gray] (0.4, -0.5) -- (0.4, -1.2) node[below, black] {\tiny E};
+
+            \node[below=1.8cm] at (0,0) {(b) TO-220 (Frente)};
+        \end{scope}
+
+        % (c) TO-92 - Bottom View
+        \begin{scope}[shift={(7,0)}]
+            % D-Shape
+            \draw[thick, fill=gray!20] (0.6, 0.0) arc (0:180:0.6) -- cycle;
+
+            % Pins
+            \node[circle, fill=black, inner sep=1.5pt, label={[yshift=-2mm]below:E}] (E92) at (-0.4, 0.2) {};
+            \node[circle, fill=black, inner sep=1.5pt, label={[yshift=-2mm]below:B}] (B92) at (0, 0.1) {};
+            \node[circle, fill=black, inner sep=1.5pt, label={[yshift=-2mm]below:C}] (C92) at (0.4, 0.2) {};
+
+            \node[below=1.8cm] at (0,0) {(c) TO-92 (Vista Inf.)};
+        \end{scope}
+
+    \end{tikzpicture}
+    \caption{Otras disposiciones típicas de terminales (TO-3, TO-220, TO-92).}
+    \label{fig:11-12}
+\end{figure}
+
+Los transistores se especifican según su aptitud para disipar potencias. Un transistor empleado
+como amplificador de audio de bajo nivel puede tener una potencia nominal baja, del orden de
+\SI{50}{\milli\watt}. Un transistor utilizado como amplificador de salida debe tener una
+especificación en vatios más alta. Las cajas o cápsulas de los transistores de potencia están
+diseñadas especialmente para facilitar su refrigeración. Por ejemplo, algunos transistores de
+potencia usan aletas radiales para conducir el calor y disiparlo (fig. 11-1). Otros tipos usan
+un casco o caja metálica que se monta en el chasis metálico del equipo en que haya de emplearse
+(fig. 11-3). Este transistor tiene el colector conectado a la caja del transistor. Entonces el
+chasis conduce el calor y lo disipa. Este tipo de transistores es de potencia nominal más alta
+cuando está fijado al chasis metálico y de potencia nominal más baja cuando se monta fuera del
+chasis. Una buena técnica de diseño requiere que los transistores estén montados en la parte más
+fría del chasis. Algunas veces hay aletas instaladas dentro del equipo para refrigerar los
+transistores y otros componentes. En la lista siguiente se numeran los símbolos utilizados para
+denotar los parámetros del transistor.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cp{12cm}}
+        \toprule
+        Símbolo      & Definición                                                                    \\
+        \midrule
+        \( I_C \)    & Corriente de colector                                                         \\
+        \( I_E \)    & Corriente de emisor                                                           \\
+        \( I_B \)    & Corriente de base                                                             \\
+        \( V_C \)    & Tensión en el colector                                                        \\
+        \( V_E \)    & Tensión en el emisor                                                          \\
+        \( V_B \)    & Tensión en la base                                                            \\
+        \( V_{CC} \) & Tensión de alimentación del colector                                          \\
+        \( V_{EE} \) & Tensión de alimentación del emisor                                            \\
+        \(V_{BB} \)  & Tensión de alimentación de la base                                            \\
+        \( I_{CB} \) & Corriente de colector-base (el segundo subindice se puede utilizar
+        en cualquiera de los símbolos anteriores para evitar confusiones)                            \\
+        \(V_{KJ} \)  & Tensión del circuito entre elementos, por ejemplo, entre los elementos K y J. \\
+        \(V_{CB} \)  & Tensión colector-base                                                         \\
+        \bottomrule
+    \end{tabular}
+    \caption{Símbolos utilizados para denotar los parámetros del transistor.}
+    \label{tab:symbols}
+\end{table}
+
+\section{Reglas para Trabajar con Circuitos de Transistor y Efectuar
+  Mediciones en Ellos.}
+\subsection{Herramientas especiales}
+Se requiere el uso de herramientas especiales para trabajar en circuitos
+de transistor a causa del pequeño tamaño de estos y de sus componentes
+asociados. Por otra parte, como los equipos transistorizados suelen estar
+miniaturizados, las herramientas ordinarias serían inaplicables. He aquí una
+lista de herramientas especiales:
+\begin{itemize}
+    \item Pinzas miniaturas.
+    \item Alicates de punta miniatura.
+    \item Surtido de tenacillas del tipo de servicio.
+    \item Un soldador de \SI{25}{\watt} del tipo de lápiz.
+    \item Un soldador auxiliar.
+    \item Una lente de relojero o una lupa con pié.
+\end{itemize}
+
+\subsection{Precauciones para la manipulación de los transistores.}
+Aunque son dispositivos robustos, los transistores se deterioran
+fácilmente si se les maneja inapropiadamente. Por esto hay que poner gran
+cuidado cuando se trabaja con transistores de baja potencia que tienen
+conductores flexibles, ya que estos son frágiles y se rompen con facilidad.
+Las mismas precauciones son aplicables a los componentes de los equipos
+transistorizados. Estos componentes han sido miniaturizados y sus conductores
+se pueden romper fácilmente. Los transistores y los componentes asociados
+empleados en esta práctica y las siguientes se deben montar en paneles de
+ensayo. Los transistores se pueden destruir casi instantáneamente a diferencia
+de los tubos de vacío que pueden tolerar moderadas sobrecargas durante
+largos períodos de tiempo. Un cortocircuito entre base y colector en un
+circuito en funcionamiento destruirá casi siempre al transistor. Asimismo,
+un cortocircuito en una sonda de medición o una herramienta entre un par
+de terminales puede destruir un transistor.
+
+Hay que poner un cuidado extremado cuando se insertan transistores en un
+circuito, o cuando se desmontan, estando aplicada la potencia. Lo mejor
+será siempre desconectar la potencia antes de hacer estas operaciones.
+
+\subsection{Otras precauciones.}
+Polarización del colector y valores de tensión. Asegurarse de que la tensión
+de polarización del colector es correcta antes de aplicar la potencia. El
+colector debe tener polarización inversa. Por otra parte, la tensión en
+él y en el emisor no debe exceder los valores especificados.
+Por consiguiente habrá que medir estos valores y ajustarlos al valor correcto antes de
+aplicar la potencia al circuito.
+
+\subsection{Comprobación de las conexiones del circuito.}
+Se deben comprobar todas las conexiones a la vista del esquema antes de aplicar la potencia.
+Los transistores no deben ser conectados a una fuente de tensión sin una resistencia limitadora
+en el circuito.
+
+\subsection{Operación de soldadura de los terminales de los transistores.}
+Debe ser todo lo rápida posible; a este fin son recomendables los
+soldadores de poco vatiaje (\SI{25}{\watt}). Los terminales se deben dejar todo lo
+largos que sea posible, pero teniendo en cuenta las consideraciones de
+diseño del circuito para reducir la transferencia de calor. Esto mismo
+es aplicable a los diodos de germanio. Durante la operación de soldadura
+se improvisa un absorbedor y radiador de calor manteniendo sujetos con
+los alicates los terminales del transistor entre el cuerpo de éste y el
+punto de aplicación del calor, como en la fig.~\ref{fig:11-13}.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+        % Transistor Body
+        \draw[fill=gray!30] (-0.5, 2) rectangle (0.5, 2.8);
+        \node at (0, 2.4) {\tiny Transistor};
+
+        % Leads
+        \draw[thick, gray] (-0.3, 2) -- (-0.3, 0);
+        \draw[thick, gray] (0, 2) -- (0, 0);
+        \draw[thick, gray] (0.3, 2) -- (0.3, 0);
+
+        % Pliers (Heat Sink) gripping the right lead (0.3, y)
+        % Pliers stylized as two jaws clamping
+        \draw[fill=gray!60, draw=black] (0.35, 1.0) -- (1.5, 1.2) -- (1.5, 0.8) -- (0.35, 1.0); % Right Jaw handle part
+        \draw[fill=gray!60, draw=black] (0.25, 1.0) -- (-0.9, 1.2) -- (-0.9, 0.8) -- (0.25, 1.0); % Left Jaw (behind/front illusion)
+
+        % Better Pliers Representation: Side view clamping the wire
+        % Jaws
+        \draw[fill=gray!80] (0.1, 1.1) rectangle (0.5, 1.3); % Top Jaw
+        \draw[fill=gray!80] (0.1, 0.7) rectangle (0.5, 0.9); % Bottom Jaw
+        % Handles extending out
+        \draw[gray, thick] (0.5, 1.2) -- (2, 1.5);
+        \draw[gray, thick] (0.5, 0.8) -- (2, 0.5);
+
+        \node[right, align=left, font=\small] at (2, 1) {Alicates\\(Radiador de calor)};
+        \draw[->, thin] (1.9, 1) -- (0.6, 1);
+
+        % Soldering Iron Tip at the bottom of the lead
+        \draw[fill=orange!40] (0.3, -0.1) -- (0.5, -0.6) -- (0.1, -0.6) -- cycle; % Tip
+        \draw[fill=gray!50] (0.1, -0.6) rectangle (0.5, -1.2); % Iron Body
+        \node[below] at (0.3, -1.2) {Soldador};
+
+        % Heat indication
+        \draw[->, red, thick, decorate, decoration={snake, amplitude=.4mm, segment length=2mm, post length=1mm}] (0.3, -0.2) -- (0.3, 0.6); % Heat moving up
+        \node[right, red] at (0.4, 0) {Calor};
+
+        % Heat blocked/dissipated by pliers
+        \draw[->, blue, thick] (0.3, 0.9) -- (0.8, 2); % Heat dissipating into pliers
+        %\draw[->, blue, thick] (0.3, 0.9) -- (0.8, 1);
+        \node[right, blue] at (0.8, 2) {Disipación};
+
+    \end{tikzpicture}
+    \caption{Los alicates actúan como radiador de calor cuando se sueldan los transistores en el circuito.}
+    \label{fig:11-13}
+\end{figure}
+
+\subsection{Medición de tensión.}
+Todo el equipo de ensayo o prueba debe estar aislado de la red o línea
+de potencia. Si el equipo no está aislado, habrá que intercalar un
+transformador. Cuando se efectúan mediciones de tensión en circuitos de
+transistor, hay que adoptar las debidas precauciones para evitar cortocircuitos
+accidentales entre terminales poco separados. Estos cortocircuitos pueden ser causa
+de que se aplique una tensión incorrecta o excesiva a los elementos del transistor
+y de la consiguiente destrucción de éste.
+
+\subsection{Mediciones de resistencia.}
+Los transistores se pueden estropear mediante las mediciones de
+resistencia. Si se emplea un óhmetro de tipo shunt en los alcances o
+escalas de baja resistencia, la corriente a que se somete al transistor
+puede ser excesiva y destruirlo. Por consiguiente habrá que adoptar
+precauciones cuando se efectúan las pruebas con un óhmetro en los
+circuitos de transistor. Una buena regla es comprobar el potencial y la
+polaridad de los terminales del óhmetro antes de probar las uniones del
+transistor.
+
+También es necesario sacar el transistor primero, si es del tipo
+enchufable, cuando se hacen pruebas de resistencia de los componentes
+en un circuito transistorizado. Cuando se efectúan las mediciones de
+resistencia estando el transistor intercalado en el circuito, habrá que
+tener en cuenta la corriente admisible de conducción en el transistor. Un
+método recomendable es hacer dos series de mediciones de resistencia,
+invirtiendo los conductores del óhmetro para hacer la lectura cuando sea
+necesario. La lectura más alta es la más correcta a causa de que
+corresponde a la polarización inversa.
+
+Ordinariamente, los voltímetros electrónicos (EVM) contienen una función
+*ohmios-baja potencia* (LPD) destinada especialmente a mediciones de
+resistencia en circuitos transistorizados. La tensión que se desarrolla en
+la función LPD es insuficiente para polarizar en sentido directo las
+uniones del transistor. Por esto se utiliza dicha función LPD para medir
+resistencias en circuitos que contienen dispositivos de estado sólido.
+
+\subsection{Uso de los generadores de señal en los circuitos de transistor.}
+Una salida excesiva del generador de señal puede destruir el transistor.
+Por tanto, la salida debe ser ajustada al mínimo cuando se invierta
+inicialmente la señal. Como medida adicional de seguridad, el generador no
+debe ser acoplado directamente al circuito. Siempre que sea posible
+conviene que el acoplamiento sea flojo.
+
+\section{Resumen}
+\begin{enumerate}
+    \item Los transistores son dispositivos de estado sólido que extienden el margen y la
+          aplicación de los diodos de dos elementos.
+    \item El silicio es el elemento con el que están construidos la mayoría de transistores
+          y otros semiconductores actualmente.
+    \item Los transistores de unión o contacto están constituidos por un elemento muy delgado
+          llamado base, emparedado entre dos elementos llamados emisor y colector (fig. 11-4).
+    \item Los transistores son del tipo PNP o del tipo NPN. La primera letra designa el material
+          de emisor, la letra central designa la base y la última letra designa el material de colector.
+          Por tanto, los transistores contienen dos uniones, la unión emisor-base y la unión colector-base.
+    \item Las características de los transistores de unión dependen del grado de dopado del emisor,
+          de la base y del colector; dependen también de la geometría del transistor y del método de fabricación.
+    \item En lo que respecta a la polarización, el transistor se puede considerar constituido por
+          dos diodos, el diodo emisor-base y el diodo colector-base.
+    \item En la mayoría de aplicaciones el diodo emisor-base está polarizado en sentido directo y el
+          diodo colector-base lo está en sentido inverso.
+    \item El emisor *inyecta* (emite) o es la fuente de los portadores de corriente en un transistor. El
+          colector recibe (recoge) la mayoría de los portadores de corriente. La base controla la corriente de colector.
+    \item La corriente de emisor es la corriente total, y se divide en la corriente de colector y en
+          la corriente de base.
+    \item La corriente que fluye dentro de un transistor está constituida por los portadores mayoritarios,
+          que son electrones en el material de tipo N y huecos en el material de tipo P.
+    \item Hay también portadores *minoritarios*. La pequeña corriente de portadores minoritarios en la unión
+          colector-base estando el emisor abierto se llama corriente de fuga o \( I_{CBO} \).
+    \item Aunque \( I_{CBO} \) es muy pequeña en los transistores de silicio, aumenta con el calor y puede
+          destruir un transistor si no se controla.
+    \item Los transistores son sensibles al calor. Las temperaturas a las que pueden trabajar están
+          especificadas por el fabricante.
+    \item Los transistores pueden ser del tipo de terminales soldados o del tipo enchufable. En el
+          primer tipo se utilizan zócalos cuya forma y tamaño varía para adaptarse al transistor.
+    \item Los transistores se especifican de acuerdo con su aptitud para disipar potencia, variando
+          desde potencia muy baja (50 mW) hasta potencia alta (2 W o más).
+    \item En los transistores de alta potencia se emplean radiadores de calor para conducir éste
+          desde el transistor y disiparlo.
+    \item En la operación de soldadura de los transistores se utilizan soldadores de bajo vatiaje
+          para evitar que se calienten excesivamente.
+    \item Los transistores se deben manejar cuidadosamente para no dañar sus frágiles conductores.
+    \item Siempre se debe desconectar la alimentación de potencia antes de insertar o sacar un
+          transistor en un circuito.
+    \item Los transistores se pueden destruir accidentalmente cuando se miden tensiones en sus terminales.
+          Hay que poner cuidado para evitar que se cortocircuiten los terminales durante las mediciones en el circuito.
+    \item Los transistores se pueden deteriorar durante las pruebas de sus elementos con el óhmetro si
+          éste aplica una corriente excesiva al transistor. Por tanto se deben emplear alcances bajos de
+          corriente en el óhmetro.
+    \item En las pruebas de resistencia de un circuito que contiene un transistor u otro dispositivo de
+          estado sólido se debe utilizar la función de óhmetro de baja potencia en un EVM. Así se evita que
+          los electrodos o elementos del transistor se polaricen en sentido directo y se garantiza la obtención
+          de lecturas correctas de la resistencia.
+\end{enumerate}
+
+\section{Autoexamen}
+\begin{enumerate}
+    \item Actualmente los transistores se fabrican con ...... (germonio/silicio).
+    \item Los transistores de tres elementos contienen ...... (2/3 uniones).
+    \item La unión emisor-base de un transistor está polarizada ......; la unión
+          colector-base está polarizada ......
+    \item En un transistor PNP el emisor es ...... (positivo/negativo) con respecto a la base,
+          mientras el colector es ...... (positivo/negativo) con respecto a la base.
+    \item Las polaridades de batería en un transistor NPN ...... (están invertidas/son las mismas)
+          en comparación con las de un transistor PNP.
+    \item La cabeza de flecha del símbolo de emisor de un transistor indica el sentido de la corriente
+          convencional, que es opuesto al del flujo de electrones ...... (verdad/falso).
+    \item Los transistores son dispositivos con los que no es necesario poner mucho cuidado cuando se
+          les maneja ...... (verdad/falso).
+    \item Un punto en la caja del transistor o la separación entre los elementos es lo que se suele
+          utilizar para identificar los elementos del transistor ...... (verdad/falso).
+    \item Los transistores son sensibles ...... Por tanto se deben emplear ...... cuando se sueldan
+          los terminales del transistor en el circuito.
+    \item Se debe: ...... cuando se efectúan mediciones de tensión entre los elementos de un transistor
+          incorporado en un circuito para evitar ...... del transistor.
+\end{enumerate}
+
+\section{Materiales Necesarios}
+\begin{itemize}
+    \item Fuente de alimentación: fuentes de c.c. de 1,5 y 6 V.
+    \item Equipo: 2 miliamperímetros de varios alcances (o VOM de 20.000 \(\Omega\)/V); EVM.
+    \item Resistores: \( \frac{1}{2} \) W 100 y 820 \(\Omega\).
+    \item Semiconductores: Transistores 2N6004 y 2N6005 montados apropiadamente o equivalente.
+    \item Diversos: Potenciómetro de 2 W 2.500 \(\Omega\).
+    \item Dos interruptores unipolares.
+\end{itemize}
+
+\section{Procedimiento}
+
+\subsection{Polarización PNP}
+\begin{enumerate}
+    \item El alumno recibirá un transistor de unión PNP y uno NPN, correctamente identificado.
+          Examinar estos transistores. Dibujar un diagrama básico de cada uno, identificando el
+          transistor y cada uno de los elementos.
+    \item Conectar el circuito de la fig.~\ref{fig:11-14} con el interruptor de potencia \( S_1 \) abierto.
+          Ajustar \( R_2 \) para la máxima resistencia. Así se aplicará la mínima polarización al emisor
+          cuando se aplique la potencia. \( R_1 \) es un resistor limitador de corriente (polarización) en el
+          circuito de emisor. \( R_2 \) es un resistor limitador en el circuito de colector. Mantener la polaridad
+          correcta de la batería y del medidor. Ajustar los medidores \( M_1 \) y \( M_2 \) en sus alcances altos.
+          Después de aplicar la potencia, disminuir el alcance del medidor hasta que sea el adecuado para leer la corriente.
+          El instructor debe aprobar las conexiones del circuito antes de aplicar la potencia.
+
+          \begin{figure}[H]
+              \centering
+              \begin{circuitikz}[american, scale=1.0]
+                  % PNP Transistor
+                  % Rotate 90: E Left, C Right, B Bottom
+                  \draw (0,0) node[pnp, rotate=90] (Q1) {};
+                  \node[right] at (Q1.B) {B};
+                  \node[below] at (Q1.E) {E};
+                  \node[below] at (Q1.C) {C};
+
+                  % Emitter Loop (Left) connected to Emitter (Left node)
+                  % Horizontal branch L->R (to fix M1 orientation)
+                  \draw (-6,0) to[switch, l=$S_1$] (-4.5,0)
+                  to[R, l=$R_1$] (-3,0)
+                  to[ammeter, l=$M_1$] (-1.5,0)
+                  -- (Q1.E);
+
+                  % Vertical branch T->B (Battery) and Ground return
+                  % VEE: + to Emitter. Standard battery (+ Top).
+                  \draw (-6,0) to[battery1, l=$V_{EE}$] (-6,-2.5)
+                  -| (0,-2.5) % Connect to ground line
+                  -- (Q1.B);
+
+                  % Collector Loop (Right) connected to Collector (Right node)
+                  % C is Negative relative to B.
+                  % Path: C -> M2 -> R2 -> Ground.
+                  % No VCC here (Fig 11-14).
+                  \draw (Q1.C) -- (1.5,0)
+                  to[ammeter, l=$M_2$] (3,0)
+                  to[vR, l=$R_2$] (4.5,0)
+                  |- (0,-2.5);
+
+                  % Ground symbol at base connection (Bottom)
+                  \draw (0,-2.5) node[ground] {};
+              \end{circuitikz}
+              \caption{Mediciones de corriente y tensión en el circuito emisor-base.}
+              \label{fig:11-14}
+          \end{figure}
+
+    \item Aplicar la potencia. Observar y medir la corriente en el circuito de emisor y colector. Anotar
+          los datos en la tabla~\ref{tab:11-1}. Medir con un EVM la tensión emisor-base y la de colector-base.
+          Anotar los datos en la tabla~\ref{tab:11-1}. Indicar la polaridad de la tensión.
+    \item Desconectar la alimentación de potencia. Modificar el circuito de la fig.~\ref{fig:11-14}
+          añadiendo \( V_{CC} \) y \( S_2 \), como en la fig.~\ref{fig:11-15}. Esta segunda batería polariza
+          el circuito colector-base.
+
+          \begin{figure}[H]
+              \centering
+              \begin{circuitikz}[american, scale=1.0]
+                  % PNP Transistor
+                  \draw (0,0) node[pnp, rotate=90] (Q1) {};
+                  \node[right] at (Q1.B) {B};
+                  \node[below] at (Q1.E) {E};
+                  \node[below] at (Q1.C) {C};
+
+                  % Emitter Loop (Left)
+                  \draw (-6,0) to[switch, l=$S_1$] (-4.5,0)
+                  to[R, l=$R_1$] (-3,0)
+                  to[ammeter, l=$M_1$] (-1.5,0)
+                  -- (Q1.E);
+
+                  \draw (-6,0) to[battery1, l=$V_{EE}$] (-6,-2.5) % Standard (+ top)
+                  -| (0,-2.5)
+                  -- (Q1.B);
+
+                  % Collector Loop (Right) - Adds VCC and S2
+                  % VCC: Negative to Collector.
+                  % Path: C -> ... -> VCC -> Ground.
+                  % Top of VCC connected to C. So Top must be Negative.
+                  % Standard battery is + Top. So use 'invert'.
+                  \draw (Q1.C) -- (1.5,0)
+                  to[ammeter, l=$M_2$] (3,0)
+                  to[vR, l=$R_2$] (4.5,0)
+                  to[switch, l=$S_2$] (6,0)
+                  to[battery1, l=$V_{CC}$, invert] (6,-2.5)
+                  -| (0,-2.5);
+
+                  \draw (0,-2.5) node[ground] {};
+              \end{circuitikz}
+              \caption{Circuito modificado con \( V_{CC} \) y \( S_2 \).}
+              \label{fig:11-15}
+          \end{figure}
+
+    \item Cerrar \( S_2 \). Ajustar \( R_2 \) para la máxima resistencia. Cerrar \( S_1 \). Observar y
+          medir las corrientes de emisor y de colector. Anotar los datos en la tabla~\ref{tab:11-1}. Medir y
+          anotar en la tabla~\ref{tab:11-1} la tensión emisor-base y colector-base. Indicar la polaridad.
+    \item Ajustar \( R_2 \) para la mínima resistencia. Conmutar los alcances del medidor como se
+          requiera. Observar y medir la corriente de emisor y la de colector y las tensiones emisor-base y
+          colector-base. Anotar los datos en la tabla~\ref{tab:11-1}. Indicar la polaridad de la tensión.
+    \item Desconectar la alimentación. Invertir la polaridad de la batería de emisor (\( V_{EE} \)) y
+          las conexiones del medidor \( M_1 \) (fig. 11-16). Ajustar \( R_2 \) para la mínima resistencia.
+
+          \begin{figure}[H]
+              \centering
+              \begin{circuitikz}[american, scale=1.0]
+                  % PNP Transistor
+                  \draw (0,0) node[pnp, rotate=90] (Q1) {};
+                  \node[right] at (Q1.B) {B};
+                  \node[below] at (Q1.E) {E};
+                  \node[below] at (Q1.C) {C};
+
+                  % Emitter Loop (Left) - INVERTED VEE
+                  % Inverted of Normal. Normal PNP VEE was + Top.
+                  % So we want - Top. Use 'invert'.
+                  \draw (-6,0) to[switch, l=$S_1$] (-4.5,0)
+                  to[R, l=$R_1$] (-3,0)
+                  to[ammeter, l=$M_1$] (-1.5,0)
+                  -- (Q1.E);
+
+                  \draw (-6,0) to[battery1, l=$V_{EE}$, invert] (-6,-2.5)
+                  -| (0,-2.5)
+                  -- (Q1.B);
+
+                  % Collector Loop (Right) - Same as 11-15
+                  \draw (Q1.C) -- (1.5,0)
+                  to[ammeter, l=$M_2$] (3,0)
+                  to[vR, l=$R_2$] (4.5,0)
+                  to[switch, l=$S_2$] (6,0)
+                  to[battery1, l=$V_{CC}$, invert] (6,-2.5)
+                  -| (0,-2.5);
+
+                  \draw (0,-2.5) node[ground] {};
+              \end{circuitikz}
+              \caption{Inversión de polaridad de \( V_{EE} \) y conexiones de \( M_1 \).}
+              \label{fig:11-16}
+          \end{figure}
+
+    \item Aplicar la potencia. Observar y medir la corriente en los circuitos de emisor y de
+          colector. Anotar los datos en la tabla~\ref{tab:11-1}. Medir y anotar en la tabla~\ref{tab:11-1}
+          la tensión emisor-base y la tensión colector-base. Indicar la polaridad de la batería.
+    \item Abrir \( S_2 \). Abrir el circuito emisor-base abriendo el interruptor \( S_1 \).
+    \item Cerrar \( S_2 \). Observar y medir las corrientes de emisor y de colector. Anotar los datos
+          en la tabla~\ref{tab:11-1}. Medir y anotar en la tabla~\ref{tab:11-1} la tensión colector-base.
+          Desconectar la alimentación de potencia.
+\end{enumerate}
+
+\subsection{Polarización NPN}
+\begin{enumerate}
+    \setcounter{enumi}{10}
+    \item Desconectar la alimentación. Quitar el transistor PNP del circuito y
+          sustituirlo por uno NPN, como en la fig.~\ref{fig:11-14}. Invertir la polaridad de
+          \( V_{CC} \) como en la fig.~\ref{fig:11-14}.
+
+          \begin{figure}[H]
+              \centering
+              \begin{circuitikz}[american, scale=1.0]
+                  % NPN Transistor
+                  \draw (0,0) node[npn, rotate=90, yscale=-1] (Q1) {};
+                  \node[right] at (Q1.B) {B};
+                  \node[above] at (Q1.E) {E};
+                  \node[above] at (Q1.C) {C};
+
+                  % Emitter Loop (Left) - VEE Negative at Top for NPN Normal Bias
+                  \draw (-6,0) to[switch, l=$S_1$] (-4.5,0)
+                  to[R, l=$R_1$] (-3,0)
+                  to[ammeter, l=$M_1$] (-1.5,0)
+                  -- (Q1.E);
+
+                  % Battery: invert for - Top
+                  \draw (-6,0) to[battery1, l=$V_{EE}$, invert] (-6,-2.5)
+                  -| (0,-2.5)
+                  -- (Q1.B);
+
+                  % Collector Loop (Right) - VCC Positive at Top for NPN Normal Bias
+                  \draw (Q1.C) -- (1.5,0)
+                  to[ammeter, l=$M_2$] (3,0)
+                  to[vR, l=$R_2$] (4.5,0)
+                  to[switch, l=$S_2$] (6,0)
+                  % Battery: Normal for + Top
+                  to[battery1, l=$V_{CC}$] (6,-2.5)
+                  -| (0,-2.5);
+
+                  \draw (0,-2.5) node[ground] {};
+              \end{circuitikz}
+              \caption{Circuito NPN con polarización normal.}
+              \label{fig:11-17}
+          \end{figure}
+    \item Cerrar \( S_2 \). Ajustar \( R_2 \) para la máxima resistencia. Cerrar \( S_1 \). Observar
+          y medir las corrientes de emisor y de colector. Anotar los datos en la tabla~\ref{tab:11-1}. Medir
+          y anotar en la tabla~\ref{tab:11-1} la tensión emisor-base y colector-base. Indicar la polaridad.
+    \item Ajustar \( R_2 \) para la mínima resistencia. Conmutar los alcances del medidor como se requiera.
+          Observar y medir la corriente de emisor y la de colector y las tensiones emisor-base y colector-base.
+          Anotar los datos en la tabla~\ref{tab:11-1}. Indicar la polaridad de la tensión.
+    \item Desconectar la alimentación. Invertir la polaridad de la batería de emisor (\( V_{EE} \)) y las
+          conexiones del medidor \( M_1 \) (fig. 11-16). Ajustar \( R_2 \) para la mínima resistencia.
+
+          \begin{figure}[H]
+              \centering
+              \begin{circuitikz}[american, scale=1.0]
+                  % NPN Transistor
+                  \draw (0,0) node[npn, rotate=90, yscale=-1] (Q1) {};
+                  \node[right] at (Q1.B) {B};
+                  \node[above] at (Q1.E) {E};
+                  \node[above] at (Q1.C) {C};
+
+                  % Emitter Loop (Left) - VEE Positive at Top (Inverted Bias for NPN)
+                  \draw (-6,0) to[switch, l=$S_1$] (-4.5,0)
+                  to[R, l=$R_1$] (-3,0)
+                  to[ammeter, l=$M_1$] (-1.5,0)
+                  -- (Q1.E);
+
+                  % Battery: Normal for + Top
+                  \draw (-6,0) to[battery1, l=$V_{EE}$] (-6,-2.5)
+                  -| (0,-2.5)
+                  -- (Q1.B);
+
+                  % Collector Loop (Right) - Same as 11-17
+                  \draw (Q1.C) -- (1.5,0)
+                  to[ammeter, l=$M_2$] (3,0)
+                  to[vR, l=$R_2$] (4.5,0)
+                  to[switch, l=$S_2$] (6,0)
+                  to[battery1, l=$V_{CC}$] (6,-2.5)
+                  -| (0,-2.5);
+
+                  \draw (0,-2.5) node[ground] {};
+              \end{circuitikz}
+              \caption{Circuito NPN con polarización inversa de emisor.}
+              \label{fig:11-18}
+          \end{figure}
+
+    \item Aplicar la potencia. Observar y medir la corriente en los circuitos de emisor y de colector.
+          Anotar los datos en la tabla~\ref{tab:11-1}. Medir y anotar en la tabla~\ref{tab:11-1} la tensión
+          emisor-base y la tensión colector-base. Indicar la polaridad de la batería.
+    \item Abrir \( S_2 \). Abrir el circuito emisor-base abriendo el interruptor \( S_1 \).
+    \item Cerrar \( S_2 \). Observar y medir las corrientes de emisor y de colector. Anotar los datos
+          en la tabla~\ref{tab:11-1}. Medir y anotar en la tabla~\ref{tab:11-1} la tensión colector-base.
+          Desconectar la alimentación de potencia.
+\end{enumerate}
+
+\subsection{Adicional}
+\begin{enumerate}
+    \setcounter{enumi}{17}
+    \item La relación entre la corriente de colector y la corriente de emisor es:
+          \begin{equation}
+              I_C = I_E - I_B
+          \end{equation}
+    \item Verificar experimentalmente esta ecuación para transistores PNP y NPN. Dibujar el esquema del
+          circuito utilizado y explicar detalladamente el procedimiento seguido. Consignar los resultados de
+          las mediciones en una tabla especialmente preparada para ello.
+\end{enumerate}
+
+\begin{table}[H]
+    \centering
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|c|c|c|c|c|}
+            \hline
+            \textbf{Paso / Condición}               & \textbf{$I_E$ (mA)} & \textbf{$I_C$ (mA)} & \textbf{$V_{EB}$ (V)} & \textbf{$V_{CB}$ (V)} & \textbf{Polaridad} \\
+            \hline
+            1. PNP - Fig 11-14 (S1 cerrado)         &                     &                     &                       &                       &                    \\
+            \hline
+            2. PNP - Fig 11-15 (S2 cerrado, R2 máx) &                     &                     &                       &                       &                    \\
+            \hline
+            3. PNP - Fig 11-15 (S2 cerrado, R2 mín) &                     &                     &                       &                       &                    \\
+            \hline
+            4. PNP - Fig 11-16 (VEE invertida)      &                     &                     &                       &                       &                    \\
+            \hline
+            5. PNP - Fig 11-16 (S1 abierto)         &                     &                     &                       &                       &                    \\
+            \hline
+            6. NPN - Fig 11-17 (S2 cerrado, R2 máx) &                     &                     &                       &                       &                    \\
+            \hline
+            7. NPN - Fig 11-17 (S2 cerrado, R2 mín) &                     &                     &                       &                       &                    \\
+            \hline
+            8. NPN - Fig 11-16 mod (VEE invertida)  &                     &                     &                       &                       &                    \\
+            \hline
+            9. NPN - S1 abierto                     &                     &                     &                       &                       &                    \\
+            \hline
+        \end{tabular}
+    }
+    \caption{Tabla de datos}
+    \label{tab:11-1}
+\end{table}
+
+\section{\textbf{Preguntas}}
+\begin{enumerate}
+    \item ¿Cual de las fig.~\ref{fig:11-14} a \ref{fig:11-18} muestra la polarización correcta de los circuitos de emisor y
+          colector para:
+          \begin{itemize}
+              \item un transistor PNP.
+              \item un transistor NPN.
+          \end{itemize}
+          Explicarlo refiriendose a los resultados consignados en la tabla~\ref{tab:11-1}.
+    \item ¿Cual es el efecto sobre la corriente de colector de aumentar la polarización de emisor?
+    \item ¿Cuales son los efectos sobre la corriente de colector de invertir la polarización en
+          el circuito emisor-base? Refierase a sus propios datos para concretar su respuesta.
+    \item ¿Que es Icbo? ¿Explique como la ha medido?
+    \item ¿Que son los huecos? ¿En que tipo de material semiconductor los huecos son los portadores
+          mayoritarios de corriente? ¿Por qué?
+    \item ¿Que precauciones se deben observar cuando se efectún mediciones en los circuitos de
+          transistores? Enuméralas.
+\end{enumerate}
+
+\section{Respuestas a las preguntas de autoexamen.}
+\begin{enumerate}
+    \item Silicio.
+    \item Dos.
+    \item En sentido directo; en sentido inverso.
+    \item Positivo; negativo.
+    \item Invertidas.
+    \item Verdad.
+    \item Falso.
+    \item Verdad.
+    \item Al calor; radiadores de calor.
+    \item Tener cuidado; el deterioro.
+\end{enumerate}
+\end{document}

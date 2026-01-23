@@ -1,0 +1,110 @@
+%\section{PAGINA 2}
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.8\textwidth}
+    \begin{circuitikz}[scale=0.8]
+        \draw (0,0) to[battery1, l={$V = 100\text{V}$}, invert] (0,3) to[R, l={$R_1 = 5\,\Omega$}] (3,3) to[R, l={$R_2 = 195\,\Omega$}] (6,3);
+        \draw (6,3) -- (8,3) node[above] {F}
+        to[R, l={$R_3 = 200\,\Omega$}] (8,0) node[below] {G} -- (2,0); % R3
+        \draw (8,3) -- (11,3) to[R, l={$R_L = 350\,\Omega$}] (11,0) -- (8,0); % RL
+        \draw (2,0) -- (0,0);
+        \fill (8,3) circle (1.5pt);
+        \fill (8,0) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito original}
+    \label{fig:27-2-a}
+\end{subfigure}
+
+\vspace{0.5cm}
+\centering
+\begin{subfigure}{0.8\textwidth}
+    \centering
+    \begin{circuitikz}[scale=0.8]
+        \draw (0,0) to[battery1, l={$V = 100\text{V}$}, invert] (0,3) to[R, l={$R_1 = 5\,\Omega$}] (3,3) to[R, l={$R_2 = 195\,\Omega$}] (6,3);
+        \draw (6,3) -- (8,3) node[above] {F};
+        \draw (8,3) to[ammeter, l_=$I_N$] (8,0) node[below] {G}; % I_N
+        \draw (8,0) -- (0,0);
+        \fill (8,3) circle (1.5pt);
+        \fill (8,0) circle (1.5pt);
+        \node[right, align=left] at (9, 1.5) {$I_N = \frac{100}{5+195}\text{A}$};
+    \end{circuitikz}
+    \caption{Cálculo de $I_N$}
+    \label{fig:27-2-b}
+\end{subfigure}
+
+\vspace{0.5cm} % Add vertical space
+\centering
+\begin{subfigure}{0.8\textwidth}
+    \centering
+    \begin{circuitikz}[scale=0.8]
+        \draw (2,4) -- (6,4) node[right] {F};
+        \draw (2,0) -- (6,0) node[right] {G};
+        \draw (2,4) to[R, l={$R_1=5\,\Omega$}] (2,2) to[R, l={$R_2=195\,\Omega$}] (2,0);
+        \draw (5,4) to[R, l={$R_3=200\,\Omega$}] (5,0);
+        \fill (6,4) circle (1.5pt);
+        \fill (6,0) circle (1.5pt);
+        \node[right, align=left] at (7.5, 2) {$R_N = \frac{200 \times (195+5)}{200+195+5}\Omega$};
+    \end{circuitikz}
+    \caption{Cálculo de $R_N$}
+    \label{fig:27-2-c}
+\end{subfigure}
+
+\vspace{0.5cm} % Add vertical space
+\centering
+\begin{subfigure}{0.8\textwidth}
+    \centering
+    \begin{circuitikz}[scale=0.8]
+        % Nodes
+        \coordinate (A) at (0,3);
+        \coordinate (B) at (0,0);
+        % Components
+        \draw (B) to[isource, l_={$I_N=0.5\text{A}$}, i>^] (A);
+        \draw (A) to[short, i=$I_N$] (4,3) node[above] {F};
+        \draw (4,3) to[R, l={$R_L=350\,\Omega$}] (4,0) node[below] {G} -- (B);
+        \fill (4,3) circle (1.5pt);
+        \fill (4,0) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito Equivalente de Norton con Carga}
+    \label{fig:27-2-d}
+\end{subfigure}
+
+\caption{Aplicación del teorema de Norton al Análisis de una Red de c.c.}
+\label{fig:27-2}
+\end{figure}
+
+\noindent seguir fácilmente en las figuras 27-2b, c y d. En la figura 27-2b, $R_L$ ha sido cortocircuitada. En consecuencia $R_3$ también lo está. La corriente de Norton $I_N$ en el cortocircuito será pues:
+\[
+I_N = \frac{V}{R_T} = \frac{100}{195+5}\text{A} = 0,5\text{A}
+\]
+En la figura 27-2c vemos que la fuente original de tensión V ha sido reemplazada por su resistencia interna $R_1$ que es igual a 5$\Omega$. La resistencia $R_N$ es la que aparece desde los terminales de la carga abierta, hacia la red original cuando las fuentes de tensión existentes en el circuito son reemplazadas por su resistencia interna. $R_N$ es $100\Omega$. Finalmente, en la figura 27-2d se ve que el generador equivalente de Norton $I_N$ está shuntado con $R_N$, en paralelo con la resistencia de carga $R_L$. Aplicando la fórmula (27-1) tenemos:
+\[
+I_L = \frac{I_N \times R_N}{R_N + R_L} = \frac{0,5 \times 100}{100 + 350}\text{A} = 0,111\text{A}
+\]
+Este es el mismo valor obtenido en la práctica 26 cuando hemos hecho uso del Teorema de Thevenin para hallar $I_L$.
+
+Ahora será posible hallar la corriente correspondiente a cualquier valor de $R_L$ en el circuito de la figura 27-2a por medio del generador equivalente de Norton con valores de la figura 27-2d.
+
+\section{Resolución de las  Redes de c.c. con DOS o MAS Generadores.}
+La resolución de redes de c.c. complicadas que contienen dos o más fuentes de tensión es posible utilizando las leyes de Kirchhoff, el Teorema de Thévenin y el Teorema de Norton. La aplicación de los dos últimos teoremas simplifica a menudo el análisis y los cálculos. A modo de ejemplo vamos a resolver el circuito de la figura 27-3 por los tres métodos.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.8\textwidth}
+    \centering
+    \begin{circuitikz}[scale=0.8]
+        \draw (0,3) node[anchor=east] {A} to[battery1, l={$V_S$}] (0,0) node[anchor=east] {B};
+        \draw (3,3) to[short, i=$I$] (0,3); \draw (3,3) to[R, l={$R_2$}] (6,3);
+        \draw (6,3) -- (8,3) node[above] {F};
+        \draw (0,0) to[short, i=$I$] (3,0) to[R, l={$R_1$}] (6,0) -- (8,0) node[below] {G};
+        \draw (8,3) -- (11,3) to[battery1, l={$V_T$}] (11,0) -- (8,0); % VT
+        \fill (8,3) circle (1.5pt);
+        \fill (8,0) circle (1.5pt);
+        \fill (0,3) circle (1.5pt);
+        \fill (0,0) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito original}
+    \label{fig:27-3-a}
+\end{subfigure}
+\caption{Aplicación de la Ley de Tensión de Kirchhoff a un Circuito Cerrado}
+\label{fig:27-3}
+\end{figure}

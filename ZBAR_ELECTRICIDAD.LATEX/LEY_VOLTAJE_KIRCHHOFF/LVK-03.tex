@@ -1,0 +1,104 @@
+\documentclass{article}
+
+% --- PAQUETES ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{multicol}
+\usepackage{booktabs} % Para tablas más profesionales
+\usepackage{siunitx}  % Para formatear números y unidades
+\usepackage{textcomp} % Para símbolos como ½
+
+% --- CONFIGURACIÓN ---
+\geometry{a4paper, margin=1in, top=1.5in}
+\sisetup{
+    output-decimal-marker = {,},
+    group-separator = {.}
+}
+
+% --- ENCABEZADO Y PIE DE PÁGINA ---
+\pagestyle{fancy}
+\fancyhf{} % Limpiar encabezado y pie
+\fancyhead[R]{121} % Número de página en la esquina superior derecha
+\renewcommand{\headrulewidth}{0pt} % Sin línea en el encabezado
+
+\begin{document}
+
+\begin{center}
+    \large\textbf{Ley de tensión de Kirchhoff}
+\end{center}
+
+\vspace{0.5cm}
+
+\section*{RESUMEN}
+La ley de Kirchhoff se puede expresar de dos maneras:
+\begin{enumerate}
+    \item La suma de caídas de tensión en un circuito cerrado es igual a la tensión aplicada; o
+    \item La suma algebraica de las tensiones en un circuito cerrado es igual a cero.
+\end{enumerate}
+
+\section*{AUTOEXAMEN}
+\begin{enumerate}
+    \item En la figura 19-1, $V_1 = \SI{10}{V}, V_2 = \SI{12}{V}, V_3 = \SI{20}{V}, V_4 = \SI{15}{V}$. La tensión aplicada $V$ debe ser pues igual a \dotfill{} V.
+    \item En la figura 19-2, $V_1 = \SI{15}{V}, V_2 = \SI{20}{V}, V_4 = \SI{27}{V}, V_5 = \SI{9}{V}$ y $V = \SI{100}{V}$. La tensión $V_3 = $ \dotfill{} V.
+\end{enumerate}
+
+\section*{MATERIALES NECESARIOS}
+Fuente de alimentación: Fuente de corriente continua variable regulada. \\
+Equipo: EVM, miliamperímetro 0-10. \\
+Resistencias: \textonehalf{} W \SI{330}{\ohm}, \SI{470}{\ohm}, \SI{1200}{\ohm}, \SI{2200}{\ohm}, \SI{3300}{\ohm}, \SI{4700}{\ohm}, \SI{5600}{\ohm} y \SI{10000}{\ohm}. \\
+Diversos: Interruptor unipolar.
+
+\section*{PROCEDIMIENTO}
+\subsection*{Ley de tensión}
+\begin{enumerate}
+    \item Conectar el circuito de la figura 19-1 utilizando los valores $R_1, R_2, R_3$ y $R_4$ consignados en la tabla 19-1.
+    \item Ajustar la salida de la fuente de alimentación para que $V = \SI{40}{V}$. Medir y anotar esta tensión en la tabla 19-2. Medir y anotar las tensiones $V_1, V_2, V_3$ y $V_4$ entre los extremos de $R_1, R_2, R_3$ y $R_4$, respectivamente. Sumar $V_1, V_2, V_3$ y $V_4$ y anotar la suma en la columna correspondiente de la tabla 19-2.
+    \item Conectar el circuito de la figura 19-2 utilizando los valores $R_1, R_2$, etc., consignados en la tabla 19-1.
+    \item Ajustar la salida de la fuente de alimentación para $V = \SI{40}{V}$. Medir esta tensión y anotarla en la tabla 19-2. Medir y anotar las tensiones $V_1, V_2, V_3, V_4, V_5$ como indica la figura 19-2. Sumar $V_1, V_2, V_3$, etc., y anotar el resultado en la columna correspondiente.
+\end{enumerate}
+
+\subsection*{Problema de diseño (adicional)}
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item Diseñar un circuito serie-paralelo como el de la figura 19-2 utilizando las resistencias mencionadas en esta práctica, con una tensión aplicada de \SI{35}{V}, que absorban una corriente total de \SI{5}{mA}, aproximadamente. Dibujar el esquema del circuito, incluyendo los valores medidos de todas las resistencias. Presentar todos los cálculos.
+    \item Conectar el circuito y ajustar la tensión de la fuente de alimentación a \SI{35}{V}. Medir la corriente $I_T$ e indicar este valor en el esquema.
+\end{enumerate}
+
+\section*{PREGUNTAS}
+\begin{enumerate}
+    \item ¿Cómo es la suma de $V_1, V_2, V_3$ y $V_4$ (apartado 2) de la tabla 19-2 comparada con $V$? Explicar la diferencia, si la hay.
+    \item ¿Cómo es la suma de $V_1, V_2 \dots V_5$ (apartado 4) de la tabla 19-2 comparada con $V$? Explicar la diferencia, si la hay.
+\end{enumerate}
+
+\vspace{1cm}
+
+\begin{center}
+    \textbf{TABLA 19-1}
+\end{center}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccc}
+\toprule
+ & $R_1$ & $R_2$ & $R_3$ & $R_4$ & $R_5$ & $R_6$ & $R_7$ & $R_8$ \\
+\midrule
+Valor nominal, & \num{330} & \num{470} & \num{1200} & \num{2200} & \num{3300} & \num{4700} & \num{10000} & \num{5600} \\
+ohmios & & & & & & & & \\
+\bottomrule
+\end{tabular*}
+
+\vspace{1cm}
+
+\begin{center}
+    \textbf{TABLA 19-2}
+\end{center}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc}
+\toprule
+Operación & $V$ & $V_1$ & $V_2$ & $V_3$ & $V_4$ & $V_5$ & $V_1+V_2+V_3+V_4+V_5$ \\
+\midrule
+2 & & & & & & X & \\
+4 & & & & & & & \\
+\bottomrule
+\end{tabular*}
+
+\end{document}

@@ -1,0 +1,112 @@
+\documentclass{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{circuitikz}
+\geometry{a4paper, margin=1in}
+
+\title{Prácticas de Electricidad - Teorema de Thévenin}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Página 156 - Práctica de Teorema de Thévenin}
+
+\begin{table}[h]
+\centering
+\caption{TABLA 26-1}
+\label{tab:26-1}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$V_{TH}$ (voltios) & $R_{TH}$ (ohmios) & \multicolumn{2}{c|}{$I_L$ (mA)} \\
+\cline{3-4}
+& & \multicolumn{2}{c|}{} \\
+\hline
+$R_L$ & Medida & Calculada & Medida & Calculada & Medida (circuito original) & Medida (Thévenin) & Calculada \\
+\hline
+2.700 & & & & & & & \\
+\hline
+& & & & & & & \\
+\hline
+& & & & & & & \\
+\hline
+\end{tabular}
+\end{table}
+
+tro M entre los puntos C y B, como en la figura 26-4.
+
+\begin{enumerate}
+\setcounter{enumi}{4}
+\item Cerrar el interruptor S. Vigilar $V_{TH}$ para que no varíe su valor. Medir la corriente en $R_L$ y anotarla en la columna «$I_L$ medida Thévenin».
+
+\item Desconectar la alimentación. En el circuito de la figura 26-3 calcular el valor de $V_{TH}$ para el generador equivalente de Thévenin y la carga $R_L$ y anotarla en la tabla 26-1 en la columna «$V_{TH}$ calculada». Presentar los cálculos. Calcular también el valor de $R_{TH}$ y anotarlo en la columna «$R_{TH}$ calculada». Presentar los cálculos. Hallar ahora los valores de $I_L$ en $R_L$ haciendo uso del circuito equivalente de Thévenin con los valores calculados. Presentar los cálculos. Anotar en tabla 26-1 en columna «$I_L$ calculada».
+
+\textbf{Adicional}
+\item Comprobar que es cierto el teorema de Thévenin para el circuito de la figura 26-3 con otros valores de $R_L$, sustituyendo sucesivamente ésta por tres resistencias cuyos valores no sean menores de 1.200 ohmios ni mayores de 10.000 ohmios. Medir la corriente $I_L$ en $R_L$ en el circuito original y también en el circuito equivalente de Thévenin. Anotar en tabla 26-1 los valores de $R_L$ empleados y los otros datos pertinentes. Explicar detalladamente el método seguido.
+\end{enumerate}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=0.9, transform shape]
+        \shorthandoff{<}\shorthandoff{>}
+        % Definir coordenadas
+        \coordinate (P) at (0, 4);
+        \coordinate (B) at (5, 4);
+        \coordinate (C) at (5, 0);
+        \coordinate (S_node) at (2, 0);
+        \coordinate (V_neg) at (0, 0);
+
+        % Dibujar componentes
+        \draw (P) to[R, l={$5,6\,\text{k}\Omega$}] ++(2.5,0) to[R, l={$10\,\text{k}\Omega$}] (B);
+        \draw (B) to[R, l_=$R_L$, l^=$2.700$] (B |- C) node[midway, right, xshift=2mm] {} to[ammeter, l=M, a^=+, a_=-] (C);
+        \draw (C) to[short] (S_node);
+        \draw (S_node) to[closing switch, l=S] (V_neg);
+        \draw (V_neg) to[V, l_=$V_{TH}$, v_<={}] (P);
+
+        % Etiquetas de nodos
+        \node[above left] at (P) {P};
+        \node[above right] at (B) {B};
+        \node[below right] at (C) {C};
+    \end{circuitikz}
+    \caption{FIG. 26-4. — Equivalente experimental de Thévenin correspondiente a la figura 26-3.}
+    \label{fig:26-4}
+\end{figure}
+
+\section*{PREGUNTAS}
+
+\begin{enumerate}
+\item ¿Cómo es el valor de $I_L$ medido en el circuito de la figura 26-3 comparado con el del circuito equivalente de Thévenin de la figura 26-4? ¿Deben ser iguales? Explicarlo.
+
+\item Discutir los datos de la tabla 26-1 y explicar los resultados inesperados que pudieran encontrarse.
+
+\item ¿Confirma el experimento la validez del teorema de Thévenin para el circuito de la figura 26-3? Explicarlo.
+
+\item ¿«Prueba» este experimento el teorema de Thévenin para cualquier circuito? Explicarlo.
+
+\item ¿Qué ventajas específicas, si las hay, cree Ud. que tiene el uso del teorema de Thévenin en la solución de circuitos de c.c.?
+\end{enumerate}
+
+\section*{Respuestas a las preguntas de auto-examen}
+
+(Con aproximación de la regla de cálculo).
+
+\begin{enumerate}
+\item \begin{enumerate}
+    \item 100 V
+    \item 188 $\Omega$
+    \item 0,134 A
+    \end{enumerate}
+\item \begin{enumerate}
+    \item 45 V
+    \item 338 $\Omega$
+    \item 0,1 A
+    \end{enumerate}
+\end{enumerate}
+
+\end{document}

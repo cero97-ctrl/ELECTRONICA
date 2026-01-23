@@ -1,0 +1,12 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}OBJETIVOS}{2}{section.1}%
+\contentsline {section}{\numberline {2}DESARROLLO TEÓRICO}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Información Preliminar}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}RESUMEN}{3}{subsection.2.2}%
+\contentsline {section}{\numberline {3}AUTOEXAMEN}{5}{section.3}%
+\contentsline {section}{\numberline {4}MATERIALES NECESARIOS}{5}{section.4}%
+\contentsline {section}{\numberline {5}PROCEDIMIENTO}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Adicional — Problema de diseño}{6}{subsection.5.1}%
+\contentsline {section}{\numberline {6}PREGUNTAS}{6}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Adicional}{6}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Respuestas a las preguntas de autoexamen}{7}{subsection.6.2}%

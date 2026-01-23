@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage{float}
+
+% Solución para el conflicto entre circuitikz y babel en español
+\usetikzlibrary{babel}
+
+
+\title{Prácticas de electricidad}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american] % Eliminamos las opciones de escalado temporalmente para depurar
+        % Main path: Battery -> R1 -> Parallel Block 1 (R2, R3) -> R4 -> Parallel Block 2 (R6, R7) -> R5 -> Battery
+        \draw (0,0) to[battery, l=$V$, invert] (0,3) % Batería
+            to[R, l_=$R_1$, v^=$V_1$] (2,3) node[right] {A} % R1 y nodo A
+            coordinate (A_end); % Coordenada para el final de R1 / inicio del bloque paralelo 1
+
+        % Bloque paralelo 1 (R2, R3) - Horizontal
+        \coordinate (B_start) at (4,3); % Coordenada para el final del bloque paralelo 1 / inicio de R4
+        \draw (A_end) -- (A_end |- 0,4) to[R, l_=$R_2$] (B_start |- 0,4) -- (B_start); % Rama superior (R2)
+        \draw (A_end) -- (A_end |- 0,2) to[R, l_=$R_3$] (B_start |- 0,2) -- (B_start); % Rama inferior (R3)
+        \node[left] at (B_start) {B}; % Nodo B
+
+        % R4
+        \draw (B_start)
+            to[R, l_=$R_4$, v^=$V_3$] (6,3) node[right] {C} % R4 y nodo C
+            coordinate (C_end); % Coordenada para el final de R4 / inicio del bloque paralelo 2
+
+        % Bloque paralelo 2 (R6, R7) - Horizontal
+        \coordinate (D_start) at (8,3); % Coordenada para el final del bloque paralelo 2 / inicio de R5
+        \draw (C_end) -- (C_end |- 0,4) to[R, l_=$R_6$] (D_start |- 0,4) -- (D_start); % Rama superior (R6)
+        \draw (C_end) -- (C_end |- 0,2) to[R, l_=$R_7$] (D_start |- 0,2) -- (D_start); % Rama inferior (R7)
+        \node[left] at (D_start) {D}; % Nodo D
+
+        % R5 y retorno a la batería
+        \draw (D_start)
+            to[R, l_=$R_5$, v^=$V_5$] (10,3) % R5
+            -- (10,0) to[short, i_>=$I_T$] (0,0); % Cierre del circuito
+
+        % Etiquetas de voltaje V2, V4
+        \draw[<->] (A_end |- 0,5) -- (B_start |- 0,5) node[midway, above] {$V_2$};
+        \draw[<->] (C_end |- 0,5) -- (D_start |- 0,5) node[midway, above] {$V_4$};
+        
+    \end{circuitikz}
+    \caption{Aplicación de ley de tensión de Kirchhoff a un circuito serie-paralelo.}
+    \label{fig:19-2}
+\end{figure}
+
+un circuito cerrado. También se aplica la ley en el caso de que el circuito sea serie-paralelo (fig. 19-2). Aquí, \( V = V_1 + V_2 + V_3 + V_4 + V_5 \), donde \( V_1, V_3, V_5 \) son las caídas de tensión en \( R_1, R_4, R_5 \), respectivamente. \( V_2, V_4 \) son las tensiones de los circuitos en paralelo entre los terminales \( A, B, y \) entre \( C, D, \) respectivamente.
+
+Expresada en palabras, la ecuación (19-5) enuncia que en un circuito o bucle cerrado, la tensión aplicada es igual a la suma de las caídas de tensión en el circuito.
+
+El concepto de signos algébricos o polaridad es útil para resolver los problemas de redes eléctricas. Un ejemplo aclarará el convenio empleado en la asignación de un signo + o — a una tensión en un circuito.
+
+Consideremos el circuito de la figura 19-3 y que realmente la corriente es un flujo de electrones que se mueven desde un potencial negativo a uno positivo. La flecha de la figura 19-3 indica el sentido de la corriente, y los signos — y + indican lo siguiente: el punto \( A \) es negativo con respecto al \( B \); el punto \( B \) es negativo con respecto al \( C \), etc. Esto está de acuerdo con nuestro concepto de corriente en este circuito.
+
+Ahora para establecer el signo algébrico de las tensiones en el circuito cerrado nos movemos en el sentido admitido de la corriente*. Consideremos como positiva cualquier fuente de tensión o caída de tensión cuyo terminal + (positivo) sea el primero alcanzado, y como negativa cualquier fuente de tensión o caída cuyo terminal — (negativo) sea el primero alcanzado. Partiendo del punto \( A \) en la figura 19-3 y moviéndonos en el sentido de la corriente tenemos — \( V_1, V_2, V_3, V_4, V_5 \) . Teniendo siempre presente este convenio, podemos generalizar la ley de tensión de Kirchhoff, como sigue:
+
+La suma algébrica de las tensiones en un circuito cerrado es igual a cero.
+
+Aplicando el convenio de los signos y la ley de Kirchhoff al circuito cerrado de la figura 19-3 y partiendo del punto \( A \), podemos describir lo siguiente:
+
+\[
+V_1 - V_2 - V_3 - V_4 + V = 0 \quad (19-6)
+\]
+
+¿Es consistente esta ecuación con la ec. (19-5)? Sí, porque pasando los términos del segundo miembro de la ecuación (19-5) al primer miembro, tendremos \( V - V_1 - V_2 - V_3 - V_4 = 0 \), cuyo resultado es idéntico al de la ecuación (19-6).
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[below] {E}
+            to[battery, l^=$V$, invert] (0,3) node[left] {F}
+            to[R, l_=$R_1$, v^>=$V_1$] (2,3) node[above] {A}
+            to[R, l_=$R_2$, v^>=$V_2$] (5,3) node[above] {B}
+            to[R, l_=$R_3$, v^>=$V_3$] (8,3) node[above] {C}
+            to[R, l_=$R_4$, v^>=$V_4$] (11,3) node[above] {D}
+            to[short] (11,0)
+            to[short, i_>={corriente}] (0,0);
+    \end{circuitikz}
+    \caption{Asignación convencional de polaridad a las tensiones en un circuito cerrado.}
+    \label{fig:19-3}
+\end{figure}
+
+* Este sentido es el del flujo de electrones, contrario al convencional de corriente eléctrica que le fue arbitrariamente atribuida antes de descubrirle su naturaleza electrónica (N. del T.).
+
+\end{document}

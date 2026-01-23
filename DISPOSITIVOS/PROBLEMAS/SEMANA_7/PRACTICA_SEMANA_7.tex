@@ -1,0 +1,216 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel} % es-tabla uses "Tabla" instead of "Cuadro"
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{circuitikz}
+\usetikzlibrary{arrows.meta, babel}
+\usepackage{comment}
+
+% Paquetes adicionales para mejor formato
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{hyperref} % Cargar al final (generalmente)
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+% Configuración de unidades SI
+\sisetup{
+    output-decimal-marker = {.}, % Usar punto decimal como en el original
+    range-phrase = { a },
+    range-units = single,
+    per-mode = symbol
+}
+
+% Configuración de enlaces
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    pdftitle={Práctica Semana 7: Diodo Zener, Transitorios y Pequeña Señal},
+}
+
+% Configuración de encabezado y pie de página
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14.5pt} % Fix for fancyhdr warning
+\lhead{Electrónica - Dispositivos}
+\rhead{Práctica Semana 7}
+\cfoot{\thepage}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+%=============== DOCUMENTO ===============
+
+\begin{document}
+
+\title{Práctica de Laboratorio Semana 7 \\ \large El Diodo: Zener, Transitorios y Pequeña Señal}
+\author{Plan de Estudios de Electrónica}
+\date{\today}
+\maketitle
+
+\section*{Objetivos}
+
+\begin{itemize}[noitemsep]
+    \item Analizar y diseñar un circuito regulador de tensión básico utilizando un diodo Zener.
+    \item Comprender el comportamiento transitorio de un diodo, observando los efectos de la capacidad de la juntura.
+    \item Aplicar el modelo de pequeña señal para determinar la resistencia dinámica de un diodo en un punto de operación DC.
+    \item Utilizar un simulador de circuitos (SPICE, LTspice, DroidTesla, etc.) para verificar los cálculos teóricos y visualizar el comportamiento de los circuitos.
+\end{itemize}
+
+\section*{Introducción Teórica}
+
+Esta práctica se centra en tres aspectos avanzados del diodo.
+\begin{enumerate}
+    \item \textbf{Diodo Zener:} Es un diodo diseñado para operar en la región de ruptura inversa de forma controlada. Mantiene una tensión casi constante a través de sus terminales ($V_Z$) para un rango de corrientes inversas, lo que lo hace ideal para aplicaciones de regulación de voltaje.
+    \item \textbf{Comportamiento Transitorio:} Un diodo no conmuta instantáneamente. La \textbf{capacidad de difusión} (dominante en polarización directa) y la \textbf{capacidad de transición o de juntura} (dominante en polarización inversa) introducen retardos. Estos efectos son cruciales en aplicaciones de alta frecuencia.
+    \item \textbf{Modelo de Pequeña Señal:} Cuando un diodo está polarizado en un punto de operación DC (Q-point) y se le superpone una pequeña señal AC, su comportamiento para esa señal AC puede ser modelado por una resistencia lineal llamada \textbf{resistencia dinámica} ($r_d$), cuyo valor es $r_d = V_T / I_{DQ}$, donde $V_T$ es la tensión térmica (aprox. \SI{25}{\milli\volt} a temperatura ambiente) e $I_{DQ}$ es la corriente DC que atraviesa el diodo.
+\end{enumerate}
+
+\section*{Materiales y Equipo}
+
+\begin{itemize}[noitemsep]
+    \item Software de simulación de circuitos (ej. DroidTesla, LTspice, Multisim, o cualquier variante de SPICE).
+    \item Componentes para simulación:
+    \begin{itemize}[noitemsep]
+        \item Diodo Zener (ej. 1N4733A, $V_Z=\SI{5.1}{\volt}$).
+        \item Diodo de señal (ej. 1N4148).
+        \item Resistencias de varios valores.
+        \item Fuentes de tensión DC y AC (sinusoidal, pulso).
+    \end{itemize}
+\end{itemize}
+
+\newpage
+
+\section*{Procedimiento Experimental}
+
+\subsection*{Parte 1: Regulador de Tensión con Diodo Zener}
+
+Considere el siguiente circuito regulador. El objetivo es mantener una tensión estable de \SI{5.1}{\volt} en la carga $R_L$.
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape] % Circuito mejorado para mayor claridad
+    \draw (0,2) to[sV, l=$V_{in}$] (0,0) node[ground]{};
+    \draw (0,2) to[R, l=$R_S$] (3,2);
+    \draw (3,2) to[zD, *-*, l_=$D_Z$] (3,0) node[ground]{};
+    \draw (3,2) to[R, l=$R_L$] (5,2) to[short] (5,0) node[ground]{};
+\end{circuitikz}
+\end{center}
+
+\begin{enumerate}
+    \item \textbf{Diseño:} Use un diodo Zener 1N4733A ($V_Z \approx \SI{5.1}{\volt}$). Si la tensión de entrada $V_{in}$ varía entre \SI{10}{\volt} y \SI{15}{\volt} y la carga $R_L$ es de \SI{1}{\kilo\ohm}, calcule un valor adecuado para $R_S$ que garantice que el Zener siempre esté en su región de regulación. Asegúrese de que la potencia disipada por el Zener no exceda su límite.
+
+    \item \textbf{Simulación (Regulación de Línea):}
+    \begin{itemize}
+        \item Monte el circuito en el simulador con los valores calculados.
+        \item Realice un análisis DC (\code{.dc}) variando $V_{in}$ de \SI{0}{\volt} a \SI{20}{\volt}.
+        \item Grafique la tensión de salida $V_{out}$ (en $R_L$) en función de $V_{in}$.
+        \item Observe el punto donde $V_{out}$ se estabiliza en $V_Z$. ¿Coincide con sus cálculos?
+    \end{itemize}
+
+    \item \textbf{Simulación (Regulación de Carga):}
+    \begin{itemize}
+        \item Fije $V_{in}$ a un valor constante (ej. \SI{12}{\volt}).
+        \item Realice un análisis DC variando el valor de $R_L$ (ej. desde \SI{100}{\ohm} hasta \SI{5}{\kilo\ohm}).
+        \item Grafique $V_{out}$ en función de $R_L$.
+        \item Identifique el valor mínimo de $R_L$ para el cual el circuito sigue regulando.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Parte 2: Análisis Transitorio del Diodo}
+
+Se analizará el tiempo de recuperación inversa de un diodo 1N4148.
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape]
+    % Fuente AC
+    \draw (0,0) node[ground]{} 
+        to[sV, l=$V_{in}$] (0,2) 
+        
+    % Resistencia (con formato de texto correcto para la unidad)
+    % Usamos \text{k} para que no salga cursiva
+        to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (3,2) 
+        
+    % Diodo (etiqueta en modo texto normal es correcta)
+        to[D, l=1N4148] (3,0) 
+        node[ground]{};
+        
+    % Opcional: Si quieres visualizar la salida Vout sobre el diodo
+    \draw (3,2) to[short, -o] (4,2) node[right] {$V_{out}$};
+\end{circuitikz}
+\end{center}
+
+\begin{enumerate}
+    \item \textbf{Configuración:} Configure la fuente $V_{in}$ como una señal de pulso (\code{PULSE}) que alterne entre \SI{-5}{\volt} y \SI{5}{\volt}, con un período de \SI{1}{\micro\second} y tiempos de subida/bajada muy cortos (ej. \SI{1}{\nano\second}).
+    
+    \item \textbf{Simulación:} Realice un análisis transitorio (\code{.tran}) durante unos pocos ciclos (ej. \SI{3}{\micro\second}).
+    
+    \item \textbf{Análisis de Resultados:}
+    \begin{itemize}
+        \item Grafique la tensión en el diodo ($V_D$) y la corriente a través de él ($I_D$).
+        \item Observe el comportamiento cuando la entrada cambia de +5V a -5V. Notará que el diodo no se apaga instantáneamente y conduce una corriente inversa por un corto período. Este es el \textbf{tiempo de almacenamiento} debido a la carga almacenada en la juntura.
+        \item Mida este tiempo de recuperación inversa en la gráfica.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Parte 3: Modelo de Pequeña Señal}
+
+Se verificará el concepto de resistencia dinámica ($r_d$).
+
+\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape]
+    % Rama Izquierda: Fuentes en Serie
+    % Dividí la altura total (3) en dos partes iguales (1.5 cada una)
+    \draw (0,0) node[ground]{} 
+        to[V, l={$V_{DC}=\SI{10}{\volt}$}] (0,1.5)  % Fuente DC (Batería)
+        to[sV, l=$v_{ac}$] (0,3)                % Fuente AC (Sinusoidal)
+        
+    % Rama Superior: Resistencia
+    % Usamos \text{k} para la unidad correcta
+        to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (3,3) 
+        
+    % Rama Derecha: Diodo
+        to[D, l=1N4148] (3,0) 
+        node[ground]{};
+
+    % (Opcional) Terminal de salida para mayor claridad
+    \draw (3,3) to[short, -o] (4,3) node[right] {$V_{out}$};
+\end{circuitikz}
+\end{center}
+
+\begin{enumerate}
+    \item \textbf{Cálculo Teórico:}
+    \begin{itemize}
+        \item Primero, ignore la fuente AC ($v_{ac}$). Calcule la corriente DC ($I_{DQ}$) que fluye a través del diodo, asumiendo una caída de tensión de \SI{0.7}{\volt} en él.
+        \item Con $I_{DQ}$, calcule la resistencia dinámica teórica: $r_d = V_T / I_{DQ}$ (use $V_T \approx \SI{25}{\milli\volt}$).
+    \end{itemize}
+
+    \item \textbf{Simulación:}
+    \begin{itemize}
+        \item Monte el circuito. Configure $v_{ac}$ como una fuente sinusoidal (\code{SINE}) con \SI{0}{\volt} de offset, \SI{1}{\milli\volt} de amplitud y \SI{1}{\kilo\hertz} de frecuencia.
+        \item Realice un análisis transitorio (\code{.tran}) para visualizar las señales.
+        \item Grafique la corriente en el diodo ($I_D$) y la tensión en el diodo ($V_D$). Verá una pequeña ondulación AC superpuesta sobre los valores DC.
+        \item Mida la amplitud pico a pico de la corriente AC ($\Delta i_d$) y de la tensión AC ($\Delta v_d$) en el diodo.
+        \item Calcule la resistencia dinámica a partir de la simulación: $r_{d,sim} = \Delta v_d / \Delta i_d$.
+    \end{itemize}
+
+    \item \textbf{Comparación:} Compare el valor de $r_d$ teórico con el obtenido en la simulación ($r_{d,sim}$). Discuta cualquier discrepancia.
+\end{enumerate}
+
+\section*{Preguntas de Cierre}
+\begin{enumerate}
+    \item En la Parte 1, ¿qué sucede si la carga $R_L$ es demasiado pequeña? ¿Por qué el regulador deja de funcionar?
+    \item En la Parte 2, ¿por qué es importante el tiempo de recuperación inversa en el diseño de fuentes de alimentación conmutadas (SMPS)?
+    \item En la Parte 3, ¿qué pasaría con el valor de $r_d$ si se aumentara la tensión de la fuente $V_{DC}$ a \SI{20}{\volt}? Justifique su respuesta.
+\end{enumerate}
+
+\end{document}

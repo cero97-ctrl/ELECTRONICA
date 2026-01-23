@@ -1,0 +1,64 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+\begin{center}
+    \large
+    PRACTICA 24
+    \vspace{0.5cm}
+
+    \huge
+    \textbf{MAXIMA TRANSFERENCIA DE POTENCIA}
+\end{center}
+
+\section*{FINALIDADES}
+\begin{enumerate}
+    \item Determinar experimentalmente la condición necesaria para la máxima transferencia de potencia desde una fuente de c.c. hasta una carga.
+    \item Comprobar experimentalmente la condición para la máxima transferencia de potencia, indicada en 1.
+\end{enumerate}
+
+\section*{INFORMACION PRELIMINAR}
+
+Se ha definido la potencia como velocidad de producción de trabajo. Eléctricamente, la unidad de potencia es el vatio (W). La relación de dependencia entre la potencia de c.c. (W) en una resistencia R, la tensión V entre los extremos de R, y la corriente I en R viene dada por las ecuaciones:
+
+\begin{equation}
+W = V \times I = I^2 R = \frac{V^2}{R}
+\end{equation}
+
+El suministro de potencia eléctrica a una carga $R_L$ implica una fuente de alimentación V, y una red entre V y la resistencia de carga $R_L$. Consideremos las relaciones de potencia en un circuito sencillo que contiene un generador V de resistencia interna R y que entrega potencia a una resistencia de carga $R_L$.
+
+La corriente I en $R_L$ viene dada por
+
+\begin{equation}
+I = \frac{V}{R + R_L}
+\end{equation}
+
+Aplicando la fórmula de la potencia $I^2 R$ es evidente que la potencia desarrollada en $R_L$ es
+
+\begin{equation}
+P_L = \left(\frac{V}{R + R_L}\right)^2 \times R_L = \frac{V^2 R_L}{(R + R_L)^2}
+\end{equation}
+
+Si V es una fuente constante con resistencia interna fija R, ¿con qué valor de $R_L$ habrá la máxima transferencia de potencia desde V hasta $R_L$? Un análisis matemático para hallar este valor requiere el uso del cálculo integral, pero siguiendo un método experimental se podrá determinar el valor de $R_L$.
+
+Supongamos que la tensión V es 100 voltios y que la resistencia R es 100 ohmios. Supongamos también que $R_L$ toma una serie de valores como los indicados en la tabla 24-1. La potencia W, calculada por la fórmula (24-3), está también indicada en la tabla 24-1.
+
+La tabla indica que cuando $R_L$ aumenta de 0 a 100 ohmios, el número de vatios disipados por $R_L$ aumenta desde 0 hasta un máximo de 25. Cuando $R_L$ aumenta de 100 a 100.000 ohmios, el número de vatios transferidos a $R_L$ disminuye desde 25 hasta 0,099.
+
+En este circuito resulta que la máxima transferencia de potencia tiene lugar cuando la resistencia de la carga es igual a la resistencia interna del generador. ¿Es válida esta conclusión para otros generadores V', con resistencia interna R', que transfieren potencia a una carga $R_L$? La respuesta a esta pregunta se puede determinar tomando valores fortuitos de una tensión V', una resistencia R', variando la carga $R_L$ y luego calculando la potencia en $R_L$. Nuevamente llegaremos al resultado de que la máxima potencia se transferirá a la carga cuando $R_L = R'$, resistencia interna del generador.
+
+Podemos pues enunciar la ley que rige la máxima transferencia de potencia a una carga en un circuito de c.c.:
+
+\textit{Un generador transfiere la máxima potencia a una carga cuando la resistencia de ésta es igual a la resistencia interna del generador.}
+
+\section*{RESUMEN}
+\begin{enumerate}
+    \item La potencia W, en vatios, disipada por una resistencia R (ohmios) entre cu-
+\end{enumerate}
+
+\end{document}

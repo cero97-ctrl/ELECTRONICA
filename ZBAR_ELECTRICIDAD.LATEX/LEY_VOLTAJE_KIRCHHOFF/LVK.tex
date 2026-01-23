@@ -1,0 +1,285 @@
+\documentclass{article}
+
+% --- PAQUETES UNIFICADOS ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{circuitikz}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{textcomp}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue]{hyperref}
+\usepackage{hypcap} % Para que los enlaces a figuras apunten al inicio de la figura
+
+% --- CONFIGURACIÓN GENERAL ---
+\geometry{a4paper, margin=1in, top=1.2in, headheight=15pt}
+\sisetup{
+    output-decimal-marker = {,},
+    group-separator = {.}  % ¡CORRECCIÓN: Cambiado de number-group-separator a group-separator!
+}
+\usetikzlibrary{babel} % Solución para conflicto circuitikz y babel
+\renewcommand{\figurename}{FIG.}
+\renewcommand{\listtablename}{Índice de tablas}
+
+% --- ENCABEZADO Y PIE DE PÁGINA ---
+\pagestyle{fancy}
+\fancyhf{} % Limpiar encabezado y pie
+\fancyhead[R]{Prácticas de electricidad}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+
+% ==================================================================
+% CONTENIDO DE LVK-01.tex
+% ==================================================================
+\title{PRÁCTICA 19 \\ LEY DE TENSIÓN DE KIRCHHOFF (LVK)}
+\author{Prof. César Rodríguez}
+\date{}
+\maketitle
+
+\tableofcontents
+\newpage
+
+\listoffigures
+\newpage
+
+\listoftables
+\newpage
+
+\section{FINALIDADES}
+\begin{enumerate}
+    \item Determinar por análisis o cálculo la relación entre la suma de las caídas de tensión entre los extremos de resistencias conectadas en serie y la tensión aplicada.
+    \item Comprobar experimentalmente la relación determinada en 1.
+\end{enumerate}
+
+\section{INFORMACIÓN PRELIMINAR}
+La solución de circuitos eléctricos complicados resulta fácil aplicando las leyes de Kirchhoff. Estas leyes fueron formuladas y publicadas por el físico Gustav Robert Kirchhoff (1824-1887), y establecieron la base del análisis moderno de redes. Son aplicables a otros circuitos que contienen una o más fuentes de tensión. En esta práctica trataremos de los que sólo tienen una fuente de tensión.
+
+\subsection{Ley de tensión}
+Consideremos el circuito serie sencillo de la figura 19-1. Hemos establecido antes que las resistencias conectadas en serie $R_1, R_2, R_3$ y $R_4$ se pueden reemplazar por su resistencia total o equivalente $R_T$ sin que resulte afectada la corriente $I_T$ en el circuito. La corriente $I_T$ puede pues ser calculada por la ley de Ohm.
+
+\begin{equation}
+    I_T = \frac{V}{R_T}
+\end{equation}
+
+También se deduce de la ecuación (19-1) que
+\begin{equation}
+    V = I_T \times R_T
+\end{equation}
+
+En el circuito conectado en serie de la figura 19-1
+\begin{equation}
+    R_T = R_1 + R_2 + R_3 + R_4
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0)
+        to[battery, l=$V$, invert] (0,3)
+        to[short, i>^={$I_T$}] (2,3)
+        to[R, l_=$R_1$, v^=$V_1$] (4,3)
+        to[R, l_=$R_2$, v^=$V_2$] (6,3)
+        to[R, l_=$R_3$, v^=$V_3$] (8,3)
+        to[R, l_=$R_4$, v^=$V_4$] (10,3)
+        to[short] (10,0)
+        to[short] (0,0);
+    \end{circuitikz}
+    \caption{--- $V = V_1 + V_2 + V_3 + V_4$.}
+    \label{fig:19-1}
+\end{figure}
+
+Sustituyendo el valor equivalente $R_T$ de la ecuación (19-3) en la ecuación (19-2) se tiene
+\[
+    V = I_T(R_1 + R_2 + R_3 + R_4)
+\]
+o
+\begin{equation}
+    V = I_T \times R_1 + I_T \times R_2 + I_T \times R_3 + I_T \times R_4
+\end{equation}
+
+Una de las características de un circuito serie es que la corriente es la misma en cualquier punto del circuito. $I_T$ es pues la corriente total en $R_1, R_2, R_3$ y $R_4$. De esto se deduce que
+\begin{align*}
+    I_T \times R_1 &= V_1, \quad \text{caída de tensión entre los extremos de } R_1 \\
+    I_T \times R_2 &= V_2, \quad \text{caída de tensión entre los extremos de } R_2 \\
+    I_T \times R_3 &= V_3, \quad \text{caída de tensión entre los extremos de } R_3 \\
+    I_T \times R_4 &= V_4, \quad \text{caída de tensión entre los extremos de } R_4
+\end{align*}
+
+Ahora se puede escribir la ecuación (19-4) como sigue:
+\begin{equation}
+    V = V_1 + V_2 + V_3 + V_4
+\end{equation}
+
+La ecuación (19-5) es la expresión matemática de la ley de tensión de Kirchhoff para resistencias conectadas en serie en un circuito cerrado.
+
+Es evidente que se puede generalizar la ec. (19-5) para circuitos que contienen una o más resistencias conectadas en serie en
+
+% \newpage
+
+% ==================================================================
+% CONTENIDO DE LVK-02.tex
+% ==================================================================
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        % Main path: Battery -> R1 -> Parallel Block 1 (R2, R3) -> R4 -> Parallel Block 2 (R6, R7) -> R5 -> Battery
+        \draw (0,0) to[battery, l=$V$, invert] (0,3) % Batería
+            to[R, l_=$R_1$, v^=$V_1$] (2,3) node[right] {A} % R1 y nodo A
+            coordinate (A_end); % Coordenada para el final de R1 / inicio del bloque paralelo 1
+
+        % Bloque paralelo 1 (R2, R3) - Horizontal
+        \coordinate (B_start) at (4,3); % Coordenada para el final del bloque paralelo 1 / inicio de R4
+        \draw (A_end) -- (A_end |- 0,4) to[R, l_=$R_2$] (B_start |- 0,4) -- (B_start); % Rama superior (R2)
+        \draw (A_end) -- (A_end |- 0,2) to[R, l_=$R_3$] (B_start |- 0,2) -- (B_start); % Rama inferior (R3)
+        \node[left] at (B_start) {B}; % Nodo B
+
+        % R4
+        \draw (B_start)
+            to[R, l_=$R_4$, v^=$V_3$] (6,3) node[right] {C} % R4 y nodo C
+            coordinate (C_end); % Coordenada para el final de R4 / inicio del bloque paralelo 2
+
+        % Bloque paralelo 2 (R6, R7) - Horizontal
+        \coordinate (D_start) at (8,3); % Coordenada para el final del bloque paralelo 2 / inicio de R5
+        \draw (C_end) -- (C_end |- 0,4) to[R, l_=$R_6$] (D_start |- 0,4) -- (D_start); % Rama superior (R6)
+        \draw (C_end) -- (C_end |- 0,2) to[R, l_=$R_7$] (D_start |- 0,2) -- (D_start); % Rama inferior (R7)
+        \node[left] at (D_start) {D}; % Nodo D
+
+        % R5 y retorno a la batería
+        \draw (D_start)
+            to[R, l_=$R_5$, v^=$V_5$] (10,3) % R5
+            -- (10,0) to[short, i_>=$I_T$] (0,0); % Cierre del circuito
+
+        % Etiquetas de voltaje V2, V4
+        \draw[<->] (A_end |- 0,5) -- (B_start |- 0,5) node[midway, above] {$V_2$};
+        \draw[<->] (C_end |- 0,5) -- (D_start |- 0,5) node[midway, above] {$V_4$};
+    \end{circuitikz}
+    \caption{Aplicación de ley de tensión de Kirchhoff a un circuito serie-paralelo.}
+    \label{fig:19-2}
+\end{figure}
+
+¿Es consistente esta ecuación con la ec. (19-5)? Sí, porque pasando los términos del segundo miembro de la ecuación (19-5) al primer miembro, tendremos \( V - V_1 - V_2 - V_3 - V_4 = 0 \), cuyo resultado es idéntico al de la ecuación (19-6).
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[below] {E}
+            to[battery, l^=$V$, v_<=$V_5$, invert] (0,3) node[above] {F}
+            to[R, l_=$R_1$, v^>=$V_1$] (3,3) node[above] {A}
+            to[R, l_=$R_2$, v^>=$V_2$] (6,3) node[above] {B}
+            to[R, l_=$R_3$, v^>=$V_3$] (9,3) node[above] {C}
+            to[R, l_=$R_4$, v^>=$V_4$] (12,3) node[above] {D}
+            to[short] (12,0)
+            to[short, i_>={corriente}] (0,0);
+    \end{circuitikz}
+    \caption{Asignación convencional de polaridad a las tensiones en un circuito cerrado.}
+    \label{fig:19-3}
+\end{figure}
+
+% \newpage
+
+% ==================================================================
+% CONTENIDO DE LVK-03.tex
+% ==================================================================
+
+\section{RESUMEN}
+La ley de Kirchhoff se puede expresar de dos maneras:
+\begin{enumerate}
+    \item La suma de caídas de tensión en un circuito cerrado es igual a la tensión aplicada; o
+    \item La suma algebraica de las tensiones en un circuito cerrado es igual a cero.
+\end{enumerate}
+
+\section{AUTOEXAMEN}
+\begin{enumerate}
+    \item En la figura 19-1, $V_1 = \SI{10}{V}, V_2 = \SI{12}{V}, V_3 = \SI{20}{V}, V_4 = \SI{15}{V}$. La tensión aplicada $V$ debe ser pues igual a \dotfill{} V.
+    \item En la figura 19-2, $V_1 = \SI{15}{V}, V_2 = \SI{20}{V}, V_4 = \SI{27}{V}, V_5 = \SI{9}{V}$ y $V = \SI{100}{V}$. La tensión $V_3 = $ \dotfill{} V.
+\end{enumerate}
+
+\section{MATERIALES NECESARIOS}
+Fuente de alimentación: Fuente de corriente continua variable regulada. \\
+Equipo: EVM, miliamperímetro 0-10. \\
+Resistencias: \textonehalf{} W \SI{330}{\ohm}, \SI{470}{\ohm}, \SI{1200}{\ohm}, \SI{2200}{\ohm}, \SI{3300}{\ohm}, \SI{4700}{\ohm}, \SI{5600}{\ohm} y \SI{10000}{\ohm}. \\
+Diversos: Interruptor unipolar.
+
+\section{PROCEDIMIENTO}
+\subsection{Ley de tensión}
+\begin{enumerate}
+    \item Conectar el circuito de la figura 19-1 utilizando los valores $R_1, R_2, R_3$ y $R_4$ consignados en la tabla 19-1.
+    \item Ajustar la salida de la fuente de alimentación para que $V = \SI{40}{V}$. Medir y anotar esta tensión en la tabla 19-2. Medir y anotar las tensiones $V_1, V_2, V_3$ y $V_4$ entre los extremos de $R_1, R_2, R_3$ y $R_4$, respectivamente. Sumar $V_1, V_2, V_3$ y $V_4$ y anotar la suma en la columna correspondiente de la tabla 19-2.
+    \item Conectar el circuito de la figura 19-2 utilizando los valores $R_1, R_2$, etc., consignados en la tabla 19-1.
+    \item Ajustar la salida de la fuente de alimentación para $V = \SI{40}{V}$. Medir esta tensión y anotarla en la tabla 19-2. Medir y anotar las tensiones $V_1, V_2, V_3, V_4, V_5$ como indica la figura 19-2. Sumar $V_1, V_2, V_3$, etc., y anotar el resultado en la columna correspondiente.
+\end{enumerate}
+
+\subsection{Problema de diseño (adicional)}
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item Diseñar un circuito serie-paralelo como el de la figura 19-2 utilizando las resistencias mencionadas en esta práctica, con una tensión aplicada de \SI{35}{V}, que absorban una corriente total de \SI{5}{mA}, aproximadamente. Dibujar el esquema del circuito, incluyendo los valores medidos de todas las resistencias. Presentar todos los cálculos.
+    \item Conectar el circuito y ajustar la tensión de la fuente de alimentación a \SI{35}{V}. Medir la corriente $I_T$ e indicar este valor en el esquema.
+\end{enumerate}
+
+\section{PREGUNTAS}
+\begin{enumerate}
+    \item ¿Cómo es la suma de $V_1, V_2, V_3$ y $V_4$ (apartado 2) de la tabla 19-2 comparada con $V$? Explicar la diferencia, si la hay.
+    \item ¿Cómo es la suma de $V_1, V_2 \dots V_5$ (apartado 4) de la tabla 19-2 comparada con $V$? Explicar la diferencia, si la hay.
+\end{enumerate}
+
+\newpage
+
+\begin{table}[H]
+    \centering
+    \caption{Valores nominales de las resistencias.}
+    \label{tab:19-1}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccc}
+    \toprule
+     & $R_1$ & $R_2$ & $R_3$ & $R_4$ & $R_5$ & $R_6$ & $R_7$ & $R_8$ \\
+    \midrule
+    Valor nominal, (\si{\ohm}) & \num{330} & \num{470} & \num{1200} & \num{2200} & \num{3300} & \num{4700} & \num{10000} & \num{5600} \\
+    \bottomrule
+    \end{tabular*}
+\end{table}
+
+\vspace{1cm}
+
+\begin{table}[H]
+    \centering
+    \caption{Mediciones de tensión en los circuitos.}
+    \label{tab:19-2}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc}
+    \toprule
+    Operación & $V$ & $V_1$ & $V_2$ & $V_3$ & $V_4$ & $V_5$ & $V_1+V_2+V_3+V_4+V_5$ \\
+    \midrule
+    2 & & & & & & X & \\
+    4 & & & & & & & \\
+    \bottomrule
+    \end{tabular*}
+\end{table}
+
+% \newpage
+
+% ==================================================================
+% CONTENIDO DE LVK-04.tex
+% ==================================================================
+
+\subsection{Preguntas adicionales}
+\begin{enumerate}
+    \setcounter{enumi}{2} % Empezar la numeración en 3
+    \item Enunciar la ley de tensión de Kirchhoff. Escribir también la ecuación correspondiente.
+    
+    \item Explicar los resultados del problema de diseño, apartado 6.
+    
+    \item ¿Por qué no sería posible diseñar un circuito que diera exactamente una corriente de \SI{5}{mA}?
+\end{enumerate}
+
+\section{Respuestas a las preguntas de auto-examen}
+\begin{enumerate}
+    \item 57.
+    \item 29.
+\end{enumerate}
+
+\end{document}

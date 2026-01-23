@@ -1,0 +1,105 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+
+\geometry{a4paper, margin=1in, headheight=15pt}
+
+% Configuración del encabezado
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{124}
+\fancyhead[R]{Prácticas de electricidad}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+pero
+\[ \frac{1}{R_1} + \frac{1}{R_2} + \frac{1}{R_3} = \frac{1}{R_T} \]
+
+Por tanto
+\[ I_1 + I_2 + I_3 = I_T \times R_T \times \frac{1}{R_T} = I_T \]
+e
+\begin{equation}
+    I_T = I_1 + I_2 + I_3
+\end{equation}
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+    \centering
+    \vspace{-20pt}
+    \begin{circuitikz}[european]
+        \draw (0,0) to[battery, l=$V$] (0,4);
+        \draw (0,4) to[short, i=$I_T$] (2,4) coordinate[label=above:A] (A);
+        
+        % Parallel branches
+        \draw (A) to[R, l=$R_1$, i=$I_1$] (5,4) coordinate (B1);
+        \draw (A) -- (2,2) to[R, l=$R_2$, i=$I_2$] (5,2) coordinate (B2);
+        
+        % Recombination
+        \draw (B1) -- (B2);
+        \draw (5,3) to[short, i=$I_T$] (6,3) -- (6,0) -- (0,0);
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{La suma algébrica de las corrientes que entran y de las corrientes que salen en una unión es igual a cero. $I_T - I_1 - I_2 = 0$.}
+    \label{fig:20-2}
+\end{wrapfigure}
+
+La ecuación (20-3) es un enunciado matemático de la ley de Kirchhoff aplicada al circuito de la figura 20-1. En general, si $I_T$ es la corriente que entra en una unión de un circuito eléctrico, e $I_1, I_2, I_3, \dots, I_n$ son las corrientes que salen de esta unión (o viceversa), se tiene
+\begin{equation}
+    I_T = I_1 + I_2 + I_3 + \dots + I_n
+\end{equation}
+
+Ordinariamente la ley de corriente de Kirchhoff se enuncia en otra forma, a saber, \textit{la suma algébrica de las corrientes que entran en una unión y salen de ella es 0}. Se recordará que es análoga a la ley de tensión de Kirchhoff, según la cual la suma algébrica de las tensiones en un camino o bucle cerrado es 0. De la misma manera que ha sido necesario establecer un convenio de polaridad para las tensiones existentes en un bucle o malla, también es necesario establecer un convenio de corriente en una unión.
+
+Si la corriente que entra en una unión se considera positiva (+) y la corriente que sale de la unión se considera negativa (-), entonces el enunciado de que la suma algébrica de las corrientes que entran y salen en una unión es 0 coincide con lo expresado por la ecuación (20-4). Consideremos el circuito de la figura 20-2. En la unión A entra la corriente total $I_T$ y se la considera +. Las corrientes $I_1$ e $I_2$ salen de la unión en A y son designadas -. Entonces,
+\begin{equation}
+    I_T - I_1 - I_2 = 0
+\end{equation}
+e
+\begin{equation}
+    I_T = I_1 + I_2
+\end{equation}
+
+Es evidente que los dos enunciados de la ley de corriente de Kirchhoff conducen a la misma fórmula algébrica.
+
+Un ejemplo aclarará cómo puede ser aplicada la ley de corriente de Kirchhoff en un análisis de red. Supongamos en la figura 20-3 que $I_1$ e $I_2$ son las corrientes que entran en la unión A y que son respectivamente +\,5\,A y +\,3\,A. $I_3, I_4$ e $I_5$ son las corrientes que salen de A. $I_3$ e $I_4$ son respectivamente 2 y 1 A. ¿Cuál es el valor de $I_5$? Aplicando la ley de corriente de Kirchhoff
+\[ I_1 + I_2 - I_3 - I_4 - I_5 = 0 \]
+y sustituyendo los valores conocidos de la corriente, obtenemos
+\begin{align*}
+    5 + 3 - 2 - 1 - I_5 &= 0 \\
+    8 - 3 &= I_5 \\
+    I_5 &= 5\,\text{A}
+\end{align*}
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+    \centering
+    \vspace{-10pt}
+    \begin{circuitikz}
+        \node[circ, label=center:A] (A) at (0,0) {};
+        
+        % Inputs (Entering A)
+        \draw[latex-] (A) -- (135:2) node[above left] {$I_1 = 5\,\text{A}$};
+        \draw[latex-] (A) -- (180:2) node[left] {$I_2 = 3\,\text{A}$};
+        
+        % Outputs (Leaving A)
+        \draw[-latex] (A) -- (45:2) node[above right] {$I_3 = 2\,\text{A}$};
+        \draw[-latex] (A) -- (0:2) node[right] {$I_4 = 1\,\text{A}$};
+        \draw[-latex] (A) -- (-45:2) node[below right] {$I_5$};
+    \end{circuitikz}
+    \caption{Corrientes que entran y corrientes que salen en una unión o nudo. $I_1 + I_2 - I_3 - I_4 - I_5 = 0$.}
+    \label{fig:20-3}
+\end{wrapfigure}
+
+\subsection*{RESUMEN}
+\begin{enumerate}
+    \item La ley de corriente de Kirchhoff enuncia que la corriente que entra en una unión de un circuito eléctrico es igual a la corriente que sale de la unión.
+    \item Un enunciado analítico de la ley de corriente de Kirchhoff requiere la asignación de polaridad a la corriente.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,318 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel}
+\usepackage[hidelinks]{hyperref}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{microtype}
+\sisetup{
+    output-decimal-marker = {.},
+    group-separator = {,},
+    group-minimum-digits = 4,
+    inter-unit-product = \ensuremath{{}\cdot{}}
+}
+
+\geometry{a4paper, margin=1in}
+
+\numberwithin{equation}{subsection}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+\begin{document}
+
+\begin{center}
+    \large\textbf{PRÁCTICA 2}
+    \vspace{0.5cm}
+    
+    \huge\textbf{CIRCUITO PUENTE EQUILIBRADO}
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{OBJETIVOS}
+\begin{enumerate}
+    \item Hallar por análisis las relaciones matemáticas entre las resistencias en un circuito puente equilibrado.
+    \item Aplicar experimentalmente el principio del puente equilibrado para medir una resistencia desconocida.
+\end{enumerate}
+
+\section{DESARROLLO TEÓRICO}
+
+\subsection{Información Preliminar}
+
+El volt-ohm-miliamperímetro (VOM) y el voltímetro electrónico (excepto el DVOM) son instrumentos de lectura directa 
+en los cuales se utiliza un galvanómetro.
+
+Las cantidades medidas, voltios, miliamperios u ohmios se leen directamente en una escala calibrada en la que se 
+desplaza la aguja.
+
+Para medir resistencias con más exactitud que la posible con un óhmetro se utiliza un puente. El puente de 
+resistencias tiene un galvanómetro de alta sensibilidad como dispositivo indicador, una resistencia variable 
+calibrada que sirve de patrón de referencia y una fuente de tensión en una disposición adecuada de circuito. 
+El galvanómetro sirve como indicador de cero y pone de manifiesto la condición de equilibrio. La resistencia 
+se lee en una escala calibrada asociada a la resistencia variable y a un multiplicador de escala o margen.
+
+\begin{figure}[!htbp]
+    \centering
+    \centering
+    \begin{circuitikz}[scale=1.2, american]
+        % Define styles
+        \ctikzset{bipoles/length=1.2cm}
+        
+        % Nodes
+        \coordinate (D) at (0,0);
+        \coordinate (C) at (4,2);
+        \coordinate (B) at (0,4);
+        \coordinate (A) at (-4,2);
+
+        % Bridge Arms
+        \draw (B) to[R, l_=$R_1$, i>=$I_1$, *-*] (A);
+        \draw (B) to[vR, l=$R_3$, i=$I_3$, *-*] (C); % Variable (Brazo patrón)
+        \draw (A) to[R, l_=$R_2$, i>=$I_2$, *-*] (D);
+        \draw (C) to[R, l=$R_x$, i=$I_x$, *-*] (D);
+
+        % Galvanometer
+        \draw (A) to[rmeter, t=G, *-*] (C);
+
+        % Power Supply (External)
+        \draw (B) -- (0,5) -- (5,5) -- (5,2) 
+              to[V, l=V, invert] (5,0) -- (5,-1) -- (0,-1) -- (D);
+
+        % Labels
+        \node[left] at (A) {A};
+        \node[above] at (B) {B};
+        \node[right] at (C) {C};
+        \node[below] at (D) {D};
+    \end{circuitikz}
+    \caption{Puente de Wheatstone para Medir la Resistencia Desconocida $R_x$.}
+    \label{fig:25-1}
+\end{figure}
+
+La figura~\ref{fig:25-1} representa el tipo más corriente, el puente de Wheatstone. En esta disposición 
+hay cuatro resistencias en el circuito. La resistencia desconocida que se desea medir, $R_x$, se conecta 
+entre los bornes C y D. $R_1$ y $R_2$ son resistencias de precisión de valor fijo llamadas «brazos de 
+proporción», y $R_3$ es una resistencia variable conocida. El indicador es un galvanómetro de alta 
+sensibilidad con el cero en el centro, G. La corriente pasará por G cuando haya una diferencia de 
+potencial entre los puntos A y C. Cuando no existe diferencia de potencial entre estos puntos, es decir, 
+cuando $V_{AC} = 0$, la aguja del galvanómetro volverá a su posición de reposo o cero. Cuando $V_{AC} = 0$, 
+se dice que el puente está equilibrado.
+
+En el circuito de la figura~\ref{fig:25-1} sean $I_1$ la corriente en $R_1$, $I_2$ en $R_2$, $I_3$ en 
+$R_3$ e $I_x$ en $R_x$. La tensión de A a B es $I_1 \times R_1$, es decir
+
+\begin{align}
+    V_{AB} &= I_1 R_1 \nonumber \\
+    \text{Análogamente } V_{AD} &= I_2 R_2 \label{eq:25-1} \\
+    V_{CB} &= I_3 R_3 \label{eq:25-2} \\
+    V_{CD} &= I_x R_x \label{eq:25-3}
+\end{align}
+
+Para obtener el equilibrio ($V_{AC} = 0$), la diferencia de tensión entre A y B debe ser igual a la existente 
+entre C y B. O sea,
+\begin{equation}
+    V_{AB} = V_{CB} \label{eq:25-4}
+\end{equation}
+
+Por tanto, $I_1 R_1 = I_3 R_3$, y
+\begin{equation}
+    \frac{I_1}{I_3} = \frac{R_3}{R_1} \label{eq:25-5}
+\end{equation}
+
+Análogamente $V_{AD} = V_{CD}$
+\begin{equation}
+    \frac{I_2}{I_x} = \frac{R_x}{R_2} \label{eq:25-6}
+\end{equation}
+
+En el equilibrio no pasa corriente por G, por tanto
+\begin{align}
+    I_1 &= I_2 \label{eq:25-7} \\
+    I_3 &= I_x \label{eq:25-8}
+\end{align}
+
+Sustituyendo los resultados de las ecuaciones \eqref{eq:25-7} y \eqref{eq:25-8} en las \eqref{eq:25-5} y \eqref{eq:25-6}, hallaremos
+\begin{equation}
+    \frac{I_1}{I_x} = \frac{R_3}{R_1} \label{eq:25-9}
+\end{equation}
+\begin{equation}
+    \frac{I_1}{I_x} = \frac{R_x}{R_2} \label{eq:25-10}
+\end{equation}
+
+por tanto
+\begin{equation}
+    \frac{R_x}{R_2} = \frac{R_3}{R_1} \label{eq:25-11}
+\end{equation}
+y
+\begin{equation}
+    R_x = \left( \frac{R_2}{R_1} \right) \times R_3 \label{eq:25-12}
+\end{equation}
+
+La ecuación fundamental \eqref{eq:25-12} enuncia que con el puente equilibrado la resistencia desconocida $R_x$ 
+es igual al producto de la razón o cociente de los brazos de proporción ($R_2/R_1$) y el brazo de 
+comparación $R_3$.
+
+Se obtienen la máxima exactitud y la máxima sensibilidad cuando $R_1 = R_2$ es decir, cuando la razón 
+$R_2/R_1 = 1$. En esta condición $R_x = R_3$. Si $R_3$ es un reóstato del tipo de décadas de alta precisión, 
+el valor $R_x$ se puede leer directamente en la escala calibrada del reóstato cuando se ajusta $R_3$ para 
+el equilibrio.
+
+\subsection{RESUMEN}
+\begin{enumerate}
+    \item Para medir valores de resistencia con mayor exactitud que la obtenible con un volt-ohm-miliamperímetro 
+    o un voltímetro electrónico se utiliza un puente de Wheatstone.
+    \item Los brazos de proporción $R_1$ y $R_2$ de la figura~\ref{fig:25-1} son resistencias de precisión que se 
+    conmutan para que den el multiplicador deseado del margen de resistencia del puente.
+    \item El brazo patrón o de comparación $R_3$ es una resistencia de precisión calibrada y variable por medio de 
+    la cual se equilibra el puente cuando se mide una resistencia desconocida $R_x$. El valor de $R_x$ se lee, en 
+    el equilibrio, en la escala calibrada del brazo patrón, y se multiplica por la relación de los brazos 
+    de proporción.
+    \item Como indicador se utiliza un galvanómetro de alta sensibilidad con 0 en el centro. El puente se alimenta 
+    con una fuente de tensión.
+    \item Cuando la tensión entre los terminales del galvanómetro ($V_{AC}$ en la tabla~\ref{tab:25-1}) es cero, no 
+    hay corriente en el galvanómetro, y por lo tanto éste dará lectura cero. Es en esta posición de equilibrio en 
+    la que se lee el valor de la resistencia desconocida.
+    \item Estando en equilibrio un puente de Wheatstone, los productos de las resistencias de los brazos opuestos son 
+    iguales, es decir, en la tabla~\ref{tab:25-1}
+    \begin{equation} R_x \times R_1 = R_2 \times R_3 \label{eq:resumen_1} \end{equation}
+    y en esta condición el valor de $R_x$ se deduce de
+    \begin{equation} R_x = \frac{R_2 \times R_3}{R_1} \label{eq:resumen_2} \end{equation}
+    \item Por consiguiente, $R_x$ es igual al producto de la relación de los brazos de proporción por la resistencia 
+    del brazo patrón.
+\end{enumerate}
+
+\newpage
+
+\section{MATERIALES NECESARIOS}
+Fuente de alimentación: Fuente de c.c. de tensión regulada variable.
+
+\textbf{Equipo:} Galvanómetro con cero en el centro o un VOM de \SI{20000}{\ohm\per\volt}; voltímetro electrónico.
+
+\textbf{Resistencias:} 1/2 W, dos de \SI{5100}{\ohm} (\SI{5}{\percent}); surtido de seis valores diferentes de resistencias 
+(valor mínimo 500, valor máximo menos que \SI{10000}{\ohm}).
+
+\textbf{Opcional:} Otras resistencias como las necesarias en la operación 5.
+
+\textbf{Diversos:} Cajas de décadas de resistencia, variable desde 1 a 10.000 o potenciómetro de \SI{10000}{\ohm}; dos 
+interruptores unipolares.
+
+\begin{figure}[!htbp]
+    \centering
+    \centering
+    \begin{circuitikz}[scale=1.2, american]
+        % Coordinates
+        \coordinate (D) at (0,0);
+        \coordinate (C) at (4,2);
+        \coordinate (B) at (0,4);
+        \coordinate (A) at (-4,2);
+
+        % Bridge
+        \draw (B) to[R, l_=$R_1$, *-*] (A);
+        \draw (B) to[vR, l=$R_3$, *-*] (C);
+        \draw (A) to[R, l_=$R_2$, *-*] (D);
+        \draw (C) to[R, l=$R_x$, *-*] (D);
+
+        % Central Branch with Galvanometer shunting
+        % Creating a more readable schematic for the shunt
+        \draw (A) -- (-1.5, 2); 
+        \draw (-1.5, 2) to[rmeter, t=M, *-*] (1.5, 2); % Galvanometer
+        % Shunt path
+        \draw (-1.5, 2) -- (-1.5, 2.8) to[R, l=$R_4$] (1.5, 2.8) -- (1.5, 2);
+        \draw (-1.5, 2) -- (-1.5, 1.2) to[nos, l_=$S_2$] (1.5, 1.2) -- (1.5, 2);
+        
+        \draw (1.5, 2) -- (C);
+
+        % Power Supply
+        \draw (B) -- (0,5) -- (-5,5) to[V, l_=6V] (-5,-1) 
+              to[nos, l=$S_1$] (0,-1) -- (D);
+
+        % Labels
+        \node[left] at (A) {A};
+        \node[above] at (B) {B};
+        \node[right] at (C) {C};
+        \node[below] at (D) {D};
+    \end{circuitikz}
+    \caption{Puente de Wheatstone Experimental.}
+    \label{fig:25-2}
+\end{figure}
+
+\section{PROCEDIMIENTO}
+\begin{enumerate}
+    \item Conectar el circuito (figura~\ref{fig:25-2}). $S_1$ y $S_2$ están abiertos. Ajustar la alimentación regulada para 
+    V = \SI{6}{\volt}. Ajustar $R_3$, caja de décadas de resistencia, para resistencia máxima. (Si no se dispone de 
+    caja de década, utilizar un potenciómetro de \SI{10000}{\ohm}.) M es un galvanómetro con cero en el centro. 
+    (Si no se dispone de él, utilizar el margen o alcance de corriente de más sensibilidad en el VOM de \SI{20000}{\ohm\per\volt}, 
+    es decir, alcances de \SI{50}{\micro\ampere} ó \SI{60}{\micro\ampere}.) El objeto de $R_4$ es reducir la sensibilidad 
+    de M durante las fases iniciales de ajuste.
+    \item Conectar $R_x$, resistencia a medir, entre C y D. ($R_x$ no debe ser menor de \SI{560}{\ohm}, ni mayor de \SI{10000}{\ohm}.) 
+    Cerrar $S_1$. $S_2$ está aún abierto. La aguja del instrumento se desviará hacia arriba. De lo contrario, mirar si 
+    el brazo de referencia o comparación $R_3$ está en el máximo.
+    \item Reducir la resistencia de $R_3$ gradualmente hasta que la lectura de M se aproxime a cero. Cerrar $S_2$ y 
+    reajustar $R_3$ si es necesario hasta que M dé lectura cero. Leer el valor de $R_x$ en la caja de décadas de 
+    resistencia calibrada y anotarla en la tabla~\ref{tab:25-1}. Anotar también el valor de $R_x$ indicado por el código de color 
+    y su tolerancia nominal.
+    
+    \textbf{NOTA:} Si $R_3$ es un potenciómetro de \SI{10000}{\ohm} conectado como reóstato en lugar de una caja de 
+    décadas, eliminar $R_3$ en el circuito sin variar su ajuste y medirla con un óhmetro. Anotar esto como valor 
+    de $R_x$ en la tabla~\ref{tab:25-1}.
+    
+    \item Abrir $S_1$ y $S_2$. Ajustar nuevamente $R_3$ para resistencia máxima. Quitar la primera $R_x$ del circuito. 
+    Por el procedimiento de circuito puente de las operaciones 2 y 3, medir sucesivamente cada una de las cuatro 
+    resistencias recibidas. Anotar los valores medidos y codificados en la tabla~\ref{tab:25-1}.
+\end{enumerate}
+
+\begin{table}[!htbp]
+    \centering
+    \caption{Medición en el Puente de $R_x$; $R_2/R_1 = 1$}
+    \label{tab:25-1}
+    \begin{tabular}{lcccccc}
+        \toprule
+        \textbf{Resistencia n.º} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} \\ \midrule
+        Valor nominal (código) & & & & & & \\ \midrule
+        Por ciento de tolerancia & & & & & & \\ \midrule
+        Valor medido & & & & & & \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Adicional — Problema de diseño}
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item Utilizando la misma $R_3$ como brazo de comparación, proyectar un circuito puente con el que se puedan medir 
+    resistencias de hasta
+    \begin{enumerate}
+        \item \SI{50000}{\ohm} (aproximadamente)
+        \item \SI{250000}{\ohm} (aproximadamente).
+    \end{enumerate}
+    Dibujar los esquemas correspondientes a a y b indicando los valores necesarios de todos los componentes 
+    del puente. Tomar los componentes necesarios. Si no se dispone de resistencias de \SI{5}{\percent} de tolerancia, 
+    medir las resistencias de los brazos de proporción con un óhmetro y calcular la relación de multiplicación 
+    por los valores medidos. Con el puente a medir tres resistencias mayores de \SI{10000}{\ohm}, pero menores 
+    de \SI{50000}{\ohm}. Con el puente b medir tres resistencias mayores de \SI{50000}{\ohm} y menores de \SI{250000}{\ohm}.
+    Anotar los resultados de las mediciones en tablas separadas análogas a la tabla~\ref{tab:25-1}. Identificar la relación 
+    de multiplicador en cada caso.
+\end{enumerate}
+
+\section{PREGUNTAS}
+\begin{enumerate}
+    \item ¿Qué es lo que determina la aproximación de las mediciones hechas con el puente experimental de resistencias?
+    \item ¿Por qué es necesario emplear un galvanómetro muy sensible como indicador en esta práctica?
+    \item ¿Cuál es la finalidad de la fuente de tensión V? ¿Es crítico el nivel de tensión (V = \SI{6}{\volt}) de la 
+    fuente de tensión?
+    \item ¿Corresponden los resultados de sus mediciones a los valores nominales de las resistencias medidas? De lo 
+    contrario, explicar el motivo.
+\end{enumerate}
+
+\subsection{Adicional}
+\begin{enumerate}
+    \setcounter{enumi}{4}
+    \item En el equilibrio, $R_1 = R_2 = \SI{5000}{\ohm}$; $R_x = R_3 = \SI{6000}{\ohm}$; $R_m = \SI{3000}{\ohm}$. Hallar la 
+    resistencia total conectada a la fuente de alimentación (V). Presentar los cálculos.
+\end{enumerate}
+
+\end{document}

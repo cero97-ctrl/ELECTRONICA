@@ -1,0 +1,86 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+\usepackage{geometry}
+\usepackage{comment}
+\geometry{margin=1in}
+
+\title{PRÁCTICA 20: LEY DE CORRIENTE DE KIRCHHOFF}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{FINALIDADES}
+\begin{enumerate}
+    \item Determinar por cálculo la relación entre la suma de las corrientes que entran en una unión de un circuito eléctrico y la corriente que sale de la unión.
+    \item Comprobar experimentalmente la relación determinada en 1.
+\end{enumerate}
+
+\section*{INFORMACIÓN PRELIMINAR}
+\textbf{Ley de corriente}
+
+En la Práctica 15 ha comprobado Ud. que la corriente total \( I_T \) en un circuito que contiene resistencias conectadas en paralelo es igual a la suma de las corrientes de cada una de las ramas en paralelo. Esto ha sido una demostración de la ley de corriente de Kirchhoff, limitada a una red en paralelo. La ley es general y aplicable a cualquier circuito. Enuncia que la corriente que entra en una unión de circuito eléctrico es igual a la corriente que sale de la unión.
+
+Consideremos el circuito serie-paralelo (fig. 20-1). Designemos la corriente total por \( I_T \). En la unión \( A \) entra la corriente \( I_T \) con el sentido indicado por la flecha.
+
+Las corrientes que salen de la unión \( A \) son \( I_1 \), \( I_2 \) e \( I_3 \), como se indica. Las corrientes \( I_1 \), \( I_2 \) o \( I_3 \) entran de nuevo en la unión \( B \), e \( I_T \) sale de ella. ¿Cuál es la relación entre \( I_T \), \( I_1 \), \( I_2 \) e \( I_3 \)? El análisis matemático ayudará a establecer esta relación.
+
+La tensión entre los terminales del circuito paralelo \( V_{AB} = I_1 \times R_1 = I_2 \times R_2 = I_3 \times R_3 \). La red en paralelo puede ser reemplazada por su resistencia equivalente \( R_T \), y en este caso la figura 20-1 se transforma en un circuito serie simple y \( V_{AB} = I_T \times R_T \). Se deduce que
+\[
+    I_T \times R_T = I_1 \times R_1 = I_2 \times R_2 = I_3 \times R_3
+    \tag{20-1}
+\]
+
+La ecuación (20-1) se puede escribir en la forma
+\[
+    \begin{aligned}
+        I_1 &= I_T \times \frac{R_T}{R_1} \\
+        I_2 &= I_T \times \frac{R_T}{R_2} \\
+        I_3 &= I_T \times \frac{R_T}{R_3}
+    \end{aligned}
+    \tag{20-2}
+\]
+
+La suma de \( I_1 \), \( I_2 \) e \( I_3 \) da
+\[
+    I_1 + I_2 + I_3 = I_T \times R_T \left( \frac{1}{R_1} + \frac{1}{R_2} + \frac{1}{R_3} \right)
+\]
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) to[battery, l_=$V$, invert] (0,6)
+            to[R, l_=$R_5$, i=$I_T$] (3,6) coordinate[label=above:A] (A);
+        
+        % First branch
+        \draw (A) to[R, l=$R_1$, i=$I_1$] ++(4,0) coordinate[label=right:$B_1$] (B1);
+        
+        % Second branch
+        \draw (A) to[short, *-] ++(0,-2) coordinate (A2) 
+              to[R, l=$R_2$, i=$I_2$] ++(4,0) coordinate[label=right:$B_2$] (B2);
+        
+        % Third branch
+        \draw (A2) to[short, *-] ++(0,-2) coordinate (A3) 
+               to[R, l=$R_3$, i=$I_3$] ++(4,0) coordinate[label=right:$B_3$] (B3);
+        
+        % Connecting the outputs
+        \draw (B1) to[short, -*] (B2) to[short, -*] (B3) coordinate[label=right:$B$] (B);
+        
+        % Return path
+        \draw (B) -- (B |- 0,0) to[R, l_=$R_4$] (0,0);
+        
+        \draw (0,0) node[ground]{}; 
+    \end{circuitikz}
+    \caption{Circuito serie-paralelo para ilustrar la ley de corriente de Kirchhoff.}
+    \label{fig:20-1}
+\end{figure}
+
+\end{document}

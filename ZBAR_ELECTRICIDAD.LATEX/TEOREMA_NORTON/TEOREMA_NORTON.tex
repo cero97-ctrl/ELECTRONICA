@@ -1,0 +1,89 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel} % Cambia a 'english' si prefieres inglés
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{circuitikz} % Para diagramas de circuitos eléctricos
+\usetikzlibrary{babel} % Soluciona conflictos entre circuitikz y babel-spanish
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{siunitx} % Paquete para unidades del SI
+\usepackage{enumitem} % Para continuar listas entre archivos
+\usepackage{multirow} % Para tablas con celdas de varias filas
+\usepackage{comment}
+
+% Configuración de márgenes
+\geometry{
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+% Configuración de hyperref
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Documento Técnico de Circuitos},
+    pdfpagemode=FullScreen,
+}
+
+% Configuración para listados de código (opcional)
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,                % Permite que las líneas largas se corten
+    captionpos=b,                   % Posición del caption (abajo)
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+
+% Título del documento
+\title{\textbf{TEOREMA DE NORTON}}
+\author{Prof. César Augusto Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\begin{comment}
+\begin{abstract}
+Este documento presenta un análisis detallado del Teorema de Norton, 
+aplicando sus principios a la resolución de redes de corriente continua 
+con una y dos fuentes de tensión. Se incluyen desarrollos analíticos y 
+ejemplos prácticos con esquemas de circuitos.
+\end{abstract}
+\end{comment}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% --- Capítulos del Documento ---
+\input{capitulos/TEOREMA_NORTON-01.tex}
+\input{capitulos/TEOREMA_NORTON-02.tex}
+\input{capitulos/TEOREMA_NORTON-03.tex}
+\input{capitulos/TEOREMA_NORTON-04.tex}
+\input{capitulos/TEOREMA_NORTON-05.tex}
+\input{capitulos/TEOREMA_NORTON-06.tex}
+\input{capitulos/TEOREMA_NORTON-07.tex}
+\input{capitulos/TEOREMA_NORTON-08.tex}
+
+\end{document}

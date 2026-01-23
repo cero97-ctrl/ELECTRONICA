@@ -1,0 +1,92 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{booktabs} % Para tablas más estéticas
+\usepackage{siunitx} % Para unidades como Ohm
+\usepackage{enumerate} % Para personalizar listas como [1.]
+
+\geometry{a4paper, margin=0.5in}
+
+\begin{document}
+\noindent \begin{parbox}[t]{0.45\textwidth}{
+    \subsection*{Máxima transferencia de potencia}
+    \vspace{0.5cm}
+    \textbf{TABLA 24-1}
+    
+    \sisetup{output-decimal-marker={,}}
+    \centering
+    \begin{tabular}{l S[table-format=6.0] S[table-format=5.2]}
+        \toprule
+        \textbf{$R_L$,} & \textbf{$R+R_L$,} & {\textbf{$W = \frac{V^2 R_L}{(R+R_L)^2}$}} \\
+        \textbf{ohmios} & \textbf{ohmios} & \textbf{(vatios)} \\
+        \midrule
+        0 & 100 & 0 \\
+        10 & 110 & 8,26 \\
+        20 & 120 & 13,9 \\
+        30 & 130 & 17,7 \\
+        40 & 140 & 20,4 \\
+        50 & 150 & 22,2 \\
+        60 & 160 & 23,4 \\
+        70 & 170 & 24,2 \\
+        80 & 180 & 24,7 \\
+        90 & 190 & 24,9 \\
+        100 & 200 & 25 \\
+        110 & 210 & 24,9 \\
+        120 & 220 & 24,8 \\
+        130 & 230 & 24,6 \\
+        140 & 240 & {24,2+} \\
+        150 & 250 & {23,9+} \\
+        200 & 300 & 22,2 \\
+        400 & 500 & 16 \\
+        600 & 700 & 12,25 \\
+        800 & 900 & 9,87 \\
+        1000 & 1100 & 8,26 \\
+        10000 & 10100 & 0,98 \\
+        100000 & 100100 & 0,099 \\
+        \bottomrule
+    \end{tabular}
+    
+    \vspace{1cm} % Espacio para la siguiente sección
+    
+    \begin{enumerate}[1.]
+        \setcounter{enumi}{1} % Asumiendo que continúa de la página anterior
+        \item yos extremos hay una tensión de c.c. V (voltios), es $W = V^2/R$.
+        \item La potencia W, en vatios, disipada por una resistencia (resistor) R (ohmios) en que hay una corriente de c.c. I (amperios) es $W = I^2R$.
+        \item Si la tensión c.c. es V (voltios) entre los extremos de un resistor y la corriente es I (amperios), la potencia disipada por la resistencia es $W = V \times I$.
+        \item Cuando es entregada potencia por una fuente de alimentación V, cuya resistencia interna es $R_{in}$, a una carga $R_L$, la máxima transferencia de potencia tiene lugar cuando la resistencia de la carga es igual a la resistencia interna de la fuente, es decir, cuando $R_{in} = R_L$.
+    \end{enumerate}
+
+}\end{parbox}
+\hfill
+\begin{parbox}[t]{0.45\textwidth}{
+    \hfill 145
+    
+    \section*{AUTOEXAMEN}
+    \begin{enumerate}
+        \item La corriente en una resistencia de 120 $\Omega$ es 0,1 A. La potencia en vatios disipada por la resistencia es W = \dotfill W.
+        \item La tensión entre los extremos de una resistencia es 12 V y la corriente en ella es de 0,05 A. La potencia disipada por la resistencia es W = \dotfill W.
+        \item La tensión entre los extremos de una resistencia de 220 $\Omega$ es 16,0 V. La potencia disipada en la resistencia es W = \dotfill W.
+        \item Una fuente de alimentación cuya resistencia interna es 25 $\Omega$ entrega potencia a una carga de 50 $\Omega$ conectada entre sus terminales. Si la tensión entregada por la fuente sin carga es 15 V, la potencia disipada por la carga es W = \dotfill W.
+        \item Una fuente de alimentación con una resistencia interna de 25 $\Omega$ entrega potencia a una carga resistiva. Si la tensión sin carga en la salida de la fuente es 50 V, la máxima potencia será entregada a la carga cuya resistencia sea $R_L$ = \dotfill $\Omega$.
+        \item La potencia entregada por la fuente de la pregunta 5 es W = \dotfill W.
+    \end{enumerate}
+
+    \section*{MATERIALES NECESARIOS}
+    \textbf{Equipo:} Fuente de c.c. variable regulada; EVM.
+    
+    \textbf{Resistencias:} ½ W 1.000 $\Omega$ (330, 470, 1.000 y 2.200 $\Omega$ para la pregunta adicional).
+    
+    \textbf{Diversos:} Caja de décadas de resistencia o potenciómetros de 10.000 $\Omega$ (potenciómetro de 10.000 $\Omega$ para la pregunta adicional); un interruptor bipolar.
+
+    \section*{PROCEDIMIENTO}
+    \begin{enumerate}
+        \item Conectar el circuito de la figura 24-1. V es la alimentación de tensión regulada, R una resistencia de 1.000 ohmios, $R_L$ una caja de décadas de resistencia o un potenciómetro de 10.000 ohmios conectado como reóstato. Para abrir la carga de modo que la resistencia de $R_L$ completamente aislada de V, se pueda ajustar y medir cuando convenga, se utiliza un interruptor bipolar (dos interruptores mecánicos).
+    \end{enumerate}
+
+}\end{parbox}
+
+\end{document}

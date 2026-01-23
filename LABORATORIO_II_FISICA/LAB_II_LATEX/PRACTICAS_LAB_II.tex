@@ -1,0 +1,1076 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-tabla]{babel} % es-tabla para que diga 'Tabla' en vez de 'Cuadro'
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage[american]{circuitikz} % Especificamos estilo americano globalmente
+\usetikzlibrary{babel} % CORRECCIÓN IMPRESCINDIBLE: Evita conflictos con flechas -> y babel español
+\usepackage{float}
+\usepackage{array}
+\usepackage{enumitem} % Para mejor control de listas
+\usepackage{comment}    
+
+% Configuración de márgenes
+\geometry{a4paper, margin=1in}
+
+% Configuración de hipervínculos (Debe ir al final del preámbulo usualmente)
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=black, filecolor=black]{hyperref}
+
+% Redefinición de nombres (aunque babel con es-tabla hace gran parte)
+\addto\captionsspanish{%
+  \renewcommand{\contentsname}{Índice}%
+  \renewcommand{\listfigurename}{Índice de Figuras}%
+  \renewcommand{\listtablename}{Índice de Tablas}%
+}
+
+% --- Profundidad del Índice ---
+\setcounter{tocdepth}{3} % 1=section, 2=subsection, 3=subsubsection
+
+\begin{document}
+
+% Portada o Título (Opcional, se puede agregar aquí)
+
+% --- ÍNDICES ---
+{
+  \hypersetup{linkcolor=black} % Para que el índice no se vea todo azul, solo funcional
+  \tableofcontents
+  \newpage
+  \listoffigures
+  \newpage
+  \listoftables
+  \newpage
+}
+
+% ================= PRÁCTICA 1 =================
+\phantomsection % Anclaje para el hipervínculo
+\section*{\centering PRÁCTICA 1 \\ MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA 
+CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS}
+\addcontentsline{toc}{section}{PRÁCTICA 1: MANEJO DEL INSTRUMENTAL ELÉCTRICO...}
+ 
+\phantomsection
+\subsection*{1. OBJETIVOS}
+\addcontentsline{toc}{subsection}{1. OBJETIVOS}
+\begin{itemize}
+    \item Lograr que el estudiante aprenda a utilizar los instrumentos eléctricos de medida y a 
+    realizar montaje de circuitos sencillos.
+    \item Obtener la característica I-V de algunos dispositivos y determinar si cumplen o no la ley 
+    de Ohm.
+\end{itemize}
+
+\phantomsection
+\subsection*{2. PARTE TEÓRICA}
+\addcontentsline{toc}{subsection}{2. PARTE TEÓRICA}
+Esta teoría es común para las prácticas 'Determinación de una resistencia eléctrica' y 
+'Determinación de la resistencia interna de un Voltímetro, un Amperímetro y una Fuente'.
+
+\subsubsection*{2.1. RESISTENCIA, RESISTIVIDAD Y CONDUCTIVIDAD}
+\addcontentsline{toc}{subsubsection}{2.1. RESISTENCIA, RESISTIVIDAD Y CONDUCTIVIDAD}
+La resistencia eléctrica es la propiedad de un material que caracteriza su oposición al paso de 
+una corriente eléctrica. En términos de la diferencia de potencial V, aplicada a sus extremos y de 
+la intensidad de corriente I, que circula a través del conductor, la resistencia R, la definimos 
+así:
+\begin{equation}
+    R = \frac{V}{I}
+    \label{eq:ohm_basica}
+\end{equation}
+La unidad en el S.I. de resistencia es el ohm, que se representa por la letra griega $\Omega$. 
+Según [1], $1\Omega = \frac{1V}{4}$.
+
+Una cantidad relacionada con R es la resistividad $\rho$, o resistencia específica, la cual es 
+la característica de un material y no de una muestra específica del mismo. Para materiales 
+isótropos, la resistividad se define como:
+\begin{equation}
+    \rho = \frac{E}{J}
+    \label{eq:resistividad}
+\end{equation}
+donde E es el campo eléctrico y J es la densidad de corriente o corriente por unidad de área de 
+la sección transversal del conductor es decir:
+\begin{equation}
+    J = \frac{I}{A}
+    \label{eq:densidad_corriente}
+\end{equation}
+Con el fin de expresar la resistencia R, en términos de la naturaleza del material (resistividad) y 
+de la geometría del conductor, consideremos un conductor cilíndrico de longitud $l$ y sección 
+transversal de área $A$ por el cual circula una corriente I al aplicarse entre sus extremos una 
+diferencia de potencial V, tal como se muestra en la figura~\ref{fig:conductor}.
+
+Si suponemos el campo eléctrico constante debe cumplirse que:
+\begin{equation}
+    E = \frac{V}{l}
+    \label{eq:campo_electrico}
+\end{equation}
+Sustituyendo los valores de las ecuaciones~\eqref{eq:densidad_corriente} 
+y~\eqref{eq:campo_electrico} en la ecuación~\eqref{eq:resistividad}, obtenemos que:
+\begin{equation}
+    \rho = \frac{RA}{l}
+    \label{eq:resistividad_geo}
+\end{equation}
+Esta relación nos lleva a una expresión para R dada por:
+\begin{equation}
+    R = \rho \frac{l}{A}
+\end{equation}
+Según la cual R depende de la naturaleza y de la geometría del conductor.
+
+\begin{figure}[H]
+    \centering
+    % Placeholder visual usando TikZ para simular el conductor
+    \begin{tikzpicture}
+        \draw[left color=gray!20, right color=gray!20, middle color=gray!50] (0,0) ellipse (0.2 and 0.5);
+        \draw[left color=gray!20, right color=gray!20, middle color=gray!50] (4,0) ellipse (0.2 and 0.5);
+        \draw[top color=gray!20, bottom color=gray!50, middle color=gray!30] (0,0.5) -- (4,0.5) arc (90:-90:0.2 and 0.5) 
+            -- (0,-0.5) arc (-90:90:0.2 and 0.5);
+        \draw[->] (-0.5,0) -- (0.5,0) node[above] {$I$};
+        \draw[<->] (0,-0.7) -- (4,-0.7) node[midway, below] {$l$};
+        \node at (4.5, 0) {$A$};
+    \end{tikzpicture}
+    \caption{Tramo de conductor de longitud l y sección transversal de área A, a través del cual 
+    circula una corriente I.}\label{fig:conductor}
+\end{figure}
+
+De \eqref{eq:resistividad} se define la unidad en el S.I. de resistividad como: $\Omega \cdot m$.
+
+La conductividad es un parámetro relacionado con el inverso de la resistividad. Generalmente se denota con la letra griega 
+$\sigma$ y se define como:
+
+\begin{equation}
+    \sigma = \frac{1}{\rho} = \frac{J}{E}
+    \label{eq:conductividad}
+\end{equation}
+En término de esta cantidad, la densidad de corriente se define también como:
+\begin{equation}
+    \vec{J} = \sigma \vec{E}
+    \label{eq:ley_ohm_vectorial}
+\end{equation}
+De la ecuación~\eqref{eq:ley_ohm_vectorial} se deduce que J es un vector definido como el producto de un escalar $\sigma$ 
+por el vector intensidad de campo eléctrico ($\vec{E}$), esto es:
+\begin{equation}
+    J = \sigma E
+\end{equation}
+
+\subsubsection*{2.2. LEY DE OHM}
+\addcontentsline{toc}{subsubsection}{2.2. LEY DE OHM}
+En 1820 George Simon Ohm (1787-1854), demostró experimentalmente que la resistencia R de ciertos conductores (los metales) 
+bajo condiciones de temperatura constante, es independiente de la diferencia de potencial V aplicada en sus extremos y de 
+la intensidad de corriente I que circula a través de ellos. En forma de ecuación, lo anterior se expresa así:
+\begin{equation}
+    R = \frac{V}{I} = \text{constante}
+\end{equation}
+Debido a que esta ley sólo se cumple para los metales, se dice que la misma no describe una propiedad general de la materia, 
+sino una característica particular de ciertas sustancias.
+
+Los conductores que cumplen la ley de Ohm se denominan óhmicos o lineales (su característica I-V es una recta), mientras que 
+los que no la obedecen se denominan no lineales. Como ejemplo de estos últimos tenemos los materiales semiconductores.
+
+\subsubsection*{2.3. RESISTORES}
+\addcontentsline{toc}{subsubsection}{2.3. RESISTORES}
+Un resistor es un componente de cualquier circuito, cuyo propósito es el de tener resistencia. Los materiales usados como 
+resistores se caracterizan por tener un coeficiente de temperatura (CT) pequeño; o sea, la variación porcentual de la 
+resistencia por grado de temperatura es pequeña. Los valores de la resistencia, del coeficiente de temperatura y la máxima 
+potencia permitida en un resistor de algunos de los conductores más comunes, se muestran en la tabla 1.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Características de resistores comunes.}
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{TIPO} & \textbf{RANGO} & \textbf{C. T. (\%/°C)} & \textbf{POTENCIA MÁX} \\
+        \hline
+        CARBÓN & $1\Omega - 22M\Omega$ & 0.1 & 2W \\
+        \hline
+        ALAMBRE & $1\Omega - 100K\Omega$ & 0.0005 & 200W \\
+        \hline
+        PELÍCULA METÁLICA & $0.1\Omega - 10^{12}\Omega$ & 0.0001 & 1W \\
+        \hline
+        PELÍCULA DE CARBÓN & $10\Omega - 100M\Omega$ & Entre 0.015 - 0.05 & 2W \\
+        \hline
+    \end{tabular}
+\end{table}
+
+En el caso de los resistores de carbón, existe un código de colores y una clave para determinar el valor de la resistencia. 
+La clave consiste en leer los anillos o bandas de colores de izquierda a derecha (el extremo es el más próximo a la primera banda) 
+de tal manera que las dos primeras bandas, AB, definen las dos primeras cifras del valor de la resistencia; la tercera banda, 
+C, es un multiplicador y la cuarta banda, D, indica la tolerancia o error en la determinación de R. Así pues, el valor de la 
+resistencia del resistor se especifica como:
+\[ R = AB \cdot 10^C \pm D \]
+Para determinar el valor del resistor debemos identificar los colores según lo indica la tabla 2.
+
+\begin{table}[H]
+    \centering
+    \caption{Código de colores para resistores.}
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{COLOR} & \textbf{VALOR} & \textbf{POTENCIA DE 10} & \textbf{TOLERANCIA} \\
+        \hline
+        NEGRO & 0 & $10^0$ & $\pm 20\%$ \\
+        \hline
+        MARRÓN & 1 & $10^1$ & $\pm 1\%$ \\
+        \hline
+        ROJO & 2 & $10^2$ & $\pm 2\%$ \\
+        \hline
+        ANARANJADO & 3 & $10^3$ & $\pm 3\%$ \\
+        \hline
+        AMARILLO & 4 & $10^4$ & --- \\
+        \hline
+        VERDE & 5 & $10^5$ & $\pm 5\%$ \\
+        \hline
+        AZUL & 6 & $10^6$ & --- \\
+        \hline
+        VIOLETA & 7 & $10^7$ & --- \\
+        \hline
+        GRIS & 8 & $10^8$ & --- \\
+        \hline
+        BLANCO & 9 & $10^9$ & --- \\
+        \hline
+        PLATA & --- & $10^{-2}$ & $\pm 10\%$ \\
+        \hline
+        ORO & --- & $10^{-1}$ & $\pm 5\%$ \\
+        \hline
+        NINGUNO & --- & --- & $\pm 20\%$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+A manera de ejemplo, supongamos que nos dan dos resistores con la siguiente secuencia de colores:
+\begin{itemize}
+    \item[a.] Amarillo, Violeta, Marrón, Plata: $47 \times 10^1 = 470\Omega \pm 10\%$
+    \item[b.] Marrón, Negro, Rojo, Ninguno: $10 \times 10^2 = 1k\Omega \pm 20\%$
+\end{itemize}
+De acuerdo con el código de colores de la tabla 2, los resistores tendrían valores:
+\begin{itemize}
+    \item[a.] $(470 \pm 10\%) \Omega$.
+    \item[b.] $(1000 \pm 20\%) \Omega$.
+\end{itemize}
+
+\subsubsection*{2.4. POTENCIA MÁXIMA DE UN RESISTOR}
+\addcontentsline{toc}{subsubsection}{2.4. POTENCIA MÁXIMA DE UN RESISTOR}
+Siempre que una corriente eléctrica de intensidad i circula por un resistor R, se disipa energía en forma de calor 
+(efecto Joule) en el resistor. La tasa de producción de calor o potencia disipada es $P=RI^2$. Esto hace que suba 
+la temperatura en el resistor y si no se evita sobrepasar el límite de temperatura máxima, se puede destruir el 
+resistor. Por lo tanto, es muy importante tener presente la potencia máxima, $P_{\text{máx.}}$, que pueden soportar  
+los resistores de carbón cuando se le va a conectar en un circuito. A partir de este valor máximo de P, se puede 
+determinar la máxima corriente $I_{\text{máx.}}$, o la máxima caída de potencial $V_{\text{máx.}}$ que puede soportar 
+el resistor sin dañarse empleando la relación:
+
+\begin{equation}
+    P_{\text{máx.}} = RI_{\text{máx.}}^2 = \frac{V_{\text{máx.}}^2}{R}
+\end{equation}
+
+\subsubsection*{2.5. AMPERÍMETROS, VOLTÍMETROS Y OHMÍMETROS}
+\addcontentsline{toc}{subsubsection}{2.5. AMPERÍMETROS, VOLTÍMETROS Y OHMÍMETROS}
+Las cantidades V, R, e I son cantidades macroscópicas de interés fundamental cuando se trabaja 
+efectuando medidas eléctricas en conductores reales. Por lo tanto, son las cantidades que 
+normalmente se miden con instrumentos debidamente calibrados. Estos instrumentos son: el 
+amperímetro, para medir la intensidad de corriente I; el voltímetro, para medir la diferencia de 
+potencia V y el ohmímetro, para medir la resistencia R.
+
+\phantomsection
+\subsection*{3. PARTE EXPERIMENTAL}
+\addcontentsline{toc}{subsection}{3. PARTE EXPERIMENTAL}
+
+\subsubsection*{3.1 MATERIAL}
+\addcontentsline{toc}{subsubsection}{3.1 MATERIAL}
+\begin{itemize}
+    \item 1 fuente de poder de 0 – 30 v, 6 A
+    \item 2 multimedidores Keithley (179, 175 ó 175-A)
+    \item 1 diodo semiconductor
+    \item 1 Resistencia (Variable o de carbón)
+\end{itemize}
+
+\subsubsection*{3.2. PROCEDIMIENTO}
+\addcontentsline{toc}{subsubsection}{3.2. PROCEDIMIENTO}
+Lea detalladamente el material de instrucción de los multimedidores digitales Keithley 179 y 175 en cada uno de los rangos como 
+amperímetro, voltímetro (para medida en DC y AC) y Ohmímetro.
+
+\paragraph{3.2.1 CARACTERÍSTICA I-V DE UN RESISTOR.}
+\addcontentsline{toc}{subsubsection}{3.2.1 CARACTERÍSTICA I-V DE UN RESISTOR.}
+\begin{itemize}
+    \item Realice el montaje del circuito mostrado en la figura~\ref{fig:circuito_resistor}.
+    \item Variando la salida de la fuente, para un valor fijo en el resistor R, obtenga una serie de 
+        valores (20 mínimos) de V e I.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        % Rama principal: Fuente -> Amperímetro -> Resistor
+        \draw (0,0) node[ground]{} 
+              to[V, l=$E$, invert] (0,3)
+              to[ammeter, l=$A$] (3,3) -- (3,3) % Amperímetro en serie
+              to[R, l=$R$, v=$V_R$] (3,0) -- (0,0); % Resistor
+        
+        % Rama del Voltímetro (en paralelo al Resistor)
+        \draw (3,3) -- (5,3)
+              to[voltmeter, l=$V$] (5,0)
+              -- (3,0);
+
+        \node[ocirc] at (0,0) {};
+        \node[ocirc] at (3,0) {};
+        \node[ocirc] at (3,3) {};
+    \end{circuitikz}
+    \caption{Circuito para el Experimento 3.2.1}\label{fig:circuito_resistor}
+\end{figure}
+
+\paragraph{3.2.2 CARACTERÍSTICA I-V DE UN DIODO SEMICONDUCTOR.}
+\addcontentsline{toc}{subsubsection}{3.2.2 CARACTERÍSTICA I-V DE UN DIODO SEMICONDUCTOR.}
+\begin{itemize}
+    \item Realice el montaje del circuito mostrado en la figura~\ref{fig:circuito_diodo}.
+    \item Variando la salida de la fuente o variando el resistor R, obtenga una serie de valores 
+    (20 mínimos) de V e I.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        % Rama Izquierda: Fuente
+        \draw (0,0) node[ground]{} 
+              to[V, l=$E$, invert] (0,3); 
+        
+        % Rama Superior: Resistencia Variable en serie con Amperímetro
+        \draw (0,3) to[potentiometer, l=$R$] (3,3)
+                    to[ammeter, l=$A$] (5,3);
+
+        % Rama Derecha: Diodo
+        \draw (5,3) to[D, l=$D$] (5,0) 
+                    -- (0,0); 
+        
+        % Rama Externa: Voltímetro en paralelo con el Diodo
+        \draw (5,3) -- (7,3) 
+                    to[voltmeter, l=$V$] (7,0) 
+                    -- (5,0);
+
+        \node[ocirc] at (0,0) {};
+        \node[ocirc] at (5,3) {};
+        \node[ocirc] at (5,0) {};
+    \end{circuitikz}
+    \caption{Circuito con Resistencia Variable en Serie}
+    \label{fig:circuito_diodo}
+\end{figure}
+
+\phantomsection
+\subsection*{4. ACTIVIDADES}
+\addcontentsline{toc}{subsection}{4. ACTIVIDADES}
+\begin{itemize}
+    \item Para cada experimento construya la gráfica I Vs V, y escriba la conclusión respectiva.
+\end{itemize}
+
+\newpage
+
+% ================= PRÁCTICA 2 =================
+\phantomsection
+\section*{\centering PRÁCTICA 2 \\ DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA}
+\addcontentsline{toc}{section}{PRÁCTICA 2: DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA}
+ 
+\phantomsection
+\subsection*{1. OBJETIVOS}
+\addcontentsline{toc}{subsection}{1. OBJETIVOS}
+\begin{itemize}
+    \item Conocer los diferentes métodos experimentales que permiten determinar una resistencia eléctrica.
+    \item Escoger entre estos métodos, aquel que permita determinar una resistencia de la manera más práctica y precisa.
+\end{itemize}
+
+\phantomsection
+\subsection*{2. PARTE TEÓRICA}
+\addcontentsline{toc}{subsection}{2. PARTE TEÓRICA}
+Ver sección 2 de la primera práctica.
+
+\phantomsection
+\subsection*{3. PARTE EXPERIMENTAL}
+\addcontentsline{toc}{subsection}{3. PARTE EXPERIMENTAL}
+En esta parte del laboratorio, Ud. podrá determinar el valor de una resistencia eléctrica utilizando dos métodos 
+experimentales, uno de medida indirecta y otro de medida directa.
+
+\subsubsection*{3.1. MATERIAL}
+\addcontentsline{toc}{subsubsection}{3.1. MATERIAL}
+\begin{itemize}
+    \item 1 fuente de poder de 0 – 30 v, 6 A
+    \item 2 multimedidores Keithley (179, 175 ó 175-A)
+    \item 1 Resistencia de carbón.
+    \item 3 Resistencias variable del tipo décadas.
+    \item 1 fuente estabilizada electrónicamente (Pila tipo D).
+    \item Cables de conexión.
+\end{itemize}
+
+\subsubsection*{3.2. MÉTODO DE MEDIDA INDIRECTA DE UNA RESISTENCIA ELÉCTRICA}
+\addcontentsline{toc}{subsubsection}{3.2. MÉTODO DE MEDIDA INDIRECTA DE UNA RESISTENCIA ELÉCTRICA}
+\paragraph{3.2.1 AMPERÍMETRO Y VOLTÍMETRO.}
+\addcontentsline{toc}{subsubsection}{3.2.1 AMPERÍMETRO Y VOLTÍMETRO.}
+El análisis de este circuito nos indica que la corriente I que pasa por el amperímetro es la suma de la corriente 
+$I_R$ que circula por el resistor R, más la corriente $I_v$ que circula por la resistencia interna del voltímetro 
+$R_v$; por lo que:
+
+\begin{equation}
+    I = I_R + I_v
+\end{equation}
+Como $I_R = V/R$, de la misma forma que $I_v = V/R_v$ se tiene que $I = V/R + V/R_v$.
+Si $R_v \gg R$, prácticamente toda la corriente pasa a través de R. Por lo tanto, $V/R_v \approx 0$ por lo que se 
+puede determinar el valor de R a partir de la relación,
+\begin{equation}
+    R = \frac{V}{I}
+\end{equation}
+\begin{itemize}
+    \item Arme el circuito de la figura~\ref{fig:voltimetro_fuente}.
+    \item Variando la salida de la fuente, obtenga 20 valores de corriente y voltaje.
+\end{itemize}
+En este caso, la caída de tensión V es la suma de la caída de tensión en el amperímetro $V_A$ más la caída de tensión 
+en la resistencia $V_R$. Esto es:
+\begin{equation}
+    V = I R_A + I R
+\end{equation}
+Si $R_A \ll R$, toda la caída de potencial se debe a la resistencia R, por lo tanto $I R_A \approx 0$, lo cual conduce 
+nuevamente a la relación de la ecuación~\eqref{eq:ohm_basica}:
+\begin{equation}
+    R = \frac{V}{I}
+\end{equation}
+\begin{itemize}
+    \item Arme el circuito de la figura~\ref{fig:voltimetro_carga}.
+    \item Variando la salida de la fuente, obtenga 20 valores de corriente y voltaje.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % --- ESQUEMA 4 ---
+    \begin{minipage}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[american, scale=0.9]
+            % Fuente y Tierra
+            \draw (0,0) node[ground]{} 
+                  to[V, l=$E$, invert] (0,4);
+            
+            % Voltímetro en paralelo a la FUENTE
+            \draw (0,4) -- (-2.5,4)
+                  to[voltmeter, l=$V$] (-2.5,0) -- (0,0);
+
+            % Amperímetro y Resistencia
+            \draw (0,4) to[ammeter, l=$A$] (3,4)
+                  to[R, l=$R$] (3,0)
+                  -- (0,0);
+            \node[ocirc] at (0,0) {};
+        \end{circuitikz}
+        \caption{Voltímetro en fuente E}
+        \label{fig:voltimetro_fuente}
+    \end{minipage}
+    \hfill
+    % --- ESQUEMA 5 ---
+    \begin{minipage}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[american, scale=0.9]
+            % Fuente y Tierra
+            \draw (0,0) node[ground]{} 
+                  to[V, l=$E$, invert] (0,4);
+            
+            % Amperímetro en serie
+            \draw (0,4) to[ammeter, l=$A$] (3,4)
+                  to[R, l=$R$] (3,0)
+                  -- (0,0);
+
+            % Voltímetro en paralelo a la RESISTENCIA
+            \draw (3,4) -- (5,4)
+                  to[voltmeter, l=$V$] (5,0)
+                  -- (3,0);
+
+            \node[ocirc] at (0,0) {};
+            \node[ocirc] at (3,4) {};
+            \node[ocirc] at (3,0) {};
+        \end{circuitikz}
+        \caption{Voltímetro en carga R}\label{fig:voltimetro_carga}
+    \end{minipage}
+    %\caption{Circuitos para determinar la resistencia R (4 y 5)}
+\end{figure}
+
+\paragraph{3.2.2 PUENTE DE RESISTENCIAS}
+\addcontentsline{toc}{subsubsection}{3.2.2 PUENTE DE RESISTENCIAS}
+El puente de resistencia o puente Wheatstone, se utiliza para determinar el valor de un resistor 
+desconocido por comparación con tres resistores cuyas resistencias se pueden modificar. El circuito 
+de este puente, mostrado en la figura~\ref{fig:puente_wheatstone}, básicamente consta de f.e.m, 
+tres resistores de precisión [$R_1, R_2$ y $R_3$], un detector V sensible a pequeñas diferencias 
+de potencial y el resistor $R_x$ cuyo valor de resistencia se va a determinar.
+
+El método consiste en balancear el puente variando las resistencias $R_1, R_2$ y $R_3$ hasta que el detector indique 
+cero potencial. En estas condiciones los puntos b y d están a un mismo potencial. Por lo tanto, la caída de potencial 
+a través de $R_x$ debe ser igual a la caída de potencial a través de $R_1$, esto es:
+\[ I_2 R_x = I_1 R_1 \]
+De la misma forma, la caída de potencial a través de $R_3$ debe ser igual a la caída de potencial a través de $R_2$, 
+es decir:
+\[ I_2 R_3 = I_1 R_2 \]
+Si dividimos miembro a miembro ambas ecuaciones obtenemos para la resistencia desconocida el valor dado por:
+\begin{equation}
+    \label{eq:puente_wheatstone}
+    R_x = R_3 \frac{R_1}{R_2}
+\end{equation}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        % Nodos
+        \node[circ] at (0,2) (A) {};
+        \node[circ] at (0,-2) (B) {};
+        \node[circ] at (-2,0) (C) {};
+        \node[circ] at (2,0) (D) {};
+
+        % Fuente de alimentacion
+        \draw (B) -- ++(-4,0) to[V, v_=$V_s$, invert] ++(0,4) -- (A);
+
+        % Resistencias
+        \draw (A) to[R, l=$R_1$] (C);
+        \draw (C) to[R, l=$R_2$] (B);
+        \draw (A) to[R, l=$R_3$] (D);
+        \draw (D) to[R, l=$R_x$ (desconocida)] (B);
+
+        % Galvanometro
+        \draw (C) to[ammeter, l_=G] (D);
+        
+        % Etiquetas de nodos
+        \node[above left] at (A) {A};
+        \node[below left] at (B) {B};
+        \node[left] at (C) {C};
+        \node[right] at (D) {D};
+    \end{circuitikz}
+    \caption{Diagrama de un Puente de Wheatstone.}\label{fig:puente_wheatstone}
+\end{figure}
+
+\begin{itemize}
+    \item Arme el circuito mostrado en la figura~\ref{fig:puente_wheatstone}.
+    \item Empezando con la sensibilidad mínima (rango máximo) del detector (voltímetro), ajuste los valores $R_1, R_2$ y $R_3$ 
+    hasta obtener una indicación mínima en el detector (V = 0).
+    \item Aumente la sensibilidad del detector y repita el paso anterior.
+    \item Ajuste cada vez más hasta obtener la indicación cero con la máxima sensibilidad, (mínimo rango).
+    \item Anote los valores de $R_1, R_2$ y $R_3$.
+\end{itemize}
+\textbf{RECOMENDACIÓN:} A pesar de que el ajuste a cero en el detector se logra moviendo los selectores de $R_1, R_2$ y $R_3$, 
+siempre es recomendable elegir una relación $R_1/R_2$ a valores como $10^{-3}, 10^{-2}, 10^{-1}, 1, 10, 10^2$, ó $10^3$. Las 
+resistencias $R_1, R_2$ y $R_3$ están constituidas por resistores variables en cuatro décadas que permiten estimar un error del 
+1\% del valor ajustado. Como f.e.m, puede utilizarse una pila y como resistor $R_x$ el resistor desconocido que le suministre 
+el profesor.
+
+\subsubsection*{3.3. MÉTODO DE MEDIDA DIRECTA DE UNA RESISTENCIA ELÉCTRICA}
+\addcontentsline{toc}{subsubsection}{3.3. MÉTODO DE MEDIDA DIRECTA DE UNA RESISTENCIA ELÉCTRICA}
+\paragraph{3.3.1. OHMÍMETRO}
+\addcontentsline{toc}{subsubsection}{3.3.1. OHMÍMETRO}
+Existen multimedidores analógicos y digitales que, además de medir corriente y voltaje, están calibrados para indicar valores de 
+resistencia eléctrica. Esto constituye el llamado ohmímetro.
+
+Utilice la resistencia empleada por usted en los métodos anteriores (amperímetro y voltímetro, puente de Wheatstone) y determine el 
+valor con su error, utilizando el multimedidor Keithley 175 ó 179.
+
+\phantomsection
+\subsection*{4. ACTIVIDADES}
+\addcontentsline{toc}{subsection}{4. ACTIVIDADES}
+\subsubsection*{4.1. LA PRECISIÓN DEL RESULTADO}
+\addcontentsline{toc}{subsubsection}{4.1. LA PRECISIÓN DEL RESULTADO}
+Los valores de R obtenidos mediante los métodos descritos anteriormente están afectados por un error. En las mediciones donde se 
+empleó el método expuesto en la parte 3.2.1, el error depende de los errores con que son afectados los valores de V e I según las 
+especificaciones de los multímetros utilizados y el rango empleado en las medidas correspondientes. Las mediciones donde se empleó 
+el método desarrollado en la parte 3.2.2, partiendo del supuesto de que los cables de conexión carecen de resistencia y de que hay 
+buenos contactos eléctricos en los diferentes puntos de interconexión, las fuentes de error provienen de las resistencias empleadas 
+para el balanceo del puente, cuyo valor es de $\pm 1\%$ del valor ajustado. Finalmente, el error que se comete con el empleo del 
+método expresado en 3.3.1, proviene del instrumento y el rango empleado, según especificaciones del manual de instrucciones.
+
+\subsubsection*{4.2. ACTIVIDADES ADICIONALES PREVIAS Y POSTERIORES A LA REALIZACIÓN DE LA PRÁCTICA}
+\addcontentsline{toc}{subsubsection}{4.2. ACTIVIDADES ADICIONALES PREVIAS Y POSTERIORES A LA REALIZACIÓN DE LA PRÁCTICA}
+\begin{itemize}
+    \item Revise, en la bibliografía recomendada, lo relacionado con métodos experimentales para medir resistencias eléctricas y 
+    amplíe la información teórica que se ha dado aquí como introducción.
+    \item Para el método 3.2.1, construya la gráfica I Vs V, aplique mínimo cuadrado y a partir de la pendiente y su error; 
+    determine el valor, con su error, de la resistencia suministrada.
+    \item Para el método 3.2.2, determine el valor de $R_x$ con su error, usando la ecuación~\eqref{eq:puente_wheatstone}.
+    \item Para el método 3.3.1, determine el valor de $R_x$ con su error.
+    \item Examine, analice y discuta, en términos de precisión, los métodos experimentales utilizados.
+    \item En base a la discusión anterior y a los resultados obtenidos, concluya acerca del método que introduce menos error en la 
+    determinación de una resistencia eléctrica.
+\end{itemize}
+
+\newpage
+
+% ================= PRÁCTICA 3 =================
+\phantomsection
+\section*{\centering PRÁCTICA 3 \\ DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE}
+\addcontentsline{toc}{section}{PRÁCTICA 3: DETERMINACIÓN DE LA RESISTENCIA INTERNA...}
+ 
+\phantomsection
+\subsection*{1. OBJETIVO}
+\addcontentsline{toc}{subsection}{1. OBJETIVO}
+\begin{itemize}
+    \item Determinar experimentalmente la resistencia interna de un voltímetro, un amperímetro y una fuente no 
+    estabilizada electrónicamente.
+\end{itemize}
+
+\phantomsection
+\subsection*{2. PARTE TEÓRICA}
+\addcontentsline{toc}{subsection}{2. PARTE TEÓRICA}
+Ver sección 2 de la primera práctica.
+
+Los instrumentos de medidas, por razones intrínsecas a los mismos, tienden a ofrecer una resistencia al paso de la corriente 
+eléctrica. Esta resistencia es, en general, variable de acuerdo a las posibilidades de medidas del instrumento, así como el 
+tipo de corriente, (continua o variable), a la cual se conecta.
+
+Una fuente de f.e.m., también posee una resistencia interna que determina una caída de tensión entre sus bornes. Aunque esta 
+resistencia por lo general es muy pequeña, puede ser calculada mediante un montaje experimental adecuado.
+
+\phantomsection
+\subsection*{3. PARTE EXPERIMENTAL}
+\addcontentsline{toc}{subsection}{3. PARTE EXPERIMENTAL}
+
+\subsubsection*{3.1. MATERIAL}
+\addcontentsline{toc}{subsubsection}{3.1. MATERIAL}
+\begin{itemize}
+    \item 1 multimedidor Keithley (179, 175 ó 175-A)
+    \item 1 Resistencia variable del tipo décadas.
+    \item 1 fuente estabilizada electrónicamente (Pila tipo D).
+    \item Cables de conexión.
+\end{itemize}
+
+\subsubsection*{3.2. PROCEDIMIENTO}
+\addcontentsline{toc}{subsubsection}{3.2. PROCEDIMIENTO}
+\paragraph{3.2.1 RESISTENCIA INTERNA DE UN VOLTÍMETRO}
+\addcontentsline{toc}{subsubsection}{3.2.1 RESISTENCIA INTERNA DE UN VOLTÍMETRO}
+Puede demostrarse que la señal detectada por el voltímetro de la figura~\ref{fig:resistencia_voltimetro} es:
+\begin{equation}
+    V_m = \frac{R_v E}{R+R_v}
+    \label{eq:res_voltimetro}
+\end{equation}
+Donde: R es un resistor ajustado de tal manera que no se exceda el rango del voltímetro; $R_v$ corresponde a la resistencia interna 
+del voltímetro y E la salida de la fuente, la cual se determina con R=0. Así, conocidos R, E y $V_m$, se puede calcular $R_v$ para 
+el rango respectivo del voltímetro.
+\begin{itemize}
+    \item Mida la salida de la fuente (E).
+    \item Arme el circuito mostrado en la figura~\ref{fig:resistencia_voltimetro}.
+    \item Seleccione el rango de 2 V en el voltímetro (179, 175 o 175-A).
+    \item Ajuste un valor de R (puede ser en el orden de los M$\Omega$) y mida $V_m$.
+    \item En una tabla ordene los valores de E, $V_m$ y R.
+    \item Cambie el modelo del multimedidor y repita los pasos anteriores.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[ground]{} 
+              to[V, l=$E$, invert] (0,3)
+              to[potentiometer, l=$R$] (3,3)
+              to[voltmeter, l=$V_m$] (6,3)
+              -- (6,0)
+              -- (0,0);
+        \node[ocirc] at (0,0) {};
+    \end{circuitikz}
+    \caption{Montaje Experimental para Determinar la Resistencia Interna ($R_v$) de un Voltímetro.}\label{fig:resistencia_voltimetro}
+\end{figure}
+
+\paragraph{3.2.2 RESISTENCIA INTERNA DE UN AMPERÍMETRO}
+\addcontentsline{toc}{subsubsection}{3.2.2 RESISTENCIA INTERNA DE UN AMPERÍMETRO}
+Puede demostrarse que la corriente, $I_m$ detectada por el amperímetro de la figura~\ref{fig:resistencia_amperimetro} es:
+\begin{equation}
+    I_m = \frac{E}{R+R_a}
+    \label{eq:res_amperimetro}
+\end{equation}
+Donde: R es un resistor, ajustado de tal manera que no se exceda el rango del amperímetro; $R_a$ corresponde a la resistencia interna 
+del medidor y E es la salida de la fuente.
+
+Así conociendo E, R, e $I_m$, se puede determinar el valor de $R_a$, para el rango respectivo del amperímetro.
+\begin{itemize}
+    \item Mida la salida de la fuente (E).
+    \item Arme el circuito mostrado en la figura~\ref{fig:resistencia_amperimetro}.
+    \item Seleccione el rango de 200 $\mu$A en el amperímetro.
+    \item Ajuste un valor de R, tal que no exceda el rango del amperímetro y mida $I_m$.
+    \item En una tabla ordene los valores de E, $I_m$ y R.
+    \item Cambie el rango del multimedidor (2 mA) y repita los pasos anteriores.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[ground]{} 
+              to[V, l=$E$, invert] (0,3)
+              to[potentiometer, l=$R$] (3,3)
+              to[ammeter, l=$A_m$] (6,3)
+              -- (6,0)
+              -- (0,0);
+        \node[ocirc] at (0,0) {};
+    \end{circuitikz}
+    \caption{Montaje Experimental para Determinar la Resistencia Interna ($R_a$) de un Amperímetro.}\label{fig:resistencia_amperimetro}
+\end{figure}
+
+\paragraph{3.2.3 DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UNA FUENTE}
+\addcontentsline{toc}{subsubsection}{3.2.3 DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UNA FUENTE}
+El voltaje $V_m$ registrado por el voltímetro de la figura~\ref{fig:resistencia_fuente}, está dado por la ecuación:
+\begin{equation}
+    V_m = \frac{E R_e}{R_s + R_e}
+    \label{eq:res_fuente_vm}
+\end{equation}
+Donde: $R_e$ representa la resistencia equivalente, para el conjunto formado por R y $R_v$ 
+(resistencia interna el voltímetro), las cuales se encuentran conectadas en paralelo. Por tanto,
+\begin{equation}
+    R_e = \frac{R R_v}{R+R_v}
+    \label{eq:res_fuente_re}
+\end{equation}
+La ecuación~\eqref{eq:res_fuente_vm} puede reescribirse para observar la relación lineal que hay entre 
+$R_e/V_m$ y $R_e$; o sea,
+\begin{equation}
+    \frac{R_e}{V_m} = \frac{1}{E} R_e + \frac{R_s}{E}
+    \label{eq:res_fuente_lineal}
+\end{equation}
+\begin{itemize}
+    \item Mida la salida de la fuente (E).
+    \item Arme el circuito mostrado en la figura~\ref{fig:circuito_diodo}.
+    \item Variando la resistencia obtenga 20 valores de $V_m$ y R (Ordénelos en una tabla).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[ground]{} to[V, l=$E$, invert] (0,3)
+              to[R, l=$R_s$] (3,3)
+              to[potentiometer, l=$R$] (3,0) -- (0,0);
+        \draw (3,3) -- (5,3) to[voltmeter, l=$V$] (5,0) -- (3,0);
+        \node[ocirc] at (0,0) {};
+        \node[ocirc] at (3,3) {};
+        \node[ocirc] at (3,0) {};
+    \end{circuitikz}
+    
+    \caption{Montaje Experimental para Determinar la Resistencia Interna $R_s$, de una Fuente.}
+    \label{fig:resistencia_fuente}
+\end{figure}
+
+\phantomsection
+\subsection*{4. ACTIVIDADES}
+\addcontentsline{toc}{subsection}{4. ACTIVIDADES}
+\subsubsection*{4.1. RESISTENCIA INTERNA DE UN VOLTÍMETRO}
+\addcontentsline{toc}{subsubsection}{4.1. RESISTENCIA INTERNA DE UN VOLTÍMETRO}
+\begin{itemize}
+    \item Deduzca la expresión~\eqref{eq:res_voltimetro}.
+    \item Determine, con su error, la resistencia interna de los voltímetros digitales 179 y 175 en el rango de 2V.
+    \item Determine la desviación porcentual del valor medido por Ud., $R_v$, respecto al valor indicado por el fabricante 
+    $R_F$ (10M$\Omega$ para 179 y 11M$\Omega$ para 175), mediante la expresión:
+    \begin{equation}
+        E\% = \frac{|R_F - R_v|}{R_F} \times 100
+        \label{eq:error_porcentual}
+    \end{equation}
+\end{itemize}
+
+\subsubsection*{4.2. RESISTENCIA INTERNA DE UN AMPERÍMETRO}
+\addcontentsline{toc}{subsubsection}{4.2. RESISTENCIA INTERNA DE UN AMPERÍMETRO}
+\begin{itemize}
+    \item Deduzca la expresión~\eqref{eq:res_amperimetro}.
+    \item Determine el valor con su error, de la resistencia interna $R_a$ de los multimedidores Keithley 179 ó 175 en 
+    los rangos de 200$\mu$A y 2mA.
+    \item Determine la desviación porcentual del valor medido por Ud. $R_a$, con respecto al valor indicado por el 
+    fabricante $R_f$ (1k$\Omega$ para 200$\mu$A y 100$\Omega$ para 2 mA), mediante la ecuación~\eqref{eq:error_porcentual}.
+\end{itemize}
+
+\subsubsection*{4.3. RESISTENCIA INTERNA DE UNA FUENTE}
+\addcontentsline{toc}{subsubsection}{4.3. RESISTENCIA INTERNA DE UNA FUENTE}
+\begin{itemize}
+    \item Deduzca las ecuaciones~\eqref{eq:res_fuente_vm}, \eqref{eq:res_fuente_re} y~\eqref{eq:res_fuente_lineal}.
+    \item Para cada valor de R, determine $R_e$, usando la ecuación~\eqref{eq:res_fuente_re}.
+    \item Grafique $R_e/V_m$ Vs $R_e$. Aplique mínimo cuadrado y determine la pendiente y el corte con sus respectivos errores.
+    \item A partir del valor del corte, determine el valor con su error, de la resistencia interna de la fuente suministrada.
+\end{itemize}
+
+\newpage
+
+% ================= PRÁCTICA 4 =================
+\phantomsection
+\section*{\centering PRÁCTICA 4 \\ CIRCUITOS ELÉCTRICOS}
+\addcontentsline{toc}{section}{PRÁCTICA 4: CIRCUITOS ELÉCTRICOS}
+
+\phantomsection
+\subsection*{1. OBJETIVOS}
+\addcontentsline{toc}{subsection}{1. OBJETIVOS}
+\begin{itemize}
+    \item Medir corrientes y voltajes en circuitos conectados en serie, paralelo y mixto.
+    \item Aplicar las leyes de Kirchhoff en redes eléctricas.
+\end{itemize}
+
+\phantomsection
+\subsection*{2. METODOLOGÍA}
+\addcontentsline{toc}{subsection}{2. METODOLOGÍA}
+Se usa una red en la cual hay conectadas varias baterías y cajas de resistencias. Se determinan las intensidades de corriente 
+utilizando valores conocidos de las resistencias y de los voltajes de las baterías.
+
+\phantomsection
+\subsection*{3. PARTE TEÓRICA}
+\addcontentsline{toc}{subsection}{3. PARTE TEÓRICA}
+Dos o más resistencias conectadas de modo que la misma carga fluya a través de cada una de ellas se dice que están conectadas en 
+serie; por ella debe circular la misma corriente i.
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) node[circ, label=below:a] {} to[R, l=$R_1$, v=$V_1$, i=$I_1$] (3,0) to[R, l=$R_2$, v=$V_2$, i=$I_2$] 
+        (6,0) node[circ, label=below:b] {};
+    \end{circuitikz}
+    \caption{Dos resistencias conectadas en serie por las cuales circula una corriente de intensidad I.}
+    \label{fig:serie_res}
+\end{figure}
+
+Para este tipo de conexión deben cumplirse las siguientes ecuaciones:
+\begin{subequations}
+\label{eq:serie}
+\begin{align}
+    \text{Corriente: } & I = I_1 = I_2 \label{eq:serie_i} \\
+    \text{Voltaje: }   & V_{ab} = V_1 + V_2 \label{eq:serie_v} \\
+    \text{Resistencia:} & R_{eq} = R_1 + R_2 \label{eq:serie_r}
+\end{align}
+\end{subequations}
+
+Dos resistencias unidas como en la figura~\ref{fig:paralelo_res} se dice que están conectadas en paralelo. Sea I la 
+corriente que va desde 'a' hasta 'b'. 
+En el punto 'a', la corriente se divide en dos, $I_1$ que circula por $R_1$ e $I_2$ por $R_2$.
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american, scale=1.2] 
+        % 1. Dibujar la fuente de corriente I_s en el lado izquierdo
+        % Usamos (0, 0) como centro, el diagrama se verá mejor centrado verticalmente
+        
+        % Fuente de corriente independiente (isource)
+        \draw (-2, 0) to[isource, l_=$I$, *-*] (0, 0);
+        
+        \draw (0, 1) -- (0, -1); % Línea vertical de la izquierda
+
+        % Etiqueta del nodo 'a' (el punto donde la corriente entra al paralelo)
+        \draw (0, 0) node[circ, label=right:a]{};
+        
+        % 2. Corriente que Circula por Rama superior (R1)
+        \draw (0, 1)
+              to[R, l_=$R_1$, i>_=$I_1$] (4, 1);
+        
+        % 3. Corriente que Circula por Rama inferior (R2)
+        \draw (0, -1)
+              to[R, l_=$R_2$, i>_=$I_2$] (4, -1);
+
+        % 4. Conectar el lado derecho y etiquetar el nodo b
+        % Línea vertical de la derecha
+        \draw (4, 1) -- (4, -1); 
+        
+        % Etiqueta del nodo 'b' (el punto donde la corriente sale del paralelo)
+        \draw (4, 0) node[circ, label=left:b]{};
+        
+        % 5. Cables de salida de la corriente total (I_s) por el nodo b (opcional, por claridad)
+        \draw (4, 0) -- (5, 0);
+        %\draw (4, -1) -- (5, -1);
+        
+        \draw[->] (5, 0) -- (5.1, 0) node[right, pos=1] {$I$};
+    
+    \end{circuitikz}
+    \caption{Circuito de dos resistencias en paralelo $R_1$ y $R_2$ alimentado por una fuente de corriente $I$. 
+    La corriente $I$ entra por el nodo 'a' y se divide en $I_1$ e $I_2$, saliendo por el nodo 'b'.}
+    \label{fig:paralelo_res}
+\end{figure}
+
+Para este tipo de conexión deben cumplirse las siguientes ecuaciones:
+\begin{subequations}
+\label{eq:paralelo}
+\begin{align}
+    \text{Corriente: } & I = I_1 + I_2 \label{eq:paralelo_i} \\
+    \text{Voltaje: }   & V_{ab} = V_1 = V_2 \label{eq:paralelo_v} \\
+    \text{Resistencia:} & R_{eq} = \frac{R_1 R_2}{R_1 + R_2} \label{eq:paralelo_r}
+\end{align}
+\end{subequations}
+
+A veces no es posible reducir muchas de las redes importantes de electrónica a simples combinaciones serie-paralelo, 
+por lo que deben utilizarse métodos analíticos más avanzados. A tal fin, resultan muy útiles las conocidas leyes de 
+Kirchhoff. Estas leyes pueden ser enunciadas de la siguiente manera:
+\begin{description}
+    \item[Primera ley:] En cualquier nodo de un circuito, la suma de las corrientes que llegan a él es igual a la 
+    suma de las corrientes que salen del mismo, es decir, la suma algebraica de las corrientes en un nodo es igual 
+    a cero. ecuación~\eqref{eq:kcl}.
+
+    \begin{equation}
+        \sum I = 0
+        \label{eq:kcl}
+    \end{equation}
+
+    \item[Segunda ley:] En una malla, la suma algebraica de los productos IR y de las f.e.m que se encuentran en un 
+    recorrido es igual a cero. ecuación~\eqref{eq:kvl}.
+
+    \begin{equation}
+        \sum IR + \sum \epsilon_i = 0
+        \label{eq:kvl}
+\end{equation}
+
+\end{description}
+
+\subsubsection*{Reglas para la Aplicación Correcta de las Leyes de Kirchhoff:}
+\addcontentsline{toc}{subsubsection}{Reglas para la Aplicación Correcta de las Leyes de Kirchhoff:}
+\begin{itemize}
+    \item \textbf{Nodo:} punto donde se unen tres o más conductores.
+    \item \textbf{Malla:} Cualquier recorrido seguido de un circuito cerrado.
+    \item \textbf{Signos algebraicos e intensidades:} se acostumbra tomar como positivas las corrientes que llegan a 
+    un nodo y negativas las que salen de él.
+    \item \textbf{Signos algebraicos de voltajes:} Al recorrer una malla en cualquier dirección se encontrarán resistencias 
+    y baterías. En las resistencias las diferencias de potencial son positivas si se atraviesan de los puntos de mayor a menor 
+    potencial y negativas si se atraviesan de menor a mayor potencial.
+    \item \textbf{La fem, batería o pila ($\epsilon$):} es positiva si se recorre del borne (-) al borne (+) y negativa si se 
+    recorre de (+) a (-).
+    \item Dibuje un diagrama de la red, claro y de tamaño suficiente. Use letras y símbolos para cada corriente, resistencia o 
+    voltaje desconocido.
+    \item Indique el sentido de cada corriente con una flecha. Si el sentido no lo conoce, suponga momentáneamente un sentido en 
+    cualquier dirección. Si supone errado el sentido, la corriente le aparecerá con signo (-) al resolver las ecuaciones.
+    \item Coloque un signo (+) al terminal positivo de cada batería y al extremo de cada resistencia por donde usted supone que 
+    la corriente entra.
+    \item Si tiene 'n' nodos entonces habrá (n-1) ecuaciones independientes.
+    \item Si 'm' es el número de mallas, entonces usted tendrá (m-1) ecuaciones independientes.
+\end{itemize}
+
+\phantomsection
+\subsection*{4. PARTE EXPERIMENTAL}
+\addcontentsline{toc}{subsection}{4. PARTE EXPERIMENTAL}
+\subsubsection*{4.1. MATERIAL}
+\addcontentsline{toc}{subsubsection}{4.1. MATERIAL}
+\begin{itemize}
+    \item 1 Tablero para redes.
+    \item Batería de 10 volt.
+    \item 3 Resistencias de carbón.
+    \item 1 multimedidor Keithley modelo 179 o 175.
+\end{itemize}
+
+\subsubsection*{4.2. PROCEDIMIENTO}
+\addcontentsline{toc}{subsubsection}{4.2. PROCEDIMIENTO}
+\paragraph{4.2.1. RESISTENCIAS EN SERIE}
+\addcontentsline{toc}{subsubsection}{4.2.1. RESISTENCIAS EN SERIE}
+\begin{itemize}
+    \item Mida con el voltímetro la fem $\epsilon$ y con el Ohmímetro los valores de $R_1$ y $R_2$. Organice estos 
+    datos en una tabla.
+    \item Arme el circuito mostrado en la figura~\ref{fig:exp_serie}.
+    \item Mida las corrientes ($I, I_1$ e $I_2$) con el amperímetro.
+    \item Mida la diferencia de potencial entre los extremos de cada resistencia.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) 
+            to[V, l=$\epsilon$, invert] (0,3) 
+            to[R, l=$R_1$, i=$I_1$] (3,3) 
+            to[R, l=$R_2$, i=$I_2$] (6,3) -- (6,0) -- (0,0);
+        \draw (0,2) to[short, i=I] (0,3);
+        \node[ocirc] at (0,0) {};
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{Circuito Experimental: fem ($\epsilon$) en Serie con $R_1$ y $R_2$.}
+    \label{fig:exp_serie}
+\end{figure}
+
+\paragraph{4.2.2. RESISTENCIAS EN PARALELO}
+\addcontentsline{toc}{subsubsection}{4.2.2. RESISTENCIAS EN PARALELO}
+\begin{itemize}
+    \item Mida con el voltímetro la f.e.m. $\epsilon$ y con el Ohmímetro los valores de $R_1$ y $R_2$. Organice estos 
+    datos en una tabla.
+    \item Arme el circuito mostrado en la figura~\ref{fig:exp_paralelo}.
+    \item Mida la corriente total (I) la que circula por cada resistencia ($I_1$ e $I_2$).
+    \item Mida la diferencia de potencial entre los extremos de cada resistencia.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        % Rama 1 (Izquierda): Fuente de fem
+        % Dibujamos la fuente de (0,0) a (0,4)
+        \draw (0,0) to[V, l=$\epsilon$, invert] (0,4);
+        
+        % Línea superior (Rail positivo)
+        % Conecta la fuente con las ramas de las resistencias
+        \draw (0,4) -- (4,4);
+        
+        % Rama 2 (Centro): Resistencia R1
+        % Conectada entre el rail superior e inferior
+        % El nodo[circ] dibuja el punto de conexión (nodo)
+        \draw (2,4) node[circ]{} 
+              to[R, l=$R_1$, i=$I_1$] (2,0) 
+              node[circ]{};
+        
+        % Rama 3 (Derecha): Resistencia R2
+        \draw (4,4) to[R, l=$R_2$, i=$I_2$] (4,0);
+        
+        % Línea inferior (Rail negativo / Tierra)
+        % Cierra el circuito volviendo a la fuente
+        \draw (4,0) -- (0,0);
+
+        \draw (0,3) to[short, i=I] (0,4);
+        
+        % Opcional: Agregar tierra en el negativo de la fuente
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{Circuito Experimental, fem ($\epsilon$) en Paralelo con $R_1$ y $R_2$.}
+    \label{fig:exp_paralelo}
+\end{figure}
+
+\paragraph{4.2.3. RED ELÉCTRICA}
+\addcontentsline{toc}{subsubsection}{4.2.3. RED ELÉCTRICA}
+\begin{itemize}
+    \item Disponga las resistencias y pilas en el tablero tal como se muestra en la figura~\ref{fig:exp_red}.
+    \item Mida con su error los valores de $\epsilon_1, \epsilon_2, \epsilon_3, R_1, R_2$ y $R_3$.
+    \item Arme el correspondiente circuito.
+    \item Mida la corriente de cada rama ($I_1, I_2,$ e $I_3$); para esto, rompa una rama del circuito e intercale el 
+    amperímetro (en serie). Haga revisar las conexiones por el profesor.
+    \item Mida para cada malla, la diferencia de potencial entre los extremos de cada resistencia.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        
+        % Malla 1 (Izquierda)
+        \draw (0,0) 
+            to[V, l=$\epsilon_1$, invert] (0,2) -- (0,4);
+        
+        \draw (0,4)
+            to[R, l=$R_1$, i=$I_1$] (4,4); % R1 hacia el nodo central superior
+
+        \draw (4,4) 
+            to[V, l=$\epsilon_2$] (4, 1)
+            to[R, l=$R_2$, i<=$I_2$] (4,-2); % R2: En serie, conectada al nodo inferior
+
+        % Malla 2 (Derecha)
+        \draw (4,4) 
+            to[R, l=$R_3$, i<=$I_3$] (8,4) % R3 desde el nodo central superior
+            to[V, l=$\epsilon_3$] (8,-2); % E3 (polaridad estándar)
+
+        % Cierre de la Malla 2 (Rail Inferior Común)
+        \draw (8,-2) -- (4,-2) -- (4,-2) -- (0,-2) -- (0,0); 
+
+        % Añadir nodos explícitos en las uniones para mayor claridad
+        %\node[ocirc] at (4,3) {};
+        \node[ocirc] at (4,-2) {}; % Punto de conexión de R2 al rail inferior
+        \node[ocirc] at (4,4) {};
+
+        % Opcional: Agregar tierra en el negativo de la fuente
+        \draw (4,-2) node[ground]{};
+    \end{circuitikz}
+    \caption{Red Eléctrica}
+    \label{fig:exp_red}
+\end{figure}
+
+\phantomsection
+\subsection*{5. ACTIVIDADES}
+\addcontentsline{toc}{subsection}{5. ACTIVIDADES}
+\subsubsection*{5.1. RESISTENCIAS EN SERIE}
+\addcontentsline{toc}{subsubsection}{5.1. RESISTENCIAS EN SERIE}
+\begin{itemize}
+    \item Calcule la corriente que circula por el circuito y compárela con el valor medido.
+    \item Verifique si se cumple la ecuación~\eqref{eq:serie_v}.
+\end{itemize}
+
+\subsubsection*{5.2. RESISTENCIAS EN PARALELO}
+\addcontentsline{toc}{subsubsection}{5.2. RESISTENCIAS EN PARALELO}
+\begin{itemize}
+    \item Calcule la corriente total que circula por el circuito y las corrientes $I_1$ e $I_2$. Compárelas con el valor medido.
+    \item Verifique si se cumple la ecuación~\eqref{eq:paralelo_i}.
+    \item Verifique si se cumple la ecuación~\eqref{eq:paralelo_v}.
+\end{itemize}
+
+\subsubsection*{5.3. RED ELÉCTRICA}
+\addcontentsline{toc}{subsubsection}{5.3. RED ELÉCTRICA}
+\begin{itemize}
+    \item Aplique las leyes de Kirchhoff. Resuelva las ecuaciones en las incógnitas $I_1, I_2,$ e $I_3$. 
+    (Debe traerlo resuelto antes de entrar al laboratorio).
+    \item Con los valores medidos de $\epsilon_1, \epsilon_2, \epsilon_3, R_1, R_2$ y $R_3$. Calcule los 
+    valores de $I_1, I_2,$ e $I_3$.
+    \item Calcule el porcentaje de error entre los valores experimentales obtenidos para las corrientes y 
+    los calculados por las leyes de Kirchhoff.
+    \item Verifique si se cumple la ecuación~\eqref{eq:kcl}.
+    \item Verifique si se cumple la ecuación~\eqref{eq:kvl}.
+\end{itemize}
+
+\end{document}

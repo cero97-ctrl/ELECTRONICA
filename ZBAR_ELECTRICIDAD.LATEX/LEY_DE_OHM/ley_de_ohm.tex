@@ -1,0 +1,344 @@
+\documentclass[12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{comment}
+\usepackage{circuitikz}
+\usepackage{tikz}
+\AtBeginEnvironment{tikzpicture}{\shorthandoff{<>}}
+\geometry{a4paper, margin=2cm}
+
+% SOLUCIÓN: Desactivar los caracteres activos de babel para circuitikz
+\AtBeginEnvironment{circuitikz}{\shorthandoff{<>}}
+
+\title{PRÁCTICA 11: LEY DE OHM}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{FINALIDADES}
+Determinar experimentalmente la relación matemática (ley de Ohm) entre la corriente \( I \) en una resistencia, la tensión \( V \) en los extremos de ésta y el valor en ohmios de la resistencia \( R \).
+
+\section{INFORMACIÓN PRELIMINAR}
+En la Práctica 10 hemos visto que hay una determinada dependencia entre la corriente, la tensión y la resistencia en un circuito. Enunciada no matemáticamente, una conclusión a que se llega es que en un circuito cerrado con una tensión continua \( V \) y una resistencia \( R \) hay una corriente \( I \) y la intensidad de la corriente disminuye cuando aumenta la resistencia, si la fuente de tensión permanece constante. Otra conclusión es que en un circuito cerrado con resistencia \( R \) y una tensión continua \( V \), la intensidad de la corriente \( I \) aumenta cuando aumenta la tensión, si la resistencia permanece constante.
+
+Estas conclusiones son importantes, pero la forma en que las hemos enunciado es cualitativa (descriptiva) y no cuantitativa (matemática). La ciencia moderna busca relaciones cuantitativas entre causa y efecto siempre que sea posible. Una regla cuantitativa, o sea una fórmula, enuncia no sólo que se producirá una variación si varían una o varias de las cantidades relacionadas, sino que también predecirá cuál será la variación.
+
+Siguiendo el método de la Práctica 10 es posible formular un enunciado matemático (es decir, escribir una fórmula) para las relaciones de dependencia entre \( I \), \( V \) y \( R \). Para ello es necesario efectuar varias mediciones en que intervienen las dos variables (\( V \) y \( R \)). Luego, por intuición y razonamiento matemático se escribe una fórmula que traduce los hechos y las mediciones efectuadas. Se efectúan mediciones adicionales para comprobar la fórmula, o modificarla si es necesario.
+
+Un ejemplo ilustrará el procedimiento. El circuito de la figura 11-1 se ha utilizado para estudiar la dependencia entre \( I \) y \( V \), con un valor constante de \( R = 100 \) ohmios. Se ha empleado un voltímetro para medir la tensión aplicada al circuito y un amperímetro para medir la corriente. Han sido obtenidos y tabulados los resultados siguientes de la tabla 11-1.
+
+La dependencia entre \( V \) e \( I \) está indicada exactamente en la tabla 11-1 porque la razón aritmética o cociente \( V/I \) es igual a 100 en cada caso. La ecuación que expresa lo indicado en la tabla 11-1 es
+\[
+\frac{V}{I} = 100 \quad \text{o} \quad I = \frac{V}{100}.
+\]
+
+Para confirmar la exactitud de la ecuación (11-1) el investigador calcularía el valor de \( I_1 \) correspondiente a una tensión \( V_1 \) distinta a las tensiones ya empleadas. Luego mediría la corriente \( I \) en el circuito estando aplicada \( V_1 \). Si \( I \) e \( I_1 \) fuesen iguales, comprobaría la exactitud de la ecuación (11-1) para otros valores de tensión \( V_2 \), \( V_3 \), etc., hasta convencerse de que la ecuación es un enunciado válido de los hechos.
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}[american]
+        % Fuente de tensión
+        \draw (0,0) to[battery1, l=$V$, invert] (0,3);
+        
+        % Amperímetro y resistencia en serie
+        \draw (0,3) -- (2,3)
+            to[ammeter, l=$A$] (4,3)
+            to[resistor, l=$R$] (6,3);
+        
+        % Conexión de retorno a la fuente
+        \draw (6,3) -- (6,0) -- (0,0);
+        
+        % Voltímetro en paralelo con el conjunto Amperímetro-Resistencia
+        \draw (2,3) to[short, *-] (2,4)
+            to[voltmeter, l=$V$] (6,4)
+            to[short, -*] (6,3);
+        
+        % Flecha de corriente (opcional, para indicar dirección)
+        \draw[->, thick] (0,3.5) -- (1,3.5) node[midway, above] {$I$};
+    \end{circuitikz}
+    \caption{Circuito teórico para confirmar la ley de Ohm.}
+    \label{fig:11-1}
+\end{figure}
+
+\newpage
+
+\begin{table}[ht]
+\centering
+\caption{Relación entre tensión, corriente y resistencia para $R = 100\,\Omega$}
+\label{tab:11-1}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\textbf{Parámetro} & \multicolumn{5}{c}{\textbf{Mediciones}} \\
+\cmidrule(lr){2-6}
+& \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\
+\midrule
+$V$ (voltios)     & 100 & 200 & 300 & 400 & 500 \\
+$I$ (amperios)    & 1   & 2   & 3   & 4   & 5   \\
+$V/I$ (ohmios)    & 100 & 100 & 100 & 100 & 100 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Resistencia constante: } $R = 100\,\Omega$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Hasta ahora ha quedado establecido que para esos datos
+\[
+I = \frac{V}{100}
+\]
+es válida para un circuito donde \( R = 100\,\Omega \). ¿Cómo se debe modificar esta ecuación si \( R = 200 \) ohmios, 300 ohmios, 400 ohmios, etcétera?
+
+Substituyendo \( R = 200 \) ohmios, luego \( R = 300 \) ohmios, etc., en el circuito experimental de la figura 11-1 y siguiendo el método que acabamos de indicar se establecen nuevas fórmulas según las cuales:
+\[
+\begin{array}{cc}
+\text{para } R = 200 \, \text{ ohmios}, & I = \dfrac{V}{200} \\
+& (11-2) \\
+\text{para } R = 300 \, \text{ ohmios}, & I = \dfrac{V}{300} \\
+& (11-3) \\
+\text{para } R = 400 \, \text{ ohmios}, & I = \dfrac{V}{400} \\
+& (11-4) \\
+\end{array}
+\]
+
+Ahora es evidentemente intuitivo que las fórmulas (11-1), (11-2), (11-3), etc., se pueden generalizar como sigue:
+\[
+I = \frac{V}{R} \quad (11-5)
+\]
+
+Desde luego esta generalización, deberá ser comprobada aún para los valores de \( V \) y \( R \) no empleados en el experimento. Una vez completa la verificación, se puede considerar la ecuación (11-5) como ley que da la relación matemática entre \( I \), \( V \) y \( R \) en un circuito cerrado.
+
+\subsection*{NOTA}
+En el circuito de la figura 11-1 se ha supuesto que el amperímetro no tenía resistencia y que \( R \) era la resistencia total del circuito. En realidad el amperímetro tiene alguna resistencia, pero es tan baja, en este caso una fracción de ohmio, que su resistencia se puede despreciar aquí y la resistencia de \( R \) se puede medir como resistencia total del circuito.
+
+\section{Ley de Ohm}
+Ahora nos referimos nuevamente a la figura 11-1 y a la ecuación (11-5). Se supone que la caída de tensión medida entre los extremos de \( R \) es \( V \), y que la corriente en el circuito es \( I \). En la Práctica 10 se ha determinado que en un circuito serie la corriente es la misma en todos los puntos del circuito. La fórmula (11-5) enuncia que la corriente continua \( I \) en una resistencia es directamente proporcional a la tensión \( V \) entre los extremos de la resistencia e inversamente proporcional a la resistencia \( R \), estando \( I \) medida en amperios, \( V \) en voltios y \( R \) en ohmios.
+
+La fórmula (11-5) es la ley de Ohm, enunciada por primera vez por el científico Georg Simon Ohm. Esta ley es el fundamento en que están basadas las ciencias de la electricidad y de la electrónica.
+
+\section{Errores de medición}
+En la explicación precedente hemos supuesto que todas las mediciones hechas experimentalmente eran absolutamente exactas. En la práctica esto nunca es así, sino que se producen errores por varias causas.
+
+Un posible error es el resultado de leer incorrectamente la escala del instrumento. Esto se remedia poniendo cuidado en la lectura y tomando la media de varias lecturas. La interpolación entre las divisiones de la escala puede ser otra causa de error.
+
+Otra causa que se puede corregir fácilmente es el paralaje. Se produce cuando se toma la lectura en una posición en que la visual entre el observador y la aguja no es perpendicular a la escala. La figura 11-2 ilustra el error de paralaje. Cuando el observador está en la posición \( P_1 \), la visual es perpendicular a la escala y se obtiene la lectura 5, pero si el observador está en la posición \( P_2 \), la lectura será 7, por error debido a paralaje. Para eliminar los errores de paralaje se coloca un espejo inmediatamente debajo de la escala. La posición correcta de la lectura es aquella en que no se puede distinguir la aguja de su imagen reflejada en el espejo.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+        % Escala del instrumento
+        \draw[thick] (0,0) -- (10,0);
+        \foreach \x in {0,1,...,10} {
+            \draw (\x,0) -- (\x,-0.2);
+            \node[below] at (\x,-0.2) {\x};
+        }
+        \node[below] at (5,-0.5) {Escala del instrumento};
+
+        % Aguja
+        \draw[ultra thick, red] (5,0) -- (5,2);
+        \filldraw[red] (5,2) circle (2pt);
+        \node[right] at (5,2.2) {Aguja (apunta a 5)};
+
+        % Observador P1 (posición correcta)
+        \coordinate (P1) at (5,3);
+        \draw[dashed] (P1) -- (5,0);
+        \filldraw[blue] (P1) circle (2pt);
+        \node[above] at (P1) {$P_1$};
+        \node[left] at (5,1.5) {Visual perpendicular};
+
+        % Observador P2 (posición con error)
+        \coordinate (P2) at (8,3);
+        \draw[dashed, orange] (P2) -- (5,0);
+        \filldraw[orange] (P2) circle (2pt);
+        \node[above] at (P2) {$P_2$};
+        
+        % Punto de lectura errónea en la escala
+        \draw[orange, dashed] (7,0) -- (7,0.5);
+        \node[above, orange] at (7,0.5) {Lectura aparente: 7};
+
+        % Ángulo de paralaje
+        \draw[orange, ->] (5,0.5) arc (0:30:0.5);
+        \node[orange, right] at (5.2,0.8) {Error de paralaje};
+    \end{tikzpicture}
+    \caption{Error de paralaje que se produce cuando la visual en que se mira la aguja no es perpendicular a la escala del instrumento.}
+    \label{fig:11-2}
+\end{figure}
+
+Hay otros errores que no son tan evidentes, y que no se pueden corregir tan fácilmente. Por ejemplo, los inherentes a los propios instrumentos. Los fabricantes especifican usualmente el porcentaje de error de sus instrumentos. El voltímetro electrónico de uso general y otros medidores utilizados en los laboratorios de las escuelas tienen ordinariamente un error comprendido entre 2 y 5\%. Para mayor exactitud son necesarios instrumentos de precisión de laboratorio. Estos instrumentos son de alta precisión y su error inherente es menor de 1\%.
+
+La inserción de un instrumento en un circuito en que se haya de efectuar una medición puede originar otro error. Si el instrumento altera las condiciones del circuito, las lecturas obtenidas serán incorrectas. Los errores de inserción se estudian más detalladamente en las prácticas que siguen.
+
+El motivo de mencionar aquí los errores es que el alumno deberá formular la ley de Ohm por sus datos experimentales y estos datos pueden contener algunos errores de medición.
+
+\section{RESUMEN}
+\begin{enumerate}
+    \item La relación entre la tensión \( V \) aplicada a un circuito cerrado por una fuerza electromotriz tal como la de una batería, la resistencia total \( R \) y la corriente \( I \) en el circuito viene dada por la fórmula \( I = V/R \).
+    \item La relación entre la caída de tensión \( V \) entre los extremos de una resistencia \( R \) y la corriente \( I \) en la resistencia viene dada por la fórmula \( I = V/R \).
+    \item La fórmula \( I = V/R \) es un enunciado matemático de la ley de Ohm.
+    \item Para comprobar experimentalmente la ley de Ohm se pueden hacer variar mediciones y sustituir los resultados de ellas en la fórmula (11-5) a fin de comprobar que realmente los hechos están de acuerdo con la fórmula.
+    \item Se obtiene un juego o conjunto de datos midiendo \( I \), mientras se mantiene constante el valor medido de \( V \) y se varía el valor medido de \( R \). Los datos obtenidos concuerdan con la fórmula \( I = V/R \).
+    \item Otro juego de datos se obtiene midiendo \( I \), mientras se mantiene constante el valor de \( R \) medido y se varía el valor medido de \( V \). Los datos obtenidos también concuerdan con la fórmula \( I = V/R \).
+    \item Se producen errores de medición y éstos deben ser considerados cuando se intenta establecer la exactitud de una fórmula tal como la ley de Ohm.
+    \item Entre los errores de medición que pueden ocurrir se incluyen: a) lectura incorrecta de la escala del medidor, b) lecturas incorrectas del medidor debidas a paralaje, c) errores resultantes de la inexactitud del instrumento y d) errores introducidos por la inserción del instrumento en el circuito (errores de inserción o de carga).
+\end{enumerate}
+
+\section{AUTOEXAMEN}
+\begin{enumerate}
+    \item La corriente en una resistencia fija es \underline{directamente} proporcional a la tensión entre los extremos de la resistencia.
+    \item Si la tensión entre los extremos de una resistencia se mantiene constante, la corriente en la resistencia es \underline{inversamente proporcional} a su valor óhmico.
+    \item La fórmula que da la relación matemática entre \( I \), \( V \) y \( R \) en un circuito cerrado es \underline{\( I = V/R \)}.
+    \item La fórmula de la pregunta 3 se llama \underline{ley de Ohm}.
+    \item Si la tensión entre los extremos de una resistencia de 10.000 \( \Omega \) es 125 V, la corriente en la resistencia es \underline{0.0125 A}.
+    \item Si la tensión entre los extremos de una resistencia es 60 V, y la corriente en la resistencia es 0.05 A, el valor de la resistencia es \underline{1200 \( \Omega \)}.
+    \item ¿Cuál es la tensión entre los extremos de una resistencia de 1.500 \( \Omega \) si la corriente en la resistencia es 0.12 A? \underline{180 V}.
+    \item En la lectura de un medidor, la visual entre el observador y la aguja del medidor debe ser \underline{perpendicular}.
+    \item El error de paralaje puede ser eliminado colocando un \underline{espejo} inmediatamente debajo de la escala del medidor. La posición correcta de lectura se consigue cuando la aguja y su imagen reflejada en el espejo \underline{coinciden}.
+\end{enumerate}
+
+\section{MATERIALES NECESARIOS}
+\begin{itemize}
+    \item Fuente de alimentación: Fuente de tensión de c.c. variable regulada.
+    \item Equipo: EVM, miliamperímetro 0-10.
+    \item Resistencias: \( \nu_2 \) W 10.000 \( \Omega \); 1.000 \( \Omega \).
+    \item Diversos: Potenciómetro 10.000 \( \Omega \); 2 W, hilos de conexión.
+\end{itemize}
+
+\subsection*{NOTA}
+En el procedimiento experimental que se sigue se utiliza el circuito de la figura 11-3a si se dispone de una fuente de tensión de c.c. de 0 a 400 V. Si la fuente de que se dispone es de 0 a 40 V, se hace uso del circuito de la figura 11-3b.
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}[american]
+        % ========== Configuración (a) ==========
+        \draw (0,0) to[battery, l=$V$, invert] (0,2) -- (2,2);
+        \draw (2,2) to[rmeterwa, t=$0$-$10$ mA, name=M1] (4,2); % Corregido: miliamperímetro
+        \draw (4,2) -- (5,2) node[above] {A};
+        \draw (5,2) to[R, l=$R$, -*] (7,2) node[above] {B};
+        \draw (7,2) -- (8,2);
+        \draw (8,2) to[short] (8,0) -- (0,0);
+        \draw (5,2) to[short] (5,3) to[voltmeter, l=$V_{AB}$] (7,3) to[short] (7,2);
+        \draw (5,2) to[short, *-] (5,1.5) to[switch, l=$S_1$] (7,1.5) to[short, -*] (7,2);
+        \node at (4,0) {(a)};
+
+        % ========== Configuración (b) ==========
+        \begin{scope}[xshift=10cm]
+            \draw (0,0) to[battery, l=$V$, invert] (0,2) -- (2,2);
+            \draw (2,2) to[rmeterwa, t=$0$-$10$ mA, name=M2] (4,2); % Corregido: miliamperímetro
+            \draw (4,2) -- (5,2) node[above] {C};
+            \draw (5,2) to[R, l=$R$, -*] (7,2) node[above] {D};
+            \draw (7,2) -- (8,2);
+            \draw (8,2) to[short] (8,0) -- (0,0);
+            \draw (5,2) to[short] (5,3) to[voltmeter, l=$V_{CD}$] (7,3) to[short] (7,2);
+            \draw (5,2) to[short, *-] (5,1.5) to[switch, l=$S_2$] (7,1.5) to[short, -*] (7,2);
+            \node at (4,0) {(b)};
+        \end{scope}
+    \end{circuitikz}
+    \caption{Configuraciones para medir una resistencia \( R \) con un miliamperímetro (0-10 mA) y un voltímetro. (a) Medición de \( V_{AB} \) e interruptor \( S_1 \) en paralelo con \( R \). (b) Medición de \( V_{CD} \) e interruptor \( S_2 \) en paralelo con \( R \).}
+    \label{fig:11-3}
+\end{figure}
+
+\section{PROCEDIMIENTO}
+\begin{enumerate}
+    \item Conectar el circuito de la figura 11-3. Desconectar la alimentación. Los interruptores \( S_1 \) y \( S_2 \) están abiertos, como se indica. Ajustar el cero del óhmetro y conectarlo entre los extremos de \( R \), potenciómetro de 10.000 ohmios conectado como reóstato (puntos C y D). Ajustar \( R \) de modo que la resistencia entre los puntos C y D sea 2.000 ohmios. Eliminar el óhmetro del circuito. Ajustar la fuente de tensión continua variable en 0 voltios girando el mando de regulación de la tensión hasta la posición límite de la derecha. Computar el voltímetro en la escala de 10 voltios.
+    
+    \textbf{PRECAUCIÓN:} Cerciorarse de que el voltímetro y el miliamperímetro están conectados con la polaridad correcta, como se muestra en la figura.
+\end{enumerate}
+
+\newpage
+
+\section*{TABLA 11-2}
+\begin{table}[ht]
+\centering
+\caption{Mediciones y cálculos para diferentes resistencias}
+\label{tab:11-2}
+\begin{tabular}{@{}l c c c c c c c c c@{}}
+\toprule
+\multicolumn{10}{@{}c@{}}{\textbf{Resistencia constante: \( R = 2.000 \, \Omega \)}} \\
+\midrule
+\( V \) (voltios) & 6 & 8 & 10 & 12 & 14 & \multicolumn{4}{c@{}}{Fórmula: \( I = V/2000 \)} \\
+\cline{2-6} \cline{7-10}
+\( I \) (amperios) &   &   &    &    &    & \multicolumn{2}{c}{\textbf{Prueba}} & \( V \) & \( I_{\text{calc}} \) \\
+\cline{2-6} \cline{7-8} \cline{9-10}
+                  &   &   &    &    &    & P9 & & 18 & \\
+\midrule
+\multicolumn{10}{@{}c@{}}{\textbf{Resistencia constante: \( R = 4.000 \, \Omega \)}} \\
+\midrule
+\( V \) (voltios) & 8 & 12 & 16 & 20 & 24 & \multicolumn{4}{c@{}}{Fórmula: \( I = V/4000 \)} \\
+\cline{2-6} \cline{7-10}
+\( I \) (amperios) &   &    &    &    &    & \multicolumn{2}{c}{\textbf{Prueba}} & \( V \) & \( I_{\text{calc}} \) \\
+\cline{2-6} \cline{7-8} \cline{9-10}
+                  &   &    &    &    &    & P10 & & 30 & \\
+\midrule
+\multicolumn{10}{@{}c@{}}{\textbf{Resistencia constante: \( R = 6.000 \, \Omega \)}} \\
+\midrule
+\( V \) (voltios) & 12 & 18 & 24 & 30 & 36 & \multicolumn{4}{c@{}}{Fórmula: \( I = V/6000 \)} \\
+\cline{2-6} \cline{7-10}
+\( I \) (amperios) &    &    &    &    &    & \multicolumn{2}{c}{\textbf{Prueba}} & \( V \) & \( I_{\text{calc}} \) \\
+\cline{2-6} \cline{7-8} \cline{9-10}
+                  &    &    &    &    &    & P15 & & 36 & \\
+\midrule
+\multicolumn{10}{@{}c@{}}{\textbf{Resistencia constante: \( R = 8.000 \, \Omega \)}} \\
+\midrule
+\( V \) (voltios) & 16 & 20 & 24 & 28 & 32 & \multicolumn{4}{c@{}}{Fórmula: \( I = V/8000 \)} \\
+\cline{2-6} \cline{7-10}
+\( I \) (amperios) &    &    &    &    &    & \multicolumn{2}{c}{\textbf{Prueba}} & \( V \) & \( I_{\text{calc}} \) \\
+\cline{2-6} \cline{7-8} \cline{9-10}
+                  &    &    &    &    &    & P22 & & 40 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{Preguntas}
+\begin{enumerate}
+    \item Si no lo puede hallar, ¿cómo puede Ud. predecir el valor de \( I \) para la condición dada?
+    \item Para un valor constante de \( R \), ¿cuál es el efecto sobre \( I \) de:
+    \begin{enumerate}
+        \item Duplicar \( V \)?
+        \item Triplicar \( V \)?
+        \item Reducir \( V \) a la mitad.
+    \end{enumerate}
+    \item Para un valor constante de \( V \), ¿cuál es el efecto sobre \( I \) de:
+    \begin{enumerate}
+        \item Duplicar \( R \)?
+        \item Reducir \( R \) a la mitad?
+        \item Triplicar \( R \)?
+    \end{enumerate}
+    \item Refiriéndose a sus propios datos, discutir los errores, si los hay, en sus resultados experimentales.
+    \item ¿Cuál es la exactitud de su
+    \begin{enumerate}
+        \item Ohmetro?
+        \item Voltímetro?
+        \item Miliamperímetro?
+    \end{enumerate}
+    \item Explique con sus propias palabras cuál es el significado de error de paralaje en las mediciones eléctricas.
+\end{enumerate}
+
+\section*{Preguntas adicionales}
+\begin{enumerate}
+    \setcounter{enumi}{10}
+    \item Si su voltímetro electrónico no funcionase como óhmetro (y no tuviese otro óhmetro), ¿cómo podría determinar el valor de una resistencia desconocida, suponiendo que tuviese Ud. el equipo mencionado en «materiales necesarios»? Explicarlo detalladamente.
+    \item Dibujar un gráfico que indique la dependencia entre \( I \) y \( R \) para una tensión constante \( V \). ¿Cómo se llama la curva?
+\end{enumerate}
+
+\section*{Respuestas a las preguntas de auto-examen}
+\begin{enumerate}
+    \item Directamente.
+    \item Inversamente proporcional.
+    \item \( I = V / R \).
+    \item Ley de Ohm.
+    \item 0,0125.
+    \item 1.200 \( \Omega \).
+    \item 180.
+    \item Perpendicular.
+    \item Espejo: coinciden.
+\end{enumerate}
+
+\end{document}

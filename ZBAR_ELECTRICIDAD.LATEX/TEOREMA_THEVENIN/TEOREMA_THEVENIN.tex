@@ -1,0 +1,373 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noquoting]{babel} % es-noquoting to avoid conflicts with circuitikz
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{comment}
+
+\usetikzlibrary{babel} % Library to handle babel conflicts
+\geometry{a4paper, margin=1in}
+
+\title{\textbf{PRÁCTICA 26 \\ TEOREMA DE THÉVENIN}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{FINALIDADES}
+\begin{enumerate}[label=\arabic*.]
+    \item Determinar analíticamente los valores de \(V_{TH}\) (tensión del generador de Thévenin) y \(R_{TH}\) (resistencia del generador de Thévenin) en un circuito de c.c. que contiene una sola fuente de tensión.
+    \item Confirmar experimentalmente los valores de \(V_{TH}\) y \(R_{TH}\) propuestos por el teorema de Thévenin en la solución de circuitos puente desequilibrados.
+\end{enumerate}
+
+\section*{INFORMACIÓN PRELIMINAR}
+Hemos empleado las leyes de Ohm y Kirchhoff para resolver los problemas que plantean los circuitos de c.c. En el estudio de los circuitos eléctricos y electrónicos complicados son necesarias a veces otras bases de cálculo. El teorema de Thévenin forma parte de un grupo de teoremas de redes (incluyendo el de superposición y el de Norton) que proporciona los medios adecuados para simplificar el análisis de circuitos complicados. La técnica empleada implica reducir una red a un circuito sencillo equivalente que actúa como la red original.
+
+\section*{Teorema de Thévenin}
+El teorema de Thévenin enuncia que cualquier red de dos terminales se puede substituir por un circuito sencillo equivalente consistente en un generador de Thévenin, cuya tensión $V_{TH}$ actuando en serie con una resistencia interna $R_{TH}$ hace que pase corriente por la carga.
+
+Las reglas para determinar \( V_{TH} \) y \( R_{TH} \) son las siguientes:
+
+\begin{enumerate}[label=\arabic*.]
+    \item La tensión \( V_{TH} \) es la que aparece entre los terminales de la carga en la red original, cuando está suprimida la resistencia de carga (tensión en circuito abierto).
+    \item La resistencia \( R_{TH} \) es la que aparece desde los terminales de la carga abierta, hacia la red original cuando las fuentes de tensión existentes en el circuito son reemplazadas por su resistencia interna.
+\end{enumerate}
+
+El desarrollo del circuito equivalente de Thévenin aplicado a la figura 26-1 a se puede seguir fácilmente en la figura 26-1 b, c y d.
+
+\begin{figure}[H]
+    \centering
+    % Row 1: (a) and (b)
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            \draw (0,3) to[battery1, l=100 V] (0,0);
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (4,3); 
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (4,0); 
+            \draw (4,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (4,0); % R3
+            \node[above] at (4,3) {A};
+            \node[below] at (4,0) {B};
+            \draw (4,3) -- (7,3) to[R, l=$R_L\ 350\,\Omega$] (7,0) -- (4,0);
+        \end{circuitikz}
+        \caption{Circuito original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            \draw (0,3) to[battery1, l=100 V] (0,0);
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (4,3); 
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (4,0); 
+            \draw (4,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (4,0);
+            \draw (4,3) -- (6,3); \node[above] at (6,3) {A};
+            \draw (4,0) -- (6,0); \node[below] at (6,0) {B};
+            \draw[<->] (6.5,3) -- (6.5,0) node[midway, right] {$V_{TH} = 50\,\text{V}$};
+        \end{circuitikz}
+        \caption{Cálculo de $V_{TH}$}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    % Row 2: (c) and (d)
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            \draw (0,3) -- (0,0); % Short source
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (4,3); 
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (4,0); 
+            \draw (4,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (4,0);
+            \draw (4,3) -- (6,3); \node[above] at (6,3) {A};
+            \draw (4,0) -- (6,0); \node[below] at (6,0) {B};
+            \draw[<->] (6.5,3) -- (6.5,0) node[midway, right] {$R_{TH} = 100\,\Omega$};
+        \end{circuitikz}
+        \caption{Cálculo de $R_{TH}$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            \draw (0,2.5) to[battery1, l=$V_{TH} 50V$] (0,0);
+            \draw (0,2.5) to[R, l=$R_{TH} 100\Omega$] (2.5,2.5);
+            \draw (2.5,2.5) to[short, *-] (5.5,2.5) to[R, l=$R_L 350\Omega$] (5.5,0) to[short, -*] (2.5,0);
+            \draw (2.5,0) -- (0,0);
+            \node[above] at (2.5,2.5) {A}; \node[below] at (2.5,0) {B};
+             \node[align=center, below, scale=0.8] at (2.75,-0.5) {$I = \frac{50}{450} = 0,111\,A$};
+        \end{circuitikz}
+        \caption{Equivalente Thévenin}
+    \end{subfigure}
+    \caption{Análisis de una red por el teorema de Thévenin.}
+    \label{fig:26-1}
+\end{figure}
+
+Aplicando la ley de Ohm al circuito de la figura 26-1 d, tenemos:
+\[
+I = \frac{V_{TH}}{R_{TH} + R_L} = \frac{50}{450} = 0,111 \, \text{A}
+\]
+Esta es la corriente necesaria en \( R_L \). Este método simplifica el cálculo si necesitamos hallar la corriente para diferentes valores de \( R_L \).
+
+\section*{Resolución del circuito puente desequilibrado}
+La figura 26-2 a es un circuito puente desequilibrado. Se desea hallar la corriente I en \( R_5 \). El teorema de Thévenin sirve para resolver fácilmente este problema.
+
+\begin{figure}[h!]
+    \centering % This centering might be redundant if subfigures handle it.
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Nodos
+            \coordinate (A) at (0, 3);
+            \coordinate (D) at (0, -3);
+            \coordinate (B) at (-3, 0);
+            \coordinate (C) at (3, 0);
+            % Resistores del puente
+            \draw (A) to[R, l={$R_1=40\Omega$}] (B);
+            \draw (A) to[R, l={$R_2=60\Omega$}] (C);
+            \draw (B) to[R, l_={$R_4=160\Omega$}] (D);
+            \draw (C) to[R, l_={$R_3=120\Omega$}] (D);
+            \draw (B) to[R, l_={$R_5=100\Omega$}] (C);
+            % Fuente de tensión externa (batería)
+            \draw (D) -- ++(-5,0) to[battery1, l=60V, invert] ++(0,6) -- (A);
+
+            % Etiquetas de nodos
+            \node[above] at (A) {A}; \node[below] at (D) {D};
+            \node[left] at (B) {B}; \node[right] at (C) {C};
+            \fill (A) circle (1.5pt);
+            \fill (B) circle (1.5pt);
+            \fill (C) circle (1.5pt);
+            \fill (D) circle (1.5pt);
+        \end{circuitikz}
+        \caption{Circuito Original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            \draw (0,0) to[battery1, l=$V_{TH}\ 8V$, invert] (0,2);
+            \draw (0,2) to[R, l=$R_{TH}\ 72\Omega$] (0,4);
+            \draw (0,4) -- (2,4) node[above] {B};
+            \draw (0,0) -- (2,0) node[below] {C};
+            \fill (2,4) circle (1.5pt);
+            \fill (2,0) circle (1.5pt);
+            \draw (2,4) to[R, l=$R_5\ 100\Omega$] (2,0);
+        \end{circuitikz}
+        \caption{Equivalente}
+    \end{subfigure}
+    
+    \vspace{1cm} % Add vertical space between rows
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Nodos
+            \coordinate (A) at (0, 3);
+            \coordinate (D) at (0, -3);
+            \coordinate (B) at (-3, 0);
+            \coordinate (C) at (3, 0);
+            % Resistores del puente
+            \draw (A) to[R, l={$R_1=40\Omega$}] (B);
+            \draw (A) to[R, l={$R_2=60\Omega$}] (C);
+            \draw (B) to[R, l_={$R_4=160\Omega$}] (D);
+            \draw (C) to[R, l_={$R_3=120\Omega$}] (D);
+            % Open circuit for V_TH
+            \draw (B) to[open, v=$V_{TH}$] (C);
+            % Fuente de tensión externa (batería)
+            \draw (D) -- ++(-5,0) to[battery1, l=60V, invert] ++(0,6) -- (A);
+            % Etiquetas de nodos
+            \node[above] at (A) {A}; \node[below] at (D) {D};
+            \node[left] at (B) {B}; \node[right] at (C) {C};
+            \fill (A) circle (1.5pt);
+            \fill (B) circle (1.5pt);
+            \fill (C) circle (1.5pt);
+            \fill (D) circle (1.5pt);
+        \end{circuitikz}
+        \caption{Cálculo de $V_{TH}$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+
+            \draw (1,4) -- (1,5);
+
+            \draw (0,0) to[R, l=$R_1\ 40\Omega$] (0,4);
+            \draw (0,4) -- (1,4) node[below] {B};
+            \fill (1,4) circle (2pt);
+            \draw (0,0) -- (1,0) node[above] {A};
+            \fill (1,0) circle (2pt);
+            \draw (1,4) -- (2,4);
+            \draw (1,0) -- (2,0);
+            \draw (2,4) to[R, l=$R_4\ 160\Omega$] (2,0);
+
+            \draw (1,0) -- (1,-0.5);
+
+            \draw (0,-4) to[R, l=$R_2\ 40\Omega$] (0,-0.5);
+            \draw (0,-4) -- (1,-4) node[above] {C} -- (2,-4);
+            \fill (1,-4) circle (2pt);
+            \draw (0,-0.5) -- (1,-0.5) node[below] {D};
+            \fill (1,-0.5) circle (2pt);
+            \draw (1,-0.5) -- (2,-0.5);
+            \draw (2,-0.5) to[R, l=$R_3\ 160\Omega$] (2,-4);
+
+            \draw (1,-4) -- (1,-5);
+        \end{circuitikz}
+        \caption{Equivalente}
+    \end{subfigure}
+
+    \caption{Resolución de puente desequilibrado.}
+    \label{fig:26-2}
+\end{figure}
+
+Calculamos $V_{TH}$ como la diferencia de potencial entre B y C con $R_5$ abierto:
+\[
+V_{BD} = \frac{160}{200} \times 60 = 48 \, \text{V}, \quad V_{CD} = \frac{120}{180} \times 60 = 40 \, \text{V}
+\]
+\[
+V_{BC} = V_{TH} = 48 - 40 = 8 \, \text{V}
+\]
+
+La resistencia $R_{TH}$ se halla pasivando la fuente (cortocircuito):
+\[
+R_{TH} = \frac{40 \times 160}{40 + 160} + \frac{60 \times 120}{60 + 120} = 32 + 40 = 72 \, \Omega
+\]
+Finalmente, la corriente es:
+\[
+I = \frac{V_{TH}}{R_{TH} + R_5} = \frac{8}{172} = 0,0465 \, \text{A}
+\]
+
+\section*{Verificación experimental y Resumen}
+Es posible determinar por medición los valores de \( V_{TH} \) y \( R_{TH} \) para una carga \( R_L \) en una red dada.
+
+\textbf{RESUMEN:}
+\begin{enumerate}[label=\arabic*.]
+    \item El teorema de Thévenin permite reemplazar una red compleja por una fuente \( V_{TH} \) en serie con \( R_{TH} \).
+    \item \( V_{TH} \) es la tensión en los terminales con la carga abierta.
+    \item \( R_{TH} \) es la resistencia vista desde los terminales con la carga abierta y las fuentes pasivadas.
+\end{enumerate}
+
+\section{AUTOEXAMEN}
+\begin{enumerate}
+    \item Se considera el circuito de la figura 26-1 a. $V = 160 \, V$, $R_1 = 30 \, \Omega$, $R_2 = 270 \, \Omega$, $R_3 = 500 \, \Omega$, $R_L = 560 \, \Omega$.
+    \begin{enumerate}
+        \item $V_{TH} = \ldots \ldots \ldots \, V$.
+        \item $R_{TH} = \ldots \ldots \ldots \, \Omega$.
+        \item $I_{\text{carga}} = \ldots \ldots \ldots \, A$.
+    \end{enumerate}
+    
+    \item Se considera el circuito de la figura 26-2 a (puente). $V = 120 \, V$, $R_1 = 200 \, \Omega$, $R_2 = 500 \, \Omega$, $R_3 = 300 \, \Omega$, $R_4 = 600 \, \Omega$ y $R_s = 112,5 \, \Omega$.
+    \begin{enumerate}
+        \item $V_{TH} = \ldots \ldots \ldots \, V$.
+        \item $R_{HT} = \ldots \ldots \ldots \, \Omega$.
+        \item $I_s = \ldots \ldots \ldots \, A$.
+    \end{enumerate}
+\end{enumerate}
+
+\section{MATERIALES NECESARIOS}
+\textbf{Equipo:} Fuente de c.c. variable regulada; EVM; miliamperímetro (o VOM) con alcance 5-10 mA. \\
+\textbf{Resistencias:} $\frac{1}{2}$ W 2.700, 3.300, 5.600, 10.000 y 15.000 $\Omega$; y otras. \\
+\textbf{Diversos:} Caja de décadas o potenciómetro 10k$\Omega$; interruptores.
+
+\section{PROCEDIMIENTO}
+\begin{enumerate}
+    \item Conectar el circuito de la figura 26-3. $S_1$ y $S_2$ abiertos. M en escala 1 mA. Cerrar $S_1$. Ajustar $V$ a 40 V. Cerrar $S_2$. Medir corriente en $R_L$. Anotar en «$I_L$ medida circuito original».
+    
+    \item Abrir $S_2$. $S_1$ cerrado. Medir tensión $V_{BC}$ (B y C). Anotar en «$V_{TH}$ medida».
+    
+    \item Suprimir fuente $V$. $S_2$ abierto. Cortocircuitar A y D. Medir resistencia entre B y C. Anotar en «$R_{TH}$ medida».
+    
+    \item Ajustar la salida de fuente a $V_{TH}$ medida. Ajustar caja de décadas a $R_{TH}$ y conectarla entre P y B. Conectar $R_L$ (2.700 $\Omega$) en serie con miliamperímetro.
+    
+    \item Cerrar interruptor S. Vigilar $V_{TH}$. Medir corriente en $R_L$. Anotar en «$I_L$ medida Thévenin».
+    
+    \item Desconectar alimentación. Calcular $V_{TH}$ y $R_{TH}$ para el circuito (Fig 26-3). Presentar cálculos. Calcular $I_L$. Anotar en Tabla 26-1.
+    
+    \item \textbf{Adicional:} Comprobar teorema con otros valores de $R_L$ (entre 1.200 y 10.000 $\Omega$).
+\end{enumerate}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[scale=1, transform shape]
+        \coordinate (A) at (0, 2.5); \coordinate (B) at (-3, 0);
+        \coordinate (C) at (3, 0); \coordinate (D) at (0, -2.5);
+        \draw (B) to[R, l_=$R_1$, l^=$3.3k$] (A);
+        \draw (A) to[R, l_=$R_2$, l^=$15k$] (C);
+        \draw (D) to[R, l_=$R_4$, l^=$5.6k$] (B);
+        \draw (C) to[R, l_=$R_3$, l^=$10k$] (D);
+        \draw (B) to[R, l_=$R_L$, l^=$2.7k$] ++(2.5,0) to[closing switch, l=$S_2$] ++(0.5,0) to[ammeter] (C);
+        % Fuente de tensión externa con interruptor S1
+        \draw (D) -- ++(-3,0) to[closing switch, l_=$S_1$] ++(-1.5,0) coordinate (V_neg);
+        \draw (V_neg) to[battery1, l={$V=40V$}, invert] (V_neg |- A) -- (A);
+        \node[above] at (A) {A}; \node[left] at (B) {B}; \node[right] at (C) {C}; \node[below] at (D) {D};
+        \fill (A) circle (1.5pt);
+        \fill (B) circle (1.5pt);
+        \fill (C) circle (1.5pt);
+        \fill (D) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito experimental (Fig 26-3).}
+    \label{fig:26-3}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[scale=1, transform shape]
+
+        \coordinate (P) at (0, 4); \coordinate (B) at (5, 4); \coordinate (C) at (5, -1);
+        \draw (P) to[R, l={$5,6k$}] ++(2.5,0) to[vR, l={$10k$}] (B); % Representing Rth
+        \draw (B) to[R, l_=$R_L$, l^=$2.7k$] (5,1.5) to[ammeter, l=M] (C);
+        \draw (C) -- ++(-3,0) to[closing switch, l=S] ++(-2,0) coordinate (V_neg);
+        \draw (V_neg) to[battery1, l_=$V_{TH}$, invert] (P);
+        \node[below] at (C) {C};
+        \fill (C) circle (1.5pt); % Black dot at node C
+        \node[above] at (B) {B};
+        \fill (B) circle (1.5pt); % Black dot at node B
+        \node[above] at (P) {P};
+        \fill (P) circle (1.5pt); % Black dot at node P
+    \end{circuitikz}
+    \caption{Equivalente experimental de Thévenin (Fig 26-4).}
+    \label{fig:26-4}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{TABLA 26-1}
+\label{tab:26-1}
+\resizebox{\textwidth}{!}{% Resize to fit width if needed
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$V_{TH}$ (V) & $R_{TH}$ ($\Omega$) & \multicolumn{6}{c|}{$I_L$ (mA)} \\
+\hline
+\multicolumn{2}{|c|}{} & \multicolumn{2}{c|}{Medida} & \multicolumn{2}{c|}{Calculada} & \multicolumn{2}{c|}{} \\
+\hline
+Medida & Calculada & Orig. & Thev. & Orig. & Thev. & $R_L$ & Error \% \\ % Simplified headers slightly for space
+\hline
+ & & & & & & 2.700 & \\
+\hline
+ & & & & & & & \\
+\hline
+\end{tabular}}
+\end{table}
+
+\section*{PREGUNTAS}
+\begin{enumerate}
+\item ¿Cómo es el valor de $I_L$ medido en el circuito de la figura 26-3 comparado con el del circuito equivalente de Thévenin? ¿Deben ser iguales?
+\item Discutir los datos de la tabla 26-1.
+\item ¿Confirma el experimento la validez del teorema?
+\item ¿«Prueba» este experimento el teorema de Thévenin para cualquier circuito?
+\item ¿Qué ventajas tiene el teorema de Thévenin?
+\end{enumerate}
+
+\section*{Respuestas auto-examen}
+\begin{enumerate}
+\item a) 100 V, b) 188 $\Omega$, c) 0,134 A
+\item a) 45 V, b) 338 $\Omega$, c) 0,1 A
+\end{enumerate}
+
+\end{document}

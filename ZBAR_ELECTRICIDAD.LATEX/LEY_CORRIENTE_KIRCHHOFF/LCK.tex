@@ -1,0 +1,371 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- PREÁMBULO ---
+% PAQUETES BÁSICOS
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{comment}
+
+% PAQUETES PARA TABLAS MEJORADAS
+\usepackage{booktabs} 
+\usepackage{array}    
+
+% PAQUETE PARA DIBUJAR CIRCUITOS
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+% \usepackage{wrapfig}
+
+% CONFIGURACIÓN DE LA PÁGINA
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=20mm,
+    top=20mm,
+    right=20mm,
+    bottom=20mm,
+    headheight=15pt
+}
+
+% CONFIGURACIÓN DEL ENCABEZADO
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{124-126}
+\fancyhead[R]{Prácticas de electricidad}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- CUERPO DEL DOCUMENTO ---
+\begin{document}
+
+% --- PARTE 1: LCK-01 ---
+\title{PRÁCTICA 20: LEY DE CORRIENTE DE KIRCHHOFF}
+\date{}
+\maketitle
+
+\section*{FINALIDADES}
+\begin{enumerate}
+    \item Determinar por cálculo la relación entre la suma de las corrientes que entran en una unión de un circuito eléctrico y la corriente que sale de la unión.
+    \item Comprobar experimentalmente la relación determinada en 1.
+\end{enumerate}
+
+\section*{INFORMACIÓN PRELIMINAR}
+\textbf{Ley de corriente}
+
+En la Práctica 15 ha comprobado Ud. que la corriente total \( I_T \) en un circuito que contiene resistencias conectadas en paralelo es igual a la suma de las corrientes de cada una de las ramas en paralelo. Esto ha sido una demostración de la ley de corriente de Kirchhoff, limitada a una red en paralelo. La ley es general y aplicable a cualquier circuito. Enuncia que la corriente que entra en una unión de circuito eléctrico es igual a la corriente que sale de la unión.
+
+Consideremos el circuito serie-paralelo (fig. 20-1). Designemos la corriente total por \( I_T \). En la unión \( A \) entra la corriente \( I_T \) con el sentido indicado por la flecha.
+
+Las corrientes que salen de la unión \( A \) son \( I_1 \), \( I_2 \) e \( I_3 \), como se indica. Las corrientes \( I_1 \), \( I_2 \) o \( I_3 \) entran de nuevo en la unión \( B \), e \( I_T \) sale de ella. ¿Cuál es la relación entre \( I_T \), \( I_1 \), \( I_2 \) e \( I_3 \)? El análisis matemático ayudará a establecer esta relación.
+
+La tensión entre los terminales del circuito paralelo \( V_{AB} = I_1 \times R_1 = I_2 \times R_2 = I_3 \times R_3 \). La red en paralelo puede ser reemplazada por su resistencia equivalente \( R_T \), y en este caso la figura 20-1 se transforma en un circuito serie simple y \( V_{AB} = I_T \times R_T \). Se deduce que
+\[
+    I_T \times R_T = I_1 \times R_1 = I_2 \times R_2 = I_3 \times R_3
+    \tag{20-1}
+\]
+
+La ecuación (20-1) se puede escribir en la forma
+\[
+    \begin{aligned}
+        I_1 &= I_T \times \frac{R_T}{R_1} \\
+        I_2 &= I_T \times \frac{R_T}{R_2} \\
+        I_3 &= I_T \times \frac{R_T}{R_3}
+    \end{aligned}
+    \tag{20-2}
+\]
+
+La suma de \( I_1 \), \( I_2 \) e \( I_3 \) da
+\[
+    I_1 + I_2 + I_3 = I_T \times R_T \left( \frac{1}{R_1} + \frac{1}{R_2} + \frac{1}{R_3} \right)
+\]
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) to[battery, l_=$V$, invert] (0,6)
+            to[R, l_=$R_5$, i=$I_T$] (3,6) coordinate[label=above:A] (A);
+        
+        % First branch
+        \draw (A) to[R, l=$R_1$, i=$I_1$] ++(4,0) coordinate[label=right:$B_1$] (B1);
+        
+        % Second branch
+        \draw (A) to[short, *-] ++(0,-2) coordinate (A2) 
+              to[R, l=$R_2$, i=$I_2$] ++(4,0) coordinate[label=right:$B_2$] (B2);
+        
+        % Third branch
+        \draw (A2) to[short, *-] ++(0,-2) coordinate (A3) 
+               to[R, l=$R_3$, i=$I_3$] ++(4,0) coordinate[label=right:$B_3$] (B3);
+        
+        % Connecting the outputs
+        \draw (B1) to[short, -*] (B2) to[short, -*] (B3) coordinate[label=right:$B$] (B);
+        
+        % Return path
+        \draw (B) -- (B |- 0,0) to[R, l_=$R_4$] (0,0);
+        
+        \draw (0,0) node[ground]{}; 
+    \end{circuitikz}
+    \caption{Circuito serie-paralelo para ilustrar la ley de corriente de Kirchhoff.}
+    \label{fig:20-1}
+\end{figure}
+
+% --- PARTE 2: LCK-02 ---
+pero
+\[ \frac{1}{R_1} + \frac{1}{R_2} + \frac{1}{R_3} = \frac{1}{R_T} \]
+
+Por tanto
+\[ I_1 + I_2 + I_3 = I_T \times R_T \times \frac{1}{R_T} = I_T \]
+e
+\begin{equation}
+    I_T = I_1 + I_2 + I_3
+\end{equation}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) to[battery, l=$V$] (0,4);
+        \draw (0,4) to[short, i=$I_T$] (2,4) coordinate[label=above:A] (A);
+        
+        % Parallel branches
+        \draw (A) to[R, l=$R_1$, i=$I_1$] (5,4) coordinate (B1);
+        \draw (A) -- (2,2) to[R, l=$R_2$, i=$I_2$] (5,2) coordinate (B2);
+        
+        % Recombination
+        \draw (B1) -- (B2);
+        \draw (5,3) to[short, i=$I_T$] (6,3) -- (6,0) -- (0,0);
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{La suma algébrica de las corrientes que entran y de las corrientes que salen en una unión es igual a cero. $I_T - I_1 - I_2 = 0$.}
+    \label{fig:20-2}
+\end{figure}
+
+La ecuación (20-3) es un enunciado matemático de la ley de Kirchhoff aplicada al circuito de la figura 20-1. En general, si $I_T$ es la corriente que entra en una unión de un circuito eléctrico, e $I_1, I_2, I_3, \dots, I_n$ son las corrientes que salen de esta unión (o viceversa), se tiene
+\begin{equation}
+    I_T = I_1 + I_2 + I_3 + \dots + I_n
+\end{equation}
+
+Ordinariamente la ley de corriente de Kirchhoff se enuncia en otra forma, a saber, \textit{la suma algébrica de las corrientes que entran en una unión y salen de ella es 0}. Se recordará que es análoga a la ley de tensión de Kirchhoff, según la cual la suma algébrica de las tensiones en un camino o bucle cerrado es 0. De la misma manera que ha sido necesario establecer un convenio de polaridad para las tensiones existentes en un bucle o malla, también es necesario establecer un convenio de corriente en una unión.
+
+Si la corriente que entra en una unión se considera positiva (+) y la corriente que sale de la unión se considera negativa (-), entonces el enunciado de que la suma algébrica de las corrientes que entran y salen en una unión es 0 coincide con lo expresado por la ecuación (20-4). Consideremos el circuito de la figura 20-2. En la unión A entra la corriente total $I_T$ y se la considera +. Las corrientes $I_1$ e $I_2$ salen de la unión en A y son designadas -. Entonces,
+\begin{equation}
+    I_T - I_1 - I_2 = 0
+\end{equation}
+e
+\begin{equation}
+    I_T = I_1 + I_2
+\end{equation}
+
+Es evidente que los dos enunciados de la ley de corriente de Kirchhoff conducen a la misma fórmula algébrica.
+
+Un ejemplo aclarará cómo puede ser aplicada la ley de corriente de Kirchhoff en un análisis de red. Supongamos en la figura 20-3 que $I_1$ e $I_2$ son las corrientes que entran en la unión A y que son respectivamente +\,5\,A y +\,3\,A. $I_3, I_4$ e $I_5$ son las corrientes que salen de A. $I_3$ e $I_4$ son respectivamente 2 y 1 A. ¿Cuál es el valor de $I_5$? Aplicando la ley de corriente de Kirchhoff
+\[ I_1 + I_2 - I_3 - I_4 - I_5 = 0 \]
+y sustituyendo los valores conocidos de la corriente, obtenemos
+\begin{align*}
+    5 + 3 - 2 - 1 - I_5 &= 0 \\
+    8 - 3 &= I_5 \\
+    I_5 &= 5\,\text{A}
+\end{align*}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}
+        \node[circ, label=center:A] (A) at (0,0) {};
+        
+        % Inputs (Entering A)
+        \draw[latex-] (A) -- (135:2) node[above left] {$I_1 = 5\,\text{A}$};
+        \draw[latex-] (A) -- (180:2) node[left] {$I_2 = 3\,\text{A}$};
+        
+        % Outputs (Leaving A)
+        \draw[-latex] (A) -- (45:2) node[above right] {$I_3 = 2\,\text{A}$};
+        \draw[-latex] (A) -- (0:2) node[right] {$I_4 = 1\,\text{A}$};
+        \draw[-latex] (A) -- (-45:2) node[below right] {$I_5$};
+    \end{circuitikz}
+    \caption{Corrientes que entran y corrientes que salen en una unión o nudo. $I_1 + I_2 - I_3 - I_4 - I_5 = 0$.}
+    \label{fig:20-3}
+\end{figure}
+
+\subsection*{RESUMEN}
+\begin{enumerate}
+    \item La ley de corriente de Kirchhoff enuncia que la corriente que entra en una unión de un circuito eléctrico es igual a la corriente que sale de la unión.
+    \item Un enunciado analítico de la ley de corriente de Kirchhoff requiere la asignación de polaridad a la corriente.
+\end{enumerate}
+
+% --- PARTE 3: LCK-03 ---
+\section*{Ley de corriente de Kirchhoff}
+
+\noindent que entra en la unión (se supone que es +) y a la corriente que sale de la unión (se supone que es —).
+
+\begin{enumerate}[label=\arabic*., start=3]
+    \item Con el convenio de 2, la ley de Kirchhoff se enuncia como sigue: La suma algébrica de las corrientes que entran y salen en una unión es 0; así, en la figura 20-1, unión A
+    \[
+        I_T - I_1 - I_2 - I_3 = 0
+    \]
+\end{enumerate}
+
+\subsection*{AUTOEXAMEN}
+\begin{enumerate}[label=\arabic*.]
+    \item En la figura 20-1 la corriente que entra en la unión es 0,55 A. La corriente $I_1 = 0,25$ A, $I_2 = 0,1$ A. La corriente $I_3$ debe pues ser igual a \underline{\hspace{2cm}} A.
+    \item En la figura 20-1 la corriente que sale de la unión B es 1,25 A. La suma de corrientes $I_1, I_2$ e $I_3$ debe ser \underline{\hspace{2cm}} A.
+    \item En la unión B (fig. 20-1) las polaridades que se deben asignar a las corrientes para aplicar la ley de corriente de Kirchhoff son: $I_1$ es \underline{\hspace{1cm}}; $I_2$ es \underline{\hspace{1cm}}; $I_3$ es \underline{\hspace{1cm}}; e $I_T$ es \underline{\hspace{1cm}}.
+    \item La ecuación que expresa la relación entre las corrientes en la unión A de la figura 20-3 es \underline{\hspace{4cm}}.
+    \item En la figura 20-3, $I_2 = 10$ A, $I_3 = 4$ A, $I_4 = 4$ A, $I_5 = 4$ A. $I_1 = \underline{\hspace{2cm}}$ A.
+\end{enumerate}
+
+\vspace{1cm}
+
+\section*{PROCEDIMIENTO}
+    \subsection*{Ley de Corriente}
+    \textbf{NOTA:} Antes de conectar el miliamperímetro para medir la corriente, desconectar la fuente de alimentación abriendo el interruptor S. Hacer esto mismo cada vez que se traslade el medidor. Observar la polaridad de éste.
+    
+    \begin{enumerate}[label=\arabic*.]
+        \item Conectar el circuito de la figura 20-4 con $V=40$ V. Utilizar los valores $R_1, R_2$, etc., de la tabla 20-1. Medir y anotar en la tabla 20-2 las corrientes $I_T$ en A; $I_2, I_3$ e $I_T$ en B; $I_T$ en C, e $I_5, I_6, I_7$ e $I_T$ en D. Sumar las corrientes $I_2$ e $I_3$ y anotar la suma en la columna correspondiente. Sumar también las corrientes $I_5, I_6$ e $I_7$ y anotar la suma en la columna correspondiente.
+        \item Conectar el circuito de la figura 20-1 empleando los valores $R_1 = 330~\Omega$, $R_2 = 470~\Omega$ y $R_3 = 1.200~\Omega$. Ajustar la salida de la fuente de alimentación para que $V=40$ V. Medir y anotar en la tabla 20-3 las corrientes $I_T$ en A; $I_1, I_2, I_3$ e $I_T$ en B. Sumar las corrientes $I_1, I_2$ e $I_3$ y anotar la suma en la tabla 20-3.
+    \end{enumerate}
+
+    \subsection*{Problema de diseño (adicional)}
+    \begin{enumerate}[label=\arabic*., start=3]
+        \item Diseñar un circuito serie-paralelo con tres ramas en el circuito paralelo, de modo que las corrientes en las ramas $I_1, I_2$ e $I_3$ estén en la relación 1:2:3 (aproximadamente) y la corriente total en el circuito sea 6 mA. Emplear las resistencias mencionadas en esta práctica que den la mayor aproximación a la relación deseada. Dibujar un esquema del circuito indicando los valores de las resistencias elegidas y la tensión de diseño V. Presentar todos los cálculos. Medir las corrientes necesarias y anotarlas en la tabla 20-4. Anotar también la relación de corrientes $I_1:I_2:I_3$.
+    \end{enumerate}
+    
+    \subsection*{PREGUNTAS}
+    \begin{enumerate}[label=\arabic*.]
+        \item ¿Cómo es la suma de $I_2$ e $I_3$ del apartado 1 comparada con $I_T$ en A? ¿$I_T$ en B? Explicar las discrepancias.
+    \end{enumerate}
+
+\vspace{1cm}
+
+\begin{figure}[ht]
+    \centering
+    \begin{circuitikz}[european, scale=0.9, transform shape]
+        % Source path to A
+        \draw (0,0) to[battery1, l=$V$, invert] (0,3) coordinate[label=above:A] (A);
+        
+        % Ammeter It entering A
+        %\draw (3,3) -- (3,4) to[ammeter, l=$I_T$] (3,3); % Just illustrating "before A"? Text says "It en A".  Actually, standard practice is in series.
+        % Re-reading text: "Measure currents It in A". Usually implies measuring current entering A.
+        % Let's place ammeter in series before node A.
+        
+        % Actually, the text says "Measure ... It in A; I2, I3 and It in B". 
+        % The drawing description in original code had complex structure. Let's simplify to a clear series-parallel layout.
+        
+        % Path from Source to Node A
+        \draw (0,3) to[R=$R_1$] (2,3) to[ammeter, l=$I_T$] (4,3) coordinate[label=above:A] (A);
+
+        % PARALLEL SECTION 1 (Between A and B)
+        % Top branch: R2 and Ammeter I2
+        \draw (A) -- (4,5) to[R=$R_2$] (7,5) to[ammeter, l=$I_2$] (8,5) -- (8,3) coordinate[label=above:B] (B);
+        
+        % Middle branch: R4 (Assuming just R4 based on previous code usually this is a mixing of series/parallel)
+        % Original code: A to R4 to B.
+        \draw (A) to[R=$R_4$] (B);
+        
+        % Bottom branch: R3 + Ammeter I3
+        \draw (A) -- (4,1) to[R=$R_3$] (7,1) to[ammeter, l=$I_3$] (8,1) -- (B);
+        
+        % SERIES SECTION (Between B and C)
+        \draw (B) to[ammeter, l=$I_T$] (10,3) coordinate[label=above:C] (C);
+        
+        % PARALLEL SECTION 2 (Between C and D)
+        % Top branch: R5 + Ammeter I5
+        \draw (C) -- (10,5) to[R=$R_5$] (13,5) to[ammeter, l=$I_5$] (14,5) -- (14,3) coordinate[label=above:D] (D);
+        
+        % Middle branch: R6 + Ammeter I6 (Original code had R8 in series with C->D in "main path")
+        % Let's follow original code logic: C -> R8 -> D is main path? 
+        % Wait, original code: (C) to[R=$R_6$] ... (D) mid branch.
+        \draw (C) -- (10,3) to[R=$R_6$] (12,3) to[ammeter, l=$I_6$] (14,3);
+        
+        % Bottom branch: R7 + Ammeter I7
+        \draw (C) -- (10,1) to[R=$R_7$] (13,1) to[ammeter, l=$I_7$] (14,1) -- (D);
+
+        % RETURN PATH
+        \draw (D) to[R=$R_8$] (16,3) -- (16,0);
+        \draw (0,0) to [cspst, l=S] (16,0);
+                     
+        % Ground
+        \draw (0,0) node[ground]{};
+    \end{circuitikz}
+    \caption{Circuito experimental para la verificación de la ley de corriente de Kirchhoff.}
+    \label{fig:20-4}
+\end{figure}
+
+% --- PARTE 4: LCK-04 ---
+% --- TABLA 20-1 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-1}
+    \label{tab:20-1}
+    \begin{tabular}{lcccccccc}
+        \toprule
+        & $R_1$ & $R_2$ & $R_3$ & $R_4$ & $R_5$ & $R_6$ & $R_7$ & $R_8$ \\
+        \midrule
+        \begin{tabular}{@{}l@{}}Valor nominal \\ ohmios\end{tabular} & 330 & 470 & 1.200 & 2.200 & 3.300 & 4.700 & 10.000 & 5.600 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-2 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-2}
+    \label{tab:20-2}
+    \begin{tabular}{lccccccccccc}
+        \toprule
+        & $I_T$ en A & $I_2$ & $I_3$ & $I_T$ en B & $I_T$ en C & $I_5$ & $I_6$ & $I_7$ & $I_T$ en D & $I_2+I_3$ & \begin{tabular}{@{}c@{}}$I_5+I_6$\\$+I_7$\end{tabular} \\
+        \midrule
+        mA & & & & & & & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-3 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-3}
+    \label{tab:20-3}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & $I_T$ en A & $I_1$ & $I_2$ & $I_3$ & $I_T$ en B & $I_1+I_2+I_3$ \\
+        \midrule
+        mA & & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-4 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-4}
+    \label{tab:20-4}
+    \begin{tabular}{lccccc}
+        \toprule
+        & $I_1$ & $I_2$ & $I_3$ & $I_T$ & $I_1:I_2:I_3$ \\
+        \midrule
+        mA & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- PREGUNTAS ---
+\section*{PREGUNTAS}
+\begin{enumerate}[label=\arabic*., start=2]
+    \item ¿Cómo es la suma de $I_5$, $I_6$ e $I_7$ del apartado 1 comparada con $I_T$ en C? ¿$I_T$ en D? Explicar las diferencias.
+    \item Comentar los resultados de las propias mediciones del apartado 2. Explicar cualquier resultado inesperado.
+    \item Enunciar la ley de corriente de Kirchhoff y escribir su fórmula.
+    \item ¿Qué información es necesaria para calcular $I_2$ e $I_3$ en la figura 20-4?
+    \item Discutir los resultados del problema de diseño (apartado 3).
+    \item ¿Por qué no es posible diseñar un circuito que dé una relación exacta de corriente 1:2:3?
+\end{enumerate}
+
+% --- RESPUESTAS AL AUTOEXAMEN ---
+\subsection*{Respuestas a las preguntas de autoexamen}
+\begin{enumerate}[label=\arabic*.]
+    \item 0,2.
+    \item 1,25.
+    \item $I_1$ es +; $I_2$ es +; $I_3$ es +; $I_T$ es –.
+    \item $I_1 + I_2 - I_3 - I_4 - I_5 = 0$.
+    \item 2.
+\end{enumerate}
+
+\end{document}

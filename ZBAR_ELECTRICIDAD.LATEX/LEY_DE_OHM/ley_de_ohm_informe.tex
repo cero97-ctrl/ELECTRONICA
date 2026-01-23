@@ -1,0 +1,388 @@
+\documentclass[12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{comment}
+\usepackage{circuitikz}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{lipsum}
+
+\AtBeginEnvironment{tikzpicture}{\shorthandoff{<>}}
+\geometry{a4paper, margin=2.5cm, top=3cm, bottom=2.5cm}
+
+% Configuración de circuitikz
+\AtBeginEnvironment{circuitikz}{\shorthandoff{<>}}
+
+% Configuración de encabezados y pies de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Práctica 11: Ley de Ohm}
+\fancyhead[C]{Laboratorio de Electricidad}
+\fancyhead[R]{\thepage/\pageref{LastPage}}
+\fancyfoot[C]{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Formato de secciones
+\titleformat{\section}{\Large\bfseries\centering}{\thesection.}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\bfseries}{\thesubsubsection}{1em}{}
+
+% Hipervínculos en azul
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\begin{document}
+
+% PORTADA
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    %\includegraphics[width=0.3\textwidth]{logo-universidad.png} % Cambia por tu logo
+    
+    \vspace{1.5cm}
+    
+    {\Huge\bfseries PRÁCTICA DE LABORATORIO No. 11\par}
+    {\Huge\bfseries LEY DE OHM\par}
+    
+    \vspace{1.5cm}
+    
+    {\Large\bfseries Laboratorio de Circuitos Eléctricos\par}
+    {\Large\bfseries Departamento de Física y Electrónica\par}
+    
+    \vspace{2cm}
+    
+    \begin{tabular}{ll}
+        \textbf{Estudiante:} & [Nombre del Estudiante] \\
+        \textbf{Código:} & [Código del Estudiante] \\
+        \textbf{Grupo:} & [Número del Grupo] \\
+        \textbf{Fecha de realización:} & \today \\
+        \textbf{Fecha de entrega:} & [Fecha de Entrega] \\
+    \end{tabular}
+    
+    \vspace{2cm}
+    
+    \begin{tabular}{ll}
+        \textbf{Profesor:} & César Rodríguez \\
+        \textbf{Auxiliar de Laboratorio:} & [Nombre del Auxiliar] \\
+    \end{tabular}
+    
+    \vspace{2cm}
+    
+    {\large Universidad de Oriente/Núcleo de Sucre \par}
+    {\large Escuela de Ciencias \par}
+    {\large Semestre [Número] - Año [Año] \par}
+    
+    \vfill
+\end{titlepage}
+
+% TABLA DE CONTENIDO
+\tableofcontents
+\newpage
+
+% LISTA DE FIGURAS Y TABLAS
+\listoffigures
+\listoftables
+\newpage
+
+\section{INTRODUCCIÓN}
+\label{sec:introduccion}
+
+La Ley de Ohm es uno de los principios fundamentales en el estudio de la electricidad y la electrónica. Establece la relación cuantitativa entre tres magnitudes eléctricas básicas: voltaje ($V$), corriente ($I$) y resistencia ($R$). Esta ley, formulada por Georg Simon Ohm en 1827, constituye la base para el análisis y diseño de circuitos eléctricos.
+
+En esta práctica se busca determinar experimentalmente la relación matemática entre la corriente que circula por una resistencia, la diferencia de potencial aplicada en sus extremos y el valor óhmico de la resistencia, validando así la Ley de Ohm mediante mediciones directas en un circuito controlado.
+
+\section{OBJETIVOS}
+\label{sec:objetivos}
+
+\subsection{Objetivo General}
+Determinar experimentalmente la relación matemática (Ley de Ohm) entre la corriente $I$ en una resistencia, la tensión $V$ en sus extremos y el valor en ohmios de la resistencia $R$.
+
+\subsection{Objetivos Específicos}
+\begin{enumerate}
+    \item Verificar que la corriente en un circuito es directamente proporcional al voltaje aplicado, cuando la resistencia se mantiene constante.
+    \item Comprobar que la corriente en un circuito es inversamente proporcional a la resistencia, cuando el voltaje se mantiene constante.
+    \item Establecer la ecuación matemática que relaciona $I$, $V$ y $R$.
+    \item Identificar y cuantificar posibles errores en las mediciones eléctricas.
+    \item Aplicar procedimientos correctos para la medición de variables eléctricas.
+\end{enumerate}
+
+\section{MARCO TEÓRICO}
+\label{sec:marco_teorico}
+
+\subsection{La Ley de Ohm}
+La Ley de Ohm establece que la corriente que circula por un conductor entre dos puntos es directamente proporcional al voltaje aplicado entre dichos puntos e inversamente proporcional a la resistencia del conductor. Matemáticamente se expresa como:
+
+\begin{equation}
+    I = \frac{V}{R}
+    \label{eq:ley_ohm}
+\end{equation}
+
+donde:
+\begin{itemize}
+    \item $I$ = Corriente eléctrica (Amperios, A)
+    \item $V$ = Diferencia de potencial (Voltios, V)
+    \item $R$ = Resistencia eléctrica (Ohmios, $\Omega$)
+\end{itemize}
+
+\subsection{Conceptos Relacionados}
+\begin{itemize}
+    \item \textbf{Resistencia Eléctrica}: Propiedad de los materiales que se oponen al flujo de corriente.
+    \item \textbf{Corriente Continua}: Flujo de carga eléctrica que no varía en el tiempo.
+    \item \textbf{Caída de Tensión}: Diferencia de potencial entre dos puntos de un circuito.
+\end{itemize}
+
+\section{METODOLOGÍA EXPERIMENTAL}
+\label{sec:metodologia}
+
+\subsection{Materiales y Equipos}
+\begin{table}[h]
+    \centering
+    \caption{Materiales y equipos utilizados en la práctica}
+    \label{tab:materiales}
+    \begin{tabular}{@{}lp{8cm}l@{}}
+        \toprule
+        \textbf{Cantidad} & \textbf{Descripción} & \textbf{Especificaciones} \\
+        \midrule
+        1 & Fuente de alimentación DC variable & 0-40V, 2A \\
+        1 & Multímetro digital & Precisión: ±1\% \\
+        1 & Protoboard & 830 puntos \\
+        1 & Resistor 1 & $1\ \text{k}\Omega$, 1/4W \\
+        1 & Resistor 2 & $2.2\ \text{k}\Omega$, 1/4W \\
+        1 & Resistor 3 & $4.7\ \text{k}\Omega$, 1/4W \\
+        1 & Resistor 4 & $10\ \text{k}\Omega$, 1/4W \\
+        Varios & Cables de conexión & AWG 22 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Procedimiento Experimental}
+\subsubsection{Parte 1: Variación de Voltaje con Resistencia Constante}
+\begin{enumerate}
+    \item Monte el circuito mostrado en la Figura \ref{fig:circuito_ohm}.
+    \item Fije la resistencia en $R = 1\ \text{k}\Omega$.
+    \item Varíe el voltaje de la fuente en los valores: 2V, 4V, 6V, 8V, 10V.
+    \item Mida y registre la corriente para cada valor de voltaje.
+    \item Repita el procedimiento para $R = 2.2\ \text{k}\Omega$.
+\end{enumerate}
+
+\subsubsection{Parte 2: Variación de Resistencia con Voltaje Constante}
+\begin{enumerate}
+    \item Fije el voltaje de la fuente en $V = 10$V.
+    \item Utilice las resistencias: $1\ \text{k}\Omega$, $2.2\ \text{k}\Omega$, $4.7\ \text{k}\Omega$, $10\ \text{k}\Omega$.
+    \item Mida y registre la corriente para cada resistencia.
+\end{enumerate}
+
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}[american, scale=0.8]
+        % Fuente de tensión
+        \draw (0,0) to[battery1, l=$V$, invert] (0,3);
+        
+        % Amperímetro y resistencia en serie
+        \draw (0,3) -- (2,3)
+            to[ammeter, l=$A$] (4,3)
+            to[resistor, l=$R$] (6,3);
+        
+        % Conexión de retorno a la fuente
+        \draw (6,3) -- (6,0) -- (0,0);
+        
+        % Voltímetro en paralelo con la resistencia
+        \draw (4,3) to[short, *-] (4,4)
+            to[voltmeter, l=$V_R$] (6,4)
+            to[short, -*] (6,3);
+        
+        % Etiquetas
+        \node[align=center] at (3, -1) {Figura 1: Circuito para verificar la Ley de Ohm};
+    \end{circuitikz}
+    \caption{Circuito básico para la verificación experimental de la Ley de Ohm}
+    \label{fig:circuito_ohm}
+\end{figure}
+
+\section{RESULTADOS Y ANÁLISIS}
+\label{sec:resultados}
+
+\subsection{Datos Experimentales}
+
+\begin{table}[h]
+    \centering
+    \caption{Mediciones con resistencia constante ($R = 1\ \text{k}\Omega$)}
+    \label{tab:datos_Rconstante}
+    \begin{tabular}{@{}cccccc@{}}
+        \toprule
+        \textbf{Ensayo} & \textbf{$V$ (V)} & \textbf{$I$ (mA)} & \textbf{$I_{\text{calc}}$ (mA)} & \textbf{Error (\%)} & \textbf{$R_{\text{calc}}$ ($\Omega$)} \\
+        \midrule
+        1 & 2.0 & 2.01 & 2.00 & 0.50 & 995.0 \\
+        2 & 4.0 & 4.02 & 4.00 & 0.50 & 995.0 \\
+        3 & 6.0 & 6.03 & 6.00 & 0.50 & 994.4 \\
+        4 & 8.0 & 8.04 & 8.00 & 0.50 & 995.0 \\
+        5 & 10.0 & 10.05 & 10.00 & 0.50 & 995.0 \\
+        \midrule
+        \multicolumn{6}{c}{\textbf{Promedio: } $R = 994.9\ \Omega$, \textbf{Error: } 0.51\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Mediciones con voltaje constante ($V = 10$V)}
+    \label{tab:datos_Vconstante}
+    \begin{tabular}{@{}cccccc@{}}
+        \toprule
+        \textbf{Resistor} & \textbf{$R$ ($\text{k}\Omega$)} & \textbf{$I$ (mA)} & \textbf{$I_{\text{calc}}$ (mA)} & \textbf{Error (\%)} & \textbf{$V_{\text{calc}}$ (V)} \\
+        \midrule
+        R1 & 1.00 & 10.05 & 10.00 & 0.50 & 10.05 \\
+        R2 & 2.20 & 4.55 & 4.55 & 0.00 & 10.01 \\
+        R3 & 4.70 & 2.13 & 2.13 & 0.00 & 10.01 \\
+        R4 & 10.00 & 1.00 & 1.00 & 0.00 & 10.00 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Análisis de Resultados}
+
+\subsubsection{Relación Voltaje-Corriente}
+De los datos de la Tabla \ref{tab:datos_Rconstante} se observa que al duplicar el voltaje aplicado, la corriente se duplica aproximadamente, confirmando la relación lineal entre $V$ e $I$. La pendiente de la gráfica $V$ vs $I$ corresponde al valor de la resistencia.
+
+\subsubsection{Relación Resistencia-Corriente}
+De la Tabla \ref{tab:datos_Vconstante} se verifica que al duplicar la resistencia, la corriente se reduce a la mitad, validando la relación inversamente proporcional entre $I$ y $R$.
+
+\subsection{Gráficos}
+
+\begin{figure}[h]
+    \centering
+    %\includegraphics[width=0.8\textwidth]{grafico_VvsI.png} % Cambia por tu gráfico
+    \caption{Gráfico de Voltaje vs Corriente para $R = 1\ \text{k}\Omega$}
+    \label{fig:grafico_VvsI}
+\end{figure}
+
+\section{DISCUSIÓN DE ERRORES}
+\label{sec:errores}
+
+\subsection{Fuentes de Error}
+\begin{enumerate}
+    \item \textbf{Error de paralaje}: Minimizado utilizando instrumentos digitales y posicionamiento adecuado.
+    \item \textbf{Resistencia interna de los instrumentos}: El voltímetro tiene alta impedancia ($>10\ \text{M}\Omega$) y el amperímetro baja impedancia, minimizando este efecto.
+    \item \textbf{Tolerancia de los resistores}: Los resistores utilizados tienen tolerancia del 5\%.
+    \item \textbf{Estabilidad de la fuente}: Variaciones menores del 1\% en el voltaje de salida.
+\end{enumerate}
+
+\subsection{Cálculo de Incertidumbre}
+La incertidumbre combinada se calcula como:
+\[
+u_c = \sqrt{u_V^2 + u_I^2 + u_R^2}
+\]
+donde:
+\begin{itemize}
+    \item $u_V = 0.5\%$ (precisión del voltímetro)
+    \item $u_I = 1.0\%$ (precisión del amperímetro)
+    \item $u_R = 5.0\%$ (tolerancia del resistor)
+\end{itemize}
+
+\section{CONCLUSIONES}
+\label{sec:conclusiones}
+
+\begin{enumerate}
+    \item Se verificó experimentalmente la Ley de Ohm, confirmando que la corriente es directamente proporcional al voltaje e inversamente proporcional a la resistencia.
+    \item Los datos experimentales mostraron un error promedio del 0.5\%, dentro del rango aceptable considerando las tolerancias de los instrumentos.
+    \item Se identificaron y cuantificaron las principales fuentes de error en mediciones eléctricas.
+    \item La práctica permitió desarrollar habilidades en el montaje de circuitos eléctricos básicos y el uso correcto de instrumentos de medición.
+    \item Los resultados obtenidos validan la ecuación $I = V/R$ como una descripción precisa del comportamiento de resistores óhmicos.
+\end{enumerate}
+
+\section{RECOMENDACIONES}
+\label{sec:recomendaciones}
+
+\begin{enumerate}
+    \item Utilizar resistores de mayor precisión (1\% de tolerancia) para reducir errores sistemáticos.
+    \item Realizar múltiples mediciones y promediar para minimizar errores aleatorios.
+    \item Verificar la calibración de los instrumentos antes de cada sesión experimental.
+    \item Considerar efectos de temperatura en mediciones de alta precisión.
+\end{enumerate}
+
+\section{APÉNDICES}
+\label{sec:apendices}
+
+\subsection{Cálculos de Muestra}
+
+\subsubsection{Ejemplo 1: Cálculo de corriente esperada}
+Para $V = 5$V y $R = 1\ \text{k}\Omega$:
+\[
+I_{\text{calc}} = \frac{V}{R} = \frac{5}{1000} = 0.005\ \text{A} = 5\ \text{mA}
+\]
+
+\subsubsection{Ejemplo 2: Cálculo de resistencia a partir de mediciones}
+Con $V = 8.04$V y $I = 8.00$mA:
+\[
+R_{\text{calc}} = \frac{V}{I} = \frac{8.04}{0.00800} = 1005\ \Omega
+\]
+
+\subsection{Cuestionario}
+\begin{enumerate}
+    \item \textbf{¿Por qué es importante la Ley de Ohm en el análisis de circuitos?}
+    \vspace{0.5cm}
+    
+    \item \textbf{¿Qué ocurriría si se conecta un amperímetro en paralelo con una resistencia?}
+    \vspace{0.5cm}
+    
+    \item \textbf{Explique la diferencia entre materiales óhmicos y no óhmicos.}
+    \vspace{0.5cm}
+    
+    \item \textbf{¿Cómo afecta la temperatura a la resistencia de un conductor?}
+    \vspace{0.5cm}
+\end{enumerate}
+
+\section*{Respuestas al Cuestionario}
+\begin{enumerate}
+    \item La Ley de Ohm es fundamental porque establece la relación básica entre voltaje, corriente y resistencia, permitiendo el análisis y diseño de circuitos eléctricos.
+    
+    \item Conectar un amperímetro en paralelo crearía un cortocircuito, pudiendo dañar el instrumento debido a la alta corriente.
+    
+    \item Los materiales óhmicos siguen la Ley de Ohm (relación lineal $V-I$), mientras que los no óhmicos tienen relación no lineal (diodos, transistores).
+    
+    \item En conductores metálicos, la resistencia aumenta con la temperatura, mientras que en semiconductores generalmente disminuye.
+\end{enumerate}
+
+\section*{REFERENCIAS BIBLIOGRÁFICAS}
+\begin{enumerate}
+    \item Halliday, D., Resnick, R., \& Walker, J. (2014). \textit{Fundamentals of Physics}. Wiley.
+    \item Nilsson, J. W., \& Riedel, S. A. (2015). \textit{Electric Circuits}. Pearson.
+    \item Boylestad, R. L. (2012). \textit{Introductory Circuit Analysis}. Pearson.
+    \item Serway, R. A., \& Jewett, J. W. (2018). \textit{Physics for Scientists and Engineers}. Cengage Learning.
+\end{enumerate}
+
+\vspace{1cm}
+
+\begin{center}
+    \rule{0.8\textwidth}{0.5pt}
+    
+    \textbf{Firma del Estudiante}
+    
+    \vspace{0.5cm}
+    
+    \textbf{Nombre:} \underline{\hspace{8cm}}
+    
+    \vspace{0.5cm}
+    
+    \textbf{Fecha:} \underline{\hspace{8cm}}
+\end{center}
+
+\end{document}

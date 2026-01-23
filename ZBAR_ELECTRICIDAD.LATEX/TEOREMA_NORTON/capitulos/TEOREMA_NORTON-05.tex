@@ -1,0 +1,152 @@
+%\section{PAGINA 5}
+
+\section{Análisis Usando el Teorema de Norton}
+
+A continuación, se presentan los circuitos que utilizaremos:
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) node[below] {B} to[battery, l={$V_s=\SI{100}{\volt}$}, invert] (0,4) node[above] {A} to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (4,4) node[above] {D};
+        \draw (4,4) to[battery, l={$V_2=\SI{150}{\volt}$}] (4,2) to[R, l={$R_2=\SI{2.2}{\kilo\ohm}$}] (4,0) node[below] {C};
+        \draw (4,4) -- (8,4) node[above] {F};
+        \draw (8,4) to[R, l={$R_3=\SI{1.2}{\kilo\ohm}$}] (8,2) to[ammeter, l=$I_2$] (8,0) node[below] {G};
+        \draw (8,0) -- (4,0) -- (0,0); % Conecta G -> C -> B
+        \fill (0,0) circle (1.5pt); % Nodo B
+        \fill (0,4) circle (1.5pt); % Nodo A
+        \fill (4,4) circle (1.5pt); % Nodo D
+        \fill (4,0) circle (1.5pt); % Nodo C
+        \fill (8,4) circle (1.5pt); % Nodo F
+        \fill (8,0) circle (1.5pt); % Nodo G
+    \end{circuitikz}
+    \caption{Solución de una Red Compleja por el Teorema de Norton.}
+    \label{fig:circuito original}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) node[below] {B} to[battery, l={$V_s=\SI{100}{\volt}$}, invert] (0,4) node[above] {A} to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (4,4) node[above] {D};
+        \draw (4,4) to[battery, l={$V_2=\SI{150}{\volt}$}] (4,2) to[R, l={$R_2=\SI{2.2}{\kilo\ohm}$}] (4,0) node[below] {C};
+        \draw (4,4) -- (8,4) node[above] {F};
+        \draw (8,4) to[ammeter, l=$I_N$] (8,0) node[below] {G}; % R3 y I2 reemplazados por I_N
+        \draw (8,0) -- (4,0) -- (0,0); % Conecta G -> C -> B
+        \fill (0,0) circle (1.5pt); % Nodo B
+        \fill (0,4) circle (1.5pt); % Nodo A
+        \fill (4,4) circle (1.5pt); % Nodo D
+        \fill (4,0) circle (1.5pt); % Nodo C
+        \fill (8,4) circle (1.5pt); % Nodo F
+        \fill (8,0) circle (1.5pt); % Nodo G
+    \end{circuitikz}
+    \caption{Cálculo de la corriente de Norton ($I_N$) cortocircuitando los terminales F y G.}
+    \label{fig:circuito-in}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) node[below] {B} to[short] (0,4) node[above] {A} to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (4,4) node[above] {D};
+        \draw (4,4) to[R, l={$R_2=\SI{2.2}{\kilo\ohm}$}] (4,0) node[below] {C};
+        \draw (4,4) -- (8,4) node[above] {F};
+        \draw (8,0) -- (4,0) -- (0,0); % Conecta G -> C -> B
+        \fill (0,0) circle (1.5pt); % Nodo B
+        \fill (0,4) circle (1.5pt); % Nodo A
+        \fill (4,4) circle (1.5pt); % Nodo D
+        \fill (4,0) circle (1.5pt); % Nodo C
+        \fill (8,4) circle (1.5pt); % Nodo F
+        \node at (8,0) [below] {G}; % Nodo G como terminal abierto
+    \end{circuitikz}
+    \caption{Cálculo de la resistencia de Norton ($R_N$) vista desde los terminales F y G.}
+    \label{fig:circuito-rn}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[european]
+        \draw (0,0) node[below] {B} to[isource, l={$I_N=\SI{31.8}{\milli\ampere}$}] (0,4) node[above] {A} to[short] (4,4) node[above] {D};
+        \draw (4,4) to[R, l={$R_N=\SI{687.5}{\ohm}$}] (4,0) node[below] {C};
+        \draw (4,4) -- (8,4) node[above] {F};
+        \draw (8,4) to[R, l={$R_3=\SI{1.2}{\kilo\ohm}$}] (8,2) to[ammeter, l=$I_N$] (8,0) node[below] {G};
+        \draw (8,0) -- (4,0) -- (0,0); % Conecta G -> C -> B
+        \fill (0,0) circle (1.5pt); % Nodo B
+        \fill (0,4) circle (1.5pt); % Nodo A
+        \fill (4,4) circle (1.5pt); % Nodo D
+        \fill (4,0) circle (1.5pt); % Nodo C
+        \fill (8,4) circle (1.5pt); % Nodo F
+        \fill (8,0) circle (1.5pt); % Nodo G
+    \end{circuitikz}
+    \caption{Circuito Equivalente de Norton con la carga conectada.}
+    \label{fig:circuito-equivalente-norton}
+\end{figure}
+
+\noindent En el lazo 1,
+
+\begin{equation}
+\begin{split}
+    &100 - I_4 \times (1000) = 0 \\
+    &I_4 = \frac{100}{1000} = \SI{0.1}{\ampere}
+\end{split} \tag{27-16}
+\end{equation}
+
+En el bucle 2, 
+
+\begin{equation}
+\begin{split}
+    &2200 \times I_5 + 150 = 0 \\
+    &I_5 = \frac{150}{2200} = \SI{0.0682}{\ampere}
+\end{split} \tag{27-17}
+\end{equation}
+
+La figura 27-5b muestra que $I_N=I_4-I_5$, puesto que los sentidos de 
+$I_4$ y $I_5$ son opuestos. Por lo tanto,
+
+\begin{equation}
+\begin{split}
+    &I_N = I_4 - I_5 = \SI{0.1}{\ampere} - \SI{0.0682}{\ampere} = \SI{0.0318}{\ampere}
+\end{split} \tag{27-18}
+\end{equation}  
+
+La resistencia del generador de Norton $R_N$ es la resistencia total de 
+la red original, es decir, la resistencia total de la red original es 
+$R_N=\SI{687.5}{\ohm}$. Por lo tanto, el generador de Norton 
+es $R_N=\SI{687.5}{\ohm}$ y $I_N=\SI{0.0318}{\ampere}$.
+
+Nuevamente hallamos que el valor de la corriente en $R_3$ es el mismo que 
+el valor obtenido utilizando las leyes de Kirchhoff y el teorema de 
+Thévenin.
+
+\section{Resumen}
+\begin{itemize}[series=resumenlist]
+\item El teorema de Norton ofrece otro método de resolver circuitos complicados. 
+Por el teorema de Norton se puede reemplazar una red complicada de dos 
+terminales por un circuito equivalente sencillo que actúa como el circuito 
+original en la carga conectada a los dos terminales.
+\item El circuito equivalente se compone de un generador de corriente, llamado
+generador Norton ($I_N$) en paralelo con la resistencia interna $R_N$ del 
+generador de Norton y en paralelo con los cuales está también conectada 
+la carga $R_L$. La corriente $I_N$ del generador se divide entonces entre 
+$R_N$ y $R_L$. La figura 27-1b muestra el generador de Norton y su carga. 
+Es el equivalente de Norton de un circuito complicado tal como el representado 
+en forma de bloques en la figura 27-1a.
+\item Para determinar la corriente de Norton $I_N$, se cortocircuita la carga 
+y se calcula la corriente que fluye por el circuito. Esta corriente de cortocircuito 
+es $I_N$. Para calcular $I_N$ puede ser necesario hacer uso de las leyes de Ohm 
+y de Kirchhoff.
+\item Para determinar la resistencia de Norton $R_N$ que actúa en paraleo con 
+el generador de Norton se aplica la misma técnica que para hallar la 
+la resistencia de Thévenin en el experimento precedente. Se procedde como 
+sigue: Abrir la carga en los dos terminales en cuestión de la red original. Reemplazar 
+todas la fuentes de tensión por sus resistencias internas. Luego calcular $R_N$, 
+resistencia en los terminales abiertos de la carga, hacia el circuito.
+\item El teorema de Norton se aplica a un circuito con una o mas fuentes de 
+alimentación.
+\item Una vez reemplazada la red complicada por el circuito equivalente de Norton 
+se puede hallar la corriente $I_L$ que pasa por la carga aplicando la fórmula 
+siguiente (fig. 27-1b):
+
+\begin{equation}
+\begin{split}
+    &I_L = \frac{I_N \times R_N}{R_N + R_L}
+\end{split} \tag{}
+\end{equation}
+\end{itemize}

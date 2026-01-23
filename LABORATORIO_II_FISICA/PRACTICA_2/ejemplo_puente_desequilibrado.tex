@@ -1,0 +1,94 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+}
+
+% --- Título y Autor ---
+\title{Ejemplo Numérico: Análisis de un Puente de Wheatstone Desequilibrado}
+\author{Prof. César Rodríguez con asistencia de Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Planteamiento del Problema}
+
+Consideremos un Puente de Wheatstone con los siguientes componentes:
+\begin{itemize}
+    \item Tensión de alimentación: $V_s = 10 \text{ V}$
+    \item Resistencia $R_1 = 1 \text{ k}\Omega$
+    \item Resistencia $R_2 = 2 \text{ k}\Omega$
+    \item Resistencia $R_3 = 5 \text{ k}\Omega$
+    \item Resistencia desconocida $R_x = 10.1 \text{ k}\Omega$
+    \item Resistencia interna del galvanómetro: $R_G = 100 \, \Omega$
+\end{itemize}
+
+El valor de $R_x$ para que el puente estuviera equilibrado sería $R_x = R_3 \cdot (R_2/R_1) = 5 \text{k} \cdot (2\text{k}/1\text{k}) = 10 \text{ k}\Omega$. Como $R_x$ es $10.1 \text{ k}\Omega$, el puente está ligeramente desequilibrado.
+
+Nuestro objetivo es calcular la corriente $I_G$ que circula por el galvanómetro. Para ello, utilizaremos el Teorema de Thévenin entre los terminales C y D del puente.
+
+\section{Cálculo del Equivalente de Thévenin}
+
+\subsection{Paso 1: Calcular la Tensión de Thévenin ($V_{th}$)}
+La tensión de Thévenin es la diferencia de potencial entre los nodos C y D en circuito abierto ($V_{CD}$). Se calcula usando los divisores de tensión de cada rama.
+
+La tensión en el nodo C es:
+\[
+V_C = V_s \cdot \frac{R_2}{R_1 + R_2} = 10 \text{ V} \cdot \frac{2000 \, \Omega}{1000 \, \Omega + 2000 \, \Omega} = 10 \text{ V} \cdot \frac{2}{3} \approx 6.6667 \text{ V}
+\]
+
+La tensión en el nodo D es:
+\[
+V_D = V_s \cdot \frac{R_x}{R_3 + R_x} = 10 \text{ V} \cdot \frac{10100 \, \Omega}{5000 \, \Omega + 10100 \, \Omega} = 10 \text{ V} \cdot \frac{10100}{15100} \approx 6.6887 \text{ V}
+\]
+
+Por lo tanto, la tensión de Thévenin es:
+\[
+V_{th} = V_{CD} = V_C - V_D \approx 6.6667 \text{ V} - 6.6887 \text{ V} = -0.022 \text{ V} = -22 \text{ mV}
+\]
+
+\subsection{Paso 2: Calcular la Resistencia de Thévenin ($R_{th}$)}
+La resistencia de Thévenin se calcula mirando hacia los terminales C y D con la fuente de tensión $V_s$ cortocircuitada. Esto pone a $R_1$ en paralelo con $R_2$, y a $R_3$ en paralelo con $R_x$.
+
+\[
+R_{th} = (R_1 \parallel R_2) + (R_3 \parallel R_x) = \frac{R_1 R_2}{R_1 + R_2} + \frac{R_3 R_x}{R_3 + R_x}
+\]
+
+Sustituyendo los valores:
+\[
+R_{th} = \frac{1000 \cdot 2000}{1000 + 2000} + \frac{5000 \cdot 10100}{5000 + 10100} = \frac{2 \times 10^6}{3000} + \frac{50.5 \times 10^6}{15100}
+\]
+\[
+R_{th} \approx 666.67 \, \Omega + 3344.37 \, \Omega = 4011.04 \, \Omega \approx 4.01 \text{ k}\Omega
+\]
+
+\section{Cálculo de la Corriente del Galvanómetro ($I_G$)}
+
+Con el circuito equivalente de Thévenin, podemos modelar el sistema como una fuente de tensión $V_{th}$ en serie con una resistencia $R_{th}$, conectada al galvanómetro $R_G$. La corriente $I_G$ es:
+
+\[
+I_G = \frac{V_{th}}{R_{th} + R_G} = \frac{-0.022 \text{ V}}{4011.04 \, \Omega + 100 \, \Omega} = \frac{-0.022 \text{ V}}{4111.04 \, \Omega}
+\]
+\[
+I_G \approx -5.35 \times 10^{-6} \text{ A} = -5.35 \, \mu\text{A}
+\]
+
+El signo negativo simplemente indica que la corriente fluye desde el nodo D hacia el nodo C. Una pequeña desviación del 1\% en la resistencia ($10 \text{ k}\Omega \rightarrow 10.1 \text{ k}\Omega$) produce una corriente medible de aproximadamente $5.35 \, \mu\text{A}$.
+
+\end{document}

@@ -1,0 +1,156 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\begin{document}
+
+\begin{center}
+    \textbf{PRACTICA 26} \\[0.5cm]
+    \textbf{\large TEOREMA DE THEVENIN}
+\end{center}
+
+\vspace{0.5cm}
+
+\noindent \textbf{FINALIDADES}
+
+\begin{enumerate}
+    \item Determinar analíticamente los valores de $V_{\text{TH}}$ (tensión del generador de Thévenin) y $R_{\text{TH}}$ (resistencia del generador de Thévenin) en un circuito de c.c. que contiene una sola fuente de tensión.
+    \item Confirmar experimentalmente los valores de $V_{\text{TH}}$ y $R_{\text{TH}}$ propuestos por el teorema de Thévenin en la solución de circuitos puente desequilibrados.
+\end{enumerate}
+
+\vspace{0.5cm}
+
+\noindent \textbf{INFORMACION PRELIMINAR}
+
+Hemos empleado las leyes de Ohm y Kirchhoff para resolver los problemas que plantean los circuitos de c.c. En el estudio de los circuitos eléctricos y electrónicos complicados son necesarias a veces otras bases de cálculo. El teorema de Thévenin forma parte de un grupo de teoremas de redes (incluyendo el de superposición y el de Norton) que proporciona los medios adecuados para simplificar el análisis de circuitos complicados. La técnica empleada implica reducir una red a un circuito sencillo equivalente que actúa como la red original.
+
+\vspace{0.5cm}
+
+\noindent \textbf{Teorema de Thévenin}
+
+El teorema de Thévenin enuncia que cualquier red de dos terminales se puede substituir por un circuito sencillo equivalente consistente en un generador de Thévenin, cuya tensión $V_{\text{TH}}$, actuando en serie con una resistencia interna $R_{\text{TH}}$, hace que pase corriente por la carga. La figura 26-1 \textit{d} es el equivalente de Thévenin para el circuito de la figura 26-1 \textit{a} considerando a $R_{\text{L}}$ como carga. Si conocemos los valores $V_{\text{TH}}$ y $R_{\text{TH}}$ el proceso de hallar la corriente $I$ en $R_{\text{L}}$ se reducirá a una sencilla aplicación de la ley de Ohm.
+
+\vspace{0.5cm}
+
+\begin{figure}[H]
+    \centering
+    % Row 1: (a) and (b)
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Source and Series resistors
+            \draw (0,3) to[battery1, l=100 V] (0,0);
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (3,3); % Top resistor
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (3,0); % Bottom resistor
+            
+            % Parallel Resistor R3
+            \draw (3,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (3,0);
+            
+            % Terminals A and B labels
+            \node[above] at (3,3) {A};
+            \node[below] at (3,0) {B};
+            
+            % Load resistor RL
+            \draw (3,3) -- (5,3) to[R, l=$R_L\ 350\,\Omega$] (5,0) -- (3,0);
+            
+            \node at (2.5,-0.8) {(a)};
+        \end{circuitikz}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Source and Series resistors
+            \draw (0,3) to[battery1, l=100 V] (0,0);
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (3,3); 
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (3,0); 
+            
+            % Parallel Resistor R3
+            \draw (3,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (3,0);
+            
+            % Open terminals A and B
+            \draw (3,3) -- (4,3);
+            \draw (3,0) -- (4,0);
+            \node[above] at (4,3) {A};
+            \node[below] at (4,0) {B};
+            
+            % Vth measurement
+            \draw[<->] (4.5,3) -- (4.5,0) node[midway, right] {$V_{\text{TH}} = 50\,\text{V}$}; % Corrected closing brace
+            
+            \node at (2.5,-0.8) {(b)};
+        \end{circuitikz}
+    \end{subfigure}
+    
+    \vspace{1cm}
+    
+    % Row 2: (c) and (d)
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Shorted Source
+            \draw (0,3) -- (0,0); % Short
+            \draw (0,3) to[R, l=$R_1\ 5\,\Omega$] (3,3); 
+            \draw (0,0) to[R, l=$R_2\ 195\,\Omega$] (3,0); 
+            
+            % Parallel Resistor R3
+            \draw (3,3) to[R, l=$R_3\ 200\,\Omega$, *-*] (3,0);
+            
+            % Looking in Logic (arrow)
+            \draw (3,1.5) to[open, v={}] (5,1.5);
+            \draw[thick, <-] (4.5,1.5) -- (3.5,1.5) node[above, pos=1.2] {Vista};
+            % Terminals
+            \node[above] at (3,3) {A};
+            \node[below] at (3,0) {B};
+            
+            % Equation text below or to side, let's put it as text in figure or label
+            % The image has equation: Rth = 200(195+5)/(200+(195+5)) = 100
+             \node[align=left, right, scale=0.8] at (0,-1.5) {$R_{\text{TH}} = \frac{200(195+5)}{200+(195+5)} = 100\,\Omega$};
+            
+            \node at (2.5,-2.5) {(c)};
+        \end{circuitikz}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \begin{circuitikz}[scale=0.8, transform shape]
+            % Thevenin Equivalent
+            % Battery Vth and Rth in series
+            \draw (0,3) to[battery1, l=$V_{\text{TH}}\ 50\,\text{V}$] (0,0);
+            \draw (0,3) to[R, l=$R_{\text{TH}}\ 100\,\Omega$] (3,3);
+            
+            % Terminals A and B
+            \node[above] at (3,3) {A};
+            \node[below] at (3,0) {B};
+            \draw (3,3) to[short, *-] (3,3); % dot
+            \draw (3,0) -- (0,0); % return path
+            \draw (3,0) to[short, *-] (3,0); % dot
+            
+            % Load
+            \draw (3,3) -- (5,3) to[R, l=$R_{\text{L}}\ 350\,\Omega$] (5,0) -- (3,0);
+            
+            % Current I
+            \draw[->] (3.5, 3.2) -- (4.5, 3.2) node[midway, above] {$I$};
+            
+            % Equation
+            \node[align=left, below, scale=0.8] at (3.5,-0.5) {$I = \frac{V_{\text{TH}}}{R_{\text{TH}} + R_{\text{L}}} = \frac{50}{450} = 0{,}111\,\text{A}$};
+            
+            \node at (2.5,-1.8) {(d)};
+        \end{circuitikz}
+    \end{subfigure}
+    
+    \caption{Análisis de una red por el teorema de Thévenin.}
+    \label{fig:26-1};
+\end{figure}
+
+\end{document}

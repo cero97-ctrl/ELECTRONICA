@@ -1,0 +1,150 @@
+\documentclass{article}
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[american]{circuitikz}
+\usepackage{array, booktabs} % Para tablas mejoradas
+\usepackage{enumitem} % Para listas personalizadas
+\usepackage{fancyhdr} % Para encabezados y pies de página
+\usepackage{titlesec} % Para personalizar secciones
+\usepackage{float} % Para mejor control de posicionamiento de figuras
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+}
+
+% --- Título y Autor ---
+\title{El Puente de Wheatstone}
+\author{Prof. César Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{¿Qué es el Puente de Wheatstone?}
+
+El Puente de Wheatstone es uno de los circuitos más clásicos e ingeniosos de la electrónica, fundamental para la medición precisa de resistencias.
+
+Es un circuito eléctrico compuesto por cuatro resistencias dispuestas en una configuración de 'puente' o 'diamante'. Se utiliza para medir el valor de una resistencia desconocida comparándola con tres resistencias de valor conocido. Su gran ventaja es que puede proporcionar mediciones extremadamente precisas.
+
+\section{Principio de Funcionamiento}
+
+El circuito se alimenta con una fuente de tensión (DC) en dos de sus vértices opuestos. En los otros dos vértices opuestos se conecta un galvanómetro (un medidor de corriente muy sensible) o un voltímetro.
+
+El principio clave es el \textbf{'equilibrio del puente'}. El puente se considera 'equilibrado' o 'balanceado' cuando la corriente que pasa a través del galvanómetro es cero (es decir, no hay diferencia de tensión entre los puntos C y D del diagrama).
+
+Cuando el puente está en equilibrio, se cumple la siguiente relación matemática:
+\[
+\frac{R_1}{R_2} = \frac{R_3}{R_x}
+\]
+
+A partir de esta fórmula, si conocemos los valores de $R_1$, $R_2$ y $R_3$, podemos despejar y calcular el valor de la resistencia desconocida, $R_x$:
+\[
+R_x = R_3 \cdot \frac{R_2}{R_1}
+\]
+
+\subsection{Diagrama del Circuito}
+
+A continuación se muestra el esquema de un Puente de Wheatstone típico.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1.2, transform shape]
+        % Nodos
+        \node[circ] at (0,2) (A) {};
+        \node[circ] at (0,-2) (B) {};
+        \node[circ] at (-2,0) (C) {};
+        \node[circ] at (2,0) (D) {};
+
+        % Fuente de alimentacion
+        \draw (B) -- ++(-4,0) to[V, v_=$V_s$] ++(0,4) -- (A);
+
+        % Resistencias
+        \draw (A) to[R, l=$R_1$] (C);
+        \draw (C) to[R, l=$R_2$] (B);
+        \draw (A) to[R, l=$R_3$] (D);
+        \draw (D) to[R, l=$R_x$ (desconocida)] (B);
+
+        % Galvanometro
+        \draw (C) to[ammeter, l_=G] (D);
+        
+        % Etiquetas de nodos
+        \node[above left] at (A) {A};
+        \node[below left] at (B) {B};
+        \node[left] at (C) {C};
+        \node[right] at (D) {D};
+    \end{circuitikz}
+    \caption{Diagrama de un Puente de Wheatstone.}
+\end{figure}
+
+\subsection{Logrando el Equilibrio}
+En la práctica, para lograr el equilibrio:
+\begin{enumerate}
+    \item $R_1$ y $R_3$ suelen ser resistencias fijas y conocidas.
+    \item $R_2$ es una resistencia variable de precisión (un potenciómetro o una caja de décadas).
+    \item Se ajusta el valor de $R_2$ hasta que el galvanómetro $G$ marque exactamente cero.
+    \item En ese momento, se lee el valor de $R_2$ y se aplica la fórmula para encontrar $R_x$.
+\end{enumerate}
+
+\section{Análisis del Puente Desequilibrado}
+
+Cuando el puente no está en equilibrio (es decir, $\frac{R_1}{R_2} \neq \frac{R_3}{R_x}$), existirá una diferencia de tensión entre los nodos C y D, y una corriente fluirá a través del galvanómetro G. Esta tensión de desequilibrio, $V_{CD}$, es precisamente lo que se mide en las aplicaciones de sensores.
+
+Para analizar el circuito en estado de desequilibrio, el método más efectivo es utilizar el \textbf{Teorema de Thévenin} entre los terminales C y D.
+
+\subsection{Cálculo de la Tensión de Thévenin $V_{\mathrm{th}}$}
+
+La tensión de Thévenin es la tensión de circuito abierto entre C y D ($V_{CD}$). Se calcula como la diferencia entre las tensiones en cada nodo, que a su vez se obtienen mediante divisores de tensión:
+\[
+V_C = V_s \cdot \frac{R_2}{R_1 + R_2}
+\]
+\[
+V_D = V_s \cdot \frac{R_x}{R_3 + R_x}
+\]
+Por lo tanto, la tensión de Thévenin es:
+\[
+V_{\mathrm{th}} = V_{CD} = V_C - V_D = V_s \left( \frac{R_2}{R_1 + R_2} - \frac{R_x}{R_3 + R_x} \right)
+\]
+
+\subsection{Cálculo de la Resistencia de Thévenin ($R_{th}$)}
+La resistencia de Thévenin se calcula mirando hacia los terminales C y D con la fuente de tensión $V_s$ cortocircuitada (reemplazada por un cable). Desde esta perspectiva, la rama $R_1-R_2$ está en paralelo, y la rama $R_3-R_x$ también. La resistencia total es la suma de estas dos combinaciones en paralelo:
+\[
+R_{\mathrm{th}} = (R_1 \parallel R_2) + (R_3 \parallel R_x) = \frac{R_1 R_2}{R_1 + R_2} + \frac{R_3 R_x}{R_3 + R_x}
+\]
+
+\subsection{Corriente a través del Galvanómetro}
+Una vez que tenemos el circuito equivalente de Thévenin, podemos calcular fácilmente la corriente $I_G$ que fluye a través del galvanómetro (considerando que este tiene una resistencia interna $R_G$):
+\[
+I_G = \frac{V_{\mathrm{th}}}{R_{\mathrm{th}} + R_G}
+\]
+En la mayoría de las aplicaciones de sensores modernos, se utiliza un amplificador con una impedancia de entrada muy alta en lugar de un galvanómetro, por lo que la corriente $I_G$ es prácticamente nula y la tensión medida es directamente $V_{\mathrm{th}}$.
+
+
+\section{Aplicaciones Modernas}
+
+Aunque su uso original era para medir resistencias desconocidas, hoy en día el Puente de Wheatstone es la base de muchísimos \textbf{sensores}.
+
+Muchos sensores (como las \textbf{galgas extensiométricas} para medir deformación, los \textbf{termistores} para medir temperatura o las \textbf{fotorresistencias} para medir luz) funcionan cambiando su resistencia eléctrica en respuesta a un cambio físico.
+
+En estas aplicaciones:
+\begin{enumerate}
+    \item El sensor se coloca en la posición de $R_x$.
+    \item El puente se equilibra inicialmente en una condición de referencia.
+    \item Cuando la magnitud física cambia (por ejemplo, se aplica una fuerza a la galga extensiométrica), la resistencia $R_x$ del sensor cambia, desequilibrando el puente.
+    \item Este desequilibrio produce una pequeña tensión o corriente en el galvanómetro, la cual es proporcional al cambio en la magnitud física.
+    \item Esta pequeña señal de salida se puede amplificar y procesar para obtener una lectura digital de la magnitud medida (fuerza, temperatura, luz, etc.).
+\end{enumerate}
+
+\end{document}

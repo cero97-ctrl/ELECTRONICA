@@ -1,0 +1,26 @@
+\documentclass{standalone}
+\usepackage{circuitikz}
+\usepackage{amsmath} % Para \text
+
+\begin{document}
+
+%\begin{center}
+\begin{circuitikz}[scale=1.2, transform shape]
+    % Fuente AC
+    \draw (0,0) node[ground]{} 
+        to[sV, l=$V_{in}$] (0,2) 
+        
+    % Resistencia (con formato de texto correcto para la unidad)
+    % Usamos \text{k} para que no salga cursiva
+        to[R, l=$R_1{=}1\text{k}\Omega$] (3,2) 
+        
+    % Diodo (etiqueta en modo texto normal es correcta)
+        to[D, l=1N4148] (3,0) 
+        node[ground]{};
+        
+    % Opcional: Si quieres visualizar la salida Vout sobre el diodo
+    \draw (3,2) to[short, -o] (4,2) node[right] {$V_{out}$};
+\end{circuitikz}
+%\end{center}
+
+\end{document}

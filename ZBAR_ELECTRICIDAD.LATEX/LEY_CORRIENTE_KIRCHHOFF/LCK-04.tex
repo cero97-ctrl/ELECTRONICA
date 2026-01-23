@@ -1,0 +1,115 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- PREÁMBULO ---
+% PAQUETES BÁSICOS
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+
+% PAQUETES PARA TABLAS MEJORADAS
+\usepackage{booktabs} 
+\usepackage{array}    
+
+% CONFIGURACIÓN DE LA PÁGINA
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=20mm,
+    top=20mm,
+    right=20mm,
+    bottom=20mm,
+    headheight=15pt
+}
+
+% CONFIGURACIÓN DEL ENCABEZADO
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{126}
+\fancyhead[R]{Prácticas de electricidad}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- CUERPO DEL DOCUMENTO ---
+\begin{document}
+
+% --- TABLA 20-1 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-1}
+    \label{tab:20-1}
+    \begin{tabular}{lcccccccc}
+        \toprule
+        & $R_1$ & $R_2$ & $R_3$ & $R_4$ & $R_5$ & $R_6$ & $R_7$ & $R_8$ \\
+        \midrule
+        \begin{tabular}{@{}l@{}}Valor nominal \\ ohmios\end{tabular} & 330 & 470 & 1.200 & 2.200 & 3.300 & 4.700 & 10.000 & 5.600 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-2 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-2}
+    \label{tab:20-2}
+    \begin{tabular}{lccccccccccc}
+        \toprule
+        & $I_T$ en A & $I_2$ & $I_3$ & $I_T$ en B & $I_T$ en C & $I_5$ & $I_6$ & $I_7$ & $I_T$ en D & $I_2+I_3$ & \begin{tabular}{@{}c@{}}$I_5+I_6$\\$+I_7$\end{tabular} \\
+        \midrule
+        mA & & & & & & & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-3 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-3}
+    \label{tab:20-3}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & $I_T$ en A & $I_1$ & $I_2$ & $I_3$ & $I_T$ en B & $I_1+I_2+I_3$ \\
+        \midrule
+        mA & & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- TABLA 20-4 ---
+\begin{table}[h!]
+    \centering
+    \caption{TABLA 20-4}
+    \label{tab:20-4}
+    \begin{tabular}{lccccc}
+        \toprule
+        & $I_1$ & $I_2$ & $I_3$ & $I_T$ & $I_1:I_2:I_3$ \\
+        \midrule
+        mA & & & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% --- PREGUNTAS ---
+\section*{PREGUNTAS}
+\begin{enumerate}[label=\arabic*., start=2]
+    \item ¿Cómo es la suma de $I_5$, $I_6$ e $I_7$ del apartado 1 comparada con $I_T$ en C? ¿$I_T$ en D? Explicar las diferencias.
+    \item Comentar los resultados de las propias mediciones del apartado 2. Explicar cualquier resultado inesperado.
+    \item Enunciar la ley de corriente de Kirchhoff y escribir su fórmula.
+    \item ¿Qué información es necesaria para calcular $I_2$ e $I_3$ en la figura 20-4?
+    \item Discutir los resultados del problema de diseño (apartado 3).
+    \item ¿Por qué no es posible diseñar un circuito que dé una relación exacta de corriente 1:2:3?
+\end{enumerate}
+
+% --- RESPUESTAS AL AUTOEXAMEN ---
+\subsection*{Respuestas a las preguntas de autoexamen}
+\begin{enumerate}[label=\arabic*.]
+    \item 0,2.
+    \item 1,25.
+    \item $I_1$ es +; $I_2$ es +; $I_3$ es +; $I_T$ es –.
+    \item $I_1 + I_2 - I_3 - I_4 - I_5 = 0$.
+    \item 2.
+\end{enumerate}
+
+\end{document}

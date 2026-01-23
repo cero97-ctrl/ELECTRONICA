@@ -1,0 +1,107 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{siunitx}
+\usepackage[american]{circuitikz}
+\usepackage{enumitem}
+
+\ctikzset{resistor = european}
+
+\title{\textbf{Máxima transferencia de potencia}}
+\author{}
+\date{}
+
+\begin{document}
+
+\pagestyle{myheadings}
+\markright{147}
+\maketitle
+\vspace{-2cm}
+
+\begin{enumerate}[start=8, label=\arabic*.]
+    \item Dibujar un gráfico de $W_T$ en función de $R_L$.
+\end{enumerate}
+
+\subsection*{Adicional}
+\begin{enumerate}[start=9, label=\arabic*.]
+    \item Describir detalladamente el procedimiento experimental que se utilizaría para determinar el valor de $R_L$ que proporciona la máxima transferencia de potencia en el circuito de la figura 24-2 a $R_L$. Dibujar un esquema del circuito experimental. Tabular las mediciones hechas, incluyendo una columna para $R_L$ y otra para $W$. Cuando se haya determinado experimentalmente el valor de $R_L$, compararlo con el valor calculado de $R_L$, que se halla transformando el circuito de la figura 24-2 en uno equivalente, como el de la figura 24-3.
+\end{enumerate}
+
+\textbf{SUGERENCIA:} Conectar el circuito de la figura 24-2, estando el interruptor S abierto y la fuente de alimentación desconectada. Cortocircuitar los puntos C y D. Medir experimentalmente la resistencia entre los puntos A y B. Si el valor medido es $R_T$, la máxima transferencia de potencia tendrá lugar cuando $R_L = R_T$. Elegir un valor de $V$ que dé las lecturas en la región central de la escala del voltímetro cuando se mida $V_L$, tensión entre los extremos de $R_L$.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}
+        \coordinate (origin) at (0,0);
+        \coordinate (top_left) at (0,3);
+        \coordinate (A_coord) at (2,3);
+        \coordinate (B_coord) at (2,0);
+        \coordinate (C_coord) at (8,3);
+        \coordinate (D_coord) at (8,0);
+
+        \draw (origin) to[V, l_=$V$] (top_left)
+              to[opening switch, l=$S$] (A_coord) node[circ, label={above:$A$}] {}
+              to[R, l=$R_T$] (C_coord) node[circ, label={above:$C$}] {}
+              to[vR, l=$R_L$] (D_coord) node[circ, label={below:$D$}] {} % CORREGIDO
+              to (B_coord) node[circ, label={below:$B$}] {}
+              to (origin);
+    \end{circuitikz}
+    \caption{Circuito equivalente de la fig. 24-2.}
+    \label{fig:23-4}
+\end{figure}
+
+\subsection*{PREGUNTAS}
+\begin{enumerate}[label=\arabic*.]
+    \item ¿Para qué valor de $R_L$ es máxima la transferencia de potencia en esta Práctica?
+    \item ¿Confirman las mediciones y cálculos de la tabla 24-2 la ley de transferencia de máxima potencia? Explicar cualquier resultado inesperado.
+    \item En la figura 24-1, ¿cómo varían las tensiones entre los extremos de $R_L$ con $R_L$? ¿Y la corriente en $R_L$?
+    \item En la figura 24-1, ¿cómo varía $W_T$ con $R_L$?
+    \item ¿Cuándo se obtiene el mayor porcentaje de disipación de potencia en la carga en el circuito de la figura 24-1? (Ver tabla 24-2 y calcular $W/W_T \times 100$.)
+    \item ¿Se obtiene la máxima transferencia de potencia en la figura 24-1 con el mismo valor de $R_L$ para el cual el rendimiento es máximo?
+\end{enumerate}
+
+\textbf{NOTA:} El máximo rendimiento tiene lugar cuando se disipa la mayor potencia total ($W_T$) en la carga.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=0.9, transform shape]
+        \node[circ, label={above:$A$}] (A) at (2,4) {};
+        \node[circ, label={below:$B$}] (B) at (1,0) {};
+        \node[circ, label={above:$C$}] (C) at (11,4) {}; % Coordenada X de C y D movida a la derecha
+        \node[circ, label={below:$D$}] (D) at (11,0) {};
+        
+        \draw (0,4) to[V, l_=$V$] (0,0) to (B);
+        \draw (0,4) to[opening switch, l=$S$] (A);
+        \draw (B) to[R, l=$470\ \Omega$] (D);
+        
+        \draw (D) to[vR, l=$R_L$] (C);
+        
+        % Red de resistores superior con ramas paralelas explícitas
+        \draw (A) to[short, -*] (4,4) coordinate (junction_start); % Punto de bifurcación
+        \coordinate (junction_end) at (7,4); % Punto de unión
+        
+        \draw (junction_start) to[R, l=$1000\ \Omega$] (junction_end); % Rama superior
+        \draw (junction_start) -- ++(0,-1.5) to[R, l=$2200\ \Omega$] ++(3,0) -- (junction_end); % Rama inferior
+        
+        \draw (junction_end) to[R, l=$330\ \Omega$] (C); % Conexión horizontal a C
+    \end{circuitikz}
+    \caption{Determinación del valor de $R_L$ para el cual la transferencia de potencia a $R_L$ es máxima.}
+    \label{fig:24-2}
+\end{figure}
+
+\subsection*{Respuestas a las preguntas del autoexamen}
+Con exactitud de la regla de cálculo.
+\begin{enumerate}[label=\arabic*.]
+    \item 1,2.
+    \item 0,6.
+    \item 1,16.
+    \item 2,0.
+    \item 25.
+    \item 25.
+\end{enumerate}
+
+\end{document}

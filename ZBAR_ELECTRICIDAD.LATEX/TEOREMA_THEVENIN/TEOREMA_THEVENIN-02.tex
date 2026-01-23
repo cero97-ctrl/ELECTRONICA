@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage{enumitem}
+\geometry{a4paper, margin=1in}
+
+\title{\textbf{PRÁCTICA 26 \\ TEOREMA DE THÉVENIN}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\section*{FINALIDADES}
+\begin{enumerate}[label=\arabic*.]
+    \item Determinar analíticamente los valores de \(V_{TH}\) (tensión del generador de Thévenin) y \(R_{TH}\) (resistencia del generador de Thévenin) en un circuito de c.c. que contiene una sola fuente de tensión.
+    \item Confirmar experimentalmente los valores de \(V_{TH}\) y \(R_{TH}\) propuestos por el teorema de Thévenin en la solución de circuitos puente desequilibrados.
+\end{enumerate}
+
+\section*{INFORMACIÓN PRELIMINAR}
+Hemos empleado las leyes de Ohm y Kirchhoff para resolver los problemas que plantean los circuitos de c.c. En el estudio de los circuitos eléctricos y electrónicos complicados son necesarias a veces otras bases de cálculo. El teorema de Thévenin forma parte de un grupo de teoremas de redes (incluyendo el de superposición y el de Norton) que proporciona los medios adecuados para simplificar el análisis de circuitos complicados. La técnica empleada implica reducir una red a un circuito sencillo equivalente que actúa como la red original.
+
+\section*{Teorema de Thévenin}
+Las reglas para determinar \( V_{TH} \) y \( R_{TH} \) son las siguientes:
+
+\begin{enumerate}[label=\arabic*.]
+    \item La tensión \( V_{TH} \) es la que aparece entre los terminales de la carga en la red original, cuando está suprimida la resistencia de carga (tensión en circuito abierto).
+    
+    \item La resistencia \( R_{TH} \) es la que aparece desde los terminales de la carga abierta, hacia la red original cuando las fuentes de tensión existentes en el circuito son reemplazadas por su resistencia interna.
+\end{enumerate}
+
+El desarrollo del circuito equivalente de Thévenin aplicado a la figura 26-1 a se puede seguir fácilmente en la figura 25-1 b, c y d. En 26-1 b, \( R_L \) ha sido abierta y \( V_{TH} \) es la tensión que aparece entre los terminales A y B. En este caso es evidentemente 50 voltios. En la figura 26-1 c, la fuente de tensión original \( V \) ha sido reemplazada por su resistencia interna \( R_L \), que es igual a 5 ohmios. La resistencia de Thévenin es la resistencia medida entre A y B en figura 26-1 c. \( R_{TH} \) es aquí 100 ohmios. Finalmente, en 26-1 d se ve el generador equivalente de Thévenin \( V_{TH} \) en serie con \( R_{TH} \), que reemplaza a la red original. Aplicando la ley de Ohm al circuito de la figura 26-1 d, tenemos
+
+\[
+I = \frac{V_{TH}}{R_{TH} + R_L} = \frac{50}{450} = 0,111 \, \text{A}
+\]
+
+Esta es la corriente necesaria en \( R_L \).
+
+A primera vista puede parecer que este método complica innecesariamente el problema, porque el circuito de la figura 26-1 a se puede resolver fácilmente por las leyes de Ohm y Kirchhoff. Aunque esto es cierto en este caso particular, la utilidad del teorema de Thévenin resulta evidente si el problema de la figura 26-1 a se modifica ligeramente. Supongamos que se desee hallar la corriente existente en \( R_L \), en figura 26-1 a, para diferentes valores de \( R_L \), como por ejemplo, \( R_L = 20 \, \text{ohmios}, \, 50 \, \text{ohmios}, \, 100 \, \text{ohmios}, \, 1,200 \, \text{ohmios}, \, \text{etc.} \), mientras el resto del circuito permanece invariable. Sería muy laborioso aplicar las leyes de Ohm y Kirchhoff a cada valor particular de \( R_L \) para hallar I.
+
+En cambio, bastará una sola determinación del circuito equivalente de Thévenin (fig. 26-1 d) para cada valor de \( R_L \), a causa de que \( V_{TH} \) y \( R_{TH} \) son independientes del valor de \( R_L \). Ahora será mucho más sencillo hallar I para la sucesión de los valores de \( R_L \) utilizando el generador equivalente de Thévenin de la figura 26-1 d.
+
+\section*{Resolución del circuito puente desequilibrado por el teorema de Thévenin}
+La figura 26-2 a es un circuito puente desequilibrado. Se desea hallar la corriente I en \( R_5 \). El teorema de Thévenin sirve para resolver fácilmente este problema.
+
+Consideremos \( R_5 \) la carga. El problema consiste en transformar el circuito en un generador equivalente de Thévenin que suministre corriente a \( R_5 \), como en la figura 26-2 b.
+
+Abrimos \( R_5 \) para determinar \( V_{TH} \), tensión \( V_{BC} \) entre B y C, figura 26-2 c. Para determinar la tensión \( V_{BC} \) hallamos la tensión \( V_{BD} \) entre B y D, y la \( V_{CD} \) entre C y D. Luego
+
+\[
+V_{BD} - V_{CD} = V_{BC} = V_{TH} \quad (26-1)
+\]
+
+La tensión \( V_{BD} \) en figura 26-2 c es
+
+\[
+V_{BD} = \frac{160}{200} \times 60 = 48 \, \text{V} \quad (26-2)
+\]
+
+La tensión \( V_{CD} \) es
+
+\[
+V_{CD} = \frac{120}{180} \times 60 = 40 \, \text{V} \quad (26-3)
+\]
+
+Por tanto
+
+\[
+V_{BC} = 48 - 40 = 8 \, \text{V} = V_{TH} \quad (26-4)
+\]
+
+La resistencia \( R_{TH} \) del generador de Thévenin \( V_{TH} \) se halla substituyendo \( V \) por su resistencia interna (supuesta nula en este caso), y hallando \( R_{BC} \). La figura 26-2 d es el resultado de cortocircuitar A y D y dibujar nuevamente el circuito en forma conveniente para resolverlo por cálculo fácilmente. Tenemos
+
+\[
+R_{BC} = R_{TH} = \frac{R_1 R_4}{R_1 + R_4} + \frac{R_2 R_3}{R_2 + R_3}
+\]
+
+\[
+R_{TH} = \frac{40 \times 160}{40 + 160} + \frac{60 \times 120}{60 + 120} = 32 + 40 = 72 \, \Omega \quad (26-5)
+\]
+
+Substituyendo estos valores en el circuito equivalente de Thévenin (fig. 26-2 b) y hallando I, tenemos
+
+\[
+I = \frac{V_{TH}}{R_{TH} + R_5} = \frac{8}{172} = 0,0465 \, \text{A}
+\]
+\end{document}

@@ -1,0 +1,97 @@
+%\section{PAGINA 3}
+
+Por las leyes de Kirchhoff. Recordemos las dos leyes, que son:
+
+\begin{enumerate}
+    \item La suma de las caídas de tensión en resistencias conectadas en serie en un circuito cerrado es igual a la tensión aplicada. Se puede enunciar ahora la ley en otra forma, a saber, la suma algébrica de las tensiones en cualquier bucle o circuito cerrado es nula.
+    
+    \item La corriente que entra en cualquier nudo de un circuito eléctrico es igual a la corriente que sale del nudo. También se puede enunciar esta ley en otra forma, a saber, la suma algébrica de las corrientes en cualquier punto de un circuito es nula.
+\end{enumerate}
+
+En la aplicación de la segunda forma de la ley de tensión de Kirchhoff hay que atenerse a determinados convenios. Consideremos el circuito de la figura 27-3. La expresión «suma algébrica», etc., requiere poner una cuidadosa atención en los signos de las fuentes de tensión y de las caídas de tensión. Así, empezando en A en la figura 27-3 y recorriendo el bucle ABCDA, tenemos primero la tensión \( V_s \). Esta es positiva en A. Por tanto, el primer término de la ecuación es \(+ V_s\). Luego tenemos la caída de tensión \( V_1 \) entre los extremos de \( R_1 \). Suponiendo que el sentido del flujo de electrones sea el indicado por la flecha, la polaridad de la tensión \( V_1 \) es la indicada en la figura 27-3, o sea de - a +. De aquí que el término siguiente de la ecuación sea \(- V_1\). Procediendo análogamente en el sentido CDA, las polaridades de las tensiones son, respectivamente, \(- V_T\) y \(- V_2\). La ecuación que satisface la ley de tensión de Kirchhoff se puede escribir ahora como sigue:
+\[
++ V_s - V_1 - V_T - V_2 = 0 \tag{27-5}
+\]
+
+\begin{center}
+\textit{NOTA: Los signos opuestos de \( V_s \) y \( V_T \) indican que estas baterías están conectadas opuestamente, o sea que sus tensiones no se suman, hecho que resulta evidente por el esquema del circuito.}
+\end{center}
+
+Apliquemos las leyes de Kirchhoff al circuito de la figura 27-4. Es necesario expresar tantas ecuaciones como caminos independientes de corriente existen (bucles). El bucle 1 es ABCDA. Suponemos que el flujo de electrones \( I_1 \) tiene en este bucle el sentido indicado por la flecha. Otro bucle completo independiente, el 2, es DFGCD y se supone que el flujo de electrones \( I_2 \) es el indicado. \( I_1 \) e \( I_2 \) son las
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[american, thick, scale=0.8]
+        \draw (0,0) node[below] {B} to[battery1, l={$V_1=\SI{100}{\volt}$}, invert] (0,4) node[above] {A};
+        \draw (0,4) to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (5,4) node[above] {D};
+        \draw (5,4) to[battery1, l={$V_2=\SI{150}{\volt}$}] (5,2) to[R, l={$R_2=\SI{1.2}{\kilo\ohm}$}] (5,0) node[below] {C};
+        \draw (5,0) -- (0,0);
+        \draw (5,4) -- (10,4) node[above] {F} to[R, l={$R_3=\SI{1.2}{\kilo\ohm}$}] (10,0) node[below] {G} -- (5,0);
+        \fill (5,4) circle (1.5pt);
+        \fill (5,0) circle (1.5pt);
+        \fill (0,4) circle (1.5pt);
+        \fill (0,0) circle (1.5pt);
+        \fill (10,4) circle (1.5pt);
+        \fill (10,0) circle (1.5pt);
+        \draw[red, thick, ->] (2.5,2) ++(-220:0.7) arc (-220:120:0.7);
+        \node[red] at (2.5,2) {$I_1$};
+        \draw[blue, thick, ->] (8,2) ++(120:0.7) arc (120:-220:0.7);
+        \node[blue] at (8,2) {$I_2$};
+    \end{circuitikz}
+    \caption{Circuito Original}
+    \label{fig:27-4a}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[american, thick, scale=0.8]
+        \draw (1,0) node[left] {B} to[battery1, l={$V_1=\SI{100}{\volt}$}, invert] (1,4) node[left] {A};
+        \draw (1,4) -- (2,4) to[R, l={$R_1=\SI{1}{\kilo\ohm}$}] (5,4) -- (7,4) node[above] {D};
+        \draw (7,4) to[battery1, l={$V_2=\SI{150}{\volt}$}, invert] (7,2) to[R, l={$R_2=\SI{2.2}{\kilo\ohm}$}] (7,0);
+        \draw (7,4) -- (9.7,4) node[above] {F}; \draw (7,0) -- (9.7,0) node[below] {G};
+        \draw (7,0) node[below] {C} -- (1,0);
+        \fill (9.7,4) circle (1.5pt);
+        \fill (9.7,0) circle (1.5pt);
+        \fill (1,4) circle (1.5pt);
+        \fill (1,0) circle (1.5pt);
+        \fill (7,4) circle (1.5pt);
+        \fill (7,0) circle (1.5pt);
+        \draw[green, thick, ->] (4,2) ++(-220:0.7) arc (-220:120:0.7);
+        \node[green] at (4,2) {$I_3$};
+    \end{circuitikz}
+    \caption{Circuito para el Cálculo de la Tensión de Thévenin.}
+    \label{fig:27-4b}  
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[american, thick, scale=0.8]
+        \draw (1,0) node[below] {B} to[short] (1,4) node[above] {A} -- (3,4) to[R, l={$R_1=\SI{1.0}{\kilo\ohm}$}] (7,4);
+        \draw (7,4) -- (9,4) node[above] {D} -- (11,4) node[above] {F};
+        \draw (9,4) to[R, l={$R_2=\SI{2.2}{\kilo\ohm}$}] (9,0) node[below] {C} -- (11,0) node[below] {G};
+        \draw (9,0) -- (1,0); % Mantengo la línea original a B
+        \fill (1,0) circle (1.5pt);
+        \fill (1,4) circle (1.5pt);
+        \fill (11,4) circle (1.5pt);
+        \fill (11,0) circle (1.5pt);
+        \fill (9,4) circle (1.5pt);
+        \fill (9,0) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito para el Cálculo de la Resistencia Equivalente.}
+    \label{fig:27-4c}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{circuitikz}[american, thick, scale=0.8]
+        \draw (1,0) to[battery1, l={$V_{TH}=\SI{21.82}{\volt}$}, invert] (1,3) to[R, l={$R_{TH}=\SI{687.5}{\ohm}$}] (1,6) -- (8,6);
+        \draw (8,6) -- (9,6) node[above] {F} to[R, l={$R_3=\SI{1.2}{\kilo\ohm}$}] (9,0) node[below] {G};
+        \draw (9,0) -- (1,0);
+        \fill (9,6) circle (1.5pt);
+        \fill (9,0) circle (1.5pt);
+    \end{circuitikz}
+    \caption{Circuito Equivalente de Thévenin con la Carga $R_3$}
+    \label{fig:27-4d}
+\end{figure}
+
+\noindent En la Figura \ref{fig:27-4a} se muestra el circuito de dos mallas con los bucles ABCDA y DFGCD. Se han indicado las corrientes de lazo \(I_1\) (en rojo) e \(I_2\) (en azul), ambas en sentido horario. La Figura \ref{fig:27-4b} presenta el equivalente de Thévenin que se obtendría al simplificar la red desde un par de terminales.
