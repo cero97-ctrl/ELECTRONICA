@@ -78,16 +78,26 @@ if [ "$DRY_RUN" = true ]; then
   exit 0
 fi
 
+# Check if remote exists to avoid fetch failure
+if ! git remote | grep -q "^$REMOTE$"; then
+  echo "Error: Remote '$REMOTE' not found. Please add it using 'git remote add $REMOTE <url>'." >&2
+  exit 5
+fi
+
 # Fetch and pull
 echo "Fetching from $REMOTE..."
 git fetch "$REMOTE"
 
 if [ "$DO_PULL" = true ]; then
-  echo "Pulling latest from $REMOTE/$BRANCH (rebase)..."
-  git pull --rebase "$REMOTE" "$BRANCH" || {
-    echo "Pull failed: you may need to resolve conflicts manually." >&2
-    exit 3
-  }
+  if git rev-parse --verify "$REMOTE/$BRANCH" >/dev/null 2>&1; then
+    echo "Pulling latest from $REMOTE/$BRANCH (rebase)..."
+    git pull --rebase "$REMOTE" "$BRANCH" || {
+      echo "Pull failed: you may need to resolve conflicts manually." >&2
+      exit 3
+    }
+  else
+    echo "Remote branch '$REMOTE/$BRANCH' not found. Skipping pull (likely first push)."
+  fi
 fi
 
 # Stage changes
