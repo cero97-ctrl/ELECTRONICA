@@ -1,9 +1,9 @@
-PWD /home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRONICA.LATEX/PRACTICA_11
+PWD /home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/DOCS/PRACTICA-2
 INPUT /etc/texmf/web2c/texmf.cnf
 INPUT /usr/share/texmf/web2c/texmf.cnf
 INPUT /usr/share/texlive/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
-INPUT /home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRONICA.LATEX/PRACTICA_11/practica_11-1.tex
+INPUT /home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/DOCS/PRACTICA-2/practica_11-1.tex
 OUTPUT practica_11-1.log
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/article.cls

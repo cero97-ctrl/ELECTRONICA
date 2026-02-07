@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1765215801.5232 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/INFORME/02/practica_2.tex" "practica_2.pdf" "practica_2" 1765215803.8821 0
+["pdflatex"] 1770344021.77368 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/INFORME/02/practica_2.tex" "practica_2.pdf" "practica_2" 1770344024.6239 0
   "/etc/texmf/web2c/texmf.cnf" 1754246095.34578 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/INFORME/02/practica_2.tex" 1765215800.62388 23583 79a552e8b5f2b76155bc38ede96dfbbf ""
+  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/DISPOSITIVOS/INFORME/02/practica_2.tex" 1770344021.19205 23643 260e8fcddd5801d943ae8fc7bf2f6f77 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -94,9 +94,9 @@
   "caracteristica_zener.png" 1764277443.12251 566538 956ba74d4bb21d533058ddf8d2768aef ""
   "circuito_inversa.png" 1764283647.21406 488126 48057136aeec4cb1a5181670b05bb656 ""
   "circuito_regulador.png" 1764283868.84032 382758 3ed0a9b373401a4f7a3bf4285246f00f ""
-  "practica_2.aux" 1765215803.66331 2757 f943937175fe658a7fa5eadc287e752f "pdflatex"
-  "practica_2.out" 1765215802.46014 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "practica_2.tex" 1765215800.62388 23583 79a552e8b5f2b76155bc38ede96dfbbf ""
+  "practica_2.aux" 1770344024.4071 2757 7f413cb74131362c923512a4e1375dfc "pdflatex"
+  "practica_2.out" 1770344023.00708 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "practica_2.tex" 1770344021.19205 23643 260e8fcddd5801d943ae8fc7bf2f6f77 ""
   "regulador_shunt.png" 1764283386.73487 298981 97eb0766ce3c860fa8ad31a08a35b2fb ""
   "simbolo_zener.png" 1764276737.75202 364934 d83b779c539f3f9ce32213ee9f5384b2 ""
   (generated)
