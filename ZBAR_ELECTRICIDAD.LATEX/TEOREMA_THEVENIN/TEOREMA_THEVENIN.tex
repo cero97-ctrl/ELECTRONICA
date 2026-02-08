@@ -12,6 +12,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{comment}
+\usepackage[hidelinks]{hyperref}
 
 \usetikzlibrary{babel} % Library to handle babel conflicts
 \geometry{a4paper, margin=1in}
@@ -24,16 +25,19 @@
 
 \maketitle
 
-\section*{FINALIDADES}
+\tableofcontents
+\newpage
+
+\section{FINALIDADES}
 \begin{enumerate}[label=\arabic*.]
     \item Determinar analíticamente los valores de \(V_{TH}\) (tensión del generador de Thévenin) y \(R_{TH}\) (resistencia del generador de Thévenin) en un circuito de c.c. que contiene una sola fuente de tensión.
     \item Confirmar experimentalmente los valores de \(V_{TH}\) y \(R_{TH}\) propuestos por el teorema de Thévenin en la solución de circuitos puente desequilibrados.
 \end{enumerate}
 
-\section*{INFORMACIÓN PRELIMINAR}
+\section{INFORMACIÓN PRELIMINAR}
 Hemos empleado las leyes de Ohm y Kirchhoff para resolver los problemas que plantean los circuitos de c.c. En el estudio de los circuitos eléctricos y electrónicos complicados son necesarias a veces otras bases de cálculo. El teorema de Thévenin forma parte de un grupo de teoremas de redes (incluyendo el de superposición y el de Norton) que proporciona los medios adecuados para simplificar el análisis de circuitos complicados. La técnica empleada implica reducir una red a un circuito sencillo equivalente que actúa como la red original.
 
-\section*{Teorema de Thévenin}
+\subsection{Teorema de Thévenin}
 El teorema de Thévenin enuncia que cualquier red de dos terminales se puede substituir por un circuito sencillo equivalente consistente en un generador de Thévenin, cuya tensión $V_{TH}$ actuando en serie con una resistencia interna $R_{TH}$ hace que pase corriente por la carga.
 
 Las reglas para determinar \( V_{TH} \) y \( R_{TH} \) son las siguientes:
@@ -115,7 +119,7 @@ I = \frac{V_{TH}}{R_{TH} + R_L} = \frac{50}{450} = 0,111 \, \text{A}
 \]
 Esta es la corriente necesaria en \( R_L \). Este método simplifica el cálculo si necesitamos hallar la corriente para diferentes valores de \( R_L \).
 
-\section*{Resolución del circuito puente desequilibrado}
+\subsection{Resolución del circuito puente desequilibrado}
 La figura 26-2 a es un circuito puente desequilibrado. Se desea hallar la corriente I en \( R_5 \). El teorema de Thévenin sirve para resolver fácilmente este problema.
 
 \begin{figure}[h!]
@@ -243,7 +247,7 @@ Finalmente, la corriente es:
 I = \frac{V_{TH}}{R_{TH} + R_5} = \frac{8}{172} = 0,0465 \, \text{A}
 \]
 
-\section*{Verificación experimental y Resumen}
+\subsection{Verificación experimental y Resumen}
 Es posible determinar por medición los valores de \( V_{TH} \) y \( R_{TH} \) para una carga \( R_L \) en una red dada.
 
 \textbf{RESUMEN:}
@@ -355,7 +359,7 @@ Medida & Calculada & Orig. & Thev. & Orig. & Thev. & $R_L$ & Error \% \\ % Simpl
 \end{tabular}}
 \end{table}
 
-\section*{PREGUNTAS}
+\section{PREGUNTAS}
 \begin{enumerate}
 \item ¿Cómo es el valor de $I_L$ medido en el circuito de la figura 26-3 comparado con el del circuito equivalente de Thévenin? ¿Deben ser iguales?
 \item Discutir los datos de la tabla 26-1.
@@ -364,7 +368,7 @@ Medida & Calculada & Orig. & Thev. & Orig. & Thev. & $R_L$ & Error \% \\ % Simpl
 \item ¿Qué ventajas tiene el teorema de Thévenin?
 \end{enumerate}
 
-\section*{Respuestas auto-examen}
+\section{Respuestas auto-examen}
 \begin{enumerate}
 \item a) 100 V, b) 188 $\Omega$, c) 0,134 A
 \item a) 45 V, b) 338 $\Omega$, c) 0,1 A

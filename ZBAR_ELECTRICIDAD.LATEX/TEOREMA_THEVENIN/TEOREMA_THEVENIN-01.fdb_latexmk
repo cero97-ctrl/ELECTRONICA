@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1765570241.36037 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRICIDAD.LATEX/TEOREMA_THEVENIN/TEOREMA_THEVENIN-01.tex" "TEOREMA_THEVENIN-01.pdf" "TEOREMA_THEVENIN-01" 1765570246.26278 0
+["pdflatex"] 1770550333.97987 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRICIDAD.LATEX/TEOREMA_THEVENIN/TEOREMA_THEVENIN-01.tex" "TEOREMA_THEVENIN-01.pdf" "TEOREMA_THEVENIN-01" 1770550338.14553 0
   "/etc/texmf/web2c/texmf.cnf" 1754246095.34578 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRICIDAD.LATEX/TEOREMA_THEVENIN/TEOREMA_THEVENIN-01.tex" 1765570233.99348 6471 5e1deda795218d025ed1045d0e07f4cc ""
+  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/ZBAR_ELECTRICIDAD.LATEX/TEOREMA_THEVENIN/TEOREMA_THEVENIN-01.tex" 1770550332.39702 6426 712450b26715356b245fa6fc8f273443 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -11,6 +11,7 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr17.tfm" 1136768653 1292 296a67155bdbfc32aa9c636f21e91433 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr6.tfm" 1136768653 1300 b62933e007d01cfd073f79b963c01526 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr8.tfm" 1136768653 1292 21c1c5bfeaebccffdb478fd231a0997d ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm" 1136768653 1124 6c73e740cf17375f03eec0ee63599741 ""
@@ -147,10 +148,12 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1754246131.98867 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1754246351 8211763 bcebfc983d877799c23bfb0bbf784be3 ""
-  "TEOREMA_THEVENIN-01.aux" 1765570245.95259 444 1997159945e8bdd37a2792d8c5185eef "pdflatex"
-  "TEOREMA_THEVENIN-01.tex" 1765570233.99348 6471 5e1deda795218d025ed1045d0e07f4cc ""
+  "TEOREMA_THEVENIN-01.aux" 1770550337.83734 766 2f42f96449ddbb63aab3d6837b086c55 "pdflatex"
+  "TEOREMA_THEVENIN-01.tex" 1770550332.39702 6426 712450b26715356b245fa6fc8f273443 ""
+  "TEOREMA_THEVENIN-01.toc" 1770550337.84334 229 d22776fb1a4f2992eb01932b7fd7ac7c "pdflatex"
   (generated)
   "TEOREMA_THEVENIN-01.aux"
   "TEOREMA_THEVENIN-01.log"
   "TEOREMA_THEVENIN-01.pdf"
+  "TEOREMA_THEVENIN-01.toc"
   (rewritten before read)

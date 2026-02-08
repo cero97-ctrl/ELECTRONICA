@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1770049033.89861 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/IINTERNET_DE_LAS_COSAS/TESIS/TELEMEDICINA/revision-tesis.tex" "revision-tesis.pdf" "revision-tesis" 1770049035.03455 0
+["pdflatex"] 1770550127.60426 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/IINTERNET_DE_LAS_COSAS/TESIS/TELEMEDICINA/revision-tesis.tex" "revision-tesis.pdf" "revision-tesis" 1770550128.92872 0
   "/etc/texmf/web2c/texmf.cnf" 1754246095.34578 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/IINTERNET_DE_LAS_COSAS/TESIS/TELEMEDICINA/revision-tesis.tex" 1770049030.21714 12893 d7fe3fa3b5c5dccfb4c8bb9fd7c173ea ""
+  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/IINTERNET_DE_LAS_COSAS/TESIS/TELEMEDICINA/revision-tesis.tex" 1770550124.11572 12919 8d16e1bfea473083a8ab7fc8bf3739c5 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tctt1200.tfm" 1136768653 1536 efbcae87f87156de95906dc6e6580595 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1136768653 1324 c910af8c371558dc20f2d7822f66fe64 ""
@@ -43,10 +43,12 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1754246131.98867 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1754246351 8211763 bcebfc983d877799c23bfb0bbf784be3 ""
-  "revision-tesis.aux" 1770049034.89474 1539 192c2ededa074872c7965f5ad4d2e680 "pdflatex"
-  "revision-tesis.tex" 1770049030.21714 12893 d7fe3fa3b5c5dccfb4c8bb9fd7c173ea ""
+  "revision-tesis.aux" 1770550128.76984 1539 beb50d6cc8ef8ff81fcc97955eb26252 "pdflatex"
+  "revision-tesis.tex" 1770550124.11572 12919 8d16e1bfea473083a8ab7fc8bf3739c5 ""
+  "revision-tesis.toc" 1770550128.77584 924 2dd3d36a156440e15e3a84364cb5a605 "pdflatex"
   (generated)
   "revision-tesis.aux"
   "revision-tesis.log"
   "revision-tesis.pdf"
+  "revision-tesis.toc"
   (rewritten before read)
