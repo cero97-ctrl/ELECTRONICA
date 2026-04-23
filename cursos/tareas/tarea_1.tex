@@ -1,0 +1,270 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    pdftitle={Guía Teórica Semana 1: Fundamentos de Circuitos DC},
+}
+
+% Configuración de unidades SI
+\sisetup{
+    output-decimal-marker = {.},
+    per-mode = symbol
+}
+
+%=============== DOCUMENTO ===============
+\begin{document}
+
+\title{\textbf{Guía Teórica - Semana 1} \\ \large Fundamentos de Circuitos de Corriente Continua (DC)}
+\author{Plan de Estudios de Electrónica}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+La presente guía resume los conceptos fundamentales correspondientes a la Semana 1 del curso. Se abordan las magnitudes eléctricas básicas, las leyes fundamentales que rigen el comportamiento de los circuitos y las técnicas elementales para el análisis de circuitos puramente resistivos.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Conceptos Básicos}
+
+\subsection{Magnitudes Eléctricas y Unidades}
+Para el análisis de circuitos, es fundamental comprender las magnitudes físicas involucradas y sus unidades en el Sistema Internacional (SI):
+\begin{itemize}
+    \item \textbf{Carga Eléctrica ($q$):} Propiedad fundamental de la materia. Se mide en Culombios (C).
+    \item \textbf{Corriente Eléctrica ($i$):} Es la tasa de flujo de carga eléctrica a través de una sección transversal. Se mide en Amperios (A). $i = \frac{dq}{dt}$
+    \item \textbf{Tensión o Diferencia de Potencial ($v$):} Es la energía requerida para mover una carga unitaria a través de un elemento. Se mide en Voltios (V). $v = \frac{dw}{dq}$
+    \item \textbf{Potencia ($p$):} Es la velocidad a la que se consume o se produce energía. Se mide en Vatios (W). $p = v \cdot i$
+\end{itemize}
+
+\subsection{Leyes de Kirchhoff}
+Las leyes de Kirchhoff son los pilares del análisis de circuitos, basadas en la conservación de la carga y la energía.
+
+\begin{description}
+    \item[Ley de Corrientes de Kirchhoff (LKC):] La suma algebraica de las corrientes que entran a un nodo (punto de unión de dos o más elementos) es cero.
+    \[ \sum_{n=1}^{N} i_n = 0 \]
+    \item[Ley de Voltajes de Kirchhoff (LVK):] La suma algebraica de todas las caídas de tensión alrededor de una trayectoria cerrada (malla) es cero.
+    \[ \sum_{m=1}^{M} v_m = 0 \]
+\end{description}
+
+\section{Circuitos Resistivos}
+
+\subsection{La Resistencia y la Ley de Ohm}
+La resistencia ($R$) es la oposición que presenta un material al flujo de corriente eléctrica, y se mide en Ohmios ($\Omega$). La relación fundamental entre tensión, corriente y resistencia está dada por la \textbf{Ley de Ohm}:
+\[ v = i \cdot R \]
+
+\subsection{Asociación de Resistencias y Reducción de Circuitos}
+
+\subsubsection*{Resistencias en Serie}
+Dos o más resistencias están en serie si comparten un único nodo y, por tanto, fluye la misma corriente a través de ellas. La resistencia equivalente es la suma de las resistencias individuales:
+\[ R_{eq} = R_1 + R_2 + \dots + R_n \]
+
+\subsubsection*{Resistencias en Paralelo}
+Están en paralelo si están conectadas a los mismos dos nodos, por lo que tienen la misma tensión entre sus terminales. La inversa de la resistencia equivalente es la suma de las inversas:
+\[ \frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \dots + \frac{1}{R_n} \]
+Para dos resistencias en paralelo, la fórmula se simplifica a: $R_{eq} = \frac{R_1 \cdot R_2}{R_1 + R_2}$
+
+\subsection{Divisores de Tensión y Corriente}
+
+Son herramientas analíticas derivadas de las leyes de Kirchhoff y Ohm que permiten simplificar cálculos en circuitos básicos.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1.2]
+        % Divisor de tensión
+        \draw (0,0) to[V, l=$V_s$] (0,3)
+              to[short] (2,3)
+              to[R, l=$R_1$] (2,1.5)
+              to[R, l=$R_2$, v=$V_2$] (2,0)
+              to[short] (0,0);
+        \node at (1,-0.5) {(a) Divisor de Tensión};
+        
+        % Divisor de corriente
+        \draw (5,0) to[I, l=$I_s$] (5,3)
+              to[short] (8,3);
+        \draw (6.5,3) to[R, l=$R_1$, i=$i_1$] (6.5,0);
+        \draw (8,3) to[R, l=$R_2$, i=$i_2$] (8,0);
+        \draw (5,0) to[short] (8,0);
+        \node at (6.5,-0.5) {(b) Divisor de Corriente};
+    \end{circuitikz}
+    \caption{Circuitos divisores fundamentales.}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Divisor de Tensión:} En un circuito serie, la tensión se divide proporcionalmente al valor de las resistencias. 
+    \[ V_2 = V_s \cdot \frac{R_2}{R_1 + R_2} \]
+    \item \textbf{Divisor de Corriente:} En un circuito paralelo, la corriente se divide de forma inversamente proporcional a las resistencias.
+    \[ i_1 = I_s \cdot \frac{R_2}{R_1 + R_2} \quad \text{y} \quad i_2 = I_s \cdot \frac{R_1}{R_1 + R_2} \]
+\end{itemize}
+
+\section{Métodos de Análisis Formal}
+Para circuitos que no pueden simplificarse únicamente con combinaciones serie/paralelo, se emplean métodos sistemáticos.
+
+\subsection{Análisis Nodal}
+Basado en la Ley de Corrientes de Kirchhoff (LKC). El procedimiento básico es:
+\begin{enumerate}[noitemsep]
+    \item Seleccionar un nodo de referencia (tierra, $0$ V).
+    \item Asignar variables de tensión a los nodos restantes ($v_1, v_2, \dots$).
+    \item Aplicar la LKC en cada nodo desconocido, expresando las corrientes en función de las tensiones nodales usando la Ley de Ohm.
+    \item Resolver el sistema de ecuaciones algebraicas resultante.
+\end{enumerate}
+
+\subsection{Análisis de Mallas}
+Basado en la Ley de Voltajes de Kirchhoff (LVK), aplicable a circuitos planos (que pueden dibujarse sin cruces de ramas). El procedimiento es:
+\begin{enumerate}[noitemsep]
+    \item Identificar las mallas del circuito.
+    \item Asignar corrientes de malla ($i_1, i_2, \dots$), preferiblemente en sentido horario.
+    \item Aplicar la LVK a cada malla, expresando las tensiones en función de las corrientes de malla mediante la Ley de Ohm.
+    \item Resolver el sistema de ecuaciones para encontrar las corrientes de malla.
+\end{enumerate}
+
+\newpage
+\section{Ejercicios Resueltos}
+
+\subsection*{Ejercicio 1: Ley de Ohm}
+\textbf{Problema:} Un resistor de \SI{4}{\ohm} está conectado a una fuente de \SI{12}{\volt}. Calcule la corriente que fluye por el resistor y la potencia disipada. \\
+\textbf{Solución:} 
+Aplicando la Ley de Ohm: $i = \frac{v}{R} = \frac{12}{4} = \SI{3}{\ampere}$.\\
+La potencia disipada es: $p = v \cdot i = 12 \cdot 3 = \SI{36}{\watt}$.
+
+\subsection*{Ejercicio 2: Resistencias en Serie}
+\textbf{Problema:} Tres resistores de \SI{10}{\ohm}, \SI{20}{\ohm} y \SI{30}{\ohm} están conectados en serie. ¿Cuál es la resistencia equivalente? \\
+\textbf{Solución:} 
+Para resistores en serie, se suman sus valores:
+$R_{eq} = R_1 + R_2 + R_3 = 10 + 20 + 30 = \SI{60}{\ohm}$.
+
+\subsection*{Ejercicio 3: Resistencias en Paralelo}
+\textbf{Problema:} Dos resistores de \SI{100}{\ohm} y \SI{25}{\ohm} se conectan en paralelo. Determine la resistencia equivalente.\\
+\textbf{Solución:} 
+Usando la fórmula para dos resistores en paralelo:
+$R_{eq} = \frac{R_1 \cdot R_2}{R_1 + R_2} = \frac{100 \cdot 25}{100 + 25} = \frac{2500}{125} = \SI{20}{\ohm}$.
+
+\subsection*{Ejercicio 4: Reducción Mixta de Circuito}
+\textbf{Problema:} Un resistor $R_1 = \SI{10}{\ohm}$ está en serie con una combinación en paralelo de $R_2 = \SI{30}{\ohm}$ y $R_3 = \SI{60}{\ohm}$. Calcule la resistencia total.\\
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=0.9]
+        \draw (0,0) to[V, l=$V_s$] (0,4)
+              to[R, l={$R_1$}] (3,4)
+              to[short] (3,3)
+              to[R, l={$R_2$}] (3,1)
+              to[short] (3,0) to[short] (0,0);
+        \draw (3,3) to[short] (5,3) to[R, l={$R_3$}] (5,1) to[short] (3,1);
+    \end{circuitikz}
+    \caption{Circuito mixto para el Ejercicio 4.}
+\end{figure}
+\textbf{Solución:} 
+Primero resolvemos el paralelo: $R_{23} = \frac{30 \cdot 60}{30 + 60} = \frac{1800}{90} = \SI{20}{\ohm}$.\\
+Luego, sumamos la resistencia en serie: $R_{eq} = R_1 + R_{23} = 10 + 20 = \SI{30}{\ohm}$.
+
+\subsection*{Ejercicio 5: Divisor de Tensión}
+\textbf{Problema:} Dos resistores $R_1 = \SI{2}{\kilo\ohm}$ y $R_2 = \SI{6}{\kilo\ohm}$ están en serie conectados a una fuente de \SI{24}{\volt}. ¿Cuál es la tensión en los terminales de $R_2$? \\
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}
+        \draw (0,0) to[V, l={\SI{24}{\volt}}] (0,3)
+              to[R, l={$R_1$}] (3,3)
+              to[R, l={$R_2$}, v=$V_2$] (6,3)
+              to[short] (6,0) to[short] (0,0);
+    \end{circuitikz}
+    \caption{Divisor de tensión para el Ejercicio 5.}
+\end{figure}
+\textbf{Solución:} 
+Usando la fórmula del divisor de tensión:
+$V_2 = V_s \frac{R_2}{R_1 + R_2} = 24 \frac{6}{2 + 6} = 24 \left(\frac{6}{8}\right) = \SI{18}{\volt}$.
+
+\subsection*{Ejercicio 6: Divisor de Corriente}
+\textbf{Problema:} Una fuente de corriente ideal de \SI{10}{\milli\ampere} alimenta un circuito con dos ramas en paralelo, $R_1 = \SI{1}{\kilo\ohm}$ y $R_2 = \SI{4}{\kilo\ohm}$. Determine la corriente que atraviesa $R_1$.\\
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}
+        \draw (0,0) to[I, l={\SI{10}{\milli\ampere}}] (0,3)
+              to[short] (4,3);
+        \draw (1.5,3) to[R, l={$R_1$}, i=$i_1$] (1.5,0);
+        \draw (4,3) to[R, l={$R_2$}] (4,0);
+        \draw (0,0) to[short] (4,0);
+    \end{circuitikz}
+    \caption{Divisor de corriente para el Ejercicio 6.}
+\end{figure}
+\textbf{Solución:} 
+Aplicando el divisor de corriente (note que el numerador es la \emph{otra} resistencia):
+$i_1 = I_s \frac{R_2}{R_1 + R_2} = 10 \frac{4}{1 + 4} = 10 \left(\frac{4}{5}\right) = \SI{8}{\milli\ampere}$.
+
+\subsection*{Ejercicio 7: Ley de Corrientes de Kirchhoff (LKC)}
+\textbf{Problema:} En un nodo de un circuito concurren tres ramas. La corriente $i_1 = \SI{5}{\ampere}$ entra al nodo y la corriente $i_2 = \SI{2}{\ampere}$ sale del nodo. ¿Cuál es el valor y dirección de la tercera corriente $i_3$? \\
+\textbf{Solución:} 
+Definiendo corrientes entrantes como positivas y salientes como negativas:
+$\sum i = 0 \implies i_1 - i_2 - i_3 = 0 \implies 5 - 2 - i_3 = 0 \implies i_3 = \SI{3}{\ampere}$.\\
+Como $i_3$ es positiva asumiendo que "sale", la corriente $i_3$ sale del nodo con un valor de \SI{3}{\ampere}.
+
+\subsection*{Ejercicio 8: Ley de Voltajes de Kirchhoff (LVK)}
+\textbf{Problema:} En un lazo cerrado hay una fuente de tensión $V_s = \SI{15}{\volt}$ y tres resistores en serie. Las caídas de tensión en los primeros dos resistores son $V_1 = \SI{4}{\volt}$ y $V_2 = \SI{6}{\volt}$. Calcule la caída de tensión en el tercer resistor ($V_3$).\\
+\textbf{Solución:} 
+Recorriendo la malla y aplicando la LVK:
+$V_s - V_1 - V_2 - V_3 = 0 \implies 15 - 4 - 6 - V_3 = 0 \implies V_3 = \SI{5}{\volt}$.
+
+\subsection*{Ejercicio 9: Potencia y Energía}
+\textbf{Problema:} Un bombillo tiene una resistencia de \SI{240}{\ohm} y se conecta a una red de \SI{120}{\volt}. Calcule la potencia consumida y la energía disipada (en julios) si se mantiene encendido durante 1 hora.\\
+\textbf{Solución:} 
+Potencia: $p = \frac{v^2}{R} = \frac{120^2}{240} = \frac{14400}{240} = \SI{60}{\watt}$.\\
+Energía: $w = p \cdot t$. El tiempo en segundos es $t = 1 \text{ h} \cdot 3600 \text{ s/h} = \SI{3600}{\second}$.\\
+$w = 60 \cdot 3600 = \SI{216000}{\joule} = \SI{216}{\kilo\joule}$.
+
+\subsection*{Ejercicio 10: Análisis de Nodos Básico}
+\textbf{Problema:} Un nodo $A$ tiene un voltaje $v_A$ desconocido. Está conectado a un nodo de \SI{10}{\volt} a través de una resistencia de \SI{2}{\ohm}, y a tierra (\SI{0}{\volt}) a través de una resistencia de \SI{3}{\ohm}. Una fuente de corriente inyecta \SI{2}{\ampere} directamente en el nodo $A$. Escriba la ecuación del nodo y halle $v_A$.\\
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}
+        % Línea de tierra
+        \draw (0,0) -- (4,0);
+        \node[ground] at (2,0) {};
+        
+        % Rama izquierda: fuente de 10V y resistencia de 2 ohmios
+        \draw (0,0) to[V, l={\SI{10}{\volt}}] (0,2)
+              to[R] (2,2);
+              
+        % Rama central: resistencia de 3 ohmios a tierra
+        \draw (2,2) to[R] (2,0);
+        
+        % Rama derecha: fuente de corriente de 2A (inyectando al nodo A)
+        \draw (4,0) to[I, l={\SI{2}{\ampere}}] (4,2)
+              to[short] (2,2);
+              
+        % Etiqueta del Nodo A
+        \node[circ] at (2,2) {};
+        \node[above] at (2,2.2) {Nodo $A$ ($v_A$)};
+    \end{circuitikz}
+    \caption{Circuito nodal para el Ejercicio 10.}
+\end{figure}
+\textbf{Solución:} 
+Aplicamos la LKC en el nodo $A$, asumiendo que todas las corrientes resistivas salen del nodo:
+\[ \frac{v_A - 10}{2} + \frac{v_A - 0}{3} - 2 = 0 \]
+Multiplicando todo por 6 (mínimo común múltiplo):
+\[ 3(v_A - 10) + 2(v_A) - 12 = 0 \]
+\[ 3v_A - 30 + 2v_A - 12 = 0 \]
+\[ 5v_A = 42 \implies v_A = \SI{8.4}{\volt} \]
+
+\vspace{1cm}
+\noindent\rule{\textwidth}{0.4pt}
+\textbf{Recomendación de Estudio:} Repasar los ejemplos resueltos de los capítulos 1 y 2 del texto base y practicar dibujando e identificando nodos, ramas y mallas en los simuladores de circuitos (ej. DroidTesla, LTspice).
+
+\end{document}

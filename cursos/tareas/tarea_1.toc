@@ -1,0 +1,12 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Conceptos Básicos}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Magnitudes Eléctricas y Unidades}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Leyes de Kirchhoff}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Circuitos Resistivos}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}La Resistencia y la Ley de Ohm}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Asociación de Resistencias y Reducción de Circuitos}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Divisores de Tensión y Corriente}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Métodos de Análisis Formal}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Análisis Nodal}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Análisis de Mallas}{4}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Ejercicios Resueltos}{5}{section.4}%
