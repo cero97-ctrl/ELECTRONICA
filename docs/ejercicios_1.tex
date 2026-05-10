@@ -1,0 +1,144 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usetikzlibrary{babel}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    pdftitle={Ejercicios Semana 1: Fundamentos de Circuitos DC},
+}
+
+% Configuración de unidades SI
+\sisetup{
+    output-decimal-marker = {.},
+    per-mode = symbol
+}
+
+%=============== DOCUMENTO ===============
+\begin{document}
+
+\title{\textbf{Guía de Ejercicios - Semana 1} \\ \large Fundamentos de Circuitos de Corriente Continua (DC)}
+\author{Plan de Estudios de Electrónica}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+La presente guía contiene 10 ejercicios de dificultad media diseñados para reforzar los conceptos teóricos aprendidos durante la primera semana del curso. Los problemas propuestos abarcan desde la aplicación de la Ley de Ohm y las Leyes de Kirchhoff, hasta técnicas metódicas como el análisis nodal y de mallas.
+\end{abstract}
+
+\vspace{0.5cm}
+
+\section*{Problemas Propuestos}
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+
+    % Ejercicio 1: Ley de Ohm y Potencia
+    \item \textbf{Ley de Ohm y Potencia:} Una resistencia calefactora de un equipo industrial disipa \SI{60}{\watt} cuando se conecta nominalmente a una red de \SI{120}{\volt}. Si debido a una caída de tensión en la red se conecta a \SI{110}{\volt}, ¿cuál es la nueva potencia disipada asumiendo que el valor óhmico de la resistencia se mantiene constante?
+
+    % Ejercicio 2: Reducción Mixta de Resistencias
+    \item \textbf{Asociación de Resistencias:} Determine la resistencia equivalente ($R_{eq}$) vista desde los terminales $A$ y $B$ para el circuito mostrado en la Figura \ref{fig:ej2}.
+    \begin{figure}[h!]
+        \centering
+        \begin{circuitikz}[scale=1]
+            \draw (0,3) node[anchor=east] {A} to[short, o-*] (1,3)
+                  to[R, l=$R_1$ (\SI{5}{\ohm})] (4,3)
+                  to[short, *-] (4,4)
+                  to[R, l=$R_2$ (\SI{20}{\ohm})] (7,4)
+                  to[short, -*] (7,3);
+            \draw (4,3) to[short] (4,2)
+                  to[R, l=$R_3$ (\SI{20}{\ohm})] (7,2)
+                  to[short] (7,3);
+            \draw (1,3) to[short] (1,1)
+                  to[R, l=$R_4$ (\SI{15}{\ohm})] (7,1)
+                  to[short] (7,3);
+            \draw (7,3) to[short] (8,3)
+                  to[R, l=$R_5$ (\SI{2.5}{\ohm})] (8,0)
+                  to[short, -o] (0,0) node[anchor=east] {B};
+        \end{circuitikz}
+        \caption{Circuito para el problema de reducción de resistencias.}
+        \label{fig:ej2}
+    \end{figure}
+
+    % Ejercicio 3: Divisor de Tensión Cargado
+    \item \textbf{Divisor de Tensión con Carga:} Un divisor de tensión ideal se construye conectando a una fuente de $V_s = \SI{24}{\volt}$ dos resistores en serie: $R_1 = \SI{10}{\kilo\ohm}$ y $R_2 = \SI{10}{\kilo\ohm}$. 
+    \begin{enumerate}[label=\alph*)]
+        \item Calcule la tensión en los terminales de $R_2$ en circuito abierto.
+        \item Calcule la nueva tensión en $R_2$ si accidentalmente se conecta un multímetro con una resistencia interna de \SI{10}{\kilo\ohm} en paralelo con $R_2$. Explique brevemente este 'efecto de carga'.
+    \end{enumerate}
+
+    % Ejercicio 4: Divisor de Corriente
+    \item \textbf{Divisor de Corriente:} Una fuente de corriente constante de \SI{220}{\milli\ampere} alimenta tres resistores dispuestos en paralelo: $R_1 = \SI{20}{\ohm}$, $R_2 = \SI{40}{\ohm}$ y $R_3 = \SI{60}{\ohm}$. Determine de forma analítica la corriente que fluye por cada uno de los resistores.
+
+    % Ejercicio 5: LVK de un solo lazo
+    \item \textbf{Ley de Voltajes de Kirchhoff (LVK):} En un único lazo cerrado se tienen dos fuentes de tensión en posición opuesta: $V_A = \SI{30}{\volt}$ y $V_B = \SI{6}{\volt}$. Intercalados entre ellas en la malla hay tres resistores en serie de \SI{3}{\ohm}, \SI{4}{\ohm} y \SI{5}{\ohm}. Dibuje el esquema eléctrico equivalente y determine tanto la corriente que circula por la malla como la potencia disipada en el resistor de \SI{4}{\ohm}.
+
+    % Ejercicio 6: LKC y Nodos
+    \item \textbf{Ley de Corrientes de Kirchhoff (LKC):} A un nodo de interconexión principal en una red concurren 5 cables. Se ha medido que entran dos corrientes al nodo: $i_1 = \SI{6}{\ampere}$ e $i_2 = \SI{2}{\ampere}$. Salen tres corrientes: $i_3$, $i_4$ e $i_5$. Sabiendo experimentalmente que $i_4 = \SI{3}{\ampere}$ y que $i_5$ es exactamente el triple de $i_3$, formule la ecuación del nodo y determine los valores de $i_3$ e $i_5$.
+
+    % Ejercicio 7: Nodos con Circuitikz
+    \item \textbf{Análisis Nodal:} Considere el circuito de la Figura \ref{fig:ej7}. Formule el sistema de ecuaciones aplicando la LKC y determine las tensiones de los nodos principales $A$ ($v_A$) y $B$ ($v_B$).
+    \begin{figure}[h!]
+        \centering
+        \begin{circuitikz}[scale=1.2]
+            \draw (0,0) -- (6,0);
+            \node[ground] at (3,0) {};
+            \draw (0,0) to[I, l=\SI{5}{\ampere}] (0,3)
+                  to[short, -*] (2,3) node[above] {Nodo A ($v_A$)}
+                  to[R, l=\SI{2}{\ohm}, *-*] (2,0);
+            \draw (2,3) to[R, l=\SI{2}{\ohm}] (6,3) node[above] {Nodo B ($v_B$)}
+                  to[R, l=\SI{4}{\ohm}, *-*] (6,0);
+        \end{circuitikz}
+        \caption{Circuito para el análisis nodal.}
+        \label{fig:ej7}
+    \end{figure}
+
+    % Ejercicio 8: Mallas con Circuitikz
+    \item \textbf{Análisis de Mallas:} Para el circuito plano mostrado en la Figura \ref{fig:ej8}, defina las corrientes de malla en sentido horario y resuelva el sistema matricial o algebraico necesario para encontrar la corriente que atraviesa el resistor central de \SI{5}{\ohm}.
+    \begin{figure}[h!]
+        \centering
+        \begin{circuitikz}[scale=1.2]
+            \draw (0,0) to[V, l=\SI{12}{\volt}] (0,3)
+                  to[R, l=\SI{4}{\ohm}] (3,3)
+                  to[R, l=\SI{5}{\ohm}, *-*] (3,0)
+                  to[short] (0,0);
+            \draw (3,3) to[R, l=\SI{2}{\ohm}] (6,3)
+                  to[V, l_=\SI{6}{\volt}] (6,0)
+                  to[short] (3,0);
+        \end{circuitikz}
+        \caption{Circuito para el análisis por mallas.}
+        \label{fig:ej8}
+    \end{figure}
+
+    % Ejercicio 9: Diseño práctico
+    \item \textbf{Diseño de Circuitos Básicos:} Se requiere diseñar el circuito de encendido para un diodo emisor de luz (LED) rojo de alta intensidad. Las especificaciones del LED indican que necesita una caída de tensión típica de $V_f = \SI{2.0}{\volt}$ y opera a una corriente nominal de $I_f = \SI{20}{\milli\ampere}$ para no dañarse. 
+    Si se dispone de una batería comercial de \SI{9}{\volt}:
+    \begin{enumerate}[label=\alph*)]
+        \item Calcule el valor comercial exacto de la resistencia limitadora que se debe ubicar en serie.
+        \item Determine cuánta potencia disipará dicha resistencia para definir de qué tamaño comprarla (\SI{0.25}{\watt}, \SI{0.5}{\watt} o \SI{1}{\watt}).
+    \end{enumerate}
+
+    % Ejercicio 10: Balance de Potencia
+    \item \textbf{Balance de Potencia (Conservación de la Energía):} En un circuito completamente resistivo, se sabe que el balance de potencias exige que $\sum P_{entregada} = \sum P_{disipada}$. Una fuente de tensión continua de \SI{48}{\volt} está inyectando una corriente de \SI{2}{\ampere} a un arreglo de 4 resistores idénticos conectados en serie entre sí. 
+    \begin{enumerate}[label=\alph*)]
+        \item ¿Cuál es la potencia total que entrega la fuente?
+        \item ¿Cuánta potencia disipa cada resistor y cuál es su valor en Ohmios ($\Omega$)?
+    \end{enumerate}
+
+\end{enumerate}
+
+\end{document}
