@@ -1,0 +1,10 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción al Sistema RAG}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}¿Cómo funciona RAG?}{2}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Implementación Paso a Paso}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Paso 1: Carga de Documentos (Loaders)}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Paso 2: Fragmentación de Texto (Splitters)}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Paso 3: Vectorización y Base de Datos (ChromaDB + HuggingFace)}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Paso 4: El Cerebro del Sistema (Llama 3 vía Groq)}{3}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Paso 5: Construcción de la Cadena (Chain) y el Prompt}{3}{subsection.2.5}%
+\contentsline {section}{\numberline {3}El Bucle Interactivo}{4}{section.3}%

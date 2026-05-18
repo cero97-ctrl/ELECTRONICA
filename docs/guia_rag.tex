@@ -1,0 +1,190 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[spanish]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{comment}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{framed}
+
+% --- Definición de Colores y Estilos ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{
+    style=mystyle,
+    extendedchars=true,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1
+}
+
+\title{Guía Práctica: Implementación de un Sistema RAG (Retrieval-Augmented Generation) en Python}
+\author{Prof. CERO}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción al Sistema RAG}
+
+En la era de la Inteligencia Artificial, los Modelos de Lenguaje Grande (LLMs) como GPT-4 o Llama 3 son herramientas excepcionales para el razonamiento y la generación de texto. Sin embargo, su conocimiento está limitado a la información con la que fueron entrenados y son propensos a sufrir \textit{alucinaciones} (inventar respuestas) cuando se les pregunta sobre datos privados o muy recientes.
+
+Para solucionar esto, surge la arquitectura \textbf{RAG (Retrieval-Augmented Generation)}. Un sistema RAG actúa como un puente entre tus datos privados (apuntes, libros, repositorios) y el "cerebro" del LLM.
+
+\subsection{¿Cómo funciona RAG?}
+Se divide en dos fases principales:
+\begin{enumerate}
+    \item \textbf{Retrieval (Recuperación):} Cuando el usuario hace una pregunta, el sistema busca matemáticamente en la base de datos de documentos locales y extrae únicamente los fragmentos de texto más relevantes.
+    \item \textbf{Generation (Generación):} El sistema inyecta esos fragmentos en el modelo de lenguaje junto con la pregunta original. El LLM lee estos fragmentos y redacta una respuesta coherente basada \textbf{estrictamente} en el contexto proporcionado.
+\end{enumerate}
+
+\section{Implementación Paso a Paso}
+
+A continuación, desarrollaremos un script de Python que implementa esta arquitectura paso a paso utilizando la librería \texttt{LangChain}.
+
+\subsection{Paso 1: Carga de Documentos (Loaders)}
+El primer paso es leer nuestros archivos locales (como apuntes en \texttt{.tex} o \texttt{.md}). Para ello, utilizamos un \texttt{DirectoryLoader}.
+
+\begin{lstlisting}[language=Python]
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+
+dir_path = "/ruta/a/mis/documentos"
+docs = []
+for pattern in ["**/*.tex", "**/*.md"]:
+    loader = DirectoryLoader(
+        dir_path, glob=pattern, loader_cls=TextLoader, 
+        loader_kwargs={"encoding": "utf-8"}
+    )
+    docs.extend(loader.load())
+\end{lstlisting}
+Este código escaneará todas las subcarpetas buscando archivos de texto y los cargará en la memoria RAM.
+
+\subsection{Paso 2: Fragmentación de Texto (Splitters)}
+Los modelos de lenguaje tienen un límite en la cantidad de texto que pueden leer a la vez (ventana de contexto). Por ende, debemos dividir nuestros documentos largos en pequeños párrafos superpuestos.
+
+\begin{lstlisting}[language=Python]
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+splits = text_splitter.split_documents(docs)
+\end{lstlisting}
+Aquí dividimos el texto en bloques de 2000 caracteres, permitiendo que 200 caracteres se superpongan entre bloques para no cortar ideas por la mitad.
+
+\subsection{Paso 3: Vectorización y Base de Datos (ChromaDB + HuggingFace)}
+Las computadoras no entienden de palabras, sino de números. Usaremos un modelo local y gratuito de \textbf{Hugging Face} para convertir nuestros fragmentos de texto en vectores matemáticos (Embeddings) y guardarlos en una base de datos vectorial llamada \textbf{ChromaDB}.
+
+\begin{lstlisting}[language=Python]
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+persist_dir = "chroma_db"
+
+# Guardar los fragmentos como vectores en disco
+vectorstore = Chroma.from_documents(
+    documents=splits, 
+    embedding=embeddings, 
+    persist_directory=persist_dir
+)
+\end{lstlisting}
+Esto permite que la búsqueda posterior sea instantánea.
+
+\subsection{Paso 4: El Cerebro del Sistema (Llama 3 vía Groq)}
+Para la fase de razonamiento y generación de texto, conectaremos nuestro sistema al modelo de lenguaje \textbf{Llama 3} utilizando la API ultrarrápida de \textbf{Groq}.
+
+\begin{lstlisting}[language=Python]
+from langchain_groq import ChatGroq
+
+# Asegurate de tener configurada la variable de entorno GROQ_API_KEY
+llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+\end{lstlisting}
+Establecemos la temperatura en \texttt{0} para que las respuestas sean deterministas y precisas, limitando la creatividad del modelo, lo cual es ideal para un asistente académico.
+
+\subsection{Paso 5: Construcción de la Cadena (Chain) y el Prompt}
+Finalmente, ensamblamos todo. Le diremos al sistema cómo comportarse (Prompt), le pasaremos el buscador (Retriever) y el cerebro (LLM).
+
+\begin{lstlisting}[language=Python]
+from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+
+# 1. Recuperador: Buscará los 6 fragmentos más relevantes a la pregunta
+retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
+
+# 2. Instrucciones para el Asistente
+system_prompt = (
+    "Eres un asistente académico experto. Usa los siguientes fragmentos de contexto "
+    "para responder a la pregunta del usuario. Si no sabes la respuesta, di que no lo sabes.\n\n"
+    "{context}"
+)
+prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    ("human", "{input}"),
+])
+
+# 3. Ensamblar la cadena RAG
+question_answer_chain = create_stuff_documents_chain(llm, prompt)
+rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+\end{lstlisting}
+
+\section{El Bucle Interactivo}
+Para que el script actúe como un chatbot que no se cierra tras cada pregunta, implementamos un bucle \texttt{while} infinito que espera la entrada del usuario.
+
+\begin{lstlisting}[language=Python]
+print("\n¡El sistema RAG está listo! Escribe 'salir' para terminar.")
+try:
+    while True:
+        pregunta = input("\nTu pregunta: ")
+        if pregunta.lower() in ['salir', 'exit', 'quit']:
+            break
+            
+        # Invocar la cadena y generar la respuesta
+        response = rag_chain.invoke({"input": pregunta})
+
+        print("\n--- RESPUESTA ---")
+        print(response["answer"])
+
+except (KeyboardInterrupt, EOFError):
+    print("\n\nSaliendo del sistema RAG. ¡Hasta luego!")
+\end{lstlisting}
+
+¡Y listo! Con estas etapas, hemos construido un asistente académico privado, de costo cero en vectorización, y respaldado por la última tecnología en modelos de lenguaje de código abierto.
+
+\end{document}

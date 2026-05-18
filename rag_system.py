@@ -1,0 +1,139 @@
+import os
+import sys
+import shutil
+
+from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_groq import ChatGroq
+
+from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_classic.chains import create_history_aware_retriever
+
+# 1. Configurar API Key de Groq (Leer de archivo oculto)
+key_path = os.path.join(os.path.dirname(__file__), ".groq_api_key")
+try:
+    with open(key_path, "r") as f:
+        os.environ["GROQ_API_KEY"] = f.read().strip()
+except FileNotFoundError:
+    print(f"Error: No se encontró el archivo oculto '{key_path}' con la clave.")
+    sys.exit(1)
+
+# 2. Configurar Embeddings y Directorio de la Base de Datos
+persist_dir = os.path.join(os.path.dirname(__file__), "chroma_db")
+embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+
+# Comprobar si se solicitó una actualización forzada desde la consola
+update_db = "--update" in sys.argv
+if update_db and os.path.exists(persist_dir):
+    print("Se solicitó actualización. Borrando base de datos antigua...")
+    shutil.rmtree(persist_dir)
+
+# Verificar si la base de datos ya existe para no reprocesar todo cada vez
+if not update_db and os.path.exists(persist_dir) and os.listdir(persist_dir):
+    print(f"Cargando base de conocimientos existente desde '{persist_dir}' ...")
+    vectorstore = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
+else:
+    # 3. Cargar TODOS los documentos .tex, .md y .pdf de tu espacio de trabajo
+    dir_path = "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
+    print(f"Buscando y cargando nuevos archivos .tex, .md y .pdf en {dir_path} ...")
+    
+    docs = []
+    # Archivos de texto plano
+    for pattern in ["**/*.tex", "**/*.md"]:
+        loader = DirectoryLoader(
+            dir_path, 
+            glob=pattern, 
+            loader_cls=TextLoader, 
+            loader_kwargs={"encoding": "utf-8"}
+        )
+        docs.extend(loader.load())
+        
+    # Archivos PDF
+    pdf_loader = DirectoryLoader(
+        dir_path, 
+        glob="**/*.pdf", 
+        loader_cls=PyPDFLoader
+    )
+    docs.extend(pdf_loader.load())
+
+    print(f"Se cargaron {len(docs)} documentos en total.")
+
+    # 4. Dividir el texto en fragmentos procesables (chunks)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    splits = text_splitter.split_documents(docs)
+
+    # 4.1 Crear embeddings locales y guardarlos en disco
+    print("Procesando y guardando base de conocimientos en disco...")
+    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory=persist_dir)
+
+# 5. Configurar el recuperador y el modelo de lenguaje (LLM)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 6}) # Recupera los 6 fragmentos más relevantes
+llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+
+# 6. Crear memoria conversacional y el Prompt RAG
+# 6.1 Prompt para contextualizar la pregunta usando el historial
+contextualize_q_system_prompt = (
+    "Dada una conversación y una pregunta reciente del usuario "
+    "que podría hacer referencia al contexto en el historial de chat, "
+    "formula una pregunta independiente que pueda entenderse sin el historial. "
+    "NO respondas la pregunta, solo reformúlala si es necesario, o devuélvela tal cual."
+)
+contextualize_q_prompt = ChatPromptTemplate.from_messages([
+    ("system", contextualize_q_system_prompt),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}"),
+])
+history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
+
+# 6.2 Crear el Prompt RAG para la respuesta final
+system_prompt = (
+    "Eres un asistente académico experto. Usa los siguientes fragmentos de contexto "
+    "para responder a la pregunta del usuario. Si no sabes la respuesta, di que no lo sabes.\n\n"
+    "{context}"
+)
+qa_prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}"),
+])
+
+# 7. Ensamblar y ejecutar la cadena RAG con memoria
+question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+print("\n¡El sistema RAG está listo! Escribe 'salir' para terminar.")
+chat_history = []
+try:
+    while True:
+        pregunta = input("\nTu pregunta: ")
+        if pregunta.lower() in ['salir', 'exit', 'quit']:
+            break
+            
+        if not pregunta.strip():
+            continue
+
+        response = rag_chain.invoke({
+            "input": pregunta,
+            "chat_history": chat_history
+        })
+
+        print("\n--- RESPUESTA ---")
+        print(response["answer"])
+        
+        # Actualizar el historial de chat
+        chat_history.append(HumanMessage(content=pregunta))
+        chat_history.append(AIMessage(content=response["answer"]))
+
+        print("\n--- FRAGMENTOS RECUPERADOS (CONTEXTO) ---")
+        for i, doc in enumerate(response["context"]):
+            print(f"\n[Fragmento {i+1}]")
+            print(f"Fuente: {doc.metadata.get('source', 'Desconocida')}")
+            print(f"Contenido (primeros 300 caracteres): {doc.page_content[:300]}...")
+            print("-" * 50)
+except (KeyboardInterrupt, EOFError):
+    print("\n\nSaliendo del sistema RAG. ¡Hasta luego!")
