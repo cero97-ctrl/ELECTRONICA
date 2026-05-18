@@ -1,6 +1,8 @@
 import os
 import sys
 import shutil
+import json
+import glob
 
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -25,51 +27,88 @@ except FileNotFoundError:
 
 # 2. Configurar Embeddings y Directorio de la Base de Datos
 persist_dir = os.path.join(os.path.dirname(__file__), "chroma_db")
+db_state_path = os.path.join(os.path.dirname(__file__), "db_state.json")
 embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+
+# --- Funciones de gestión de estado y escaneo de archivos ---
+def load_state(path):
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return {}
+
+def save_state(path, state):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=4)
+
+def get_workspace_files(root_dir, patterns, exclusions):
+    all_files = {}
+    for pattern in patterns:
+        for filepath in glob.glob(os.path.join(root_dir, pattern), recursive=True):
+            if any(ex in filepath for ex in exclusions) or not os.path.isfile(filepath):
+                continue
+            all_files[filepath] = os.path.getmtime(filepath)
+    return all_files
 
 # Comprobar si se solicitó una actualización forzada desde la consola
 update_db = "--update" in sys.argv
 if update_db and os.path.exists(persist_dir):
-    print("Se solicitó actualización. Borrando base de datos antigua...")
+    print("Se solicitó actualización forzada. Borrando base de datos y estado antiguos...")
     shutil.rmtree(persist_dir)
+    if os.path.exists(db_state_path):
+        os.remove(db_state_path)
 
-# Verificar si la base de datos ya existe para no reprocesar todo cada vez
-if not update_db and os.path.exists(persist_dir) and os.listdir(persist_dir):
-    print(f"Cargando base de conocimientos existente desde '{persist_dir}' ...")
-    vectorstore = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
+# --- Lógica de Carga y Actualización Incremental ---
+print("Cargando/Inicializando base de conocimientos ChromaDB...")
+vectorstore = Chroma(persist_directory=persist_dir, embedding_function=embeddings)
+
+print("Buscando archivos nuevos o modificados en el espacio de trabajo...")
+dir_path = "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
+file_patterns = ["**/*.tex", "**/*.md", "**/*.pdf"]
+file_exclusions = ["(copia)"]
+
+processed_files_state = load_state(db_state_path)
+current_files_state = get_workspace_files(dir_path, file_patterns, file_exclusions)
+
+files_to_process = {
+    f for f, mtime in current_files_state.items()
+    if f not in processed_files_state or mtime > processed_files_state.get(f, 0)
+}
+
+if not files_to_process and os.path.exists(persist_dir) and os.listdir(persist_dir):
+    print("La base de conocimientos está actualizada. No se encontraron cambios.")
 else:
-    # 3. Cargar TODOS los documentos .tex, .md y .pdf de tu espacio de trabajo
-    dir_path = "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
-    print(f"Buscando y cargando nuevos archivos .tex, .md y .pdf en {dir_path} ...")
-    
-    docs = []
-    # Archivos de texto plano
-    for pattern in ["**/*.tex", "**/*.md"]:
-        loader = DirectoryLoader(
-            dir_path, 
-            glob=pattern, 
-            loader_cls=TextLoader, 
-            loader_kwargs={"encoding": "utf-8"}
-        )
-        docs.extend(loader.load())
-        
-    # Archivos PDF
-    pdf_loader = DirectoryLoader(
-        dir_path, 
-        glob="**/*.pdf", 
-        loader_cls=PyPDFLoader
-    )
-    docs.extend(pdf_loader.load())
+    if not files_to_process and not (os.path.exists(persist_dir) and os.listdir(persist_dir)):
+        print("Base de datos vacía. Procesando todos los archivos encontrados...")
+        files_to_process = set(current_files_state.keys())
 
-    print(f"Se cargaron {len(docs)} documentos en total.")
+    if files_to_process:
+        print(f"Se encontraron {len(files_to_process)} archivos nuevos o modificados para procesar.")
+        docs = []
+        for filepath in files_to_process:
+            try:
+                loader = PyPDFLoader(filepath) if filepath.endswith(".pdf") else TextLoader(filepath, encoding="utf-8")
+                docs.extend(loader.load())
+            except Exception as e:
+                print(f"  - Error cargando {filepath}: {e}")
 
-    # 4. Dividir el texto en fragmentos procesables (chunks)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
-    splits = text_splitter.split_documents(docs)
-
-    # 4.1 Crear embeddings locales y guardarlos en disco
-    print("Procesando y guardando base de conocimientos en disco...")
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings, persist_directory=persist_dir)
+        if docs:
+            print(f"Se cargaron {len(docs)} documentos. Dividiendo y procesando...")
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+            splits = text_splitter.split_documents(docs)
+            
+            print("Añadiendo nuevos fragmentos a la base de conocimientos...")
+            vectorstore.add_documents(documents=splits)
+            
+            print("Actualizando estado de los archivos procesados...")
+            processed_files_state.update({f: current_files_state[f] for f in files_to_process})
+            save_state(db_state_path, processed_files_state)
+            print("¡Actualización incremental completada!")
+    else:
+        print("No se encontraron archivos para procesar.")
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 6}) # Recupera los 6 fragmentos más relevantes
