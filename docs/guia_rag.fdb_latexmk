@@ -1,7 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1779060244.51197 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/guia_rag.tex" "guia_rag.pdf" "guia_rag" 1779060246.34963 0
+["pdflatex"] 1779188860.5669 "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/guia_rag.tex" "guia_rag.pdf" "guia_rag" 1779188864.6576 0
   "/etc/texmf/web2c/texmf.cnf" 1754246095.34578 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/guia_rag.tex" 1779059543.4828 8081 ea79ccea1d1e6c8308434c97a46c4606 ""
+  "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/guia_rag.tex" 1779188856.49886 8081 605b1fa2a8e92582b677192ddbd2d892 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1200.tfm" 1136768653 3584 402da0b29eafbad07963b1224b222f18 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1440.tfm" 1136768653 3584 13049b61b922a28b158a38aeff75ee9b ""
@@ -115,10 +115,10 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1754246131.98867 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1754246351 8211763 bcebfc983d877799c23bfb0bbf784be3 ""
-  "guia_rag.aux" 1779060246.03769 1600 c4abdbad01d663a5d2155ae3ae165a28 "pdflatex"
-  "guia_rag.out" 1779060246.04369 2341 7a1e80b2d242fb7c24494c078a943d0d "pdflatex"
-  "guia_rag.tex" 1779059543.4828 8081 ea79ccea1d1e6c8308434c97a46c4606 ""
-  "guia_rag.toc" 1779060246.04569 937 9fbe877da7e0b964c7145a093502cef1 "pdflatex"
+  "guia_rag.aux" 1779188864.12205 1600 c4abdbad01d663a5d2155ae3ae165a28 "pdflatex"
+  "guia_rag.out" 1779188864.12705 2341 7a1e80b2d242fb7c24494c078a943d0d "pdflatex"
+  "guia_rag.tex" 1779188856.49886 8081 605b1fa2a8e92582b677192ddbd2d892 ""
+  "guia_rag.toc" 1779188864.12805 937 9fbe877da7e0b964c7145a093502cef1 "pdflatex"
   (generated)
   "guia_rag.aux"
   "guia_rag.log"

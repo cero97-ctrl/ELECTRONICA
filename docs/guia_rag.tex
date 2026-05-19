@@ -66,7 +66,7 @@
 
 En la era de la Inteligencia Artificial, los Modelos de Lenguaje Grande (LLMs) como GPT-4 o Llama 3 son herramientas excepcionales para el razonamiento y la generación de texto. Sin embargo, su conocimiento está limitado a la información con la que fueron entrenados y son propensos a sufrir \textit{alucinaciones} (inventar respuestas) cuando se les pregunta sobre datos privados o muy recientes.
 
-Para solucionar esto, surge la arquitectura \textbf{RAG (Retrieval-Augmented Generation)}. Un sistema RAG actúa como un puente entre tus datos privados (apuntes, libros, repositorios) y el "cerebro" del LLM.
+Para solucionar esto, surge la arquitectura \textbf{RAG (Retrieval-Augmented Generation)}. Un sistema RAG actúa como un puente entre tus datos privados (apuntes, libros, repositorios) y el 'cerebro' del LLM.
 
 \subsection{¿Cómo funciona RAG?}
 Se divide en dos fases principales:
@@ -85,12 +85,12 @@ El primer paso es leer nuestros archivos locales (como apuntes en \texttt{.tex} 
 \begin{lstlisting}[language=Python]
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
-dir_path = "/ruta/a/mis/documentos"
+dir_path = '/ruta/a/mis/documentos'
 docs = []
-for pattern in ["**/*.tex", "**/*.md"]:
+for pattern in ['**/*.tex', '**/*.md']:
     loader = DirectoryLoader(
         dir_path, glob=pattern, loader_cls=TextLoader, 
-        loader_kwargs={"encoding": "utf-8"}
+        loader_kwargs={'encoding': 'utf-8'}
     )
     docs.extend(loader.load())
 \end{lstlisting}
@@ -114,8 +114,8 @@ Las computadoras no entienden de palabras, sino de números. Usaremos un modelo 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-persist_dir = "chroma_db"
+embeddings = HuggingFaceEmbeddings(model_name='all-MiniLM-L6-v2')
+persist_dir = 'chroma_db'
 
 # Guardar los fragmentos como vectores en disco
 vectorstore = Chroma.from_documents(
@@ -133,7 +133,7 @@ Para la fase de razonamiento y generación de texto, conectaremos nuestro sistem
 from langchain_groq import ChatGroq
 
 # Asegurate de tener configurada la variable de entorno GROQ_API_KEY
-llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+llm = ChatGroq(model='llama-3.1-8b-instant', temperature=0)
 \end{lstlisting}
 Establecemos la temperatura en \texttt{0} para que las respuestas sean deterministas y precisas, limitando la creatividad del modelo, lo cual es ideal para un asistente académico.
 
@@ -146,17 +146,17 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.prompts import ChatPromptTemplate
 
 # 1. Recuperador: Buscará los 6 fragmentos más relevantes a la pregunta
-retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
+retriever = vectorstore.as_retriever(search_kwargs={'k': 6})
 
 # 2. Instrucciones para el Asistente
 system_prompt = (
-    "Eres un asistente académico experto. Usa los siguientes fragmentos de contexto "
-    "para responder a la pregunta del usuario. Si no sabes la respuesta, di que no lo sabes.\n\n"
-    "{context}"
+    'Eres un asistente académico experto. Usa los siguientes fragmentos de contexto '
+    'para responder a la pregunta del usuario. Si no sabes la respuesta, di que no lo sabes.\n\n'
+    '{context}'
 )
 prompt = ChatPromptTemplate.from_messages([
-    ("system", system_prompt),
-    ("human", "{input}"),
+    ('system', system_prompt),
+    ('human', '{input}'),
 ])
 
 # 3. Ensamblar la cadena RAG
@@ -168,21 +168,21 @@ rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 Para que el script actúe como un chatbot que no se cierra tras cada pregunta, implementamos un bucle \texttt{while} infinito que espera la entrada del usuario.
 
 \begin{lstlisting}[language=Python]
-print("\n¡El sistema RAG está listo! Escribe 'salir' para terminar.")
+print('\n¡El sistema RAG está listo! Escribe 'salir' para terminar.')
 try:
     while True:
-        pregunta = input("\nTu pregunta: ")
+        pregunta = input('\nTu pregunta: ')
         if pregunta.lower() in ['salir', 'exit', 'quit']:
             break
             
         # Invocar la cadena y generar la respuesta
-        response = rag_chain.invoke({"input": pregunta})
+        response = rag_chain.invoke({'input': pregunta})
 
-        print("\n--- RESPUESTA ---")
-        print(response["answer"])
+        print('\n--- RESPUESTA ---')
+        print(response['answer'])
 
 except (KeyboardInterrupt, EOFError):
-    print("\n\nSaliendo del sistema RAG. ¡Hasta luego!")
+    print('\n\nSaliendo del sistema RAG. ¡Hasta luego!')
 \end{lstlisting}
 
 ¡Y listo! Con estas etapas, hemos construido un asistente académico privado, de costo cero en vectorización, y respaldado por la última tecnología en modelos de lenguaje de código abierto.
