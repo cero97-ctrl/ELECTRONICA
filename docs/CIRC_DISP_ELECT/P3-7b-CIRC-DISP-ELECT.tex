@@ -1,0 +1,32 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Rama izquierda: Desde 'b' (abajo) hacia 'a' (arriba)
+        \draw (0,0) to[V, l=$V_1$] (0,2)
+                    to[R, l=$R_1$] (0,4);
+        
+        % 2. Rama derecha: Desde 'a' (arriba) hacia 'b' (abajo)
+        \draw (3,4) to[R, l=$R_2$] (3,2)
+                    to[V, l=$V_2$] (3,0);
+        
+        % 3. Conexiones horizontales para formar los nodos 'a' y 'b'
+        \draw (0,4) -- (3,4);
+        \draw (0,0) -- (3,0);
+        
+        % 4. Terminales explícitos de salida para 'a' y 'b'
+        \draw (3,4) to[short, -o] (4.5,4) node[right] {a};
+        \draw (3,0) to[short, -o] (4.5,0) node[right] {b};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

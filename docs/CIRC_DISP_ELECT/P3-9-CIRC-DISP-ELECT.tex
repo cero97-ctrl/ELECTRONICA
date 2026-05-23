@@ -1,0 +1,38 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Rama 1: Fuente V1 y Resistencia R1 en serie desde el raíl inferior
+        \draw (0,0) to[V, l=$V_1$] (0,2)
+                    to[R, l=$R_1$] (0,4);
+        
+        % 2. Rama 2: Resistencia R2 en paralelo
+        \draw (2.5,0) to[R, l=$R_2$] (2.5,4);
+        
+        % 3. Rama 3: Fuente de corriente I1 en paralelo
+        \draw (5,0) to[I, l=$I_1$] (5,4);
+        
+        % 4. Rama 4: Resistencia R3 en serie con fuente V2 en paralelo
+        \draw (7.5,0) to[R, l=$R_3$] (7.5,2)
+                      to[V, l=$V_2$] (7.5,4);
+        
+        % 5. Conexiones que forman los raíles paralelos
+        \draw (0,4) -- (7.5,4); % Raíl superior
+        \draw (0,0) -- (7.5,0); % Raíl inferior
+        
+        % 6. Etiqueta para el nodo común 'b'
+        \draw (7.5,0) to[short, -o] (8.5,0) node[right] {b};
+        \draw (7.5,4) to[short, -o] (8.5,4) node[right] {a}; % Nodo superior 'a' implícito
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

@@ -1,0 +1,114 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Ejercicio de Entrenamiento 1: \\ Circuitos con Fuentes Dependientes e Independientes}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Problema}
+En el circuito de la figura, interactúan una fuente independiente de tensión y una fuente dependiente de corriente. La corriente de la fuente dependiente equivale al doble de la corriente $I_x$ que circula por la resistencia de $2\ \Omega$. 
+
+Se pide determinar:
+\begin{itemize}
+    \item El voltaje en el nodo \textbf{a} ($V_a$).
+    \item La corriente $I_x$.
+    \item El balance de potencias (comprobar que la potencia suministrada es igual a la disipada).
+\end{itemize}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        % Raíl inferior (Referencia/Tierra)
+        \draw (0,0) -- (6,0);
+        \node[ground] at (3,0) {};
+        
+        % Rama izquierda: Fuente de tensión independiente de 12V
+        \draw (0,0) to[V, l=$12\text{ V}$] (0,3);
+        
+        % Rama superior: Resistencia de 2 Ohms y variable de control Ix
+        \draw (0,3) to[R, l=$2\ \Omega$, i=$I_x$] (3,3);
+        
+        % Nodo 'a'
+        \node[circ] at (3,3) {};
+        \node[above] at (3,3) {$a$};
+        
+        % Rama central: Resistencia de 4 Ohms
+        \draw (3,3) to[R, l=$4\ \Omega$] (3,0);
+        
+        % Rama derecha: Fuente dependiente de corriente 2*Ix
+        \draw (3,3) -- (6,3) to[cI, l=$2 I_x$] (6,0) -- (3,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\section*{1. Análisis de Nodos y Variable de Control}
+Para resolver el circuito, aplicaremos la Ley de Corrientes de Kirchhoff (LKC) en el nodo \textbf{a}. 
+
+Primero, debemos expresar la \textbf{variable de control} ($I_x$) en función de los voltajes de nodo. La corriente $I_x$ fluye desde la fuente de $12\text{ V}$ hacia el nodo $a$ atravesando la resistencia de $2\ \Omega$. Por la Ley de Ohm:
+\begin{equation}
+    I_x = \frac{12 - V_a}{2}
+\end{equation}
+
+\section*{2. Aplicación de la Ley de Corrientes de Kirchhoff (LKC)}
+Asumimos que las corrientes que salen del nodo $a$ son positivas y las que entran son negativas. 
+\begin{itemize}
+    \item Corriente que entra desde la izquierda: $-I_x$
+    \item Corriente que sale por la resistencia de $4\ \Omega$: $\frac{V_a}{4}$
+    \item Corriente que sale por la rama derecha (fuente dependiente): $2I_x$
+\end{itemize}
+
+Sumando las corrientes e igualando a cero:
+\begin{equation}
+    -I_x + \frac{V_a}{4} + 2I_x = 0 \quad \implies \quad I_x + \frac{V_a}{4} = 0
+\end{equation}
+
+\section*{3. Solución del Sistema}
+Sustituimos la ecuación de la variable de control (1) en la ecuación del nodo (2):
+\begin{equation*}
+    \left( \frac{12 - V_a}{2} \right) + \frac{V_a}{4} = 0
+\end{equation*}
+Multiplicamos toda la expresión por $4$ para eliminar los denominadores:
+\begin{equation*}
+    2(12 - V_a) + V_a = 0 \quad \implies \quad 24 - 2V_a + V_a = 0 \quad \implies \quad V_a = 24\text{ V}
+\end{equation*}
+
+Con el valor de $V_a$ hallado, podemos calcular la corriente $I_x$:
+\begin{equation}
+    I_x = \frac{12 - 24}{2} = -6\text{ A}
+\end{equation}
+El signo negativo en $I_x$ indica que la corriente real fluye en dirección opuesta a la flecha del diagrama (va del nodo $a$ hacia la fuente de $12\text{ V}$).
+
+\section*{4. Análisis de Potencia}
+Comprobemos el comportamiento de cada elemento (convención de signos: si la corriente entra por el terminal positivo, el elemento disipa potencia; si sale, suministra).
+
+\begin{itemize}
+    \item \textbf{Fuente de 12 V:} La corriente entra por su terminal positivo (ya que $I_x$ va hacia la izquierda). Disipa potencia actuando como carga (ej. batería recargándose).
+    $$ P_{12V} = V \cdot I = (12\text{ V})(6\text{ A}) = 72\text{ W (Disipada)} $$
+    
+    \item \textbf{Resistencia de 2 $\Omega$:} Disipa potencia por efecto Joule.
+    $$ P_{2\Omega} = I_x^2 \cdot R = (-6)^2 \cdot 2 = 72\text{ W (Disipada)} $$
+    
+    \item \textbf{Resistencia de 4 $\Omega$:} El voltaje es $V_a = 24\text{ V}$.
+    $$ P_{4\Omega} = \frac{V_a^2}{R} = \frac{24^2}{4} = 144\text{ W (Disipada)} $$
+    
+    \item \textbf{Fuente Dependiente ($2I_x$):} Su corriente es $2(-6) = -12\text{ A}$ (la corriente real fluye hacia arriba, saliendo del terminal positivo). Suministra potencia. El voltaje en sus terminales es $V_a = 24\text{ V}$.
+    $$ P_{dep} = V_a \cdot (Corriente\ Real) = (24\text{ V})(12\text{ A}) = 288\text{ W (Suministrada)} $$
+\end{itemize}
+
+\textbf{Balance Total:} $\sum P_{\text{suministrada}} = 288\text{ W} \quad \text{y} \quad \sum P_{\text{disipada}} = 72 + 72 + 144 = 288\text{ W}$. \\
+¡El balance es perfecto!
+
+\end{document}

@@ -1,0 +1,146 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Solución al Problema P4-9: \\ Análisis DC y AC en Emisor Común}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Problema}
+A partir del circuito amplificador con transistor BJT (NPN), se requiere realizar un análisis completo. Primero, se analizará en corriente continua (DC) para determinar su punto de operación estático. Luego, se sustituirá el dispositivo por su modelo de pequeña señal (híbrido-$\pi$) para analizarlo en corriente alterna (AC) y determinar la ganancia de tensión del sistema ($A_v = \frac{V_o}{V_s}$).
+
+\section*{1. Análisis en Corriente Continua (DC)}
+En el análisis DC, las fuentes de señal alterna se apagan (cortocircuito) y se analiza el circuito excitado únicamente por sus fuentes de polarización. Para simplificar, llamaremos $V_{BB}$ a la componente continua presente en la entrada de la base y $V_{CC}$ a la tensión de alimentación del colector.
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        \draw (0,0) node[npn] (Q) {};
+        \node[above left] at (Q.B) {B};
+        \node[right] at (Q.C) {C};
+        \node[right] at (Q.E) {E};
+        
+        \node[circ] at (Q.B) {};
+        \node[circ] at (Q.C) {};
+        \node[circ] at (Q.E) {};
+        
+        \draw (Q.E) node[ground] {};
+        \draw (Q.C) -- ++(0,0.5) to[R, l=$R_L$, i<=$I_C$] ++(0,1.5) node[circ] {} node[above] {$V_{CC}$};
+        \draw (Q.B) to[R, l_=$R_s$, i<=$I_B$] ++(-2.5,0) node[circ] {} node[left] {$V_{BB}$};
+    \end{circuitikz}
+\end{center}
+
+Aplicando la Ley de Voltajes de Kirchhoff (LVK) en la malla de entrada (Base-Emisor):
+\begin{equation}
+    V_{BB} - I_B R_s - V_{BE} = 0 \quad \implies \quad I_B = \frac{V_{BB} - V_{BE}}{R_s}
+\end{equation}
+donde $V_{BE} \approx 0.7\text{ V}$ para un transistor de silicio en conducción.
+
+Con la corriente de base, determinamos la corriente de colector a través de la ganancia estática ($\beta$):
+\begin{equation}
+    I_C = \beta I_B
+\end{equation}
+
+Aplicando LVK en la malla de salida (Colector-Emisor):
+\begin{equation}
+    V_{CC} - I_C R_L - V_{CE} = 0 \quad \implies \quad V_{CE} = V_{CC} - I_C R_L
+\end{equation}
+Este conjunto de parámetros ($I_B, I_C, V_{CE}$) define el punto de operación o punto Q del transistor, el cual garantiza que el dispositivo se encuentre en la región activa, listo para amplificar señales.
+
+\begin{center}
+    \begin{tikzpicture}[scale=1.1]
+        % Ejes
+        \draw[->, thick] (0,0) -- (7,0) node[right] {$V_{CE}$};
+        \draw[->, thick] (0,0) -- (0,5.5) node[above] {$I_C$};
+        
+        % Curvas características
+        \draw[blue, thick] (0,0) to[out=70, in=180] (0.5, 1.0) -- (6, 1.2) node[right, text=black] {$I_{B1}$};
+        \draw[blue, thick] (0,0) to[out=80, in=180] (0.5, 2.0) -- (6, 2.2) node[right, text=black] {$I_{B2} = I_{BQ}$};
+        \draw[blue, thick] (0,0) to[out=85, in=180] (0.5, 3.0) -- (6, 3.2) node[right, text=black] {$I_{B3}$};
+        \draw[blue, thick] (0,0) to[out=88, in=180] (0.5, 4.0) -- (6, 4.2) node[right, text=black] {$I_{B4}$};
+        
+        % Recta de carga estática (DC)
+        \draw[red, thick] (0,4.5) node[left, text=black] {$\frac{V_{CC}}{R_L}$} -- (5.5,0) node[below, text=black] {$V_{CC}$};
+        
+        % Punto Q (Intersección aproximada)
+        \filldraw[black] (2.95,2.09) circle (2pt) node[above right] {Punto Q};
+        
+        % Líneas de proyección
+        \draw[dashed] (2.95,0) node[below] {$V_{CEQ}$} -- (2.95,2.09);
+        \draw[dashed] (0,2.09) node[left] {$I_{CQ}$} -- (2.95,2.09);
+        
+        % Zonas de operación
+        \node[font=\footnotesize, text=gray, align=center] at (1, 5) {Región de \\ Saturación};
+        \node[font=\footnotesize, text=gray] at (4.5, 0.5) {Región de Corte};
+        \node[font=\footnotesize, text=gray] at (3.5, 3.8) {Región Activa};
+    \end{tikzpicture}
+\end{center}
+
+\section*{2. Circuito Equivalente en AC}
+A continuación se presenta el circuito equivalente en pequeña señal (AC) bajo análisis:
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        % Raíl de tierra inferior
+        \draw (2,0) -- (10,0);
+        \draw (6.5,0) node[circ] {} node[above] {E} node[ground] {};
+        
+        % Entrada: Fuente alterna Vs y resistencia Rs
+        \draw (2,0) to[sV, l=$V_s$] (2,2.5) to[R, l=$R_s$] (4.5,2.5) node[circ] {} node[above] {B};
+        
+        % Modelo híbrido-pi del transistor
+        \draw (4.5,2.5) -- (5.5,2.5) to[R, l=$r_\pi$, i=$i_b$] (5.5,0) node[circ] {};
+        \draw (7.5,2.5) to[cI, l=$\beta i_b$] (7.5,0) node[circ] {};
+        \draw (7.5,2.5) -- (8.5,2.5) node[circ] {} node[above] {C};
+        
+        % Salida: Resistencia de carga RL a tierra, con etiqueta de tensión Vo
+        \draw (8.5,2.5) -- (10,2.5) to[R, l=$R_L$, v=$V_o$] (10,0);
+    \end{circuitikz}
+\end{center}
+
+\section*{3. Análisis de la Malla de Entrada (AC)}
+En la parte izquierda del circuito, observamos que la fuente de señal $V_s$ está conectada en serie con la resistencia del generador $R_s$ y la resistencia interna de entrada del transistor $r_\pi$. Por ambas resistencias circula la corriente de base $i_b$. 
+
+Aplicando la Ley de Voltajes de Kirchhoff (LVK) en esta malla:
+\begin{equation}
+    V_s = i_b R_s + i_b r_\pi = i_b (R_s + r_\pi)
+\end{equation}
+Despejando la corriente de control $i_b$:
+\begin{equation}
+    i_b = \frac{V_s}{R_s + r_\pi}
+\end{equation}
+
+\section*{4. Análisis de la Malla de Salida (AC)}
+En la parte derecha, el terminal de Colector (C) está conectado a la resistencia de carga $R_L$. La fuente dependiente fuerza una corriente de valor $\beta i_b$ a circular desde el nodo C hacia tierra (nodo E). Toda esta corriente debe provenir de $R_L$, fluyendo \textit{hacia arriba} (desde tierra hacia el nodo C).
+
+Debido a que la corriente fluye desde el potencial cero (tierra) hacia el nodo de salida, la tensión $V_o$ medida con respecto a tierra será negativa:
+\begin{equation}
+    V_o = - (\beta i_b) R_L
+\end{equation}
+
+\section*{5. Cálculo de la Ganancia de Tensión}
+Para hallar la relación final, sustituimos la expresión obtenida para $i_b$ en la ecuación de salida:
+\begin{equation*}
+    V_o = - \beta R_L \left( \frac{V_s}{R_s + r_\pi} \right)
+\end{equation*}
+
+Reorganizando los términos, obtenemos la ganancia de tensión total del amplificador:
+\begin{equation}
+    A_v = \frac{V_o}{V_s} = - \frac{\beta R_L}{R_s + r_\pi}
+\end{equation}
+
+\textbf{Nota:} El signo negativo en el resultado final indica que la señal de salida ($V_o$) está desfasada $180^\circ$ (invertida) con respecto a la señal de entrada ($V_s$), lo cual es la característica fundamental de la configuración en Emisor Común.
+
+\end{document}

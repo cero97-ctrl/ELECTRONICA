@@ -1,0 +1,38 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior que representa el nodo común 'b'
+        \draw (0,0) -- (8,0) node[circ] {} node[below] {b};
+        
+        % 2. Rama 1: V en serie con R1 entre 'b' y 'c'
+        \draw (0,0) to[V, l=$V$] (0,2)
+                    to[R, l=$R_1$] (0,4);
+        
+        % 3. Rama 2: Fuente de corriente I en paralelo (entre 'b' y 'c')
+        \draw (2.5,0) to[I, l=$I$] (2.5,4);
+        
+        % 4. Rama 3: Resistencia R2 en paralelo (entre 'b' y 'c')
+        \draw (5,0) to[R, l=$R_2$] (5,4);
+        
+        % 5. Raíl superior que conecta las ramas para formar el nodo 'c'
+        \draw (0,4) -- (5,4) node[circ] {} node[above] {c};
+        
+        % 6. Resistencia R3 conectada entre el nodo 'c' y el nodo 'a'
+        \draw (5,4) to[R, l=$R_3$] (8,4) node[circ] {} node[above] {a};
+        
+        % 7. Potenciómetro R conectado entre el nodo 'a' y el nodo 'b'
+        \draw (8,4) to[vR, l=$R$] (8,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

@@ -1,0 +1,93 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Ejercicio de Entrenamiento 2: \\ Circuitos con Fuentes Dependientes de Tensión}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Problema}
+En el siguiente circuito interactúan una fuente independiente de tensión de $12\text{ V}$ y una fuente de tensión dependiente (VCVS). El valor de esta última equivale al triple de la caída de tensión $V_x$ presente en la resistencia central de $2\ \Omega$.
+
+Se pide determinar:
+\begin{itemize}
+    \item El voltaje de control $V_x$.
+    \item Las corrientes $I_1$, $I_2$ e $I_3$ que circulan por cada rama.
+    \item El balance de potencias del circuito completo.
+\end{itemize}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        % Raíl inferior (Referencia/Tierra)
+        \draw (0,0) -- (6,0);
+        \node[ground] at (3,0) {};
+        
+        % Rama izquierda: Fuente de 12V y Resistencia de 2 Ohms
+        \draw (0,0) to[V, l=$12\text{ V}$] (0,3) 
+                    to[R, l=$2\ \Omega$, i=$I_1$] (3,3);
+        
+        % Rama central: Resistencia de 2 Ohms con caída de tensión Vx
+        \draw (3,3) to[R, l=$2\ \Omega$, v=$V_x$, i=$I_2$] (3,0);
+        
+        % Nodo 'a'
+        \node[circ] at (3,3) {};
+        \node[above] at (3,3.1) {$a$};
+        
+        % Rama derecha: Resistencia de 1 Ohm y Fuente dependiente de voltaje (3*Vx)
+        \draw (3,3) to[R, l=$1\ \Omega$, i=$I_3$] (6,3);
+        \draw (6,0) to[cV, l=$3 V_x$] (6,3); % Dibujada de abajo hacia arriba para que el "+" quede en el nodo superior
+        
+    \end{circuitikz}
+\end{center}
+
+\section*{1. Análisis de Nodos}
+Tomaremos el nodo inferior como nuestra referencia ($0\text{ V}$). Observamos que la variable de control $V_x$ es exactamente igual al voltaje en el nodo \textbf{a} ($V_a = V_x$), ya que la polaridad de $V_x$ indica que su terminal positivo está arriba y el negativo en tierra.
+
+Aplicaremos la Ley de Corrientes de Kirchhoff (LKC) en el nodo \textbf{a}. Asumiremos que todas las corrientes \textit{salen} del nodo:
+\begin{equation}
+    \frac{V_x - 12}{2} + \frac{V_x}{2} + \frac{V_x - 3V_x}{1} = 0
+\end{equation}
+Simplificamos la expresión de la tercera rama ($\frac{V_x - 3V_x}{1} = -2V_x$):
+\begin{equation*}
+    \frac{V_x - 12}{2} + \frac{V_x}{2} - 2V_x = 0
+\end{equation*}
+Multiplicamos toda la ecuación por $2$ para eliminar denominadores:
+\begin{equation*}
+    (V_x - 12) + V_x - 4V_x = 0 \quad \implies \quad -2V_x - 12 = 0 \quad \implies \quad -2V_x = 12
+\end{equation*}
+\begin{equation}
+    V_x = -6\text{ V}
+\end{equation}
+
+\section*{2. Cálculo de Corrientes}
+Con el valor de $V_x$, calculamos las corrientes en la dirección indicada por las flechas del diagrama:
+\begin{itemize}
+    \item $I_1 = \frac{12 - V_x}{2} = \frac{12 - (-6)}{2} = \frac{18}{2} = \textbf{9 A}$
+    \item $I_2 = \frac{V_x}{2} = \frac{-6}{2} = \textbf{-3 A}$ \quad (La corriente real de $3\text{ A}$ fluye hacia \textit{arriba}).
+    \item $I_3 = \frac{V_x - 3V_x}{1} = -2V_x = -2(-6) = \textbf{12 A}$ 
+\end{itemize}
+Comprobación (LKC real en nodo $a$): Entra $I_1$ ($9\text{ A}$), Entra $I_2$ real ($3\text{ A}$) y Sale $I_3$ ($12\text{ A}$). $\implies 9 + 3 = 12$. ¡Perfecto!
+
+\section*{3. Balance de Potencias}
+\begin{itemize}
+    \item \textbf{Fuente de 12 V:} La corriente $I_1$ ($9\text{ A}$) sale por su terminal positivo. \\ $P = (12\text{ V})(9\text{ A}) = \textbf{108 W (Suministrada)}$
+    \item \textbf{Resistencia de 2 $\Omega$ (izq):} $P = I_1^2 \cdot R = (9)^2(2) = \textbf{162 W (Disipada)}$
+    \item \textbf{Resistencia de 2 $\Omega$ (centro):} $P = I_2^2 \cdot R = (-3)^2(2) = \textbf{18 W (Disipada)}$
+    \item \textbf{Resistencia de 1 $\Omega$ (der):} $P = I_3^2 \cdot R = (12)^2(1) = \textbf{144 W (Disipada)}$
+    \item \textbf{Fuente Dependiente ($3V_x$):} El voltaje en sus terminales es $3(-6) = -18\text{ V}$. La corriente $I_3$ ($12\text{ A}$) entra por el terminal superior. Potencia absorbida: $P = (-18\text{ V})(12\text{ A}) = -216\text{ W}$. Al ser negativo el consumo, significa que \textbf{Suministra 216 W}.
+\end{itemize}
+\textbf{Balance:} $\sum P_{\text{sumin}} = 108 + 216 = 324\text{ W} \quad \text{y} \quad \sum P_{\text{disipada}} = 162 + 18 + 144 = 324\text{ W}$.
+\end{document}

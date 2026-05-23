@@ -1,0 +1,44 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior que representa el nodo común 'b'
+        \draw (0,0) -- (10,0) node[circ] {} node[below] {b};
+        
+        % 2. Fuente de corriente Ia saliendo de 'b' hacia 'c' (hacia arriba)
+        \draw (0,0) to[I, l=$I_a$] (0,3);
+        
+        % 3. Resistencia 2*R1 en paralelo con Ia
+        \draw (2,0) node[circ] {} to[R, l=$2R_1$] (2,3);
+        
+        % Conexión del raíl superior hasta el nodo 'c'
+        \draw (0,3) -- (2,3) node[circ] {} node[above] {c};
+        
+        % 4. Rama entre 'c' y 'd': R1 en serie con fuente de tensión Va
+        \draw (2,3) to[R, l=$R_1$] (4.5,3)
+                    to[V, l=$V_a$] (7,3);
+                    
+        % Nodo 'd' explícito
+        \draw (7,3) node[circ] {} node[above] {d};
+        
+        % 5. Resistencia 2*R1 entre 'd' y 'b'
+        \draw (7,3) to[R, l=$2R_1$] (7,0) node[circ] {};
+        
+        % 6. Resistencia (R2) saliendo de 'd' hacia 'a'
+        \draw (7,3) to[R, l=$R_2$] (10,3) node[circ] {} node[above] {a};
+        
+        % 7. Resistencia (R1) saliendo de 'a' hacia 'b'
+        \draw (10,3) to[R, l=$R_1$] (10,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

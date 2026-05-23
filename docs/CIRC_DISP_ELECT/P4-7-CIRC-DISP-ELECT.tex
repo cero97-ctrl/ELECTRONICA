@@ -1,0 +1,36 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (8.5,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente independiente de corriente I entre 'b' y 'c'
+        % Añadimos i=$i_1$ para indicar explícitamente que la corriente de esta rama es i1
+        \draw (0,0) node[circ] {} to[I, l=$I$, i=$i_1$] (0,3) node[circ] {} node[above] {c};
+        
+        % 3. Resistencia R en paralelo (entre 'c' y 'b')
+        \draw (0,3) -- (2.5,3) to[R, l=$R$] (2.5,0) node[circ] {};
+        
+        % 4. Fuente dependiente de tensión A*i1 entre 'c' y 'd'
+        % Utilizamos 'cV' para la fuente dependiente (rombo)
+        \draw (2.5,3) to[cV, l=$A i_1$] (5.5,3) node[circ] {} node[above] {d};
+        
+        % 5. Resistencia R entre 'd' y 'a' (Resistencia de salida del modelo)
+        \draw (5.5,3) to[R, l=$R$] (8.5,3) node[circ] {} node[above] {a};
+        
+        % 6. Potenciómetro RL entre 'a' y 'b' como carga (usamos vR para resistencia variable)
+        \draw (8.5,3) to[vR, l=$R_L$] (8.5,0) node[circ] {};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

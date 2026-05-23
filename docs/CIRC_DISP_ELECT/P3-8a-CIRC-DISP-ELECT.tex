@@ -1,0 +1,34 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Rama 1 (Izquierda): Fuente V y Resistencia R1 en serie desde 'b' a 'a'
+        \draw (0,0) to[V, l=$V$] (0,2)
+                    to[R, l=$R_1$] (0,4);
+        
+        % 2. Rama 2 (Centro): Fuente de corriente I en paralelo
+        \draw (2.5,0) to[I, l=$I$] (2.5,4);
+        
+        % 3. Rama 3 (Derecha): Resistencia R2 en paralelo
+        \draw (5,0) to[R, l=$R_2$] (5,4);
+        
+        % Conexiones horizontales para los nodos comunes superior e inferior
+        \draw (0,4) -- (5,4);
+        \draw (0,0) -- (5,0);
+        
+        % 4. Terminales explícitos de salida para 'a' y 'b'
+        \draw (5,4) to[short, -o] (6.5,4) node[right] {a};
+        \draw (5,0) to[short, -o] (6.5,0) node[right] {b};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

@@ -1,0 +1,41 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=0.9, transform shape]
+        
+        % --- Raíl inferior común ---
+        % Unifica los anteriores nodos 'b', 'e' y 'h' en una sola línea de referencia
+        \draw (-1.5,0) -- (15.5,0) node[circ] {} node[below right] {b};
+
+        % --- Etapa 1 (Entrada) ---
+        % Fuente Vi, Rg y Ri1
+        \draw (-1.5,0) node[circ] {} to[V, l=$V_i$] (-1.5,3) node[circ] {} node[above] {c}
+                    to[R, l=$R_g$] (3,3) node[circ] {} node[above] {d}
+                    to[R, l=$R_{i1}$, v=$V_1$] (3,0) node[circ] {};
+                    
+        % --- Etapa 2 (Intermedia) ---
+        % Fuente dependiente A*V1, Ro1 y Ri2
+        \draw (5.5,3) node[circ] {} node[above] {e} to[cI, l=$A V_1$] (5.5,0) node[circ] {};
+        \draw (5.5,3) to[R, l=$R_{o1}$] (8.5,3) node[circ] {} node[above] {f}
+                      to[R, l=$R_{i2}$, v=$V_2$] (8.5,0) node[circ] {};
+                    
+        % --- Etapa 3 (Salida) ---
+        % Fuente dependiente A*V2, Ro2 y RL
+        \draw (11,3) node[circ] {} node[above] {g} to[cI, l=$A V_2$] (11,0) node[circ] {};
+        \draw (11,3) to[R, l=$R_{o2}$] (15.5,3) node[circ] {} node[above] {a}
+                      to[R, l=$R_L$] (15.5,0);
+                      
+        % Recuadro de líneas punteadas que encierra el modelo del amplificador
+        \draw[dashed, thick] (1.5, -0.8) rectangle (14.5, 4.2);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

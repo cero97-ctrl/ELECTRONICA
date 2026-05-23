@@ -1,0 +1,37 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (8,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente independiente de tensión V1 entre 'b' y 'c'
+        \draw (0,0) node[circ] {} to[V, l=$V_1$] (0,3) node[circ] {} node[above] {c};
+        
+        % 3. Resistencia R1 entre 'c' y 'd'
+        \draw (0,3) to[R, l=$R_1$] (4,3);
+        
+        % 4. Nodo 'd' con la tensión de control vx (tensión de 'd' respecto a 'b')
+        \node[circ] at (4,3) (d) {};
+        \node[above] at (d) {$d$};
+        \draw (d) to[open, v=$v_x$] (4,0);
+
+        % 5. Fuente dependiente de tensión A*vx entre 'd' y 'a'
+        % 'cV' para fuente de tensión controlada (rombo)
+        \draw (d) to[cV, l=$A v_x$] (8,3) node[circ] {} node[above] {a};
+        
+        % 6. Resistencia R2 entre 'a' y 'b'
+        \draw (8,3) to[R, l=$R_2$] (8,0) node[circ] {};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

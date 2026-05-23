@@ -1,0 +1,26 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % Raíles superior ('a') e inferior ('b')
+        \draw (0,3) node[circ] {} node[above] {a} -- (3,3);
+        \draw (0,0) node[circ] {} node[below] {b} -- (3,0);
+        
+        % Fuente dependiente de corriente en paralelo
+        \draw (0,3) to[cI, l=$\beta i_b$] (0,0);
+        
+        % Resistencia RL en paralelo, indicando la corriente ib que circula por ella
+        \draw (3,3) to[R, l=$R_L$, i=$i_b$] (3,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

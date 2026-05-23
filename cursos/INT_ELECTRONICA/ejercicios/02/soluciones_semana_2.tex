@@ -1,0 +1,146 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\title{\textbf{Solucionario Práctica Semana 2: \\ Circuitos Lineales y Fuentes Dependientes}}
+\author{Prof. CESAR RODRIGUEZ}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Soluciones Detalladas}
+
+\begin{enumerate}[leftmargin=*, itemsep=2em]
+
+    \item \textbf{(Linealidad)} 
+    En un circuito puramente resistivo y lineal, la relación entre la causa (tensión de la fuente $V_s$) y el efecto (corriente $I_x$) es estrictamente proporcional. La constante de proporcionalidad $K$ se define por el cambio en la fuente:
+    $$K = \frac{V_{s(nuevo)}}{V_{s(original)}} = \frac{48\text{V}}{12\text{V}} = 4$$
+    Dado que el sistema es lineal, el efecto se multiplica por la misma constante $K$:
+    $$I_{x(nuevo)} = K \cdot I_{x(original)} = 4 \cdot 3\text{mA} = 12\text{mA}$$
+    \textbf{Respuesta:} El nuevo valor de la corriente es de $12\text{mA}$.
+
+    \item \textbf{(Superposición)}
+    El principio de superposición establece que en un circuito lineal con múltiples fuentes independientes, la respuesta (tensión o corriente) en cualquier elemento es la suma algebraica de las respuestas causadas por cada fuente actuando por separado.
+    \begin{itemize}
+        \item Tensión debida solo a $V_1$ ($I_1$ apagada): $V_{A}^{(V_1)} = 5\text{V}$
+        \item Tensión debida solo a $I_1$ ($V_1$ apagada): $V_{A}^{(I_1)} = -2\text{V}$
+    \end{itemize}
+    Por superposición, la tensión total es la suma de los aportes individuales:
+    $$V_{A(total)} = V_{A}^{(V_1)} + V_{A}^{(I_1)} = 5\text{V} + (-2\text{V}) = 3\text{V}$$
+    \textbf{Respuesta:} La tensión total en el nodo $A$ es $3\text{V}$.
+
+    \item \textbf{(Equivalencias)}
+    Conceptualmente, los circuitos de Thévenin y Norton son transformaciones de fuentes el uno del otro. La resistencia equivalente es exactamente la misma en ambos modelos vistos desde los mismos terminales ($R_N = R_{th}$). La fuente de corriente de Norton se relaciona con Thévenin mediante la Ley de Ohm: $I_N = V_{th} / R_{th}$.
+    \begin{itemize}
+        \item Resistencia de Norton: $R_N = 3\text{k}\Omega$
+        \item Corriente de Norton: $I_N = \frac{15\text{V}}{3000\,\Omega} = 0.005\text{A} = 5\text{mA}$
+    \end{itemize}
+    \textbf{Dibujo:} El equivalente de Norton consistirá en una fuente de corriente ideal de $5\text{mA}$ apuntando hacia el terminal positivo original de $V_{th}$, colocada en \textit{paralelo} con una resistencia $R_N$ de $3\text{k}\Omega$.
+
+    \item \textbf{(Máxima Transferencia de Potencia)}
+    El Teorema de Máxima Transferencia de Potencia dicta que la potencia extraída por una carga $R_L$ será máxima cuando el valor de la carga sea igual a la resistencia de Thévenin del circuito. 
+    $$R_L = R_{th} = 600\,\Omega$$
+    Bajo esta condición, la tensión que cae en $R_L$ es exactamente la mitad de $V_{th}$ (por divisor de tensión con $R_{th}$), es decir, $12\text{V}$.
+    La potencia máxima calculada es:
+    $$P_{max} = \frac{V_{th}^2}{4 R_{th}} = \frac{(24\text{V})^2}{4 \cdot 600\,\Omega} = \frac{576}{2400}\text{W} = 0.24\text{W}$$
+    \textbf{Respuesta:} $R_L$ debe ser $600\,\Omega$ y la potencia máxima transferida es $240\text{mW}$.
+
+    \item \textbf{(Teorema de Thévenin)}
+    Para hallar el equivalente de Thévenin visto desde $R_2$, primero retiramos $R_2$, dejando sus terminales $A$ y $B$ en circuito abierto.
+    \begin{itemize}
+        \item \textbf{Cálculo de $V_{th}$:} Al estar en circuito abierto, no fluye corriente por $R_1$ ($I = 0\text{A}$). Al no haber corriente, no hay caída de tensión en $R_1$ ($V_{R1} = 0 \cdot 2 = 0\text{V}$). Por LVK, la tensión en los terminales abiertos es igual a la de la fuente. Por tanto, $V_{th} = 10\text{V}$.
+        \item \textbf{Cálculo de $R_{th}$:} Anulamos la fuente de tensión ideal reemplazándola por un cortocircuito. Visto desde los terminales $A$ y $B$, la única resistencia observable es $R_1$. Por tanto, $R_{th} = 2\,\Omega$.
+    \end{itemize}
+    \textbf{Respuesta:} $V_{th} = 10\text{V}$ y $R_{th} = 2\,\Omega$.
+
+    \item \textbf{(Fuentes Dependientes - Concepto)}
+    Los cuatro tipos son: VCVS, VCCS, CCVS, y CCCS.
+    \begin{itemize}
+        \item \textbf{CCVS (Fuente de Tensión Controlada por Corriente):} Su ecuación general es $V_d = r \cdot I_x$, donde $r$ se conoce como "transresistencia" y su unidad es el Ohmio ($\Omega$) o Voltio/Amperio (V/A).
+        \item \textbf{VCCS (Fuente de Corriente Controlada por Tensión):} Su ecuación general es $I_d = g \cdot V_x$, donde $g$ se conoce como "transconductancia" y su unidad es el Siemens (S), Mho ($\mho$) o Amperio/Voltio (A/V).
+    \end{itemize}
+
+    \item \textbf{(Análisis Nodal con Fuentes Dependientes)}
+    Al aplicar la LKC en el Nodo 1 ($\sum I_{salen} = 0$), las fuentes dependientes se tratan inicialmente como cualquier otra corriente. Si la fuente $I_d$ sale del Nodo 1 hacia tierra, se introduce en la ecuación como un término $+I_d$. 
+    Dado que $I_d = 0.5 V_2$, el término a introducir en la ecuación del Nodo 1 será directamente $+0.5 V_2$. Esta dependencia crea un acoplamiento en el sistema matricial que alterará los valores de la matriz de admitancias.
+
+    \item \textbf{(Análisis de Mallas con Fuentes Dependientes)}
+    Aplicando la LVK en el sentido horario alrededor de la malla 2, sumamos las caídas de tensión de los componentes resistivos más la fuente dependiente.
+    La corriente de la malla 2 es $i_2$, y asumiendo que el sentido de referencia de $V_d$ concuerda como caída de tensión:
+    $$\sum V = 0 \implies R_2 i_2 + R_3 (i_2 - i_1) + V_d = 0$$
+    Sustituyendo el valor de la fuente dependiente ($V_d = 5 i_1$):
+    $$R_2 i_2 + R_3 (i_2 - i_1) + 5 i_1 = 0$$
+    Agrupando términos: $(5 - R_3) i_1 + (R_2 + R_3) i_2 = 0$.
+
+    \item \textbf{(Resistencia de Thévenin con Fuentes Activas)}
+    Es incorrecto usar el método de asociación de resistencias porque las fuentes dependientes no pueden apagarse físicamente; modelan interacciones lógicas o fenómenos físicos que solo existen cuando hay voltajes/corrientes en el sistema (por ejemplo, ganancia en un transistor). Reducir pasivamente eliminaría esta ganancia.
+    \newline
+    \textbf{Método del Generador de Prueba:} 
+    1. Se apagan o anulan únicamente las fuentes INDEPENDIENTES. 
+    2. Se aplica una fuente de tensión de prueba ($V_{test}$) (o corriente, $I_{test}$) en los terminales abiertos.
+    3. Se resuelve el circuito utilizando métodos nodales/mallas para encontrar la corriente entrante $I_{test}$ (o tensión $V_{test}$).
+    4. La resistencia de Thévenin se calcula mediante la Ley de Ohm: $R_{th} = V_{test} / I_{test}$.
+
+    \item \textbf{(Modelado de Dispositivos)}
+    La fuente dependiente de corriente modela la corriente del colector ($i_c$) que depende linealmente de la corriente de la base ($i_b$).
+    $$i_c = \beta \cdot i_b$$
+    Sustituyendo los valores provistos:
+    $$i_c = 120 \cdot 15\mu\text{A} = 1800\mu\text{A}$$
+    Convirtiendo de microAmperios a miliAmperios (dividimos entre 1000):
+    $$i_c = 1.8\text{mA}$$
+    \textbf{Respuesta:} El valor de la corriente de colector es de $1.8\text{mA}$.
+
+    \item \textbf{(Análisis Nodal con Supernodo Dependiente)} 
+    Al existir una fuente de tensión entre dos nodos de no-referencia (Nodos 1 y 2), se forma un supernodo. 
+    \begin{itemize}
+        \item \textbf{Ecuación de restricción:} La tensión de la fuente define la diferencia de potencial entre los nodos. Asumiendo la polaridad positiva en el Nodo 1: $V_1 - V_2 = 4 I_a$.
+        \item \textbf{Dependencia:} La corriente $I_a$ fluye del Nodo 2 a tierra a través de $2\,\Omega$, por Ley de Ohm: $I_a = \frac{V_2}{2}$.
+        \item \textbf{Restricción final:} Sustituyendo, $V_1 - V_2 = 4 \left(\frac{V_2}{2}\right) \implies V_1 - V_2 = 2 V_2 \implies V_1 = 3 V_2$.
+        \item \textbf{Ecuación del supernodo:} Se aplica LKC a la superficie que engloba a ambos nodos: $\sum I_{salen\_Nodo1} + \sum I_{salen\_Nodo2} = 0$.
+    \end{itemize}
+
+    \item \textbf{(Análisis de Mallas con Supermalla Dependiente)}
+    Una fuente de corriente compartida entre dos mallas obliga a usar una supermalla.
+    \begin{itemize}
+        \item \textbf{Ecuación auxiliar:} Asumiendo que la fuente apunta en la dirección de $i_2$ y en contra de $i_1$, se tiene por LKC: $i_2 - i_1 = 0.2 V_3$.
+        \item \textbf{Variable de control:} La tensión $V_3$ en $R_x$ de la malla 3 (asumiendo que solo $i_3$ pasa por ella) es $V_3 = R_x i_3$. Por tanto, $i_2 - i_1 = 0.2 R_x i_3$.
+        \item \textbf{Ecuación de la supermalla:} Se aplica LVK en el lazo exterior que engloba las mallas 1 y 2, saltando la rama central: $\sum V_{malla1, exterior} + \sum V_{malla2, exterior} = 0$.
+    \end{itemize}
+
+    \item \textbf{(Análisis Nodal Avanzado - VCCS)}
+    La fuente $I_g$ extrae corriente del Nodo 2 y la inyecta al Nodo 3.
+    \begin{itemize}
+        \item \textbf{LKC en el Nodo 2:} La corriente de la fuente sale del nodo. $\sum I = \dots + I_g = 0 \implies \dots + 2(V_1 - V_2) = 0$.
+        \item \textbf{LKC en el Nodo 3:} La corriente de la fuente entra al nodo. $\sum I = \dots - I_g = 0 \implies \dots - 2(V_1 - V_2) = 0$.
+    \end{itemize}
+
+    \item \textbf{(Análisis de Mallas - CCVS Cruzada)}
+    Se aplican las LVK a cada malla (sentido horario).
+    \begin{itemize}
+        \item \textbf{Malla 1:} LVK: $R_1 i_1 + 4(i_1 - i_2) = 12 \implies (R_1 + 4) i_1 - 4 i_2 = 12$.
+        \item \textbf{Malla 2:} La fuente dependiente $V_d$ favorece la corriente $i_2$ (actúa como subida de tensión). LVK: $R_2 i_2 + 4(i_2 - i_1) - V_d = 0$.
+        \item \textbf{Sustituyendo $V_d = 3 i_1$:} $R_2 i_2 + 4(i_2 - i_1) - 3 i_1 = 0 \implies -7 i_1 + (R_2 + 4) i_2 = 0$.
+    \end{itemize}
+
+    \item \textbf{(Análisis Mixto - Modelado de Transistor)}
+    \begin{itemize}
+        \item Aplicando LKC en el Nodo C (asumiendo corrientes saliendo): La corriente a través de $R_L$ hacia tierra más la fuente dependiente: $\frac{V_C}{R_L} + g_m V_{be} = 0$.
+        \item Como $V_{be} = V_B$, sustituimos: $\frac{V_C}{R_L} + g_m V_B = 0 \implies \frac{V_C}{R_L} = -g_m V_B$.
+        \item Despejando $V_C$: $V_C = -g_m R_L V_B$. La ganancia de tensión es $A_v = \frac{V_C}{V_B} = -g_m R_L$. (El signo negativo indica inversión de fase).
+    \end{itemize}
+
+\end{enumerate}
+
+\end{document}

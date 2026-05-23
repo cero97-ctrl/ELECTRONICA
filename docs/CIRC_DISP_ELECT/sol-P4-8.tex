@@ -1,0 +1,105 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Solución al Problema P4-8: \\ Maximización de la Tensión de Entrada}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Problema}
+Dado el modelo de un amplificador de tensión conectado a una fuente de señal, se requiere determinar qué relación deben cumplir la resistencia interna de la fuente ($R_g$) y la resistencia de entrada del amplificador ($R_i$) para que la tensión de entrada al circuito amplificador ($V_1$) sea máxima. Adicionalmente, se pide determinar:
+\begin{itemize}
+    \item ¿Cuál será la potencia entregada por $V_s$?
+    \item ¿Qué relación deben cumplir $R_o$ y $R_L$ para que la potencia entregada a la carga $R_L$ sea máxima?
+    \item ¿Cuánto valdrá dicha potencia?
+\end{itemize}
+
+A continuación se presenta el esquema eléctrico bajo análisis:
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (8,0) node[circ] {} node[right] {b};
+        % 2. Fuente independiente de tensión Vs entre 'b' y 'c'
+        \draw (0,0) node[circ] {} to[V, l=$V_s$] (0,3) node[circ] {} node[above] {c};
+        % 3. Resistencia Rg horizontal entre 'c' y 'd'
+        \draw (0,3) to[R, l=$R_g$] (3,3) node[circ] {} node[above] {d};
+        % 4. Resistencia Ri entre 'd' y 'b', con la tensión de control V1
+        \draw (3,3) to[R, l=$R_i$, v=$V_1$] (3,0) node[circ] {};
+        % 5. Etapa de salida: Fuente dependiente de tensión K*V1 entre 'b' y 'e'
+        \draw (5.5,0) node[circ] {} to[cV, l=$K V_1$, invert] (5.5,3) node[circ] {} node[above] {e};
+        % 6. Conexión superior de la etapa de salida (de 'e' a 'a') y RL con tensión Vo
+        \draw (5.5,3) to[R, l=$R_o$] (8,3) node[circ] {} node[above] {a};
+        \draw (8,3) to[R, l=$R_L$, v=$V_o$] (8,0) node[circ] {};
+    \end{circuitikz}
+\end{center}
+
+\section*{Análisis del Circuito de Entrada}
+La malla de entrada está formada por la fuente de tensión original $V_s$, su resistencia interna conectada en serie $R_g$ y la resistencia de entrada del amplificador $R_i$. La verdadera tensión de entrada que recibe y procesa el amplificador es la caída de tensión en $R_i$, denominada $V_1$.
+
+Como ambas resistencias forman un \textbf{divisor de tensión}, podemos determinar el voltaje de entrada mediante la siguiente ecuación:
+\begin{equation}
+    V_1 = V_s \left( \frac{R_i}{R_g + R_i} \right)
+\end{equation}
+
+\section*{Condición de Maximización}
+Para que la tensión de entrada $V_1$ sea máxima y logre capturar prácticamente toda la señal de la fuente $V_s$, la fracción del divisor de tensión debe ser lo más cercana posible a $1$. 
+
+Si dividimos el numerador y el denominador por $R_i$, la ecuación se puede reescribir como:
+\begin{equation}
+    V_1 = V_s \left( \frac{1}{\frac{R_g}{R_i} + 1} \right)
+\end{equation}
+Para que el factor entre paréntesis tienda a $1$, el término $\frac{R_g}{R_i}$ debe tender a $0$. Esto ocurre obligatoriamente cuando la resistencia de entrada $R_i$ es muchísimo más grande que la resistencia de la fuente $R_g$.
+
+\section*{Conclusión}
+Para asegurar una máxima transferencia de tensión hacia el amplificador (evitando que la señal se quede 'perdida' en la propia resistencia de la fuente), la relación que se debe cumplir es:
+\begin{equation}
+    R_i \gg R_g
+\end{equation}
+
+\section*{Potencia Entregada por la Fuente $V_s$}
+En la malla de entrada, la fuente independiente de tensión $V_s$ se encuentra conectada en serie con la resistencia del generador $R_g$ y la resistencia de entrada $R_i$. La resistencia total equivalente vista por la fuente es $R_{eq} = R_g + R_i$.
+
+Por lo tanto, la potencia total entregada por la fuente $V_s$ al circuito se calcula mediante la ley de Joule:
+\begin{equation}
+    P_{V_s} = \frac{V_s^2}{R_{eq}} = \frac{V_s^2}{R_g + R_i}
+\end{equation}
+
+\section*{Máxima Transferencia de Potencia a la Carga $R_L$}
+Para analizar la potencia entregada a la carga $R_L$, nos enfocamos en la etapa de salida del amplificador. Esta etapa se comporta como un equivalente de Thévenin cuyo voltaje en circuito abierto es la fuente dependiente $K V_1$ y cuya resistencia equivalente (o interna) es la resistencia de salida $R_o$.
+
+De acuerdo con el \textbf{Teorema de Máxima Transferencia de Potencia}, para que la carga $R_L$ absorba la mayor cantidad de potencia posible de esta etapa, su valor debe ser exactamente igual a la resistencia interna del circuito equivalente que la alimenta. Por lo tanto, la relación que deben cumplir es:
+\begin{equation}
+    R_L = R_o
+\end{equation}
+
+\section*{Cálculo de la Potencia Máxima en $R_L$}
+Bajo la condición de máxima transferencia ($R_L = R_o$), la resistencia total de la malla de salida es $R_o + R_o = 2R_o$. La corriente que circula por la carga será $I_L = \frac{K V_1}{2 R_o}$.
+
+La potencia disipada por la carga $R_L$ se calcula como $P_L = I_L^2 R_L$:
+\begin{equation*}
+    P_{L(max)} = \left( \frac{K V_1}{2 R_o} \right)^2 R_o = \frac{K^2 V_1^2}{4 R_o^2} R_o
+\end{equation*}
+\begin{equation}
+    P_{L(max)} = \frac{K^2 V_1^2}{4 R_o}
+\end{equation}
+
+Si sustituimos $V_1$ por la expresión del divisor de tensión que obtuvimos en la entrada de este mismo problema ($V_1 = V_s \frac{R_i}{R_g + R_i}$), la potencia máxima transferida expresada en función de la fuente original de señal $V_s$ será:
+\begin{equation}
+    P_{L(max)} = \frac{K^2}{4 R_o} \left( V_s \frac{R_i}{R_g + R_i} \right)^2 = \frac{K^2 V_s^2 R_i^2}{4 R_o (R_g + R_i)^2}
+\end{equation}
+
+\end{document}

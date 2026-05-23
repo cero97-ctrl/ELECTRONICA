@@ -1,0 +1,113 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Solución al Problema P4-7: \\ Máxima Transferencia de Potencia}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Problema}
+Se requiere determinar el valor de la carga $R_L$ (potenciómetro) para que se le transfiera la máxima potencia posible en el circuito dado, así como el valor de dicha potencia máxima.
+
+Para resolver este problema, aplicaremos el \textbf{Teorema de Thévenin} visto desde los terminales de la carga (nodos \textbf{a} y \textbf{b}) y posteriormente el teorema de \textbf{Máxima Transferencia de Potencia}.
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (8.5,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente independiente de corriente I entre 'b' y 'c'
+        % Añadimos i=$i_1$ para indicar explícitamente que la corriente de esta rama es i1
+        \draw (0,0) node[circ] {} to[I, l=$I$, i=$i_1$] (0,3) node[circ] {} node[above] {c};
+        
+        % 3. Resistencia R en paralelo (entre 'c' y 'b')
+        \draw (0,3) -- (2.5,3) to[R, l=$R$] (2.5,0) node[circ] {};
+        
+        % 4. Fuente dependiente de tensión A*i1 entre 'c' y 'd'
+        % Utilizamos 'cV' para la fuente dependiente (rombo)
+        \draw (2.5,3) to[cV, l=$A i_1$] (5.5,3) node[circ] {} node[above] {d};
+        
+        % 5. Resistencia R entre 'd' y 'a' (Resistencia de salida del modelo)
+        \draw (5.5,3) to[R, l=$R$] (8.5,3) node[circ] {} node[above] {a};
+        
+        % 6. Potenciómetro RL entre 'a' y 'b' como carga (usamos vR para resistencia variable)
+        \draw (8.5,3) to[vR, l=$R_L$] (8.5,0) node[circ] {};
+        
+    \end{circuitikz}
+\end{center}
+
+\section*{1. Cálculo del Voltaje de Thévenin ($V_{th}$)}
+El voltaje de Thévenin corresponde a la tensión de circuito abierto entre los nodos \textbf{a} y \textbf{b} al retirar la carga $R_L$.
+
+\begin{itemize}
+    \item Al estar el circuito abierto en el nodo \textbf{a}, la corriente que circula por la resistencia de salida $R$ (entre \textbf{d} y \textbf{a}) es cero. Por lo tanto, no hay caída de tensión en ella y el voltaje en \textbf{a} es igual al voltaje en \textbf{d}: $V_{th} = V_a = V_d$.
+    \item En la etapa de entrada, toda la corriente de la fuente independiente $I$ se ve obligada a pasar por la primera resistencia $R$ (entre \textbf{c} y \textbf{b}). Por lo tanto, la variable de control es $i_1 = I$.
+    \item La tensión en el nodo \textbf{c} viene dada por la Ley de Ohm: $V_c = I \cdot R$.
+    \item Entre los nodos \textbf{c} y \textbf{d} existe una fuente de tensión dependiente de valor $A \cdot i_1 = A \cdot I$.
+    \item El voltaje en el nodo \textbf{d} se obtiene sumando la tensión de la fuente dependiente al voltaje en \textbf{c}:
+    \begin{equation*}
+        V_d = V_c + A \cdot I = I \cdot R + A \cdot I = I(R + A)
+    \end{equation*}
+\end{itemize}
+Por lo tanto, el voltaje de Thévenin es:
+\begin{equation}
+    V_{th} = I(R + A)
+\end{equation}
+
+\section*{2. Cálculo de la Resistencia de Thévenin ($R_{th}$)}
+Para hallar la resistencia de Thévenin, se 'apagan' las fuentes independientes del circuito y se determina la resistencia equivalente vista desde los terminales \textbf{a} y \textbf{b}.
+
+\begin{itemize}
+    \item Apagamos la fuente de corriente abriendo el circuito ($I = 0 \text{ A}$).
+    \item Como consecuencia, la corriente de control se hace cero ($i_1 = 0 \text{ A}$).
+    \item Al ser $i_1 = 0$, la fuente dependiente de tensión $A \cdot i_1$ toma un valor de $0 \text{ V}$, comportándose como un \textbf{cortocircuito}.
+    \item 'Mirando' desde los nodos \textbf{a} y \textbf{b}, la trayectoria de la corriente de prueba pasa por la resistencia $R$ de salida, atraviesa el cortocircuito de la fuente dependiente y pasa por la resistencia $R$ de entrada hasta llegar al raíl de referencia (nodo \textbf{b}).
+    \item Ambas resistencias quedan conectadas en serie.
+\end{itemize}
+Por lo tanto, la resistencia de Thévenin es:
+\begin{equation}
+    R_{th} = R + R = 2R
+\end{equation}
+
+\section*{3. Máxima Transferencia de Potencia}
+El Teorema de Máxima Transferencia de Potencia establece que la potencia transferida a la carga es máxima cuando su valor se ajusta para ser exactamente igual a la resistencia de Thévenin del circuito que la alimenta:
+\begin{equation}
+    R_L = R_{th} = 2R
+\end{equation}
+
+La potencia general disipada por una carga $R_L$ conectada a un circuito equivalente de Thévenin se calcula a partir de la corriente que la atraviesa ($I_L = \frac{V_{th}}{R_{th} + R_L}$):
+\begin{equation}
+    P_L = I_L^2 R_L = \left( \frac{V_{th}}{R_{th} + R_L} \right)^2 R_L
+\end{equation}
+
+Para hallar la potencia máxima ($P_{max}$), sustituimos la condición de máxima transferencia ($R_L = R_{th}$) en la ecuación general y simplificamos:
+\begin{equation*}
+    P_{max} = \left( \frac{V_{th}}{R_{th} + R_{th}} \right)^2 R_{th} = \left( \frac{V_{th}}{2 R_{th}} \right)^2 R_{th} = \frac{V_{th}^2}{4 R_{th}^2} R_{th}
+\end{equation*}
+\begin{equation}
+    P_{max} = \frac{V_{th}^2}{4 R_{th}}
+\end{equation}
+
+Sustituyendo los valores de Thévenin hallados previamente:
+\begin{equation*}
+    P_{max} = \frac{[I(R + A)]^2}{4(2R)}
+\end{equation*}
+\begin{equation}
+    P_{max} = \frac{I^2(R + A)^2}{8R}
+\end{equation}
+
+\end{document}

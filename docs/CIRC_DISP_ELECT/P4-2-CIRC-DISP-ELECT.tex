@@ -1,0 +1,37 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior continuo (Nodo 'b')
+        \draw (0,0) -- (8,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente de corriente I entre 'b' y 'c'
+        \draw (0,0) to[I, l=$I$] (0,4);
+        
+        % 3. Resistencia R1 entre 'b' y 'c' (en paralelo con I)
+        \draw (2.5,0) to[R, l=$R_1$] (2.5,4);
+        
+        % Conexión de la parte superior para formar el nodo 'c'
+        \draw (0,4) -- (2.5,4) node[circ] {} node[above] {c};
+        
+        % 4. Resistencia R2 horizontal entre 'c' y 'a', con la caída de tensión V_\lambda
+        \draw (2.5,4) to[R, l=$R_2$, v=$V_\lambda$] (5.5,4) node[circ] {} node[above] {a};
+        
+        % 5. Resistencia R3 entre 'a' y 'b'
+        \draw (5.5,4) to[R, l=$R_3$] (5.5,0);
+        
+        % 6. Fuente dependiente de corriente (rombo) entre 'a' y 'b'
+        \draw (5.5,4) -- (8,4) to[cI, l=$V_\lambda/3$] (8,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

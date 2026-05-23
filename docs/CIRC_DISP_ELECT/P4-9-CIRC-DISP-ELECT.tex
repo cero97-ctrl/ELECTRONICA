@@ -1,0 +1,86 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Transistor NPN central
+        \draw (0,0) node[npn] (Q) {};
+        
+        % Etiquetas de los terminales del transistor
+        \node[left] at (Q.B) {B};
+        \node[above] at (Q.C) {C};
+        \node[below] at (Q.E) {E};
+        
+        % 2. Flecha indicadora de equivalencia
+        \node[scale=2] at (2,0) {$\Rightarrow$};
+        
+        % 3. Modelo equivalente de pequeña señal (Híbrido-pi)
+        % Terminal de Base (B)
+        \draw (4,1) node[circ] {} node[left] {B} -- (5,1);
+        % Resistencia r_pi con la etiqueta de corriente i_b
+        \draw (5,1) to[R, l=$r_\pi$, i=$i_b$] (5,-1);
+        % Terminal de Colector (C) y fuente dependiente \beta * i_b
+        \draw (7,1) to[cI, l=$\beta i_b$] (7,-1);
+        \draw (7,1) -- (8,1) node[circ] {} node[right] {C};
+        % Terminal común de Emisor (E)
+        \draw (4,-1) node[circ] {} node[left] {E} -- (8,-1) node[circ] {} node[right] {E};
+        
+        % --------------------------------------------------------
+        % 4. Circuito amplificador completo (debajo del esquema anterior)
+        % Ubicamos el transistor NPN en (4,-6) para dejar suficiente espacio
+        \draw (4,-6) node[npn] (Q2) {};
+        
+        % Etiquetas de los terminales del transistor Q2
+        \node[above left] at (Q2.B) {B};
+        \node[right] at (Q2.C) {C};
+        \node[right] at (Q2.E) {E};
+        
+        % Nodos rellenos (puntos de conexión) en los terminales
+        \node[circ] at (Q2.B) {};
+        \node[circ] at (Q2.C) {};
+        \node[circ] at (Q2.E) {};
+        
+        % Emisor conectado directamente a tierra
+        \draw (Q2.E) node[ground] {};
+        
+        % Resistencia de colector RL hacia nodo Vcc (desplazada un poco hacia arriba)
+        \draw (Q2.C) -- ++(0,0.8) to[R, l=$R_L$] ++(0,1.5) node[circ] {} node[above] {$V_{CC}$};
+        
+        % Entrada en la base: Resistencia Rs, capacitor C y fuente de tensión Vs (desplazada a la izquierda)
+        \draw (Q2.B) to[R, l_=$R_s$] ++(-1.75,0) to[C, l_=$C$] ++(-1.75,0) coordinate(V_in);
+        \path (V_in) ++(0,-2) coordinate(gnd_in);
+        \draw (gnd_in) node[ground] {} to[sV, l=$V_s$] (V_in);
+        
+        % Caja punteada encerrando al amplificador (transistor Q2 y Rs), dejando fuera RL y Vs
+        \draw[dashed] (0.8, -4.8) rectangle (4.8, -7.5);
+        
+        % --------------------------------------------------------
+        % 5. Circuito equivalente de pequeña señal completo (AC)
+        % Sustituyendo Vcc por tierra y el transistor por el modelo híbrido-pi
+        
+        % Raíl de tierra inferior
+        \draw (2,-13) -- (10,-13);
+        \draw (6.5,-13) node[circ] {} node[above] {E} node[ground] {};
+        
+        % Entrada: Fuente alterna Vs y resistencia Rs (el capacitor C se comporta como cortocircuito en AC)
+        \draw (2,-13) to[sV, l=$V_s$] (2,-10.5) to[R, l=$R_s$] (4.5,-10.5) node[circ] {} node[above] {B};
+        
+        % Modelo híbrido-pi del transistor
+        \draw (4.5,-10.5) -- (5.5,-10.5) to[R, l=$r_\pi$, i=$i_b$] (5.5,-13) node[circ] {};
+        \draw (7.5,-10.5) to[cI, l=$\beta i_b$] (7.5,-13) node[circ] {};
+        \draw (7.5,-10.5) -- (8.5,-10.5) node[circ] {} node[above] {C};
+        
+        % Salida: Resistencia de carga RL a tierra (Vcc se anula en AC)
+        \draw (8.5,-10.5) -- (10,-10.5) to[R, l=$R_L$] (10,-13);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

@@ -1,0 +1,26 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % Nodos 'a' y 'b' desplazados hacia la derecha
+        \draw (0,3) -- (2,3) node[circ] {} node[above] {a};
+        \draw (0,0) -- (2,0) node[circ] {} node[below] {b};
+        
+        % Tensión vx indicada entre los terminales 'a' y 'b'
+        \draw (2,3) to[open, v=$v_x$] (2,0);
+        
+        % Fuente dependiente de corriente
+        \draw (0,3) to[cI, l=$g_m v_x$] (0,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

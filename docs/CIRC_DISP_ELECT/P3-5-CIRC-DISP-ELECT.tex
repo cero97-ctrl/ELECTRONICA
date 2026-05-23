@@ -1,0 +1,44 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Fuentes V1 e Io en serie (Rama izquierda)
+        \draw (0,0) to[I, l=$I_o$] (0,2)
+                    to[V, l=$V_1$] (0,4);
+        
+        % 2. Resistencias R1 y Ro
+        \draw (0,2) to[R, l=$R_1$] (3,2);
+        \draw (0,4) to[R, l=$R_o$] (3,4);
+        
+        % 3. Rail inferior (Conexión común del nodo 'b')
+        \draw (0,0) -- (5,0);
+        
+        % 4. Resistencias R2 y R3 desde el extremo libre de R1
+        \draw (3,2) to[R, l=$R_2$] (3,4);
+        \draw (3,2) to[R, l=$R_3$] (3,0);
+        
+        % 5. Conexión desde la unión R2-R3 hacia el nodo 'a'
+        \draw (3,2) -- (5,2);
+        
+        % 6. Fuente de corriente desde 'a' hacia la unión R2-Ro
+        \draw (5,2) to[I] (5,4) -- (3,4);
+        
+        % 7. Resistencia R4 entre los nodos 'a' y 'b'
+        \draw (5,2) to[R, l=$R_4$] (5,0);
+        
+        % 8. Terminales de salida 'a' y 'b'
+        \draw (5,2) to[short, -o] (6,2) node[right] {a};
+        \draw (5,0) to[short, -o] (6,0) node[right] {b};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

@@ -1,0 +1,36 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Rama Izquierda: R3 (abajo) y R1 (arriba) en serie desde el nodo 'b' al 'a'
+        \draw (0,0) to[R, l=$R_3$] (0,2)
+                    to[R, l=$R_1$] (0,4);
+        
+        % 2. Rama Derecha: R4 (abajo) y R2 (arriba) en serie desde el nodo 'b' al 'a'
+        % Se utiliza l_ para colocar las etiquetas de resistencia en la parte exterior
+        \draw (4,0) to[R, l_=$R_4$] (4,2)
+                    to[R, l_=$R_2$] (4,4);
+        
+        % 3. Rama Central: Fuente de tensión V conectada entre las dos uniones
+        \draw (0,2) to[V, l=$V$] (4,2);
+        
+        % 4. Conexiones que cierran las ramas en paralelo (formando los raíles a y b)
+        \draw (0,4) -- (4,4);
+        \draw (0,0) -- (4,0);
+        
+        % 5. Terminales de salida explícitos 'a' y 'b'
+        \draw (4,4) to[short, -o] (5.5,4) node[right] {a};
+        \draw (4,0) to[short, -o] (5.5,0) node[right] {b};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

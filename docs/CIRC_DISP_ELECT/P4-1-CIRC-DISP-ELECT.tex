@@ -1,0 +1,37 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común que representa el nodo 'b'
+        \draw (0,0) -- (8,0) node[circ] {} node[right] {b};
+        
+        % 2. Rama Izquierda: Fuente independiente V1 entre 'b' y 'c'
+        \draw (0,0) to[V, l=$V_1$] (0,4) node[circ] {} node[above] {c};
+        
+        % 3. Sección de Entrada: R1 horizontal, nodo 'd' y R2 vertical
+        % Vx se mantiene en R2 como variable de control
+        \draw (0,4) to[R, l=$R_1$] (3,4) node[circ] {} node[above] {d}
+                    to[R, l=$R_2$, v=$V_x$] (3,0);
+        
+        % 4. Rama Central-Derecha: Fuente dependiente de corriente gm*Vx
+        % Usamos 'cI' para el símbolo de fuente dependiente (rombo)
+        \draw (5.5,4) to[cI, l=$g_m V_x$] (5.5,0);
+        
+        % 5. Rama Derecha: Resistencia R3 en paralelo
+        \draw (8,4) to[R, l=$R_3$] (8,0);
+        
+        % Raíl superior derecho (formando el nodo 'a')
+        \draw (5.5,4) -- (8,4) node[circ] {} node[above] {a};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

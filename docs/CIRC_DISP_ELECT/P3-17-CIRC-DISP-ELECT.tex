@@ -1,0 +1,42 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíles principales para los nodos 'c' (superior) y 'b' (inferior)
+        \draw (0,4) -- (6.5,4) node[circ] {} node[right] {c};
+        \draw (0,0) -- (6.5,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente de tensión Vs desde el nodo 'b' al nodo 'c'
+        \draw (0,0) to[V, l=$V_s$] (0,4);
+        
+        % 3. Rama Izquierda del puente (Nodos c -> d -> b)
+        % Usamos l_ para colocar la etiqueta en el lado izquierdo y no chocar con el centro
+        \draw (2.5,4) to[R, l=$R_1$] (2.5,2);
+        \draw (2.5,2) to[R, l=$R_3$] (2.5,0);
+        
+        % Nodo 'd' explícito
+        \draw (2.5,2) node[circ] {} node[left, xshift=-0.1cm] {d};
+        
+        % 4. Rama Derecha del puente (Nodos c -> a -> b)
+        % Usamos l_ para colocar la etiqueta en el lado derecho
+        \draw (5.5,4) to[R, l_=$R_4$] (5.5,2);
+        \draw (5.5,2) to[R, l_=$R_L$] (5.5,0);
+        
+        % Nodo 'a' explícito
+        \draw (5.5,2) node[circ] {} node[right, xshift=0.1cm] {a};
+        
+        % 5. Resistencia cruzada R2 entre los nodos 'd' y 'a'
+        \draw (2.5,2) to[R, l=$R_2$] (5.5,2);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

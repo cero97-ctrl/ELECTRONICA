@@ -1,0 +1,41 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior que representa el nodo general 'b'
+        \draw (0,0) -- (9,0);
+        
+        % 2. Fuente I1 y Resistencia R1 en paralelo desde el nodo 'b'
+        \draw (0,0) to[I, l=$I_1$] (0,3);
+        \draw (2,0) to[R, l=$R_1$] (2,3);
+        
+        % Unión superior de I1 y R1
+        \draw (0,3) -- (2,3);
+        
+        % 3. R2 y V1 en serie desde la unión superior hacia el nodo 'a'
+        \draw (2,3) to[R, l=$R_2$] (4.5,3)
+                    to[V, l=$V_1$] (7,3);
+        
+        % 4. Definición de los terminales 'a' y 'b'
+        \draw (7,3) node[circ] {} node[above] {a};
+        \draw (7,0) node[circ] {} node[below] {b};
+        
+        % 5. Resistencia R3 entre los nodos 'a' y 'b'
+        \draw (7,3) to[R, l=$R_3$] (7,0);
+        
+        % 6. Potenciómetro (carga variable) RL en paralelo con R3
+        \draw (7,3) -- (9,3);
+        \draw (9,3) to[vR, l=$R_L$] (9,0);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

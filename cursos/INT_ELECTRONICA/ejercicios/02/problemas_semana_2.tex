@@ -1,0 +1,62 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\title{\textbf{Práctica Semana 2: \\ Circuitos Lineales y Fuentes Dependientes}}
+\author{Prof. CESAR RODRIGUEZ}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Instrucciones}
+Resuelva los siguientes problemas aplicando los conceptos de linealidad, superposición, teoremas de Thévenin y Norton, y análisis con fuentes dependientes. Justifique matemáticamente cada uno de sus pasos.
+
+\vspace{0.5cm}
+
+\begin{enumerate}[leftmargin=*, itemsep=1.5em]
+
+    \item \textbf{(Linealidad)} En un circuito puramente resistivo y lineal, se sabe que una fuente independiente de tensión de $V_s = 12\text{V}$ produce una corriente de $I_x = 3\text{mA}$ en la rama de una resistencia de carga. Si por necesidades de diseño la fuente se cambia a $V_s = 48\text{V}$, ¿cuál será el nuevo valor de $I_x$? Justifique su respuesta basándose en el principio de proporcionalidad.
+
+    \item \textbf{(Superposición)} Un circuito lineal contiene dos fuentes independientes: una fuente de tensión $V_1$ y una fuente de corriente $I_1$. Al "apagar" (anular) la fuente $I_1$, la tensión medida en un nodo $A$ es de $5\text{V}$. Al anular la fuente $V_1$ y encender $I_1$, la tensión en el nodo $A$ es de $-2\text{V}$. Determine la tensión total en el nodo $A$ cuando ambas fuentes operan simultáneamente.
+
+    \item \textbf{(Equivalencias)} Explique conceptualmente la relación matemática que existe entre el circuito equivalente de Thévenin ($V_{th}$, $R_{th}$) y el circuito equivalente de Norton ($I_N$, $R_N$) vistos desde los mismos terminales. Si $V_{th} = 15\text{V}$ y $R_{th} = 3\text{k}\Omega$, dibuje y calcule los valores del equivalente de Norton.
+
+    \item \textbf{(Máxima Transferencia de Potencia)} Un circuito complejo se ha reducido a su equivalente de Thévenin con $V_{th} = 24\text{V}$ y $R_{th} = 600\,\Omega$. ¿Qué valor debe tener una resistencia de carga $R_L$ conectada a los terminales para extraer la máxima potencia posible del circuito? Calcule el valor de dicha potencia máxima en miliVatios (mW).
+
+    \item \textbf{(Teorema de Thévenin)} Suponga una red con una fuente de tensión ideal de $10\text{V}$ en serie con una resistencia $R_1 = 2\,\Omega$. En paralelo a este conjunto, hay una resistencia $R_2 = 3\,\Omega$. Calcule la tensión de circuito abierto ($V_{th}$) y la resistencia equivalente ($R_{th}$) vistas desde los terminales de $R_2$ si esta fuera retirada del circuito.
+
+    \item \textbf{(Fuentes Dependientes - Concepto)} Existen cuatro tipos de fuentes dependientes lineales. Mencione cuáles son y escriba la ecuación general que define a una Fuente de Tensión Controlada por Corriente (CCVS) y a una Fuente de Corriente Controlada por Tensión (VCCS), indicando las unidades de sus respectivas constantes de ganancia.
+
+    \item \textbf{(Análisis Nodal con Fuentes Dependientes)} En un circuito de dos nodos (Nodos 1 y 2, más el nodo de referencia en tierra), existe una fuente de corriente dependiente $I_d$ conectada entre el Nodo 1 y tierra, tal que $I_d = 0.5 V_2$ (donde $V_2$ es la tensión en el Nodo 2). Si se aplica la Ley de Corrientes de Kirchhoff (LKC) en el Nodo 1, ¿cómo se expresaría la corriente $I_d$ en la ecuación nodal?
+
+    \item \textbf{(Análisis de Mallas con Fuentes Dependientes)} Un circuito de dos mallas ($i_1$ e $i_2$) comparte una resistencia central $R_3$. En la segunda malla existe una fuente de tensión dependiente dada por $V_d = 5 i_1$. Plantee la ecuación de la Ley de Tensiones de Kirchhoff (LVK) para la malla 2 asumiendo que incluye resistencias $R_2$ y $R_3$.
+
+    \item \textbf{(Resistencia de Thévenin con Fuentes Activas)} Al determinar el equivalente de Thévenin de un circuito que contiene tanto fuentes independientes como fuentes \textit{dependientes}, ¿por qué es incorrecto calcular $R_{th}$ simplemente anulando las fuentes independientes y reduciendo resistencias en serie/paralelo? Explique brevemente el método del "generador de prueba" (aplicar $V_{test}$ o $I_{test}$) para hallar $R_{th}$.
+
+    \item \textbf{(Modelado de Dispositivos)} Las fuentes dependientes son cruciales para el modelado de dispositivos activos reales. El modelo de pequeña señal de un transistor bipolar (BJT) utiliza una Fuente de Corriente Controlada por Corriente (CCCS). Si la ecuación es $i_c = \beta i_b$, y medimos una corriente de base $i_b = 15\mu\text{A}$ con una ganancia $\beta = 120$, ¿cuál es el valor de la corriente de colector $i_c$ en miliAmperios?
+
+    \item \textbf{(Análisis Nodal con Supernodo Dependiente)} En un circuito, el Nodo 1 y el Nodo 2 están conectados por una fuente de tensión dependiente cuyo valor es $V_x = 4 I_a$, donde $I_a$ es la corriente que fluye desde el Nodo 2 hacia el nodo de referencia (tierra) a través de una resistencia de $2\,\Omega$. Formule las ecuaciones del supernodo y la ecuación de restricción necesaria para resolver las tensiones nodales.
+
+    \item \textbf{(Análisis de Mallas con Supermalla Dependiente)} Considere un circuito de tres mallas ($i_1$, $i_2$, $i_3$). Entre la malla 1 y la malla 2 existe una fuente de corriente dependiente cuyo valor es $I_d = 0.2 V_3$, donde $V_3$ es la caída de tensión en una resistencia $R_x$ de la malla 3. Escriba la ecuación de la supermalla (mallas 1 y 2) y la ecuación auxiliar que relaciona las corrientes de malla con la fuente dependiente.
+
+    \item \textbf{(Análisis Nodal Avanzado - VCCS)} Un circuito tiene tres nodos excluyendo la referencia. Una fuente de corriente dependiente de tensión (VCCS) se conecta entre el Nodo 2 y el Nodo 3, inyectando corriente hacia el Nodo 3. Su valor es $I_g = 2 (V_1 - V_2)$. Plantee la Ley de Corrientes de Kirchhoff (LKC) para los nodos 2 y 3, incorporando el efecto de esta fuente.
+
+    \item \textbf{(Análisis de Mallas - CCVS Cruzada)} En una red de dos mallas, la malla 1 contiene una fuente de tensión independiente de $12\text{V}$, y la malla 2 contiene una fuente de tensión dependiente de corriente (CCVS) definida como $V_d = 3 i_1$, la cual favorece el sentido horario de $i_2$. Si ambas mallas comparten una resistencia de $4\,\Omega$, formule el sistema de ecuaciones lineales $(2 \times 2)$ en términos de $i_1$ e $i_2$, asumiendo que la malla 1 tiene una resistencia propia $R_1$ y la malla 2 una resistencia propia $R_2$.
+
+    \item \textbf{(Análisis Mixto - Modelado de Transistor)} El modelo híbrido-pi simplificado de un BJT en emisor común a baja frecuencia se inserta en un circuito. La base está en el Nodo B, el colector en el Nodo C y el emisor a tierra. Entre C y tierra hay una fuente de corriente dependiente de valor $g_m V_{be}$ (apuntando hacia tierra). Sabiendo que $V_{be} = V_B$, aplique análisis nodal en el Nodo C para encontrar la relación de ganancia de tensión $V_C / V_B$ si el colector está conectado a una resistencia de carga $R_L$ hacia tierra.
+
+\end{enumerate}
+
+\end{document}

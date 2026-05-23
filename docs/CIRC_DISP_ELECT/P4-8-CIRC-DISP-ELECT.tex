@@ -1,0 +1,35 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (8,0) node[circ] {} node[right] {b};
+        
+        % 2. Fuente independiente de tensión Vs entre 'b' y 'c'
+        \draw (0,0) node[circ] {} to[V, l=$V_s$] (0,3) node[circ] {} node[above] {c};
+        
+        % 3. Resistencia Rg horizontal entre 'c' y 'd'
+        \draw (0,3) to[R, l=$R_g$] (3,3) node[circ] {} node[above] {d};
+        
+        % 4. Resistencia Ri entre 'd' y 'b', con la tensión de control V1
+        \draw (3,3) to[R, l=$R_i$, v=$V_1$] (3,0) node[circ] {};
+        
+        % 5. Etapa de salida: Fuente dependiente de tensión K*V1 entre 'b' y 'e'
+        \draw (5.5,0) node[circ] {} to[cV, l=$K V_1$, invert] (5.5,3) node[circ] {} node[above] {e};
+        
+        % 6. Conexión superior de la etapa de salida (de 'e' a 'a') y RL con tensión Vo
+        \draw (5.5,3) to[R, l=$R_o$] (8,3) node[circ] {} node[above] {a};
+        \draw (8,3) to[R, l=$R_L$, v=$V_o$] (8,0) node[circ] {};
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}

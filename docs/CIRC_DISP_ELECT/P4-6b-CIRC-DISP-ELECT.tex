@@ -1,0 +1,31 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos para el circuito
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{circuitikz} 
+
+\begin{document}
+
+\begin{center}
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        
+        % 1. Raíl inferior común (nodo 'b')
+        \draw (0,0) -- (5,0) node[ocirc] {} node[right] {b};
+        
+        % 2. Resistencia R1 entre 'c' y 'b'
+        \draw (0,3) node[circ] {} node[above] {c} to[R, l=$R_1$] (0,0) node[circ] {};
+        
+        % 3. Fuente dependiente de corriente entre 'c' y 'a'
+        \draw (0,3) to[cI, l=$\beta i_b$] (3,3) node[circ] {};
+        
+        % 4. Resistencia R2 entre 'a' y 'b' (conectada al nodo de la unión de 'a')
+        \draw (3,3) to[R, l=$R_2$] (3,0) node[circ] {};
+        
+        % 5. Entrada de corriente ib por el terminal abierto 'a'
+        \draw (5,3) node[ocirc] {} node[above] {a} to[short, i=$i_b$] (3,3);
+        
+    \end{circuitikz}
+\end{center}
+
+\end{document}
