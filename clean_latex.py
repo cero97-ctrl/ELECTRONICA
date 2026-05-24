@@ -10,22 +10,23 @@ def clean_latex_aux_files(directory):
         print(f"Error: El directorio no existe -> {directory}")
         return
 
-    print(f"Buscando archivos para eliminar (conservando solo .tex, .pdf y .py) en:\n{directory}\n")
+    print(f"Buscando archivos para eliminar recursivamente (conservando solo .tex, .pdf y .py) en:\n{directory}\n")
     deleted_count = 0
 
-    for filename in os.listdir(directory):
-        filepath = os.path.join(directory, filename)
-        
-        if os.path.isfile(filepath):
-            _, ext = os.path.splitext(filename)
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            filepath = os.path.join(root, filename)
             
-            if ext.lower() not in KEEP_EXTENSIONS:
-                try:
-                    os.remove(filepath)
-                    print(f"Eliminado: {filename}")
-                    deleted_count += 1
-                except Exception as e:
-                    print(f"Error al intentar eliminar {filename}: {e}")
+            if os.path.isfile(filepath):
+                _, ext = os.path.splitext(filename)
+                
+                if ext.lower() not in KEEP_EXTENSIONS:
+                    try:
+                        os.remove(filepath)
+                        print(f"Eliminado: {filepath}")
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"Error al intentar eliminar {filepath}: {e}")
 
     print(f"\n¡Limpieza completada! Se eliminaron {deleted_count} archivos.")
 

@@ -1,0 +1,78 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel} % Evita conflictos entre las flechas de circuitikz y babel-spanish
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\section*{Solución del Ejemplo 4.1: Modelo con Fuente Dependiente}
+
+\subsection*{Planteamiento del Problema}
+Hallar la expresión analítica para la tensión de salida $V_{out}$ en el circuito de la Figura \ref{fig:sol-ejm-4-1}, basándose en el análisis de mallas y de nodos.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        
+        % Raíl inferior (Nodo común 'b')
+        \draw (0,0) -- (7.5,0) node[ocirc] {}; 
+        \node[below] at (3.5,0) {\textbf{b} (Referencia común)};
+
+        % --- PUERTO DE ENTRADA ---
+        \draw (0,0) to[V, l=$V_g$] (0,3) -- (2,3) node[circ] (A) {};
+        \node[above] at (A) {a};
+        \draw (A) to[R, l=$R_g$, i=$i_1$] (2,0);
+        
+        % --- PUERTO DE SALIDA ---
+        \node[circ] (C) at (4,3) {};
+        \node[above] at (C) {c};
+        \draw (C) to[cI, l=$\beta i_1$] (4,0);
+        \draw (C) -- (6,3) node[circ] {} to[R, l=$R_c$] (6,1.5) to[V, l=$V_{cc}$] (6,0);
+        
+        % Terminales de salida
+        \draw (6,3) -- (7.5,3) node[ocirc] {};
+        \draw[<->] (7.5,2.8) -- (7.5,0.2) node[midway, right] {$V_{out}$};
+
+    \end{circuitikz}
+    \caption{Circuito del Ejemplo 4-1.}
+    \label{fig:sol-ejm-4-1}
+\end{figure}
+
+\subsection*{Desarrollo Matemático}
+
+\textbf{Paso 1: Análisis del puerto de entrada.} \\
+En el lado izquierdo del circuito, la resistencia $R_g$ se encuentra conectada en paralelo directamente a la fuente de tensión independiente $V_g$. Aplicando la Ley de Ohm, la corriente $i_1$ que desciende por $R_g$ es:
+\begin{equation}
+    i_1 = \frac{V_g}{R_g} \label{eq:i1}
+\end{equation}
+
+\textbf{Paso 2: Análisis del puerto de salida.} \\
+En el lado derecho del circuito, tomamos el nodo inferior \textbf{b} como tierra o referencia ($V_b = 0\,\text{V}$). Dado que los terminales de salida están en circuito abierto, la tensión de salida $V_{out}$ corresponde exactamente a la tensión en el nodo \textbf{c} ($V_{out} = V_c$).
+
+Aplicamos la Ley de Corrientes de Kirchhoff (LKC) en el nodo \textbf{c}. Como no fluye corriente hacia los terminales abiertos de la derecha, la sumatoria de las corrientes que salen del nodo \textbf{c} hacia las ramas inferiores debe ser igual a cero:
+\begin{equation*}
+    \beta i_1 + \frac{V_{out} - V_{cc}}{R_c} = 0
+\end{equation*}
+
+\textbf{Paso 3: Obtención de la expresión de $V_{out}$.} \\
+Despejamos algebraicamente $V_{out}$ de la ecuación nodal anterior:
+\begin{align*}
+    \frac{V_{out} - V_{cc}}{R_c} &= -\beta i_1 \\
+    V_{out} &= V_{cc} - \beta i_1 R_c \tag{2} \label{eq:vout_parcial}
+\end{align*}
+
+Finalmente, sustituimos la expresión de $i_1$ hallada en la Ecuación \eqref{eq:i1} dentro de la Ecuación \eqref{eq:vout_parcial}:
+\begin{equation}
+    V_{out} = V_{cc} - V_g \left( \beta \frac{R_c}{R_g} \right)
+\end{equation}
+
+\end{document}

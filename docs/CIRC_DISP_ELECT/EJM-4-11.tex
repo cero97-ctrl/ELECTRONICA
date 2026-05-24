@@ -1,0 +1,70 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel} % Evita conflictos entre las flechas de circuitikz y babel-spanish
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\section*{Ejemplo 4.11: Circuito con Fuentes Dependientes}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        
+        % Línea inferior (Nodo común 'b')
+        \draw (-2,0) -- (6,0);
+        
+        % Definición de Nodos principales a, c, d (con círculos de conexión)
+        \node[circ] (A) at (0,3) {};
+        \node[circ] (C) at (3,3) {};
+        \node[circ] (D) at (6,3) {};
+        
+        % Etiquetas de los nodos
+        \node[above left]  at (A) {a};
+        \node[above]       at (C) {c};
+        \node[above right] at (D) {d};
+        \node[below]       at (3,0) {b}; % Representación gráfica del nodo b
+        
+        % Puntos de unión en el riel inferior 'b'
+        \node[circ] at (-2,0) {};
+        \node[circ] at (0,0) {};
+        \node[circ] at (3,0) {};
+        \node[circ] at (6,0) {};
+
+        % Rama a-b (Izquierda extrema): Fuente de corriente independiente I
+        \draw (-2,0) to[I, l=$I$] (-2,3) -- (0,3);
+
+        % Rama a-b (Centro-Izquierda): Resistencia R1
+        \draw (0,3) to[R, l=$R_1$] (0,0);
+
+        % Rama a-c: Resistencia R2 con caída de tensión Vx
+        \draw (0,3) to[R, l=$R_2$, v=$V_x$] (3,3);
+
+        % Rama c-d: Resistencia R3
+        \draw (3,3) to[R, l=$R_3$] (6,3);
+
+        % Rama a-d (Arriba): Fuente dependiente de tensión 2Vx
+        \draw (0,3) -- (0,5) to[cV, l=$2V_x$] (6,5) -- (6,3);
+
+        % Rama c-b: Fuente dependiente de corriente 2ix
+        \draw (3,3) to[cI, l=$2i_x$] (3,0);
+
+        % Rama d-b (Derecha): Fuente independiente de tensión V
+        % La corriente ix va del nodo b (abajo) al d (arriba), por lo que la flecha (i<=) sube
+        \draw (6,3) to[V, l_=$V$, i<=$i_x$] (6,0);
+
+    \end{circuitikz}
+    \caption{Esquema eléctrico del Ejemplo 4-11.}
+    \label{fig:ejm-4-11}
+\end{figure}
+
+\end{document}

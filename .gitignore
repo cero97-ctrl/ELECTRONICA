@@ -1,2 +1,25 @@
 # Claves de API y archivos secretos
 .groq_api_key
+
+# Base de datos vectorial RAG
+chroma_db/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Archivos de configuración y caché de Python
+__pycache__/
+*.pyc
+
+# Archivos auxiliares de LaTeX
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.out
+*.lof
+*.lot

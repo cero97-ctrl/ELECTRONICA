@@ -4,6 +4,7 @@ import sys
 import shutil
 import json
 import glob
+from datetime import datetime
 
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -176,4 +177,36 @@ try:
             print(f"Contenido (primeros 300 caracteres): {doc.page_content[:300]}...")
             print("-" * 50)
 except (KeyboardInterrupt, EOFError):
-    print("\n\nSaliendo del sistema RAG. ¡Hasta luego!")
+    print("\n\nSaliendo del sistema interactivo...")
+finally:
+    if chat_history:
+        print("\nGenerando resumen de la sesión para actualizar la memoria de contexto...")
+        try:
+            # Preparamos el historial para el LLM
+            formatted_history = "\n".join([f"{'Usuario' if isinstance(msg, HumanMessage) else 'IA'}: {msg.content}" for msg in chat_history])
+            summary_prompt = (
+                "Resume los temas principales, problemas resueltos y decisiones de esta sesión de forma concisa "
+                "en formato Markdown (usa viñetas breves). No saludes, ve directo al grano para que sirva de 'memoria'.\n\n"
+                f"Conversación:\n{formatted_history}"
+            )
+            summary_response = llm.invoke(summary_prompt).content
+            
+            context_file_path = os.path.join(os.path.dirname(__file__), ".gemini", "07_context.md")
+            os.makedirs(os.path.dirname(context_file_path), exist_ok=True)
+            
+            with open(context_file_path, "a", encoding="utf-8") as f:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"\n## Resumen de Sesión ({timestamp})\n\n")
+                f.write(f"{summary_response}\n")
+            print(f"¡Contexto actualizado exitosamente en {context_file_path}!")
+            
+            # Añadir el resumen a la base de datos vectorial (ChromaDB)
+            print("Integrando la memoria de la sesión en ChromaDB...")
+            vectorstore.add_texts(
+                texts=[f"Resumen de sesión de trabajo ({timestamp}):\n{summary_response}"],
+                metadatas=[{"source": "memoria_sesion", "timestamp": timestamp}]
+            )
+            print("¡Memoria integrada exitosamente en la base de conocimientos RAG!")
+        except Exception as e:
+            print(f"Error al guardar el contexto o actualizar ChromaDB: {e}")
+    print("¡Hasta luego!")

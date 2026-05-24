@@ -1,0 +1,65 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel} % Evita conflictos entre las flechas de circuitikz y babel-spanish
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\section*{Ejemplo 4.1: Modelo con Fuente Dependiente de Corriente}
+
+\subsection*{Descripción del Circuito}
+El siguiente esquema eléctrico modela un sistema de dos puertos con las siguientes características:
+\begin{itemize}
+    \item Entre los nodos \textbf{a} y \textbf{b} se encuentra una fuente independiente de tensión ($V_g$) en paralelo con una resistencia $R_g$.
+    \item La corriente que circula por la resistencia $R_g$ se define como $i_1$.
+    \item Entre los nodos \textbf{c} y \textbf{b} existe una fuente dependiente de corriente cuyo valor es $\beta i_1$.
+    \item En paralelo con la fuente dependiente, también entre los nodos \textbf{c} y \textbf{b}, se tiene una rama compuesta por una resistencia $R_c$ en serie con una fuente independiente de tensión ($V_{cc}$).
+    \item La tensión de salida del sistema ($V_{out}$) se establece entre los terminales abiertos correspondientes a los nodos \textbf{c} y \textbf{b}.
+\end{itemize}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        
+        % Raíl inferior (Nodo común 'b')
+        \draw (0,0) -- (7.5,0) node[ocirc] {}; 
+        \node[below] at (3.5,0) {\textbf{b} (Referencia común)};
+
+        % --- PUERTO DE ENTRADA ---
+        % Nodos de entrada
+        \draw (0,0) to[V, l=$V_g$] (0,3) -- (2,3) node[circ] (A) {};
+        \node[above] at (A) {a};
+        
+        % Resistencia Rg y corriente i1
+        \draw (A) to[R, l=$R_g$, i=$i_1$] (2,0);
+        
+        % --- PUERTO DE SALIDA ---
+        % Nodo c
+        \node[circ] (C) at (4,3) {};
+        \node[above] at (C) {c};
+        
+        % Fuente de corriente dependiente
+        \draw (C) to[cI, l=$\beta i_1$] (4,0);
+        
+        % Rama Rc - Vc en serie
+        \draw (C) -- (6,3) node[circ] {} to[R, l=$R_c$] (6,1.5) to[V, l=$V_{cc}$] (6,0);
+        
+        % Terminales de salida
+        \draw (6,3) -- (7.5,3) node[ocirc] {};
+        \draw[<->] (7.5,2.8) -- (7.5,0.2) node[midway, right] {$V_{out}$};
+
+    \end{circuitikz}
+    \caption{Esquema eléctrico del Ejemplo 4-1.}
+    \label{fig:ejm-4-1}
+\end{figure}
+
+\end{document}

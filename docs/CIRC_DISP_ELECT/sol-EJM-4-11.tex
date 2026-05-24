@@ -1,0 +1,116 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel} % Evita conflictos entre las flechas de circuitikz y babel-spanish
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\section*{Solución del Ejemplo 4.11: Análisis Nodal}
+
+\subsection*{Planteamiento del Problema}
+Considere el circuito eléctrico de la Figura \ref{fig:sol-ejm-4-11}. Determine las expresiones algebraicas para las tensiones en los nodos $a$, $c$ y $d$ aplicando análisis nodal, considerando los siguientes componentes:
+\begin{itemize}
+    \item Una fuente de corriente independiente $I$ y una resistencia $R_1$ conectadas en paralelo entre los nodos $a$ y $b$.
+    \item Una resistencia $R_2$ entre los nodos $a$ y $c$, en la cual se define una caída de tensión $V_x$.
+    \item Una resistencia $R_3$ conectada entre los nodos $c$ y $d$.
+    \item Una fuente dependiente de tensión conectada entre los nodos $a$ y $d$, cuyo valor es $2V_x$.
+    \item Una fuente dependiente de corriente conectada entre los nodos $c$ y $b$, cuyo valor es $2i_x$.
+    \item Una fuente independiente de tensión de valor $V$ entre los nodos $d$ y $b$. La variable de control $i_x$ se define como la corriente que fluye desde el nodo $b$ hacia el nodo $d$ a través de esta fuente.
+\end{itemize}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        
+        % Línea inferior (Nodo común 'b')
+        \draw (-2,0) -- (6,0);
+        
+        % Definición de Nodos principales a, c, d
+        \node[circ] (A) at (0,3) {};
+        \node[circ] (C) at (3,3) {};
+        \node[circ] (D) at (6,3) {};
+        
+        % Etiquetas de los nodos
+        \node[above left]  at (A) {a};
+        \node[above]       at (C) {c};
+        \node[above right] at (D) {d};
+        \node[below]       at (3,0) {b (Ref)};
+        
+        % Puntos de unión en el riel inferior 'b'
+        \node[circ] at (-2,0) {};
+        \node[circ] at (0,0) {};
+        \node[circ] at (3,0) {};
+        \node[circ] at (6,0) {};
+
+        % Componentes
+        \draw (-2,0) to[I, l=$I$] (-2,3) -- (0,3);
+        \draw (0,3) to[R, l=$R_1$] (0,0);
+        \draw (0,3) to[R, l=$R_2$, v=$V_x$] (3,3);
+        \draw (3,3) to[R, l=$R_3$] (6,3);
+        \draw (0,3) -- (0,5) to[cV, l=$2V_x$] (6,5) -- (6,3);
+        \draw (3,3) to[cI, l=$2i_x$] (3,0);
+        \draw (6,3) to[V, l_=$V$, i<=$i_x$] (6,0);
+
+    \end{circuitikz}
+    \caption{Circuito del Ejemplo 4-11.}
+    \label{fig:sol-ejm-4-11}
+\end{figure}
+
+\subsection*{Desarrollo Matemático}
+
+\textbf{Paso 1: Definir el nodo de referencia e identificar tensiones fijadas.} \\
+Asignamos el nodo $b$ como referencia ($V_b = 0\,\text{V}$). Dado que existe una fuente de tensión independiente $V$ conectada entre el nodo $d$ y el nodo $b$, la tensión en el nodo $d$ es directamente:
+\begin{equation}
+    V_d = V
+\end{equation}
+
+\textbf{Paso 2: Ecuación de restricción de la fuente dependiente de tensión.} \\
+La fuente dependiente de tensión está conectada entre $a$ y $d$, imponiendo que:
+\begin{equation}
+    V_a - V_d = 2V_x
+\end{equation}
+Sabemos que $V_x$ es la caída de tensión en $R_2$, es decir, $V_x = V_a - V_c$. Sustituyendo esto y $V_d = V$:
+\begin{align*}
+    V_a - V &= 2(V_a - V_c) \\
+    V_a - V &= 2V_a - 2V_c \\
+    V_a &= 2V_c - V \tag{3} \label{eq:Va}
+\end{align*}
+
+\textbf{Paso 3: Hallar una expresión para $i_x$.} \\
+La variable $i_x$ es la corriente que sube por la fuente $V$. Para evitar cálculos complejos con la corriente de la fuente $2V_x$, aplicamos la Ley de Corrientes de Kirchhoff (LKC) en el nodo de referencia $b$ (sumatoria de corrientes que salen = sumatoria de corrientes que entran):
+\begin{align*}
+    \text{Salen de } b: \quad & I + i_x \\
+    \text{Entran a } b: \quad & \frac{V_a}{R_1} + 2i_x
+\end{align*}
+Igualando y despejando $i_x$:
+\begin{equation}
+    I + i_x = \frac{V_a}{R_1} + 2i_x \quad \Rightarrow \quad i_x = I - \frac{V_a}{R_1} \tag{4} \label{eq:ix}
+\end{equation}
+
+\textbf{Paso 4: LKC en el nodo $c$.} \\
+Aplicamos LKC en el nodo $c$ (sumatoria de corrientes que salen = 0):
+\begin{equation}
+    \frac{V_c - V_a}{R_2} + \frac{V_c - V_d}{R_3} + 2i_x = 0
+\end{equation}
+Sustituimos $V_d = V$, la Ecuación \eqref{eq:Va} ($V_a = 2V_c - V$) y la Ecuación \eqref{eq:ix} ($i_x = I - \frac{2V_c - V}{R_1}$):
+\begin{equation*}
+    \frac{V_c - (2V_c - V)}{R_2} + \frac{V_c - V}{R_3} + 2\left(I - \frac{2V_c - V}{R_1}\right) = 0
+\end{equation*}
+\begin{equation*}
+    \frac{V - V_c}{R_2} + \frac{V_c - V}{R_3} + 2I - \frac{4V_c - 2V}{R_1} = 0
+\end{equation*}
+Agrupando los términos que contienen $V_c$ a un lado y los términos independientes ($V$, $I$) al otro, obtenemos la tensión en el nodo $c$:
+\begin{equation}
+    V_c = \frac{V \left( \frac{2}{R_1} + \frac{1}{R_2} - \frac{1}{R_3} \right) + 2I}{\frac{4}{R_1} + \frac{1}{R_2} - \frac{1}{R_3}}
+\end{equation}
+Con este resultado de $V_c$, la tensión $V_a$ se calcula fácilmente usando la Ecuación \eqref{eq:Va}.
+\end{document}
