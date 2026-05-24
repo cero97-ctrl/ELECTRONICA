@@ -29,3 +29,21 @@
 **Decisiones**
 * Todos los archivos generados se reubicaron y organizaron en la ruta definitiva `docs/CIRC_DISP_ELECT/`.
 * Se adoptó la nomenclatura $V_{cc}$ para denotar fuentes de alimentación independientes y así evitar confusiones pedagógicas con las tensiones de los nodos (como $V_c$).
+
+## Resumen de Sesión (2026-05-24 12:13:00)
+
+**Temas principales**
+* Limpieza de repositorio Git, optimización del almacenamiento y sincronización remota con GitHub.
+
+**Problemas resueltos**
+* **Error de empuje en Git por archivo pesado (`chroma_db/chroma.sqlite3` > 100 MB)**:
+  * **Problema**: Al correr `git-update.sh`, el empuje fue rechazado por GitHub debido a que la base de datos de ChromaDB (`chroma.sqlite3`) creció hasta `132.29 MB` (excediendo el límite de 100 MB).
+  * **Solución**:
+    1. Se deshizo el commit local no empujado con `git reset HEAD~1` (conservando todos los archivos de trabajo).
+    2. Se eliminó la base de datos del índice de seguimiento con `git rm -r --cached chroma_db/` para guardarla únicamente de forma local.
+    3. Se configuró `.gitignore` para excluir de forma permanente la carpeta `chroma_db/`, entornos virtuales (`.venv/`, `venv/`, `env/`), cachés de Python (`__pycache__/`, `*.pyc`) y los archivos auxiliares de compilación de LaTeX (`*.aux`, `*.log`, `*.synctex.gz`, `*.fls`, `*.fdb_latexmk`, etc.).
+    4. Se realizó un commit limpio de las modificaciones válidas y se empujó exitosamente a GitHub usando `./git-update.sh`.
+
+**Decisiones**
+* Se determinó que bases de datos locales autogeneradas (`chroma_db/`), los entornos virtuales y los temporales de LaTeX no deben formar parte de la historia del repositorio.
+
