@@ -50,5 +50,11 @@ Escribe `salir`, `exit` o `quit` para terminar la sesión de chat.
 - `chroma_db/`: *(Autogenerado)* Directorio que almacena la base de datos vectorial local.
 - `db_state.json`: *(Autogenerado)* Archivo que mantiene el registro de los archivos ya procesados para las actualizaciones incrementales.
 
+## 🛠️ Notas sobre el Control de Versiones
+
+Debido a las políticas de tamaño de archivos de GitHub (límite de 100 MB), la base de datos vectorial local (`chroma_db/`) crece rápidamente y puede causar errores en el empuje (`git push`). Para evitar esto, `chroma_db/`, así como los entornos virtuales y los archivos temporales de compilación de LaTeX, están excluidos permanentemente del repositorio mediante el archivo `.gitignore`.
+
+Si por accidente se añade un archivo pesado al índice y bloquea el envío, puedes removerlo del seguimiento de Git (conservando tu archivo localmente intacto) utilizando el comando: `git rm -r --cached <archivo_o_directorio>`.
+
 ---
 *Desarrollado con LangChain y modelos Open-Source.*
