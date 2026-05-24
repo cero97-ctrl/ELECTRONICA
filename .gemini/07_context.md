@@ -47,3 +47,8 @@
 **Decisiones**
 * Se determinó que bases de datos locales autogeneradas (`chroma_db/`), los entornos virtuales y los temporales de LaTeX no deben formar parte de la historia del repositorio.
 
+## Resumen de Sesión (Reglas de Nomenclatura LaTeX)
+
+**Decisiones y Reglas**
+* **Nomenclatura de archivos:** En lo sucesivo, los archivos `.tex` generados a partir del libro *"Circuitos y Dispositivos Electronicos - Lluis Prat Vinas"* NO llevarán el sufijo `-CIRC-DISP-ELECT` en su nombre de archivo.
+* **Comentarios de fuente:** En su lugar, se debe incluir un comentario en la cabecera del código LaTeX (ej. `% Fuente: Esquema eléctrico obtenido del libro "Circuitos y Dispositivos Electronicos - Lluis Prat Vinas.pdf"`) indicando su procedencia.

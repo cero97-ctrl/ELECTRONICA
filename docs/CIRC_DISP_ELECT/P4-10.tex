@@ -1,0 +1,179 @@
+% Fuente: Esquema eléctrico obtenido del libro "Circuitos y Dispositivos Electronicos - Lluis Prat Vinas.pdf"
+
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{circuitikz}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\title{\textbf{Problema P4-10: \\ Configuraciones Básicas del Transistor Bipolar}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Enunciado}
+Calcule en los circuitos de la figura P4.10, sustituyendo el transistor por el circuito de la figura P4.9a:
+\begin{enumerate}
+    \item[a)] La ganancia de tensión $V_o/V$.
+    \item[b)] La ganancia de tensión total $V_o/V_s$.
+    \item[c)] El circuito equivalente de Thévenin visto desde la entrada ($R_{in}$).
+    \item[d)] La resistencia equivalente de Thévenin vista desde la salida ($R_o$).
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        % Terminal de Base (B)
+        \draw (0,1) node[circ] {} node[left] {B} -- (1,1);
+        % Resistencia R_p con la etiqueta de corriente i_b
+        \draw (1,1) to[R, l=$R_p$, i=$i_b$] (1,-1.5);
+        % Terminal de Colector (C) y fuente dependiente \beta * i_b
+        \draw (3,1) to[cI, l=$\beta i_b$] (3,-1.5);
+        \draw (3,1) -- (4,1) node[circ] {} node[right] {C};
+        % Terminal común de Emisor (E)
+        \draw (0,-1.5) node[circ] {} node[left] {E} -- (4,-1.5) node[circ] {} node[right] {E};
+    \end{circuitikz}
+    \caption{Circuito de la figura P4.9a: Modelo equivalente de pequeña señal (híbrido-$\pi$).}
+\end{figure}
+
+\vspace{0.5cm}
+
+\begin{figure}[H]
+    \centering
+    % Circuito a) Colector Común
+    \begin{minipage}{\textwidth}
+        \centering
+        \begin{circuitikz}[american, scale=0.85, transform shape]
+            \draw (3,3) node[npn, yscale=-1] (Q) {};
+            \draw (Q.B) node[circ] {} node[above left] {B};
+            \draw (Q.C) node[circ] {} node[left] {C};
+            \draw (Q.E) node[circ] {} node[above] {E};
+            
+            \draw (-1,1) node[ground] {} to[V, l=$V_s$] (-1,3) to[R, l=$R_s$] (Q.B);
+            \draw (Q.B) to[open, v=$V$] (Q.B |- 0,1) node[ground] {};
+            
+            \draw (Q.C) -- (Q.C |- 0,1) node[ground] {};
+            \draw (Q.E) -- ++(3,0) coordinate (out) to[R, l=$R_L$, v=$V_o$] (out |- 0,1) node[ground] {};
+        \end{circuitikz}
+        
+        \vspace{0.5cm}
+        \textbf{a)}
+    \end{minipage}
+    
+    \vspace{1cm}
+    
+    % Circuito b) Base Común
+    \begin{minipage}{\textwidth}
+        \centering
+        \begin{circuitikz}[american, scale=0.85, transform shape]
+            \draw (3,3) node[npn, rotate=-90] (Q) {};
+            \draw (Q.E) node[circ] {} node[below left] {E};
+            \draw (Q.C) node[circ] {} node[below right] {C};
+            \draw (Q.B) node[circ] {} node[above right] {B};
+            
+            \draw (0,1) node[ground] {} to[V, l=$V_s$] (0,3) to[R, l=$R_s$] (Q.E);
+            \draw (Q.E) to[open, v=$V$] (Q.E |- 0,1) node[ground] {};
+            
+            \draw (Q.B) -- ++(0,0.5) node[ground, yscale=-1] {};
+            \draw (Q.C) -- ++(3,0) coordinate (out) to[R, l=$R_L$, v=$V_o$] (out |- 0,1) node[ground] {};
+        \end{circuitikz}
+        
+        \vspace{0.5cm}
+        \textbf{b)}
+    \end{minipage}
+    
+    \vspace{1cm}
+    
+    % Circuito c) Emisor Común
+    \begin{minipage}{\textwidth}
+        \centering
+        \begin{circuitikz}[american, scale=0.85, transform shape]
+            \draw (3,3) node[npn] (Q) {};
+            \draw (Q.B) node[circ] {} node[above left] {B};
+            \draw (Q.C) node[circ] {} node[above] {C};
+            \draw (Q.E) node[circ] {} node[right] {E};
+            
+            \draw (0,0) node[ground] {} to[V, l=$V_s$] (0,3) to[R, l=$R_s$] (Q.B);
+            \draw (Q.B) to[open, v=$V$] (Q.B |- 0,0) node[ground] {};
+            
+            \draw (Q.C) -- ++(3,0) coordinate (out) to[R, l=$R_L$, v=$V_o$] (out |- 0,0) node[ground] {};
+            \draw (Q.E) to[R, l=$R_e$] (Q.E |- 0,0) node[ground] {};
+        \end{circuitikz}
+        
+        \vspace{0.5cm}
+        \textbf{c)}
+    \end{minipage}
+    \caption{Esquemas eléctricos del problema P4.10 correspondientes a las configuraciones de Colector Común, Base Común y Emisor Común.}
+    \label{fig:P4.10}
+\end{figure}
+
+\vspace{1cm}
+\section*{Solución Analítica}
+
+Sustituyendo el transistor por su modelo equivalente de pequeña señal (resistencia base-emisor $R_p$ y fuente de corriente dependiente $\beta i_b$), se deducen las siguientes expresiones:
+
+\renewcommand{\arraystretch}{2.2}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Parámetro} & \textbf{Circuito a) (CC)} & \textbf{Circuito b) (BC)} & \textbf{Circuito c) (EC con $R_e$)} \\
+        \midrule
+        $\dfrac{V_o}{V}$ & $\dfrac{(\beta + 1)R_L}{R_p + (\beta + 1)R_L}$ & $\dfrac{\beta R_L}{R_p}$ & $\dfrac{-\beta R_L}{R_p + (\beta + 1)R_e}$ \\[15pt]
+        $\dfrac{V_o}{V_s}$ & $\dfrac{(\beta + 1)R_L}{R_p + R_s + (\beta + 1)R_L}$ & $\dfrac{\beta R_L}{R_p + (1 + \beta)R_s}$ & $\dfrac{-\beta R_L}{R_p + R_s + (1 + \beta)R_e}$ \\[15pt]
+        $R_{in}$ & $R_p + R_s + (\beta + 1)R_L$ & $\dfrac{R_p}{1 + \beta}$ & $R_p + (1 + \beta)R_e$ \\[15pt]
+        $R_o$ & $\dfrac{R_s + R_p}{\beta + 1}$ & $\infty$ & $\infty$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Resumen de parámetros calculados para cada configuración.}
+\end{table}
+
+\vspace{1cm}
+\section*{Procedimiento de Solución Analítica}
+
+Para obtener las expresiones resumidas en la tabla anterior, se sustituyó el transistor en cada configuración por su modelo equivalente de pequeña señal en la zona activa (modelo $\pi$). Este modelo consta de una resistencia $R_p$ entre la base y el emisor, y una fuente de corriente dependiente $\beta i_b$ entre el colector y el emisor.
+
+A continuación, se describe el análisis de los circuitos equivalentes para cada caso:
+
+\subsection*{1. Circuito a) Colector Común (CC)}
+\begin{itemize}
+    \item \textbf{Ganancia de tensión $V_o/V$:} Aplicando la ley de corrientes en el emisor, la corriente que atraviesa la carga $R_L$ es $i_e = i_b + \beta i_b = (\beta + 1)i_b$. Por tanto, el voltaje de salida es $V_o = (\beta + 1)i_b R_L$. El voltaje de entrada al transistor (nodo B) está dado por $V = i_b R_p + V_o$. Sustituyendo $i_b = V_o / [(\beta + 1)R_L]$ en la expresión de $V$ y despejando la relación, se obtiene:
+    \[ \frac{V_o}{V} = \frac{(\beta + 1)R_L}{R_p + (\beta + 1)R_L} \]
+    \item \textbf{Resistencia de entrada ($R_{in}$):} Evaluando la impedancia de la malla de entrada desde la fuente de señal $V_s$, el voltaje es $V_s = i_b R_s + i_b R_p + (\beta+1)i_b R_L$. Con esto, la resistencia equivalente es $R_{in} = \frac{V_s}{i_b} = R_p + R_s + (\beta + 1)R_L$.
+    \item \textbf{Ganancia de tensión total $V_o/V_s$:} Sustituyendo $V_s = i_b R_{in}$ y $V_o = (\beta + 1)i_b R_L$, obtenemos la relación completa:
+    \[ \frac{V_o}{V_s} = \frac{(\beta + 1)R_L}{R_p + R_s + (\beta + 1)R_L} \]
+    \item \textbf{Resistencia de salida ($R_o$):} Para encontrar $R_o$, anulamos la fuente independiente ($V_s = 0$) y aplicamos una fuente de tensión de prueba en la salida (emisor), obteniendo $R_o = \frac{R_s + R_p}{\beta + 1}$.
+\end{itemize}
+
+\subsection*{2. Circuito b) Base Común (BC)}
+\begin{itemize}
+    \item \textbf{Ganancia de tensión $V_o/V$:} El voltaje $V$ corresponde al nodo del emisor. Como la base está a tierra, la caída es $V = -i_b R_p$, de donde $i_b = -V/R_p$. La corriente que fluye a través de $R_L$ en el nodo de colector induce un voltaje de salida $V_o = -\beta i_b R_L$. Sustituyendo $i_b$:
+    \[ \frac{V_o}{V} = \frac{\beta R_L}{R_p} \]
+    \item \textbf{Resistencia de entrada ($R_{in}$):} La corriente total de entrada que ingresa por el emisor es $i_e = -(\beta + 1)i_b$. Usando la relación del voltaje en el emisor $V = -i_b R_p$, calculamos la impedancia vista como $R_{in} = \frac{V}{i_e} = \frac{R_p}{1 + \beta}$.
+    \item \textbf{Ganancia de tensión total $V_o/V_s$:} Aplicando el divisor de tensión en la entrada, sabemos que $V = V_s \frac{R_{in}}{R_s + R_{in}}$. Multiplicando esto por la ganancia parcial calculada anteriormente:
+    \[ \frac{V_o}{V_s} = \frac{\beta R_L}{R_p + (1 + \beta)R_s} \]
+    \item \textbf{Resistencia de salida ($R_o$):} Al anular la fuente de entrada y examinar la salida desde el colector, la fuente de corriente dependiente presenta un comportamiento de circuito abierto (impedancia infinita), por lo que $R_o = \infty$.
+\end{itemize}
+
+\subsection*{3. Circuito c) Emisor Común (EC) con $R_e$}
+\begin{itemize}
+    \item \textbf{Ganancia de tensión $V_o/V$:} La corriente impulsada hacia la carga $R_L$ es $\beta i_b$, lo que da lugar a un voltaje de salida invertido $V_o = -\beta i_b R_L$. El voltaje de entrada en el nodo de la base es la suma de caídas de voltaje: $V = i_b R_p + i_e R_e = i_b(R_p + (1 + \beta)R_e)$. Dividiendo ambas expresiones se obtiene:
+    \[ \frac{V_o}{V} = \frac{-\beta R_L}{R_p + (1 + \beta)R_e} \]
+    \item \textbf{Resistencia de entrada ($R_{in}$):} Evaluada exclusivamente desde el nodo base, $R_{in} = \frac{V}{i_b} = R_p + (1 + \beta)R_e$.
+    \item \textbf{Ganancia de tensión total $V_o/V_s$:} Si incluimos el efecto de la caída en la resistencia de la fuente $R_s$, el voltaje total suministrado es $V_s = i_b(R_s + R_p + (1 + \beta)R_e)$. Relacionando $V_o$ con $V_s$, se deduce:
+    \[ \frac{V_o}{V_s} = \frac{-\beta R_L}{R_s + R_p + (1 + \beta)R_e} \]
+    \item \textbf{Resistencia de salida ($R_o$):} Al igual que en base común, si miramos hacia atrás en el colector con las fuentes independientes nulas, la fuente dependiente se abre, dejando una resistencia de salida infinita respecto al propio dispositivo, resultando en $R_o = \infty$.
+\end{itemize}
+
+\end{document}
