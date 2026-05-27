@@ -1,0 +1,211 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{circuitikz}
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+}
+
+% --- Título y Autor ---
+\title{Funcionamiento del Circuito de Respuesta Rápida (Quiz Buzzer)}
+\author{Generado por Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+El ``Circuito de Respuesta Rápida'' o \textit{Quiz Buzzer} es un sistema electrónico diseñado para competencias de conocimiento. Su función principal es el ``enclavamiento'': asegurar que el primer participante que presione su botón active su indicador luminoso y bloquee automática e instantáneamente a los demás competidores. 
+
+El diseño analizado es robusto y económico, basándose en el uso de tiristores rectificadores controlados de silicio (SCR, como el modelo C106), los cuales actúan como interruptores electrónicos enclavables.
+
+\section{Componentes Principales}
+Para comprender el funcionamiento, es importante destacar el rol de los componentes clave:
+\begin{itemize}
+    \item \textbf{Tiristores (SCR C106):} Son el corazón del circuito. Permiten el enclavamiento; una vez que reciben un pulso en su compuerta (Gate), entran en conducción y se mantienen encendidos de forma independiente hasta que se les corta la alimentación de voltaje.
+    \item \textbf{Red de Diodos (1N4148):} Se utilizan para crear una línea de bloqueo común que tumba el voltaje disponible para las demás compuertas una vez que alguien presiona su botón.
+    \item \textbf{Botones Pulsadores Normalmente Abiertos (NA):} Hay uno para cada participante, encargados de enviar el pulso inicial a la compuerta del SCR correspondiente.
+    \item \textbf{Botón Pulsador Normalmente Cerrado (NC) / Reset:} Ubicado en la línea principal de alimentación y controlado por el moderador. Sirve para reiniciar el sistema.
+    \item \textbf{Indicadores:} Diodos LED para identificar visualmente al estudiante más rápido, y un zumbador (Buzzer) para la señal acústica general.
+\end{itemize}
+
+\section{Principio de Funcionamiento Secuencial}
+La operación del circuito se puede dividir en cinco estados clave:
+
+\begin{enumerate}
+    \item \textbf{Estado de Espera:} El moderador formula la pregunta. El circuito está energizado (entre 9V y 12V), pero los tiristores están en estado de bloqueo. Ningún LED ni el zumbador están activados porque no hay paso de corriente entre el ánodo y cátodo de los SCRs.
+    
+    \item \textbf{Primer Impacto:} Cuando el primer estudiante (por ejemplo, el participante número 1) reacciona y presiona su botón pulsador, una señal de voltaje viaja instantáneamente a la compuerta (Gate) de su tiristor asignado (SCR 1).
+    
+    \item \textbf{Enclavamiento:} Al recibir este pequeño pulso eléctrico en su compuerta, el SCR 1 se "dispara" y entra en estado de conducción completa. Esto cierra el circuito permitiendo el flujo ininterrumpido de corriente a través de su rama, encendiendo el LED 1 y activando el zumbador común. Debido a las propiedades intrínsecas del tiristor, el componente se mantendrá en conducción indefinidamente, incluso si el estudiante suelta el botón de inmediato.
+    
+    \item \textbf{Bloqueo Absoluto:} Este es el mecanismo crítico que evita empates. Al activarse el SCR 1, este ofrece un camino de muy baja resistencia hacia tierra. Mediante la red común conformada por los diodos (1N4148), el circuito desvía y satura la línea compartida de activación, provocando que el voltaje disponible para los botones restantes caiga a niveles insignificantes. En consecuencia, si los demás estudiantes presionan sus botones microsegundos o milisegundos después, el pulso que envían a sus propios SCRs carece de la energía (tensión) necesaria para activarlos. El circuito ignora así cualquier pulsación tardía de forma puramente analógica.
+    
+    \item \textbf{Liberación (Reset):} Una vez que el participante ha respondido la pregunta y se desea preparar el sistema para la siguiente ronda, el moderador presiona el botón principal de ``Reset''. Al ser un botón Normalmente Cerrado (NC) en serie con la fuente de poder, pulsarlo corta momentáneamente el suministro de energía a todo el circuito. Al quitar la corriente que fluye entre ánodo y cátodo de los tiristores, estos se "apagan" (salen del estado de enclavamiento). Al soltar el botón, la energía regresa, los LEDs se mantienen apagados, y el sistema está nuevamente en cero, en estado de espera.
+\end{enumerate}
+
+\section{Esquema del Circuito}
+A continuación, se presenta la representación gráfica del circuito, generada de forma nativa con \texttt{circuitikz}. El diagrama muestra dos de las cuatro ramas para simplificar su visualización, dado que el patrón se repite idénticamente para los estudiantes restantes.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=1.0, transform shape]
+        % Alimentación y Reset
+        \draw (0, 6) node[vcc] {+9V a +12V} 
+              to[ncpb, l=Botón Reset (NC)] (0, 4);
+        
+        % Línea principal compartida
+        \draw (-4, 4) -- (4, 4);
+        
+        % Rama SCR 1
+        \draw (-3, 4) to[led, l=LED 1, *-] (-3, 2.5)
+              to[R, l=1k$\Omega$] (-3, 1)
+              to[thyristor, l=SCR 1 (C106), n=scr1] (-3, -1.5);
+        
+        % Rama SCR 2
+        \draw (3, 4) to[led, l=LED 2, *-] (3, 2.5)
+              to[R, l=1k$\Omega$] (3, 1)
+              to[thyristor, l=SCR 2 (C106), n=scr2] (3, -1.5);
+              
+        % Compuertas (Gates)
+        \draw (scr1.G) -- ++(-1.5,0) node[ocirc, label=left:Gate 1] {};
+        \draw (scr2.G) -- ++(1.5,0) node[ocirc, label=right:Gate 2] {};
+        
+        % Línea de cátodos compartida
+        \draw (-3, -1.5) -- (3, -1.5);
+        
+        % Zumbador común a tierra
+        \draw (0, -1.5) to[buzzer, l=Zumbador, *-] (0, -3.5) node[ground] {};
+        
+        % Textos indicativos
+        \node[align=center] at (0, 1.5) {\textit{(Se repite para}\\\textit{Estudiantes 3 y 4)}};
+        \node[align=center] at (0, -5) {\textbf{Nota:} Las compuertas (Gates) se activan mediante \\ los botones cruzados de los participantes.};
+        
+    \end{circuitikz}
+    \caption{Esquema electrónico del Circuito de Respuesta Rápida (basado en SCR C106).}
+    \label{fig:esquema_scr}
+\end{figure}
+
+\section{Alternativa Moderna: Implementación con Arduino}
+Para aquellos con conocimientos básicos de programación y microcontroladores, el circuito de respuesta rápida puede ser implementado de manera más compacta y altamente personalizable utilizando una placa de desarrollo como \textbf{Arduino Uno} o \textbf{Arduino Nano}.
+
+Bajo este enfoque, el funcionamiento lógico (el enclavamiento y el bloqueo cruzado) se traslada por completo del hardware al software, simplificando drásticamente el esquema físico:
+
+\begin{itemize}
+    \item \textbf{Entradas (Botones):} Los cuatro botones pulsadores de los participantes se conectan a cuatro pines digitales del Arduino. Por software, estos pines se inicializan usando la directiva \texttt{INPUT\_PULLUP}. Esto activa las resistencias internas de \textit{pull-up} del microcontrolador, manteniendo el pin en estado alto (\texttt{HIGH}) por defecto y permitiendo conectar el otro extremo del botón directamente a tierra (\texttt{GND}), sin necesidad de resistencias externas.
+    
+    \item \textbf{Salidas (Indicadores):} Los cuatro LEDs (con sus respectivas resistencias limitadoras de corriente) y el zumbador (Buzzer) se conectan a otros pines digitales configurados como salidas (\texttt{OUTPUT}).
+    
+    \item \textbf{Lógica de Bloqueo (El Código):} El "bloqueo absoluto" que en el circuito analógico hacían los diodos, aquí se logra mediante el uso de una variable booleana de estado (por ejemplo, \texttt{bool sistemaBloqueado = false;}). El programa lee continuamente el estado de los botones (esperando un estado \texttt{LOW}). En el microsegundo exacto en que detecta la primera pulsación, el código enciende la salida correspondiente, activa el zumbador y cambia la variable a \texttt{sistemaBloqueado = true;}. Mientras esta variable sea verdadera, una condición algorítmica (\texttt{if}) se encarga de ignorar cualquier lectura posterior de los demás botones.
+    
+    \item \textbf{Reinicio (Reset):} El botón del moderador se puede programar en otro pin de entrada para que, al pulsarlo, devuelva la variable \texttt{sistemaBloqueado} a \texttt{false} y apague todas las salidas, preparando el sistema para la siguiente ronda; o en su defecto, se puede utilizar el botón de hardware \texttt{RESET} incorporado en la propia placa Arduino.
+\end{itemize}
+
+\subsection{Análisis del Código (Sketch)}
+El código implementado en C++ para Arduino (archivo \texttt{quiz\_buzzer.ino}) replica la lógica de hardware detallada anteriormente. A continuación, se explican sus partes fundamentales:
+
+\begin{enumerate}
+    \item \textbf{Definición de pines (\texttt{const int}):} Se mapean las conexiones físicas de los componentes a los pines digitales de la placa. Se usan constantes para optimizar el uso de memoria y mejorar la legibilidad.
+    \item \textbf{Variable de estado (\texttt{sistemaBloqueado}):} Inicia en \texttt{false}. Cumple la misma función que la red de diodos y los tiristores en el esquema analógico: recordar de forma persistente que alguien ya ha presionado un botón.
+    \item \textbf{Bloque \texttt{setup()}:} Se utiliza la directiva \texttt{INPUT\_PULLUP} para activar las resistencias internas del microcontrolador. Al conectar los botones directamente entre el pin y tierra (GND), la lectura cambiará de \texttt{HIGH} a \texttt{LOW} al ser presionados, evitando el uso de resistencias físicas externas.
+    \item \textbf{Bucle principal (\texttt{loop()}):} Un condicional principal \texttt{if (!sistemaBloqueado)} garantiza que el microcontrolador solo escuche a los participantes si la ronda está "limpia". En el instante en que detecta una lectura \texttt{LOW}, invoca a la función de enclavamiento.
+    \item \textbf{Función \texttt{activarGanador()} (Enclavamiento):} Altera la variable \texttt{sistemaBloqueado} a \texttt{true} y enciende el indicador respectivo. Las lecturas subsiguientes de los demás botones serán ignoradas porque el condicional principal ya no se cumplirá.
+    \item \textbf{Reinicio (Reset):} Esta lógica se ubica fuera de la condición de bloqueo. Independientemente de quién haya ganado, si el moderador presiona su botón, todas las salidas se apagan (\texttt{LOW}) y la variable de estado vuelve a \texttt{false}, dejando el sistema listo para una nueva ronda.
+\end{enumerate}
+
+\subsection{Esquema del Circuito con Arduino}
+A diferencia de la versión analógica, la implementación con Arduino elimina por completo los tiristores y la red de diodos, conectando los componentes directamente a los pines del microcontrolador. Aprovechando las resistencias de \textit{pull-up} internas (\texttt{INPUT\_PULLUP}), los pulsadores se conectan directamente hacia tierra (GND).
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=0.85, transform shape]
+        % Bloque del Arduino
+        \draw[thick, fill=black!5, rounded corners=2mm] (0, 0) rectangle (4, 8);
+        \node[align=center, font=\large\bfseries] at (2, 4) {Arduino \\ Uno / Nano};
+        
+        % Entradas (Botones con resistencias pull-up internas)
+        \draw (0, 7) node[right, font=\ttfamily] {D2} -- (-1, 7) to[nopb, l_=Btn 1] (-3, 7) -- (-3, 6.5) node[ground] {};
+        \draw (0, 5.5) node[right, font=\ttfamily] {D3} -- (-1, 5.5) to[nopb, l_=Btn 2] (-3, 5.5) -- (-3, 5) node[ground] {};
+        \draw (0, 4) node[right, font=\ttfamily] {D4} -- (-1, 4) to[nopb, l_=Btn 3] (-3, 4) -- (-3, 3.5) node[ground] {};
+        \draw (0, 2.5) node[right, font=\ttfamily] {D5} -- (-1, 2.5) to[nopb, l_=Btn 4] (-3, 2.5) -- (-3, 2) node[ground] {};
+        \draw (0, 1) node[right, font=\ttfamily] {D6} -- (-1, 1) to[nopb, l_=Reset] (-3, 1) -- (-3, 0.5) node[ground] {};
+        
+        % Salidas (LEDs y Buzzer)
+        \draw (4, 7) node[left, font=\ttfamily] {D8} -- (4.5, 7) to[R, l=1k$\Omega$] (6.5, 7) to[led, l=LED 1] (8, 7) -- (8, 6.5) node[ground] {};
+        \draw (4, 5.5) node[left, font=\ttfamily] {D9} -- (4.5, 5.5) to[R, l=1k$\Omega$] (6.5, 5.5) to[led, l=LED 2] (8, 5.5) -- (8, 5) node[ground] {};
+        \draw (4, 4) node[left, font=\ttfamily] {D10} -- (4.5, 4) to[R, l=1k$\Omega$] (6.5, 4) to[led, l=LED 3] (8, 4) -- (8, 3.5) node[ground] {};
+        \draw (4, 2.5) node[left, font=\ttfamily] {D11} -- (4.5, 2.5) to[R, l=1k$\Omega$] (6.5, 2.5) to[led, l=LED 4] (8, 2.5) -- (8, 2) node[ground] {};
+        \draw (4, 1) node[left, font=\ttfamily] {D12} -- (5, 1) to[buzzer, l=Buzzer] (7, 1) -- (7, 0.5) node[ground] {};
+        
+    \end{circuitikz}
+    \caption{Esquema de conexiones del Circuito de Respuesta Rápida utilizando un Arduino.}
+    \label{fig:esquema_arduino}
+\end{figure}
+
+\section{Evolución Inalámbrica: Implementación con ESP32}
+Para llevar el \textit{Quiz Buzzer} a un nivel superior, el microcontrolador Arduino puede ser sustituido por un \textbf{ESP32}. Este potente SoC (System on a Chip) no solo ejecuta la misma lógica de enclavamiento a gran velocidad, sino que introduce conectividad Wi-Fi y Bluetooth integrada, abriendo la puerta a un sistema IoT completo.
+
+Al migrar el diseño al ESP32, se deben tener en cuenta las siguientes consideraciones y ventajas:
+
+\begin{itemize}
+    \item \textbf{Niveles Lógicos de 3.3V:} A diferencia del Arduino Uno que opera a 5V, los pines GPIO del ESP32 funcionan a 3.3V. Es fundamental recalcular el valor de las resistencias limitadoras para los LEDs y asegurarse de que el zumbador (buzzer) sea compatible con este voltaje, o en su defecto, utilizar un transistor para conmutar una fuente de poder externa.
+    \item \textbf{Resistencias Pull-up:} Al igual que en Arduino, el ESP32 cuenta con resistencias internas activables por software mediante \texttt{INPUT\_PULLUP}. Los botones se conectan de la misma manera: un extremo al pin GPIO y el otro a tierra (GND).
+    \item \textbf{Pines Táctiles (Touch):} El ESP32 incluye pines con sensores capacitivos integrados. Se podría prescindir por completo de los botones mecánicos y usar simplemente placas metálicas que detecten el toque de los participantes, leyendo las variaciones de capacitancia del cuerpo humano.
+    \item \textbf{Conectividad y Marcador Web (Dashboard):} Aprovechando el módulo Wi-Fi y protocolos como WebSockets o MQTT, el ESP32 puede integrarse a una red local. Al ocurrir el "primer impacto", el sistema no solo encendería el LED físico, sino que transmitiría instantáneamente el evento a una pantalla principal mostrando el nombre del estudiante más rápido.
+\end{itemize}
+
+La lógica algorítmica del código base en C++ se mantiene idéntica a la versión de Arduino, facilitando enormemente su migración y escalabilidad.
+
+\subsection{Esquema del Circuito con ESP32}
+El siguiente diagrama ilustra la conexión utilizando el módulo ESP32. Siguiendo el mismo principio de diseño que con Arduino, se aprovechan las resistencias de \textit{pull-up} internas. Nótese que las resistencias limitadoras de corriente para los LEDs se han ajustado a valores menores (por ejemplo, a 220\,$\Omega$ o 330\,$\Omega$) dado que los pines GPIO proporcionan 3.3V en lugar de los 5V tradicionales.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[american, scale=0.85, transform shape]
+        % Bloque del ESP32
+        \draw[thick, fill=black!5, rounded corners=2mm] (0, 0) rectangle (4, 8);
+        \node[align=center, font=\large\bfseries] at (2, 4) {Módulo \\ ESP32};
+        
+        % Entradas (Botones con resistencias pull-up internas)
+        \draw (0, 7) node[right, font=\ttfamily] {G12} -- (-1, 7) to[nopb, l_=Btn 1] (-3, 7) -- (-3, 6.5) node[ground] {};
+        \draw (0, 5.5) node[right, font=\ttfamily] {G14} -- (-1, 5.5) to[nopb, l_=Btn 2] (-3, 5.5) -- (-3, 5) node[ground] {};
+        \draw (0, 4) node[right, font=\ttfamily] {G27} -- (-1, 4) to[nopb, l_=Btn 3] (-3, 4) -- (-3, 3.5) node[ground] {};
+        \draw (0, 2.5) node[right, font=\ttfamily] {G26} -- (-1, 2.5) to[nopb, l_=Btn 4] (-3, 2.5) -- (-3, 2) node[ground] {};
+        \draw (0, 1) node[right, font=\ttfamily] {G33} -- (-1, 1) to[nopb, l_=Reset] (-3, 1) -- (-3, 0.5) node[ground] {};
+        
+        % Salidas (LEDs y Buzzer)
+        \draw (4, 7) node[left, font=\ttfamily] {G15} -- (4.5, 7) to[R, l=220$\Omega$] (6.5, 7) to[led, l=LED 1] (8, 7) -- (8, 6.5) node[ground] {};
+        \draw (4, 5.5) node[left, font=\ttfamily] {G2} -- (4.5, 5.5) to[R, l=220$\Omega$] (6.5, 5.5) to[led, l=LED 2] (8, 5.5) -- (8, 5) node[ground] {};
+        \draw (4, 4) node[left, font=\ttfamily] {G0} -- (4.5, 4) to[R, l=220$\Omega$] (6.5, 4) to[led, l=LED 3] (8, 4) -- (8, 3.5) node[ground] {};
+        \draw (4, 2.5) node[left, font=\ttfamily] {G4} -- (4.5, 2.5) to[R, l=220$\Omega$] (6.5, 2.5) to[led, l=LED 4] (8, 2.5) -- (8, 2) node[ground] {};
+        \draw (4, 1) node[left, font=\ttfamily] {G5} -- (5, 1) to[buzzer, l=Buzzer] (7, 1) -- (7, 0.5) node[ground] {};
+        
+    \end{circuitikz}
+    \caption{Esquema de conexiones del Circuito de Respuesta Rápida utilizando un ESP32.}
+    \label{fig:esquema_esp32}
+\end{figure}
+
+\subsection{Análisis del Código ESP32 con Servidor Web}
+El código fuente implementado para el ESP32 (archivo \texttt{quiz\_buzzer\_esp32.ino}) expande la lógica de enclavamiento e integra la conectividad Wi-Fi propia del microcontrolador. Sus partes principales son:
+
+\begin{itemize}
+    \item \textbf{Librerías y Conexión Wi-Fi:} Se importan \texttt{WiFi.h} y \texttt{WebServer.h}. En el bloque \texttt{setup()}, el microcontrolador se conecta a una red local especificada mediante el SSID y la contraseña, y expone su dirección IP a través del puerto serie.
+    \item \textbf{Pines GPIO:} Se mapean los pines correspondientes a la arquitectura del ESP32 (G12, G14, G27, G26 para entradas y G15, G2, G0, G4 para LEDs).
+    \item \textbf{Servidor Web Embebido:} Se define la función \texttt{handleRoot()}, que genera y sirve código HTML dinámico. Esta página web incluye una etiqueta \texttt{<meta http-equiv="refresh" content="1">} para recargarse automáticamente cada segundo, mostrando el nombre del estudiante almacenado en la variable global \texttt{ganador}.
+    \item \textbf{Bucle Principal Híbrido:} En el \texttt{loop()}, además de verificar instantáneamente qué botón fue presionado (actualizando la variable \texttt{ganador}), se ejecuta el comando \texttt{server.handleClient()} para mantener vivo el servidor web y despachar la página a cualquier dispositivo (computadora o teléfono) conectado a la red.
+\end{itemize}
+
+\end{document}
