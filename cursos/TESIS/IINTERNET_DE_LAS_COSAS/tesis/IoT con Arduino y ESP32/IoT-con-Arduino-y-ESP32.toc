@@ -1,9 +1,0 @@
-\babel@toc {spanish}{}\relax 
-\contentsline {section}{\numberline {1}El Microcontrolador y sus Capacidades de Conectividad}{1}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Métodos de Conectividad Explorados}{1}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Consideración Crítica del Hardware}{2}{subsection.1.2}%
-\contentsline {section}{\numberline {2}Plataformas y Servicios IoT (La Nube)}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Plataformas IoT Genéricas}{2}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Google Firebase (Foco Principal del Curso)}{2}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Desarrollo de Aplicaciones y Visualización Web}{2}{subsection.2.3}%
-\contentsline {section}{\numberline {3}Adquisición de Datos (ADC)}{3}{section.3}%
