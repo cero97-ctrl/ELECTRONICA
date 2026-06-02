@@ -36,3 +36,38 @@ Si por algún motivo se requieren los shorthands en el resto del documento, se p
 \texttt{<meta http-equiv="refresh" content="1">}
 \shorthandon{"}
 ```
+
+---
+
+## 2. Comando `\text{}` Indefinido por Falta del Paquete `amsmath`
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con el siguiente error en las líneas donde se usa `\text{...}` dentro de un entorno matemático:
+
+```text
+! Undefined control sequence.
+l.16 ...fluye por $R_2$ y $R_3$ será de $0\,\text
+                                                  {A}$.
+```
+
+### Causa
+
+El comando `\text{...}` es provisto por el paquete `amsmath`. Si este paquete no está incluido en el preámbulo del documento, LaTeX no reconoce `\text` y lanza un error de secuencia de control indefinida.
+
+### Solución
+
+Agregar `\usepackage{amsmath}` en el preámbulo del documento:
+
+```latex
+\usepackage{amsmath}
+```
+
+**Ejemplo de uso correcto** (para escribir texto o unidades dentro de modo matemático):
+
+```latex
+$0\,\text{A}$
+$i_x = 0\,\text{A}$
+```
+
+> **Nota:** Alternativamente, el paquete `siunitx` ofrece el comando `\SI{0}{A}` para unidades físicas, que maneja automáticamente el espaciado y el formato.

@@ -1,0 +1,57 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[american]{circuitikz}
+\usetikzlibrary{babel} % Para evitar conflictos con flechas y babel español
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1.2, transform shape, thick]
+        
+        % Línea base de tierra (Neutro)
+        \draw (-1,0) -- (3,0);
+        \node[ground] at (1.5,0) {};
+        
+        % Fuente de tensión AC (amplitud Vo, frecuencia 60 Hz) y nodo 'd' (Fase)
+        \draw (-1,0) to[sV, l=$V_o$, a={60 Hz}] (-1,5) -- (5,5) node[circ, label=above:$d$] (d) {};
+        
+        % Nodos del interruptor selector de velocidades (a, b, c)
+        \node[circ, label=above:$a$] (sw_a) at (3,4) {};
+        \node[circ, label=left:$b$] (sw_b) at (5,4) {};
+        \node[circ, label=above:$c$] (sw_c) at (7,4) {};
+        
+        % Representación del interruptor (conectado al primer nodo, con opciones al resto)
+        \draw[->] (d) -- (3.4, 4.2);
+        \draw[dashed] (d) -- (5, 4.2);
+        \draw[dashed] (d) -- (6.6, 4.2);
+        
+        % Nodo de unión y sus conexiones directas
+        \node[circ] (a) at (3,3) {};
+        \draw (sw_a) -- (a);
+        
+        % Ramas de inductores (L3 y L4)
+        \draw (a) to[L, l=$L_3$] (5,3) node[circ]{} -- (sw_b);
+        \draw (5,3) to[L, l=$L_4$] (7,3) -- (sw_c);
+        
+        % Rama C - L1 desde tierra hasta el nodo 'a'
+        \draw (3,0) to[C, l=$C$] (3,1) to[L, l=$L_1$] (a);
+        
+        % Rama L2 en paralelo con C-L1 (desde tierra hasta 'a')
+        \draw (1.5,0) node[circ]{} to[L, l=$L_2$] (1.5,3) -- (a);
+        
+    \end{circuitikz}
+    \caption{Esquema eléctrico de un ventilador de 3 velocidades.}
+    \label{fig:ventilador3v}
+\end{figure}
+
+\end{document}

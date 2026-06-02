@@ -4,6 +4,7 @@ import sys
 import shutil
 import json
 import glob
+import argparse
 from datetime import datetime
 
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
@@ -56,7 +57,14 @@ def get_workspace_files(root_dir, patterns, exclusions):
     return all_files
 
 # Comprobar si se solicitó una actualización forzada desde la consola
-update_db = "--update" in sys.argv
+parser = argparse.ArgumentParser(
+    description="Asistente de Inteligencia Artificial (RAG) para el espacio de trabajo de Electrónica.",
+    epilog="Para terminar la sesión interactiva, escribe 'salir', 'exit' o 'quit' en el chat."
+)
+parser.add_argument("--update", action="store_true", help="Fuerza el borrado y la reconstrucción total de la base de datos vectorial ChromaDB.")
+args = parser.parse_args()
+
+update_db = args.update
 if update_db and os.path.exists(persist_dir):
     print("Se solicitó actualización forzada. Borrando base de datos y estado antiguos...")
     shutil.rmtree(persist_dir)

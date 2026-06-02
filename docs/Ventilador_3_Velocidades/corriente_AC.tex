@@ -1,0 +1,162 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes Esenciales
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage[american]{circuitikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Configuración de la página
+\geometry{a4paper, margin=2.5cm}
+
+\title{\textbf{Análisis AC: Ventilador de 3 Velocidades \\ (Nodos 'a' y 'd' cortocircuitados)}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Planteamiento del Circuito}
+Al cortocircuitar los nodos $a$ y $d$ del circuito selector de velocidades, estamos conectando directamente la fuente de tensión alterna al nodo $a$. En esta configuración, los terminales $b$ y $c$ quedan en circuito abierto (al aire), por lo que por las bobinas $L_3$ y $L_4$ no circulará corriente.
+
+El circuito equivalente se reduce a una fuente de tensión en paralelo con dos ramas principales que van hacia el neutro (tierra):
+\begin{itemize}
+    \item \textbf{Rama 1:} Compuesta por el capacitor $C$ en serie con el inductor $L_1$.
+    \item \textbf{Rama 2:} Compuesta por el inductor $L_2$.
+\end{itemize}
+
+\begin{center}
+    \begin{circuitikz}[scale=1.2, transform shape, thick]
+        % Raíl inferior (Neutro)
+        \draw (-1,0) -- (3,0);
+        \node[ground] at (1,0) {};
+        
+        % Fuente de AC
+        \draw (-1,0) to[sV, l=$V_o$, a={60 Hz}] (-1,4.5) -- (1.5,4.5) node[circ, label=above:$a\,(d)$] (a) {};
+        \draw (1.5,4.5) -- (3,4.5);
+        
+        % Rama L2
+        \draw (1.5,0) node[circ]{} to[L, l=$L_2$, i<=$I_2$] (1.5,4.5);
+        
+        % Rama C - L1
+        \draw (3,0) to[C, l=$C$] (3,2.25) to[L, l=$L_1$, i<=$I_1$] (3,4.5) node[circ]{};
+    \end{circuitikz}
+\end{center}
+
+\section*{Análisis de Impedancias}
+En el dominio fasorial, considerando la frecuencia angular $\omega = 2\pi f$ (con $f = 60\text{ Hz}$), las impedancias de cada rama son:
+
+\subsection*{Impedancia de la Rama 1 ($Z_1$)}
+La rama 1 tiene el capacitor y el inductor $L_1$ en serie:
+\begin{equation}
+    Z_1 = Z_C + Z_{L1} = \frac{1}{j\omega C} + j\omega L_1 = j\left(\omega L_1 - \frac{1}{\omega C}\right)
+\end{equation}
+
+\subsection*{Impedancia de la Rama 2 ($Z_2$)}
+La rama 2 consta únicamente del inductor $L_2$:
+\begin{equation}
+    Z_2 = Z_{L2} = j\omega L_2
+\end{equation}
+
+\section*{Cálculo de Corrientes}
+Tomando la tensión de la fuente como referencia fasorial $\tilde{V} = V_o \angle 0^\circ$, determinamos las corrientes en cada rama.
+
+La corriente por la rama 1 ($\tilde{I}_1$) y la corriente por la rama 2 ($\tilde{I}_2$) son:
+\begin{equation}
+    \tilde{I}_1 = \frac{\tilde{V}}{Z_1} = -j \frac{V_o}{\omega L_1 - \frac{1}{\omega C}}, \quad \quad \tilde{I}_2 = \frac{\tilde{V}}{Z_2} = -j \frac{V_o}{\omega L_2}
+\end{equation}
+
+\subsection*{Corriente Total ($\tilde{I}_{total}$)}
+Por la Ley de Corrientes de Kirchhoff en el nodo superior, la corriente total de entrada es la suma fasorial:
+\begin{equation}
+    \tilde{I}_{total} = \tilde{I}_1 + \tilde{I}_2 = -j V_o \left[ \frac{1}{\omega L_1 - \frac{1}{\omega C}} + \frac{1}{\omega L_2} \right]
+\end{equation}
+
+\section*{Expresiones en el Dominio del Tiempo y Gráfica}
+Para obtener las expresiones temporales, aplicamos la transformada fasorial inversa tomando como referencia la tensión $v(t) = V_o \cos(\omega t)$ (es decir, $\tilde{V} = V_o \angle 0^\circ$).
+
+Para la \textbf{Rama 2} (puramente inductiva), la corriente está retrasada $90^\circ$ respecto a la tensión:
+\begin{equation}
+    i_2(t) = \frac{V_o}{\omega L_2} \cos(\omega t - 90^\circ) = \frac{V_o}{\omega L_2} \sin(\omega t)
+\end{equation}
+
+Para la \textbf{Rama 1} (rama de arranque), en un motor monofásico suele diseñarse para que el efecto capacitivo domine sobre el inductivo ($\frac{1}{\omega C} > \omega L_1$). Esto hace que la reactancia equivalente sea negativa y, por tanto, la corriente adelante $90^\circ$ a la tensión:
+\begin{equation}
+    \tilde{I}_1 = j \frac{V_o}{\frac{1}{\omega C} - \omega L_1} = \frac{V_o}{\frac{1}{\omega C} - \omega L_1} \angle 90^\circ
+\end{equation}
+Lo cual, en el dominio del tiempo, se convierte en:
+\begin{equation}
+    i_1(t) = \frac{V_o}{\frac{1}{\omega C} - \omega L_1} \cos(\omega t + 90^\circ) = - \frac{V_o}{\frac{1}{\omega C} - \omega L_1} \sin(\omega t)
+\end{equation}
+
+A continuación se muestra la gráfica normalizada de las formas de onda en este modelo ideal (puramente reactivo), ilustrando cómo $i_1(t)$ está en adelanto y $i_2(t)$ en retraso. Nótese que en este modelo sin resistencias, se observa un desfase de exactamente $180^\circ$ entre ambas corrientes de las ramas, mientras que en un motor real con pérdidas resistivas, el desfase se diseña para estar más cercano a los $90^\circ$.
+
+\begin{center}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=14cm, height=7cm,
+            domain=0:2*pi,
+            samples=100,
+            axis lines=center,
+            xlabel={$\omega t$ (rad)},
+            ylabel={Amplitud normalizada},
+            xtick={0, 1.5708, 3.14159, 4.71238, 6.28318},
+            xticklabels={$0$, $\frac{\pi}{2}$, $\pi$, $\frac{3\pi}{2}$, $2\pi$},
+            ytick=\empty,
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            enlargelimits=true,
+            clip=false
+        ]
+        \addplot[thick, black] {cos(deg(x))}; \addlegendentry{$v(t)$}
+        \addplot[thick, blue] {0.8*sin(deg(x))}; \addlegendentry{$i_2(t)$ (retraso)}
+        \addplot[thick, red] {-0.6*sin(deg(x))}; \addlegendentry{$i_1(t)$ (adelanto)}
+        \end{axis}
+    \end{tikzpicture}
+\end{center}
+
+\section*{El Circuito de Arranque ($C$-$L_1$)}
+El arreglo formado por el capacitor $C$ y la bobina $L_1$ se denomina ``circuito de arranque'' (o rama auxiliar) debido a un principio físico fundamental en el funcionamiento de los motores de inducción monofásicos. A continuación se detalla su necesidad y funcionamiento:
+
+\subsection*{1. El problema de los motores monofásicos}
+Un motor de inducción necesita que en su interior se genere un \textbf{campo magnético rotatorio} para ``arrastrar'' al rotor y hacerlo girar. Sin embargo, si conectáramos la corriente alterna únicamente a la bobina principal de trabajo ($L_2$), el campo magnético generado solo sería \textit{pulsante} (aumentaría y disminuiría en el mismo eje, pero no giraría). Si un ventilador no tuviera el circuito $C$-$L_1$, al encenderlo el motor simplemente vibraría o zumbaría sin girar, ya que su \textbf{torque de arranque es igual a cero}.
+
+\subsection*{¿Qué es exactamente un campo magnético rotatorio? (Una analogía sencilla)}
+Para entender esto, imagina una brújula (que representaría el rotor metálico del motor) y un imán en tu mano.
+\begin{itemize}
+    \item Si acercas el imán a la brújula y lo dejas quieto (o lo acercas y lo alejas en línea recta), la aguja apuntará hacia él y se quedará atrapada temblando. Esto es similar a un \textbf{campo magnético pulsante}: atrae al rotor, pero no lo hace girar continuamente.
+    \item Si comienzas a mover tu mano haciendo círculos con el imán alrededor de la brújula, la aguja empezará a dar vueltas tratando de seguir al imán. ¡Eso es un \textbf{campo magnético rotatorio}!
+\end{itemize}
+En el motor del ventilador \textbf{no hay imanes moviéndose físicamente}. En su lugar, hay bobinas de cobre fijas alrededor del rotor. Al enviarle dos corrientes que alcanzan su máxima fuerza en momentos distintos (gracias al ``retraso/adelanto'' que explicamos con el capacitor), estas bobinas fijas se vuelven electroimanes que se energizan en una secuencia temporal. Funciona igual que las \textbf{luces de una marquesina} que se encienden una tras otra dando una ilusión perfecta de movimiento; aquí, la fuerza magnética se desplaza en círculo y el rotor gira para perseguirla.
+
+\subsection*{2. La solución: crear una segunda fase artificial}
+Para lograr un campo magnético que rote, necesitamos aplicar al menos dos corrientes que estén desfasadas en el tiempo, y que pasen por bobinas ubicadas en posiciones físicas diferentes dentro del motor. El arreglo $C$-$L_1$ sirve exactamente para crear esta segunda fase.
+
+\subsection*{3. El papel clave del capacitor ($C$)}
+Como se observó en el análisis fasorial y temporal:
+\begin{itemize}
+    \item En la rama principal ($L_2$), por ser pura inductancia, la corriente \textbf{se retrasa} respecto al voltaje.
+    \item En la rama de arranque ($C$ en serie con $L_1$), el capacitor se elige para que su reactancia capacitiva cancele y supere a la reactancia inductiva de $L_1$. Esto provoca que la corriente en esta rama \textbf{se adelante} respecto al voltaje.
+\end{itemize}
+
+\subsection*{4. El empuje inicial (Torque de arranque)}
+Gracias a este arreglo, tenemos dos corrientes cruzando por el motor al mismo tiempo: una atrasada y otra adelantada. Esta diferencia temporal de fases (idealmente cercana a $90^\circ$), sumada a la disposición física de las bobinas $L_1$ y $L_2$ en el estator, genera el deseado campo magnético rotatorio. Este campo es el que da el ``empujón'' inicial para que las aspas comiencen a girar.
+
+\subsection*{5. La secuencia temporal y espacial (``Completando la vuelta'')}
+La intuición de que una corriente ``completa la vuelta que no pudo terminar la otra'' es conceptualmente excelente, pero con un matiz importante: no es que la corriente viaje completando un círculo de manera eléctrica, sino que son sus \textbf{efectos magnéticos} los que completan el círculo en el espacio físico del motor.
+
+Imaginemos cómo interactúan el tiempo y el espacio:
+\begin{itemize}
+    \item \textbf{En el espacio:} Las bobinas de la rama de arranque ($L_1$) y de la rama principal ($L_2$) están enrolladas en posiciones físicas contiguas pero desplazadas alrededor del estator.
+    \item \textbf{En el tiempo:} Como $i_1(t)$ está adelantada temporalmente, alcanza su pico de fuerza magnética \textit{antes} que $i_2(t)$.
+    \item \textbf{El giro:} Primero ocurre un fuerte tirón magnético en la posición de la bobina $L_1$. Cuando este empieza a decaer, la corriente $i_2(t)$ alcanza su pico, provocando un nuevo tirón magnético en la posición contigua correspondiente a la bobina $L_2$. Para el rotor en el centro, esto se siente como una fuerza que se desplaza de una bobina a la siguiente; en efecto, el campo de la segunda bobina toma el relevo y continúa el trabajo que empezó la primera, logrando la rotación ininterrumpida.
+\end{itemize}
+
+\vspace{0.5cm}
+\noindent\textbf{Nota:} En la mayoría de los ventiladores de techo y de pedestal, se usa un motor de \textit{capacitor de división permanente} (Permanent-Split Capacitor). En este diseño, la rama de arranque $C$-$L_1$ nunca se desconecta mediante un interruptor centrífugo (como sí ocurre en bombas o lavadoras), ya que además de proporcionar el torque de arranque, ayuda a mantener un giro más suave y silencioso durante la operación normal del ventilador.
+
+\end{document}
