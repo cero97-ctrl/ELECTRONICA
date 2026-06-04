@@ -13,7 +13,7 @@
 % Configuración de la página
 \geometry{a4paper, margin=2.5cm}
 
-\title{\textbf{Análisis AC: Ventilador de 3 Velocidades \\ (Nodos 'a' y 'd' cortocircuitados)}}
+\title{\textbf{Análisis AC: Ventilador de 3 Velocidades}}
 \author{}
 \date{}
 
@@ -21,7 +21,7 @@
 
 \maketitle
 
-\section*{Planteamiento del Circuito}
+\section*{1. Velocidad Alta (Nodos 'a' y 'd' cortocircuitados)}
 Al cortocircuitar los nodos $a$ y $d$ del circuito selector de velocidades, estamos conectando directamente la fuente de tensión alterna al nodo $a$. En esta configuración, los terminales $b$ y $c$ quedan en circuito abierto (al aire), por lo que por las bobinas $L_3$ y $L_4$ no circulará corriente.
 
 El circuito equivalente se reduce a una fuente de tensión en paralelo con dos ramas principales que van hacia el neutro (tierra):
@@ -158,5 +158,71 @@ Imaginemos cómo interactúan el tiempo y el espacio:
 
 \vspace{0.5cm}
 \noindent\textbf{Nota:} En la mayoría de los ventiladores de techo y de pedestal, se usa un motor de \textit{capacitor de división permanente} (Permanent-Split Capacitor). En este diseño, la rama de arranque $C$-$L_1$ nunca se desconecta mediante un interruptor centrífugo (como sí ocurre en bombas o lavadoras), ya que además de proporcionar el torque de arranque, ayuda a mantener un giro más suave y silencioso durante la operación normal del ventilador.
+
+\newpage
+\section*{2. Efecto de la Bobina $L_3$: Velocidad Media (Nodos 'b' y 'd' cortocircuitados)}
+
+Para analizar la siguiente configuración del ventilador, cortocircuitamos los nodos $b$ y $d$. En este escenario, la fuente de tensión alterna se conecta al nodo $b$. El terminal $c$ queda en circuito abierto, por lo que la bobina $L_4$ no tiene participación. Sin embargo, la corriente ahora debe atravesar la bobina $L_3$ para poder llegar al nodo $a$ y alimentar el resto del motor (las ramas de $L_1$ y $L_2$).
+
+\begin{center}
+    \begin{circuitikz}[scale=1.2, transform shape, thick]
+        % Raíl inferior (Neutro)
+        \draw (-1,0) -- (4,0);
+        \node[ground] at (1,0) {};
+        
+        % Fuente de AC conectada a b
+        \draw (-1,0) to[sV, l=$V_o$, a={60 Hz}] (-1,4.5) -- (-0.2,4.5) node[circ, label=above:$b\,(d)$] (b) {};
+        
+        % Inductor L3 actuando de impedancia serie
+        \draw (-0.2,4.5) to[L, l=$L_3$, i={\hspace{16pt}$I_{total}$}] (1.8,4.5) -- (2.5,4.5) node[circ, label=above:$a$] (a) {};
+        
+        % Rama L2
+        \draw (2.5,0) node[circ]{} to[L, l=$L_2$, i<=$I_2$] (2.5,4.5);
+        
+        % Rama C - L1
+        \draw (4,0) to[C, l=$C$] (4,2.25) to[L, l=$L_1$, i<=$I_1$] (4,4.5) -- (a);
+        \draw (2.5,0) -- (4,0);
+    \end{circuitikz}
+\end{center}
+
+\subsection*{El Efecto de $L_3$ (Divisor de Tensión e Impedancia Serie)}
+Al introducir $L_3$ en el trayecto principal, la bobina actúa como una \textbf{impedancia en serie} con el arreglo en paralelo del motor (compuesto por la rama principal y la rama de arranque). 
+
+Si definimos la impedancia equivalente del motor en el nodo $a$ como $Z_a = Z_1 \parallel Z_2$, la nueva impedancia total vista desde la fuente será:
+\begin{equation}
+    Z_{total\_media} = Z_{L3} + Z_a = j\omega L_3 + \left( \frac{Z_1 Z_2}{Z_1 + Z_2} \right)
+\end{equation}
+
+Este aumento en la impedancia total tiene dos efectos fundamentales:
+\begin{enumerate}
+    \item \textbf{Reducción de la Corriente Total:} Por la ley de Ohm ($I_{total} = V_o / Z_{total\_media}$), una mayor impedancia implica que el motor en su conjunto extraerá menos corriente de la red eléctrica.
+    \item \textbf{Caída de Tensión (Divisor de Tensión):} La bobina $L_3$ provoca una caída de tensión igual a $V_{L3} = I_{total} \times Z_{L3}$. En consecuencia, el voltaje útil que realmente llega al nodo $a$ (y que energiza los devanados del motor $L_1$ y $L_2$) será estrictamente menor que el voltaje original de la fuente $V_o$.
+\end{enumerate}
+
+\subsection*{Consecuencia Física: Reducción de la Velocidad}
+Debido a que el voltaje efectivo en los devanados del motor es menor y fluye menos corriente a través de ellos, la intensidad del campo magnético rotatorio generado decae. Al tener un campo magnético más débil, el torque inducido en el rotor es menor, ocasionando que las aspas del ventilador giren a una frecuencia más baja. 
+
+Esta configuración física representa la \textbf{velocidad media} del ventilador. Si conectáramos los nodos $d$ y $c$, sumaríamos en serie las impedancias de $L_3$ y $L_4$, lo cual aumentaría más la impedancia, reduciría más el voltaje en el nodo $a$, obteniendo finalmente la \textbf{velocidad baja}.
+
+\subsection*{¿Por qué usar una bobina ($L_3$) y no una resistencia ($R_3$)?}
+Es natural preguntarse si podríamos lograr el mismo efecto de reducir la velocidad colocando una resistencia $R_3$ en lugar de una bobina $L_3$. Matemáticamente, una resistencia también aumentaría la impedancia total ($Z_{total} = R_3 + Z_a$) y, por consiguiente, reduciría la corriente que llega al nodo $a$. 
+
+Sin embargo, en la práctica \textbf{nunca se utilizan resistencias} para este propósito en motores de corriente alterna de este tamaño, debido a un factor físico fundamental: \textbf{la disipación de energía en forma de calor}.
+
+\begin{itemize}
+    \item \textbf{Comportamiento de una resistencia:} Las resistencias disipan \textit{potencia activa} ($P = I^2 R$). Para lograr la caída de tensión necesaria, la resistencia disiparía una cantidad enorme de energía térmica. Esto no solo representa un desperdicio altísimo de electricidad, sino que el calor acumulado derretiría los plásticos internos del ventilador, representando un grave riesgo de incendio.
+    \item \textbf{Comportamiento de una bobina:} Los inductores son componentes \textit{reactivos}. Una bobina ideal no consume potencia activa ($P = 0$), sino que intercambia \textit{potencia reactiva} ($Q = I^2 X_L$) con la red eléctrica. Aunque las bobinas reales tienen una pequeña resistencia debido al alambre de cobre (lo que genera un ligero calentamiento), la pérdida térmica es minúscula comparada con la de una resistencia que genere la misma caída de tensión.
+\end{itemize}
+
+En resumen, la bobina se utiliza porque funciona como un \textbf{``limitador de corriente sin pérdidas de potencia activa''}, permitiendo variar la velocidad del ventilador de manera segura, fría y energéticamente eficiente.
+
+\subsection*{Definiciones Adicionales: Potencia Activa y Reactiva}
+Para comprender a cabalidad por qué las bobinas no generan calor excesivo a diferencia de las resistencias, es fundamental distinguir entre los tipos de potencia presentes en los circuitos de corriente alterna:
+
+\begin{itemize}
+    \item \textbf{Potencia Activa ($P$):} Es la potencia que realmente se consume y se transforma en trabajo útil o en calor disipado (como sucede en las resistencias). Se mide en \textbf{Vatios (W)} y representa la energía que la red eléctrica efectivamente entrega y no regresa al sistema. Matemáticamente se define como $P = V \cdot I \cdot \cos(\varphi)$, donde $\varphi$ es el ángulo de desfase entre la tensión y la corriente.
+    
+    \item \textbf{Potencia Reactiva ($Q$):} Es la potencia utilizada exclusivamente para crear y mantener los campos magnéticos en las bobinas o los campos eléctricos en los capacitores. Se mide en \textbf{Voltio-Amperios Reactivos (VAR)}. A diferencia de la potencia activa, esta energía no produce trabajo mecánico útil ni calor persistente; simplemente fluctúa u oscila, viajando de la fuente al componente reactivo y de regreso a la fuente en cada semiciclo de la onda alterna. Se define como $Q = V \cdot I \cdot \sin(\varphi)$.
+\end{itemize}
 
 \end{document}
