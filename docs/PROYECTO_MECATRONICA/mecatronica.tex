@@ -1,0 +1,66 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+}
+
+\title{Propuestas de Proyectos de Robótica}
+\author{Para: Sara \\ \small Preparado por el prof. César Rodríguez (Física-UDO) \\ \small con apoyo de Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+La robótica es una forma increíble de aprender a resolver problemas uniendo la programación, la electrónica y la mecánica. A continuación, se presentan cinco ideas de proyectos pensados para ser accesibles, divertidos y fáciles de realizar en casa. La mayoría se pueden construir con materiales reciclados y un "Kit de Inicio" básico de plataformas como Arduino.
+
+\section{Ideas de Proyectos}
+
+\subsection{1. El Basurero Inteligente (Smart Trash Can)}
+\textbf{Descripción:} Un basurero que abre su tapa automáticamente cuando detecta que una mano o un objeto se acerca, y se cierra unos segundos después. Es muy útil e higiénico. \\
+\textbf{Materiales principales:} Un bote de basura pequeño con tapa abatible, una placa Arduino (o similar), un sensor ultrasónico (para medir la distancia) y un pequeño servomotor (para levantar la tapa mediante un hilo o alambre). \\
+\textbf{Dificultad:} Baja. Es ideal para aprender cómo interactúan los sensores de distancia y el control de movimientos simples.
+
+\subsection{2. Robot Evasor de Obstáculos}
+\textbf{Descripción:} Un pequeño vehículo de dos ruedas que se desplaza de forma autónoma por la habitación. Cuando detecta un objeto frente a él (como una pared o un zapato), frena, gira hacia otro lado y sigue buscando un camino despejado. \\
+\textbf{Materiales principales:} Un chasis de carrito para armar (muy económicos en línea), una placa Arduino, un controlador de motores (driver), un sensor ultrasónico y un portapilas. \\
+\textbf{Dificultad:} Media. Es el "Hola Mundo" de los robots móviles. Enseña la lógica de las decisiones condicionales (si hay obstáculo a menos de 10 cm, entonces gira a la derecha).
+
+\subsection{3. Brazo Robótico de Cartón (Mecánico o Electrónico)}
+\textbf{Descripción:} La construcción de la estructura de un brazo robótico utilizando cartón duro, palillos y pegamento. Puede tener dos versiones:
+\begin{itemize}
+    \item \textit{Versión Hidráulica:} Controlado mediante jeringas y tubos de plástico con agua. ¡No requiere electrónica y es pura mecánica!
+    \item \textit{Versión Electrónica:} Controlado mediante pequeños servomotores que se mueven al girar perillas (potenciómetros).
+\end{itemize}
+\textbf{Materiales principales:} Cartón, silicón, jeringas/tubos o, en su defecto, placa base, servomotores y potenciómetros. \\
+\textbf{Dificultad:} Baja a Media (requiere paciencia manual). Desarrolla mucho la habilidad para armar estructuras y comprender cómo se transmiten los movimientos (cinemática).
+
+\subsection{4. Sistema de Riego Automático}
+\textbf{Descripción:} Un sistema que monitorea qué tan seca está la tierra de una planta y activa una pequeña bomba de agua de manera automática para regarla solo cuando tiene sed. \\
+\textbf{Materiales principales:} Placa controladora, sensor de humedad de suelo, un módulo relé, una pequeña bomba de agua sumergible de 5V y un vaso con agua. \\
+\textbf{Dificultad:} Baja. Aunque el movimiento no es un "vehículo", usa actuadores (la bomba) y sensores, combinando robótica con el cuidado del medio ambiente. Es excelente para ferias de ciencia.
+
+\subsection{5. Girasol Robótico (Seguidor de Luz)}
+\textbf{Descripción:} Una estructura (puede tener forma de flor o un pequeño panel) que utiliza sensores de luz para moverse siguiendo la fuente de luz más brillante en la habitación, tal como lo hace un girasol. \\
+\textbf{Materiales principales:} Placa controladora, 2 fotorresistencias (LDR), un servomotor y material reciclado para el cuerpo. \\
+\textbf{Dificultad:} Baja. Es un proyecto fascinante que muestra cómo la robótica a menudo se inspira en el comportamiento de la naturaleza.
+
+\section{Consejos Finales para la Implementación de Proyectos de Robótica}
+\begin{itemize}
+    \item \textbf{Carcasa y Diseño:} ¡El diseño es tan importante como los cables! Decorar el proyecto con cartón pintado, materiales reciclados, figuras o piezas de Lego le da un toque único y personal que siempre destaca.
+    \item \textbf{Paso a Paso:} Es mejor probar cada componente por separado. Por ejemplo, primero asegurarse de que el sensor pueda medir distancias y mostrarlo en la computadora, y luego intentar que ese sensor mueva el motor.
+    \item \textbf{Uso de Kits:} Si deciden usar electrónica, adquirir un "Starter Kit" de Arduino es una excelente inversión, ya que trae guías, manuales y casi todos los componentes (sensores de luz, distancia, servomotores, cables y la placa) necesarios para hacer la mayoría de estos proyectos.
+\end{itemize}
+
+\end{document}
