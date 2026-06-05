@@ -1,0 +1,40 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{hyperref}
+
+\title{vLLM y su relación con GNU/Linux}
+\author{Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{¿Qué es vLLM?}
+vLLM es un motor (framework) de código abierto diseñado específicamente para la \textbf{inferencia y el servicio (serving) de Modelos de Lenguaje Grande (LLMs)} de una manera extremadamente rápida, eficiente y fácil de usar. 
+
+El gran problema al ejecutar modelos como Llama 3, Mistral o Qwen es que consumen muchísima memoria de video (VRAM), no solo para cargar el modelo, sino para almacenar el contexto de la conversación de los usuarios (lo que se conoce como \textit{KV cache}). vLLM revolucionó esto introduciendo una técnica llamada \textbf{PagedAttention}. 
+
+Inspirada en cómo los sistemas operativos gestionan la memoria virtual (con paginación), \textit{PagedAttention} divide el \textit{KV cache} en bloques pequeños, eliminando la fragmentación y el desperdicio de memoria en la GPU. Esto permite a vLLM procesar muchísimas más peticiones simultáneas (\textit{continuous batching}), logrando un rendimiento (\textit{throughput}) que puede superar hasta en 24 veces a las implementaciones estándar de HuggingFace. Además, vLLM incluye un servidor web integrado que imita la API de OpenAI, lo que facilita enormemente su integración en aplicaciones existentes.
+
+\section{¿Cuál es su relación con GNU/Linux?}
+La relación entre vLLM y GNU/Linux es íntima y fundamental. En la práctica, \textbf{GNU/Linux es el sistema operativo nativo y estándar para vLLM}. Esto se debe a varias razones:
+
+\begin{enumerate}
+    \item \textbf{Ecosistema de IA y HPC:} Prácticamente todo el desarrollo de Inteligencia Artificial y Computación de Alto Rendimiento (HPC) ocurre en Linux. vLLM está escrito en Python y C++/CUDA, y sus binarios precompilados se enfocan y prueban casi exclusivamente en distribuciones Linux como Ubuntu, Debian o RHEL.
+    
+    \item \textbf{Acceso a bajo nivel al hardware (CUDA y ROCm):} Para lograr su enorme velocidad, vLLM necesita comunicarse a muy bajo nivel con las tarjetas gráficas. Depende de las herramientas de NVIDIA (CUDA Toolkit, NCCL para unir varias GPUs) o de AMD (ROCm). El soporte, la estabilidad y el rendimiento de estos drivers son inmensamente superiores en Linux "bare-metal" (instalación directa).
+    
+    \item \textbf{Despliegue y Contenedores (Docker):} Cuando una empresa pone vLLM en producción, casi siempre lo hace dentro de un contenedor Docker corriendo en un clúster de servidores GNU/Linux o en Kubernetes. Las imágenes oficiales proporcionadas por vLLM están basadas en entornos Linux.
+    
+    \item \textbf{Soporte en otros SO:} Aunque es posible hacer funcionar vLLM en Windows, la forma recomendada y soportada de hacerlo es utilizando \textbf{WSL2} (Windows Subsystem for Linux), lo que significa que, en el fondo, sigues necesitando un kernel de Linux virtualizado para que funcione correctamente. 
+\end{enumerate}
+
+En resumen, vLLM es el motor que está permitiendo a miles de desarrolladores desplegar sus propios LLMs privados de forma económica y ultrarrápida, y GNU/Linux es la sala de máquinas indispensable donde toda esta infraestructura cobra vida.
+
+\end{document}

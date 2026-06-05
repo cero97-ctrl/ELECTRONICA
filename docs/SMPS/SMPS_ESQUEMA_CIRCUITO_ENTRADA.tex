@@ -1,0 +1,61 @@
+\documentclass[border=10pt]{standalone}
+\usepackage[siunitx, american]{circuitikz}
+
+\begin{document}
+\begin{circuitikz}[thick]
+
+    % Entrada de red (Línea y Neutro)
+    \draw (0,4) node[anchor=east] {\textbf{L}} to[short, o-] (1,4)
+          to[fuse, l=Fusible] (3,4);
+    \draw (0,0) node[anchor=east] {\textbf{N}} to[short, o-] (3,0);
+
+    % Varistor (VDR) para protección contra sobretensiones
+    \draw (3,4) to[varistor, l=VDR] (3,0);
+
+    % Termistor NTC para limitar la corriente inicial
+    \draw (3,4) to[thermistor, l=NTC] (5,4);
+    \draw (3,0) to[short] (5,0);
+
+    % Resistencias de descarga
+    \draw (5,4) to[short] (6,4);
+    \draw (5,0) to[short] (6,0);
+    \draw (6,4) to[R, l=$R_{desc}$] (6,0);
+
+    % Filtro EMC - Condensador de seguridad Tipo X
+    \draw (6,4) to[short] (8,4);
+    \draw (6,0) to[short] (8,0);
+    \draw (8,4) to[C, l=$C_X$] (8,0);
+
+    % Filtro EMC - Bobinas acopladas en modo común
+    \draw (8,4) to[L, l=$L_1$] (10,4);
+    \draw (8,0) to[L, l=$L_2$] (10,0);
+    % Líneas punteadas para indicar el acoplamiento magnético (núcleo)
+    \draw[dashed] (8.5,2.1) -- (9.5,2.1);
+    \draw[dashed] (8.5,1.9) -- (9.5,1.9);
+
+    % Filtro EMC - Condensadores de seguridad Tipo Y a tierra
+    \draw (10,4) to[short] (11,4) to[C, l=$C_{Y1}$] (11,2);
+    \draw (10,0) to[short] (11,0) to[C, l=$C_{Y2}$] (11,2);
+    \draw (11,2) node[ground] {}; % Conexión a tierra
+
+    % Puente rectificador de onda completa (dibujado manualmente con 4 diodos)
+    \coordinate (br-left) at (12.5,2);
+    \coordinate (br-right) at (14.5,2);
+    \coordinate (br-top) at (13.5,3.5);
+    \coordinate (br-bottom) at (13.5,0.5);
+
+    \draw (br-left) to[D, *-*] (br-top);
+    \draw (br-top) to[D, *-*] (br-right);
+    \draw (br-left) to[D, *-*, invert] (br-bottom);
+    \draw (br-bottom) to[D, *-*, invert] (br-right);
+
+    % Conexiones AC al puente
+    \draw (11,4) -- (12,4) |- (br-left);
+    \draw (11,0) -- (12,0) |- (br-right);
+
+    % Salida hacia el condensador de filtro primario (CC pulsante)
+    \draw (br-top) to[short, -o] (15, 3.5) node[anchor=west] {$+V_{CC}$};
+    \draw (br-bottom) to[short, -o] (15, 0.5) node[anchor=west] {$-V_{CC}$};
+
+\end{circuitikz}
+\end{document}

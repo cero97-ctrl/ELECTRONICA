@@ -1,0 +1,19 @@
+### COMPONENTES DEL CIRCUITO DE ENTRADA DE UNA FUENTE DE ALIMENTACIÓN CONMUTADA (SMPS)
+
+Los componentes de una fuente de alimentación conmutada (SMPS) desde la entrada de la red eléctrica hasta el rectificador primario de onda completa son los siguientes:
+
+-   **Fusible:** Es el primer elemento de la entrada y protege al circuito abriéndose si la corriente supera su límite establecido. Debe ser de "fusión lenta" (anti transitorios) porque al conectar la fuente a la red se produce un pico de corriente alto al que debe sobrevivir. A veces, los fabricantes utilizan un **fusistor**, que es una resistencia especial de muy bajo valor óhmico diseñada para actuar como fusible.
+
+-   **Filtro EMC (Compatibilidad Electromagnética):** Su propósito es aislar el ruido eléctrico generado por interferencias electromagnéticas, tanto para que no entren desde la red hacia la fuente, como para que la fuente no emita ruido a la instalación eléctrica. Consta principalmente de:
+    -   **Condensadores de seguridad:** Los de **tipo X** se conectan entre las dos líneas de alimentación y los de **tipo Y** se conectan entre la línea y la tierra. Su función es derivar las señales nocivas de alta frecuencia. Son de tipo "autorregenerable", lo que significa que en caso de un arco eléctrico destruyen solo una pequeña zona de su material en lugar de crear un cortocircuito peligroso.
+    -   **Bobinas acopladas:** Normalmente se enrollan sobre un núcleo de ferrita. Se oponen con firmeza al paso de las señales indeseadas de alta frecuencia. Se enrollan deliberadamente en sentidos opuestos para que las tensiones continuas anulen sus campos magnéticos entre sí, evitando que el núcleo de ferrita se sature y pierda sus propiedades magnéticas.
+
+-   **Resistencias de descarga:** Son resistencias ubicadas en la entrada (frecuentemente varias en serie) que garantizan la descarga eléctrica de los condensadores cuando se apaga o desconecta el equipo, previniendo posibles descargas al manipular la placa.
+
+-   **Interruptor de encendido o puente:** Los terminales de entrada de algunas placas pueden incluir un interruptor (ON/OFF) o bien un puente de alambre soldado para dejar la alimentación conectada permanentemente.
+
+-   **Varistor (VDR o MOV):** Es una resistencia dependiente de la tensión, ubicada en paralelo a la entrada. Funciona como protección contra picos transitorios. A tensiones de trabajo normales presenta una resistencia casi infinita (interruptor abierto), pero ante un pico o sobretensión extrema su resistencia cae drásticamente. Esto provoca un cortocircuito intencionado que absorbe el pico y obliga a fundir el fusible, salvando a los transistores y otras partes delicadas del equipo.
+
+-   **Termistor NTC:** Es un componente con un coeficiente de temperatura negativo diseñado para frenar el intenso pico de corriente provocado por los condensadores al encender el equipo. Al momento de la conexión la NTC se encuentra fría y ofrece una resistencia elevada limitando el paso de corriente. Inmediatamente después, el propio paso de corriente la calienta, haciendo que su resistencia caiga a un valor casi despreciable y permitiendo el flujo eléctrico normal.
+
+-   **Rectificador en puente (Rectificador primario):** Transforma la tensión de corriente alterna de entrada en corriente continua pulsante. Está formado por cuatro diodos que pueden venir en componentes discretos individuales o en un solo encapsulado o pastilla integrada. Al funcionar en conmutación (abriendo y cerrando el paso a la corriente), los diodos generan ruidos y oscilaciones de alta frecuencia, por lo que frecuentemente se coloca una **red RC (resistencia y condensador en serie)** en paralelo a la salida del rectificador. Esta red ayuda a amortiguar la conmutación y a disipar los armónicos nocivos en forma de calor.
