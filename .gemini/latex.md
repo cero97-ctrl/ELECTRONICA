@@ -267,3 +267,48 @@ Definir el estilo `tp` con `\tikzset` **antes** de utilizarlo, ya sea en el pre�
 > **Nota:** El estilo es personalizable. Se pueden ajustar `fill` (color), `inner sep` (tamaño) y `draw` (borde) según las necesidades del diagrama.
 
 > **Archivo afectado:** `docs/SMPS/SMPS.tex`
+
+---
+
+## 7. Caracteres UTF-8 Inválidos Dentro de `lstlisting` (Paquete `listings`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con múltiples errores repetidos en las líneas que contienen caracteres acentuados (á, é, í, ó, ú, ñ) dentro de un entorno `lstlisting`:
+
+```text
+LaTeX Error: Invalid UTF-8 byte sequence (�\expandafter).
+...
+l.178 // ================= DEFINICIÓN
+                                       DE PINES =================
+
+LaTeX Error: Invalid UTF-8 byte "93.
+...
+l.181 ...ENSADO = A1; // PB2 - Entrada Analógica
+                                                  ADC (Sensado de voltaje)
+```
+
+### Causa
+
+El paquete `listings` no soporta nativamente la codificación UTF-8 cuando se compila con `pdflatex`. Los caracteres multibyte del español (tildes, eñe, diéresis) dentro del contenido de un bloque `\begin{lstlisting}...\end{lstlisting}` no son interpretados correctamente por el motor de tipografía, que espera secuencias de un solo byte. Esto ocurre típicamente al incluir código fuente con comentarios en español.
+
+### Solución
+
+Agregar la opción `literate` en la definición del estilo de `listings` para mapear cada carácter UTF-8 problemático a su comando LaTeX equivalente:
+
+```latex
+\lstdefinestyle{mystyle}{
+    % ... resto de opciones del estilo ...
+    tabsize=2,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+```
+
+Cada entrada `{<carácter>}{{<reemplazo LaTeX>}}<longitud>` le indica a `listings` que al encontrar ese byte UTF-8, lo sustituya por el comando LaTeX correspondiente. El número `1` al final indica que el carácter original ocupa 1 posición de ancho.
+
+> **Nota:** Si el código fuente contiene otros caracteres especiales (ej. `ü`, `ö`), se deben agregar mapeos adicionales al bloque `literate` siguiendo el mismo patrón.
+
+> **Archivo afectado:** `docs/PROTECTOR_120VAC/120VAC_mejorado.tex`

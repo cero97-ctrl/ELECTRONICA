@@ -41,12 +41,12 @@ Escribe `salir`, `exit` o `quit` para terminar la sesión de chat.
 - `rag_system.py`: Script principal del sistema RAG y chatbot interactivo.
 - `docs/`: Documentación del proyecto, guías y apuntes.
   - `guia_rag.tex`: Documento académico que explica cómo implementar este mismo sistema RAG paso a paso.
-  - `registro_errores_latex.md`: Base de conocimientos e instrucciones estrictas para la IA sobre correcciones de LaTeX.
   - `EDA/`: Apuntes sobre automatización de diseño electrónico y OpenROAD.
 - `cursos/`: Material detallado sobre Tesis y cursos de IoT con Raspberry Pi y Python.
 - `.gemini/`: Directorio oculto que contiene el contexto y directrices personalizadas para el asistente de IA (Gemini).
   - `07_context.md`: Almacena la memoria conversacional y los resúmenes de las sesiones anteriores, autogenerados por el sistema RAG al salir.
   - `*.md` (ej. `01_latex_standards.md`): Archivos de instrucciones que definen los estándares, convenciones de código y reglas de formato del proyecto.
+  - `latex.md`: Base de conocimientos e instrucciones estrictas para la IA sobre correcciones de LaTeX.
 - `chroma_db/`: *(Autogenerado)* Directorio que almacena la base de datos vectorial local.
 - `db_state.json`: *(Autogenerado)* Archivo que mantiene el registro de los archivos ya procesados para las actualizaciones incrementales.
 

@@ -7,4 +7,4 @@
   - Al corregir o analizar propuestas de grado, adoptar un enfoque crítico y constructivo. 
   - Asegurar que los objetivos sigan la metodología SMART (Específicos, Medibles, Alcanzables, Relevantes, a Tiempo).
   - Promover el desglose de proyectos grandes (Modularización y Priorización) para hacerlos viables académicamente.
-- **Cumplimiento Estricto:** Prestar estricta atención a las reglas documentadas en `/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/registro_errores_latex.md` para evitar problemas comunes de compilación y estilo. Las respuestas que incluyan código deben ser directamente compilables.
+- **Cumplimiento Estricto:** Prestar estricta atención a las reglas documentadas en `/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.gemini/latex.md` para evitar problemas comunes de compilación y estilo. Las respuestas que incluyan código deben ser directamente compilables.

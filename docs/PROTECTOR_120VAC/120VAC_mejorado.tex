@@ -5,8 +5,41 @@
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-noshorthands]{babel}
 \usepackage{geometry}
+\usepackage{amsmath}
 \usepackage{circuitikz}
 \usepackage{float}
+
+\usepackage{xcolor}
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+\lstset{style=mystyle}
 
 % Configuramos la página en horizontal para que el esquema respire mejor
 \geometry{a4paper, margin=1.5cm, landscape}
@@ -106,10 +139,125 @@
         \draw (23, 11.5) node[circ]{} -- (23, 12.5) to[R, l=\shortstack{$100\Omega$ \\ (Snubber)}] (24.5, 12.5) to[C, l=100nF] (26, 12.5) -- (26, 11.5) node[circ]{};
         
         % Retorno del Neutro a la Salida
-        \draw (26, -2.0) -- (26, 0) -- (27, 0) node[ocirc]{} node[right]{\textbf{Neutro}};
+        \draw (26, -2.0) -- (26, 0) -- (27, 0) node[ocirc]{} node[right]{\textbf{Neutro (N)}};
         
     \end{circuitikz}
     }
     \caption{Esquema Mejorado V2.0: Protector de Voltaje 120VAC controlado por Microcontrolador (MCU).}
 \end{figure}
+
+\vspace{1cm}
+\section*{Respuesta del Circuito ante una Subida de Tensión}
+
+Cuando ocurre una subida de tensión (sobretensión) en la entrada de la \textbf{Fase 1}, el circuito actúa en dos niveles de protección de forma automática:
+
+\begin{enumerate}
+    \item \textbf{Protección contra Transitorios (Picos ultrarrápidos):} 
+    Si la subida es un pico transitorio muy rápido y de alta tensión (por ejemplo, inducido por un rayo, conexión de grandes cargas inductivas o ruido severo de la red), el \textbf{Varistor (MOV de 150V)} entra en acción. Al superar su tensión de umbral, su resistencia interna cae drásticamente, absorbiendo la energía del pico y derivando el exceso directamente hacia el Neutro. Esto evita que la espiga destructiva llegue al resto del circuito interno y a la carga acoplada.
+
+    \item \textbf{Protección contra Sobretensión Sostenida (Corte activo):}
+    Si el voltaje RMS de la red se eleva de manera sostenida por encima del límite seguro de funcionamiento, el sistema actúa aislando físicamente la carga:
+    \begin{itemize}
+        \item \textbf{Detección:} El divisor de tensión formado por $R_2$ ($1\text{M}\Omega$) y $R_3$ ($10\text{k}\Omega$), junto con la rectificación de media onda de $D_5$ y el filtrado de $C_4$, entregan una pequeña muestra de voltaje DC directamente al pin analógico (\textbf{ADC}) del MCU. Esta muestra es proporcional al voltaje real instantáneo de la Fase 1.
+        \item \textbf{Decisión del MCU:} El microcontrolador (\textbf{ATtiny85}) lee y evalúa de forma continua esta conversión ADC. Al detectar que el valor sobrepasa el umbral máximo preprogramado en su software, el MCU entra en estado de "falla por sobretensión".
+        \item \textbf{Aislamiento de la carga:} El MCU apaga la salida \textbf{PB3} (bajándola a $0\text{V}$). Esto retira la polarización de la base del transistor $Q_1$, lo cual desenergiza instantáneamente la bobina del \textbf{Relé}. Los contactos del relé se abren, desconectando de inmediato la \textbf{Fase 2 (Out)} y salvaguardando al equipo que esté enchufado al protector.
+        \item \textbf{Indicadores Visuales:} Para alertar al usuario de la condición anormal, el MCU apaga el LED Verde (estado normal en \textbf{PB0}) y enciende el LED Rojo (estado de falla en \textbf{PB1}).
+    \end{itemize}
+    
+    \textbf{Recuperación:} Tras el corte, el microcontrolador seguirá monitoreando el voltaje en Fase 1. Una vez que la tensión regrese y se estabilice en niveles seguros de operación, el MCU típicamente iniciará un temporizador de retardo (por ejemplo, 3 minutos) antes de volver a energizar el relé y encender el LED verde. Este retardo es crucial para permitir la descompresión en motores y proteger equipos sensibles, como los compresores de los refrigeradores.
+\end{enumerate}
+
+\vspace{1cm}
+\section*{Código de Programación (Arduino/C++)}
+
+El siguiente código implementa la lógica de control para el microcontrolador ATtiny85. Se encarga de leer el voltaje rectificado, evaluar los umbrales de seguridad y accionar el relé y los indicadores LED, incluyendo un temporizador de recuperación sin bloqueos.
+
+\begin{lstlisting}[language=C++]
+/*
+ * PROTECTOR DE VOLTAJE 120VAC - V2.0
+ * Microcontrolador: ATtiny85
+ * Reloj interno: 1MHz o 8MHz
+ */
+
+// ================= DEFINICIÓN DE PINES =================
+const int PIN_LED_NORM = 0; // PB0 - LED Verde (Voltaje Normal)
+const int PIN_LED_FAIL = 1; // PB1 - LED Rojo (Falla por sobre/bajo voltaje)
+const int PIN_SENSADO = A1; // PB2 - Entrada Analógica ADC (Sensado de voltaje)
+const int PIN_RELAY = 3;    // PB3 - Control del Relé
+
+// ================= CONSTANTES Y UMBRALES ===============
+/*
+ * Los umbrales ADC van de 0 a 1023 (equivalente de 0V a 5V en el pin).
+ * Deberás calibrar estos valores empíricamente según tu divisor de tensión
+ * (1M ohm y 10k ohm) y la caída en el diodo rectificador.
+ *
+ * Por ejemplo, valores hipotéticos:
+ */
+const int UMBRAL_MAX = 750; // Equivalente aprox. a > 135V RMS
+const int UMBRAL_MIN = 400; // Equivalente aprox. a < 90V RMS
+
+// Tiempo de espera de recuperación (en milisegundos)
+// 3 minutos = 3 * 60 * 1000 = 180000 ms
+const unsigned long TIEMPO_RECUPERACION = 180000UL;
+
+// ================= VARIABLES GLOBALES ==================
+bool estadoFalla = true; // Iniciamos en estado de falla por seguridad
+unsigned long tiempoInicioEstable; // Para llevar la cuenta regresiva sin usar delay()
+
+void setup() {
+  // Configuración de los pines de salida
+  pinMode(PIN_RELAY, OUTPUT);
+  pinMode(PIN_LED_NORM, OUTPUT);
+  pinMode(PIN_LED_FAIL, OUTPUT);
+
+  // Configuración del pin analógico
+  pinMode(PIN_SENSADO, INPUT);
+
+  // Estado inicial de seguridad: Carga desconectada
+  digitalWrite(PIN_RELAY, LOW);
+  digitalWrite(PIN_LED_NORM, LOW);
+  digitalWrite(PIN_LED_FAIL, HIGH); // LED rojo encendido
+
+  // Iniciamos el temporizador
+  tiempoInicioEstable = millis();
+}
+
+void loop() {
+  // 1. Leer voltaje de la red rectificado
+  int lecturaADC = analogRead(PIN_SENSADO);
+
+  // 2. Evaluar la lectura contra los límites de seguridad
+  if (lecturaADC > UMBRAL_MAX || lecturaADC < UMBRAL_MIN) {
+    // --- CONDICIÓN DE FALLA ---
+    estadoFalla = true;
+
+    // Al ocurrir o mantenerse la falla, reiniciamos continuamente el cronómetro
+    tiempoInicioEstable = millis();
+
+    // Acciones de aislamiento inmediato
+    digitalWrite(PIN_RELAY, LOW);
+    digitalWrite(PIN_LED_NORM, LOW);
+    digitalWrite(PIN_LED_FAIL, HIGH);
+
+  } else {
+    // --- VOLTAJE DENTRO DE RANGO NORMAL ---
+    // Si estábamos en falla, evaluamos si ya pasó el tiempo seguro
+    if (estadoFalla) {
+      if (millis() - tiempoInicioEstable >= TIEMPO_RECUPERACION) {
+        estadoFalla = false;              // Ha superado el tiempo de seguridad
+        digitalWrite(PIN_RELAY, HIGH);    // Encender Relé (Acoplar carga)
+        digitalWrite(PIN_LED_FAIL, LOW);  // Apagar LED de falla
+        digitalWrite(PIN_LED_NORM, HIGH); // Encender LED Normal
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+\subsection*{Notas sobre el código}
+\begin{itemize}
+    \item \textbf{Uso de \texttt{millis()} en lugar de \texttt{delay()}:} Fíjate que al calcular el tiempo de retardo no utilizamos bloqueos del procesador. Esto permite que el ATtiny85 siga leyendo el voltaje miles de veces por segundo durante los 3 minutos de espera; si en el minuto 2 ocurre otro pico de voltaje, el temporizador se reinicia inmediatamente a 0.
+    \item \textbf{Calibración Analógica:} Se han puesto \texttt{750} y \texttt{400} como valores simulados (para \texttt{UMBRAL\_MAX} y \texttt{UMBRAL\_MIN}). Dado que el divisor de tensión real ($1\text{M}\Omega$ y $10\text{k}\Omega$) y la caída de $0.7\text{V}$ en el diodo 1N4007 introducen variaciones, deberás inyectar un voltaje conocido en el circuito y medir qué número real escupe el \texttt{analogRead()} para afinar estas constantes antes de pasarlo a producción.
+\end{itemize}
+
 \end{document}
