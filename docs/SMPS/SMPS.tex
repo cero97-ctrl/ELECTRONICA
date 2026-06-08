@@ -1,0 +1,286 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usepackage{float}
+\usetikzlibrary{arrows.meta, babel}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.85\textwidth}{!}{
+    \begin{circuitikz}[american, thick, scale=1.0, transform shape, font=\scriptsize]
+        
+    % Reducimos el tamaño global de los componentes y las etiquetas
+    \ctikzset{bipoles/length=0.75cm}
+    
+    % Estilo para puntos de prueba (Test Points)
+    \tikzset{tp/.style={circle, fill=red, inner sep=1.5pt}}
+    
+    % MOSFET de conmutación
+    \draw (4,2) node[nigfete, anchor=D] (mosfet) {};
+    \node[below right] at (mosfet.D) {D};
+    \node[below right] at (mosfet.S) {S};
+    \node[above left] at (mosfet.G) {G};
+    
+    % Líneas de entrada de voltaje continuo (VDC)
+    \draw (-1.5,6) node[ocirc] {} node[left] {i} -- (9,6);
+    
+    % Diodo entre Source y Drain (ánodo en Source)
+    \draw (mosfet.S) node[circ]{} -- ++(1.0,0) node[circ]{} coordinate(tap_S) -- ++(0.5,0) coordinate(aux_S) 
+          to[D, l_=$D_1$] (aux_S |- mosfet.D) node[circ]{} -- (mosfet.D);
+    
+    % Potenciómetro de Puerta (Gate) en la línea j (desplazado a la izquierda)
+    \coordinate (pot_start) at (-0.5,0 |- mosfet.G);
+    \draw (-1.5,0 |- mosfet.G) node[ocirc] {} node[left] {j} -- (pot_start);
+    \draw (pot_start) node[circ] {} to[potentiometer, l=$5.1\,\text{k}\Omega$] (mosfet.G) node[circ] {};
+    
+    % Tierra analógica entre los nodos i y j (Filtro Y)
+    \draw (-1.0, 6) node[circ] {} to[C, l=$C_{Y1}$] (-1.0, 4) node[circ] {} to[C, l=$C_{Y2}$] (-1.0, 0 |- mosfet.G) node[circ] {};
+    \draw (-1.0, 4) -- (-1.5, 4) node[ground] {};
+
+    % Diodo Zener en paralelo con el potenciómetro
+    \draw (pot_start) -- (-0.5, 2.5) to[zD, l=$D_Z$] (mosfet.G |- 0, 2.5) -- (mosfet.G);
+    
+    % Arreglo en paralelo (2 Resistencias y 1 Capacitor) desde el nodo i
+    \draw (4,6) node[circ] {} to[R, l=$R_{s1}$] (4,4) node[circ] {};
+    \draw (5.5,6) node[circ] {} to[R, l_=$R_{s2}$] (5.5,4) node[circ] {};
+    \draw (7,6) node[circ] {} to[C, l_=$C_s$] (7,4);
+    \draw (4,4) -- (7,4);
+    
+    % Dos diodos en paralelo con ánodos al Drain del MOSFET
+    \draw (4,2) node[circ] {} to[D, l=$D_{s1}$] (4,4);
+    \draw (4,2) -- (5.5,2) to[D, l_=$D_{s2}$] (5.5,4);
+    
+    % Primario del transformador entre el nodo "i" y Drain (D)
+    \coordinate (prim_D) at (9, 0 |- mosfet.D);
+    \draw (9,6) node[circ] {} to[L, l_=$L_P$] (prim_D) -- (5.5,2);
+    \node[circ] at (8.6, 5.6) {}; % Punto de fase (polaridad)
+    
+    % Núcleo de Ferrita
+    \draw[dashed] (9.6, 5.5) -- (9.6, -3);
+    \draw[dashed] (9.8, 5.5) -- (9.8, -3);
+    
+    % Devanado Auxiliar (Otro primario)
+    \draw (9, 0) node[circ] {} to[L, l_=$L_{aux}$] (9, -3) node[circ] {};
+    \node[circ] at (8.6, -2.6) {}; % Punto de fase abajo
+    
+    % Rectificación y filtrado del devanado auxiliar
+    \draw (9, 0) to[R, l_=$R_{aux}$] (7.8, 0) to[D, l_=$D_{aux}$] (6.6, 0) node[circ] {};
+    \draw (6.6, 0) to[pC, l=$C_{aux1}$] (6.6, -3);
+    \draw (6.6, 0) -- (5.6, 0) node[circ] (caux2_top) {} to[C, name=Caux2] (5.6, -3);
+    \node[below right, xshift=0.2cm] at (Caux2.south east) {$C_{aux2}$};
+    \draw (5.6, -3) -- (9, -3);
+    \draw (6.6, -3) node[circ] {} node[rground] {};
+    
+    % Optoacoplador debajo del circuito auxiliar
+    \draw[dashed, orange] (6.0, -8.5) rectangle (9.0, -6.5);
+    \node[below, font=\scriptsize, text=orange] at (7.5, -8.5) {Optoacoplador};
+    
+    % Lado primario (Fototransistor)
+    \draw (6.8, -7.5) node[npn, xscale=-1] (opto_npn) {};
+    \draw (opto_npn.C) |- (6.0, -7.1) node[above left, font=\tiny] {4};
+    \draw (opto_npn.E) |- (6.0, -7.9) node[above left, font=\tiny] {3};
+    
+    % Lado secundario (LED)
+    \draw (9.0, -7.1) node[above left, font=\tiny] {1} node[circ] {} -- (8.2, -7.1) to[D] (8.2, -7.9) -- (9.0, -7.9) node[below left, font=\tiny] {2} node[circ] {};
+    
+    % Resistencias conectadas al ánodo y cátodo del optoacoplador
+    \draw (9.0, -7.1) to[R, l=$R_{op1}$] (11.0, -7.1) node[circ] {};
+    \draw (9.0, -7.9) to[R, l=$R_{op2}$] (11.0, -7.9) node[circ] {};
+
+    % TL431 (dibujado como SCR) a la derecha del optoacoplador
+    \draw (12.5, -8.5) to[thyristor, mirror, l=TL431, n=scr_ctrl] (12.5, -6.5);
+
+    % Arreglo RC (Resistencia y Capacitor en serie) entre compuerta y cátodo del SCR
+    \draw (scr_ctrl.G) -- ++(1.5, 0) coordinate (g_node) to[R, l=$R_{gk}$] (g_node |- 0, -5.5) to[C, l=$C_{gk}$] (12.5, -5.5) -- (12.5, -6.5) node[circ] {};
+
+    % Arreglo (Resistencia y Potenciómetro en serie) entre compuerta y ánodo del SCR
+    \draw (g_node) node[circ] {} -- ++(1.5, 0) coordinate (g_node2) to[R, l=$R_{ga}$] (g_node2 |- 0, -9.5) to[potentiometer, l=$P_{ga}$] (12.5, -9.5) -- (12.5, -8.5) node[circ] {};
+
+    % Resistencia entre la línea positiva de salida y la compuerta del SCR
+    \draw (g_node2) node[circ] {} to[R, l=$R_{sense}$] (g_node2 |- 0, -5.0) node[circ] {};
+
+    % Conexión del cátodo del SCR a la resistencia Rop2
+    \draw (12.5, -6.5) -- (11.2, -6.5) |- (11.0, -7.9);
+
+    % Conexión de la resistencia Rop1 al nodo positivo de la etapa de salida
+    \draw (11.0, -7.1) -- (11.0, -5.0) -- (21.5, -5.0) |- (20.5, 5.5) node[circ] {};
+
+    % Flechas de luz
+    \draw[-stealth] (7.8, -7.3) -- (7.2, -7.4);
+    \draw[-stealth] (7.8, -7.7) -- (7.2, -7.6);
+
+    % Controlador PWM (Familia UC384x)
+    \draw (-1.0, -3.2) rectangle (2.0, -0.8) node[pos=.5, align=center, yshift=0.5cm] {UC384x};
+    % Pines Superiores e Inferiores
+    \draw (0.5, -0.8) node[below, font=\tiny] {OUT 6} -- (0.5, -0.5);
+    \draw (0.5, -3.2) node[above, font=\tiny] {GND 5} -- (0.5, -3.5) node[rground] {};
+    % Pines Izquierdos
+    \draw (-1.0, -1.2) node[right, font=\tiny] {8 VREF} -- (-1.3, -1.2);
+    \draw (-1.0, -2.0) node[right, font=\tiny] {2 VFB} -- (-1.3, -2.0);
+    \draw (-1.0, -2.8) node[right, font=\tiny] {1 COMP} -- (-1.3, -2.8);
+    % Pines Derechos
+    \draw (2.0, -1.2) node[left, font=\tiny] {VCC 7} -- (2.3, -1.2);
+    \draw (2.0, -2.0) node[left, font=\tiny] {Isense 3} -- (2.3, -2.0);
+    \draw (2.0, -2.8) node[left, font=\tiny] {RT/CT 4} -- (2.3, -2.8);
+    
+    % Capacitor de temporización desde el pin 4 (RT/CT) a tierra
+    \draw (2.3, -2.8) -- (2.3, -4.0) -- (1.2, -4.0) -- (1.2, -8.5) to[C, l=$C_t$] (1.2, -9.5) node[rground] {};
+
+    % Resistencia de temporización entre VREF (Pin 8) y RT/CT (Pin 4)
+    \draw (-4.5, -5.5) node[circ] {} to[R, l=$R_t$] (1.2, -5.5) node[circ] {};
+
+    % Red de compensación entre VFB y COMP (Resistencia y Capacitor en paralelo)
+    \draw (-1.3, -2.0) -- (-2.2, -2.0) node[circ] {};
+    \draw (-1.3, -2.8) -- (-2.2, -2.8) node[circ] {};
+    \draw (-2.2, -2.0) to[C, l=$C_{comp}$] (-2.2, -2.8);
+    \draw (-2.2, -2.0) -- (-3.0, -2.0) node[circ] {} to[R, l_=$R_{comp}$] (-3.0, -2.8) node[circ] {} -- (-2.2, -2.8);
+
+    % Resistencias en serie desde el nodo inferior de Rcomp hacia tierra digital
+    \draw (-3.0, -2.8) to[R, l_=$R_{fb1}$] (-3.0, -3.8) node[circ] {} to[R, l_=$R_{fb2}$] (-3.0, -4.8) node[rground] {};
+
+    % Conexión desde el nodo entre Rfb1 y Rfb2 al pin 3 del optoacoplador
+    \draw (-3.0, -3.8) -- (-4.0, -3.8) |- (6.0, -7.9);
+
+    % Conexión desde el pin 8 (VREF) al pin 4 del optoacoplador
+    \draw (-1.3, -1.2) -- (-4.5, -1.2) node[circ] (vref_node) {} |- (6.0, -7.1);
+
+    % Capacitor a tierra digital desde el nodo VREF
+    \draw (vref_node) -- (-5.5, -1.2) node[circ] (vref_c_node) {} -- (-5.5, -8.5) to[C, l_=$C_{vref}$] (-5.5, -9.5) node[rground] {};
+
+    % Transistor PNP encima del capacitor Cvref (Emisor abajo, Colector arriba)
+    \draw (-5.5, 0.5) node[pnp, yscale=-1] (pnp_ctrl) {};
+    \node[right] at (-5.3, 0.5) {$T_1$};
+
+    % Capacitor entre el colector y la base del transistor PNP
+    \draw (pnp_ctrl.C) |- (-7.5, 1.5) node[circ] (c_pnp_node) {} to[C, l_=$C_{cb}$] (-7.5, 0.5) node[circ] {} -- (pnp_ctrl.B);
+
+    % Tierra digital a partir del nodo superior izquierdo
+    \draw (c_pnp_node) -- ++(-1.0, 0) node[rground] {};
+
+    % Resistencia desde la base del PNP hacia VREF
+    \draw (pnp_ctrl.B) node[circ] {} -- (-7.5, 0.5) to[R, l=$R_b$] (-7.5, -1.2) node[circ] (vref_rb_node) {} -- (vref_c_node);
+
+    % Transistor NPN en la zona por debajo del PNP (Emisor y Colector a la izquierda)
+    \draw (-7.5, -4.0) node[npn, xscale=-1] (npn_ctrl) {};
+    \node[left] at (-7.7, -4.0) {$T_2$};
+
+    % Conexión de la base del NPN al pin 4 (RT/CT)
+    \draw (npn_ctrl.B) -- (-6.0, -4.0) |- (1.2, -6.0) node[circ] {};
+
+    % Resistencia desde el emisor del transistor NPN hacia el pin 3 (Isense)
+    \draw (npn_ctrl.E) |- (-2.0, -6.6) to[R, l=$R_e$] (2.6, -6.6) node[circ] {};
+
+    % Conexión del colector del NPN hacia VREF
+    \draw (npn_ctrl.C) -- (vref_rb_node);
+
+    % Conexión del emisor del transistor PNP al pin 1 (COMP)
+    \draw (pnp_ctrl.E) -- (-5.5, -0.4) -| (-4.2, -2.8) -- (-3.0, -2.8);
+
+    % Línea desde el Gate del MOSFET hasta el pin OUT del PWM con red en paralelo
+    \coordinate (g_top) at (mosfet.G |- 0, 0.6);
+    \coordinate (g_bot) at (mosfet.G |- 0, -0.2);
+    \draw (mosfet.G) -- (g_top) node[circ] {};
+    \draw (g_top) -- ++(-0.4,0) coordinate (gt_L) to[R, l_=$R_g$] (gt_L |- g_bot) -- (g_bot);
+    \draw (g_top) -- ++(0.4,0) coordinate (gt_R) to[D, l=$D_g$] (gt_R |- g_bot) -- (g_bot);
+    \draw (g_bot) node[circ] {} |- (0.5, -0.5);
+    
+    % Conexión del pin VCC al nodo i
+    \draw (2.3, -1.2) -- (2.3, -0.2) to[R, l=$R_{vcc}$] (2.3, 0.8) node[circ] {} -- (2.3, 3) to[R, l=$R_{start1}$] (2.3, 4.5) to[R, l=$R_{start2}$] (2.3, 6) node[circ] {};
+    \draw (1.0, -0.2) node[rground] {} to[zD, l=$D_{Z2}$] (1.0, 0.8) -- (2.3, 0.8);
+    
+    % Conexión del pin 7 (VCC) al nodo sobre Caux2
+    \draw (caux2_top) -- (5.2, 0) |- (2.3, -1.2) node[circ] {};
+
+    % Conexión del pin Isense al Source del MOSFET
+    \coordinate (isense_node) at (4, -2.0);
+    \draw (isense_node) node[circ]{} to[R, l=$R_{isense}$] (2.6, -2.0) node[circ] (isense_filter) {} -- (2.0, -2.0);
+    \draw (tap_S) |- (isense_node);
+    
+    % Capacitor de filtro Isense a tierra digital
+    \draw (isense_filter) -- (2.6, -8.5) to[C, l_=$C_f$] (2.6, -9.5) node[rground]{};
+
+    % Dos resistencias en paralelo desde la línea Isense hacia tierra digital
+    \draw (isense_node) -- (4.0, -3.8) node[circ]{};
+    \draw (3.6, -3.8) -- (4.4, -3.8);
+    \draw (3.6, -3.8) to[R, l_=$R_{cs1}$] (3.6, -5.3);
+    \draw (4.4, -3.8) to[R, l_=$R_{cs2}$] (4.4, -5.3);
+    \draw (3.6, -5.3) -- (4.4, -5.3);
+    \draw (4.0, -5.3) node[circ]{} node[rground]{};
+
+    % Secundario del transformador
+    \draw (10.5, 5.5) node[circ] (ls_top) {} to[L, l=$L_S$] (10.5, 2.5) node[circ] (ls_bot) {};
+    \node[circ] at (10.9, 2.9) {}; % Punto de fase (inversor)
+    
+    % Diodos Schottky en paralelo rectificando la salida
+    \draw (ls_top) -- (11.2, 5.5) node[circ] {} -- (11.2, 6.2) to[sD, l=$D_{out1}$] (12.8, 6.2) -- (12.8, 5.5) node[circ] {};
+    \draw (11.2, 5.5) -- (11.2, 4.8) node[circ] {} to[sD, l_=$D_{out2}$] (12.8, 4.8) node[circ] {} -- (12.8, 5.5);
+    \draw (12.8, 5.5) -- (17.5, 5.5) to[L, l=$L_{out}$] (19.5, 5.5) node[circ] {} -- (20.5, 5.5) coordinate (v_out_pos);
+
+    % Línea de retorno del secundario (negativo)
+    \draw (ls_bot) -- (20.5, 2.5) node[rground] {};
+
+    % Resistencia de descarga a la salida
+    \draw (19.5, 5.5) to[R, l=$R_{out}$] (19.5, 2.5) node[circ] {};
+
+    % Indicador de salida (Resistencia en serie con diodo LED)
+    \draw (20.5, 5.5) to[R, l=$R_{led}$] (20.5, 4.0) to[led, l=LED] (20.5, 2.5);
+
+    % Terminales de salida principal (+ y -)
+    \draw (21.5, 5.5) node[circ] {} -- (22.5, 5.5) node[ocirc] {} node[right, font=\large\bfseries] {$+$};
+    \draw (20.5, 2.5) node[circ] {} -- (22.5, 2.5) node[ocirc] {} node[right, font=\large\bfseries] {$-$};
+
+    % Red Snubber (RC) en paralelo con los diodos
+    \draw (11.2, 4.8) -- (11.2, 3.8) to[R, l_=$R_{sn}$] (12.0, 3.8) to[C, l_=$C_{sn}$] (12.8, 3.8) -- (12.8, 4.8);
+
+    % 3 Capacitores electrolíticos de filtro en paralelo a la salida
+    \draw (14.0, 5.5) node[circ] {} to[pC, l=$C_{out1}$] (14.0, 2.5) node[circ] {};
+    \draw (15.5, 5.5) node[circ] {} to[pC, l=$C_{out2}$] (15.5, 2.5) node[circ] {};
+    \draw (17.0, 5.5) node[circ] {} to[pC, l=$C_{out3}$] (17.0, 2.5) node[circ] {};
+
+    % Capacitor desde el extremo inferior de Ls a tierra analógica
+    \draw (10.5, 2.5) to[C, l=$C_{ls}$] (10.5, 0.5) node[ground] {};
+
+    % Conexión de la tierra digital del circuito auxiliar al nodo negativo de la etapa de salida
+    \draw (9, -3) -- (9, -4.5) to[C, l=$C_Y$] (10.0, -4.5) -| (11.5, 2.5) node[circ]{};
+
+    % Recuadro punteado para la etapa de salida
+    \draw[dashed, blue] (10.1, -0.2) rectangle (23.5, 7.0);
+    \node[above, font=\scriptsize, text=blue] at (16.8, 7.0) {Etapa de Salida};
+
+    % Recuadro punteado para la etapa de control
+    \draw[dashed, red] (-9.2, -10.4) -- (4.8, -10.4) -- (4.8, -1.0) -- (3.8, -1.0) -- (3.8, -0.6) -- (-3.0, -0.6) -- (-3.0, 2.2) -- (-9.2, 2.2) -- cycle;
+    \node[above, font=\scriptsize, text=red] at (-6.1, 2.2) {Etapa de Control};
+
+    % --- Puntos de Prueba (Troubleshooting) ---
+    % Lado Primario
+    \node[tp, label={[label distance=-2pt]90:TP1}] at (8,6) {}; % Vbus+
+    \node[tp, label={[label distance=-2pt]90:TP2}] at (mosfet.S) {}; % Vbus- (Source del MOSFET)
+    \node[tp, label={[label distance=-2pt]180:TP3}] at (mosfet.G) {}; % Gate Drive
+    \node[tp, label={[label distance=-2pt]0:TP4}] at (mosfet.D) {}; % Drain (Switching Node)
+    \node[tp, label={[label distance=-2pt]270:TP5}] at (isense_node) {}; % Isense
+    \node[tp, label={[label distance=-2pt]0:TP6}] at (2.3, -1.2) {}; % VCC
+    \node[tp, label={[label distance=-2pt]180:TP7}] at (vref_node) {}; % VREF
+    % Lado Secundario
+    \node[tp, label={[label distance=-2pt]270:TP8}] at (scr_ctrl.G) {}; % Feedback (TL431 Ref)
+    \node[tp, label={[label distance=-2pt]270:TP9}] at (12.8, 5.5) {}; % Salida rectificada (pre-filtro)
+    \node[tp, label={[label distance=-2pt]270:TP10}] at (22.5, 5.5) {}; % Salida final +
+    \node[tp, label={[label distance=-2pt]90:TP11}] at (22.5, 2.5) {}; % Salida final -
+
+    \end{circuitikz}
+    }
+    \caption{Esquema eléctrico básico de la etapa de conmutación (Topología Flyback).}
+\end{figure}
+
+\end{document}

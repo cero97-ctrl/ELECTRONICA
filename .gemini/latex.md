@@ -155,3 +155,115 @@ Reemplazar `pC` por `eC` (condensador electrolítico) o `cC` (curved capacitor):
 ```
 
 > **Archivo afectado:** `docs/SMPS/SMPS_FUENTE_CONMUTADA_CIRCUITO_DE_ENTRADA.tex`
+
+---
+
+## 5. Referencia Adelantada a un Nodo/Coordenada TikZ No Definido Aún (Forward Reference)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex`, la compilación falla con el siguiente error:
+
+```text
+Package pgf Error: No shape named `v_out_pos' is known.
+
+See the pgf package documentation for explanation.
+Type  H <return>  for immediate help.
+
+l.453     }
+```
+
+### Causa
+
+Dentro de un entorno `circuitikz` (o `tikzpicture`), TikZ procesa las instrucciones de dibujo de forma **secuencial**. Si se referencia un nodo o coordenada (por ejemplo, `(v_out_pos)`) en una instrucción `\draw` **antes** de que dicho nodo haya sido definido (mediante `coordinate (v_out_pos)` o `node (v_out_pos)` en una línea posterior), TikZ no puede resolver el nombre y lanza el error `No shape named '...' is known`.
+
+En este caso concreto, la coordenada `v_out_pos` se definía en la línea 430:
+```latex
+\draw ... (20.5, 5.5) coordinate (v_out_pos);
+```
+pero se referenciaba **antes**, en la línea 319:
+```latex
+\draw (11.0, -7.1) -- (11.0, -5.0) -- (21.5, -5.0) |- (v_out_pos) node[circ] {};
+```
+
+### Solución
+
+#### Opción A: Reemplazar la referencia por las coordenadas literales (Aplicada)
+Sustituir el nombre del nodo por sus coordenadas numéricas explícitas:
+
+```latex
+% Antes (incorrecto — referencia adelantada):
+\draw (11.0, -7.1) -- (11.0, -5.0) -- (21.5, -5.0) |- (v_out_pos) node[circ] {};
+
+% Después (correcto):
+\draw (11.0, -7.1) -- (11.0, -5.0) -- (21.5, -5.0) |- (20.5, 5.5) node[circ] {};
+```
+
+#### Opción B: Definir la coordenada al inicio del entorno
+Mover la definición de la coordenada al principio del bloque `circuitikz`, antes de cualquier referencia:
+
+```latex
+\begin{circuitikz}[...]
+    % Definir coordenadas reutilizables al inicio
+    \coordinate (v_out_pos) at (20.5, 5.5);
+
+    % ... resto del dibujo ...
+    \draw (11.0, -7.1) -- ... |- (v_out_pos) node[circ] {};
+\end{circuitikz}
+```
+
+> **Archivo afectado:** `docs/SMPS/SMPS_FUENTE_CONMUTADA.tex`
+
+---
+
+## 6. Estilo TikZ Personalizado No Definido (`tp`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación genera múltiples errores repetidos:
+
+```text
+! Package pgfkeys Error: I do not know the key '/tikz/tp' and I am going to
+  ignore it. Perhaps you misspelled it.
+
+See the pgfkeys package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...
+
+l.279     }
+```
+
+Latexmk puede además cachear el error y reportar en ejecuciones posteriores:
+
+```text
+Collected error summary (may duplicate other messages):
+  pdflatex: gave an error in previous invocation of latexmk.
+```
+
+### Causa
+
+Se utilizan nodos con un estilo personalizado (`tp`) para marcar puntos de prueba en un diagrama `circuitikz`, pero dicho estilo nunca fue definido con `\tikzset`. TikZ no reconoce la clave y lanza el error para cada nodo que la usa:
+
+```latex
+% Uso sin definición previa (incorrecto):
+\node[tp, label={...}] at (8,6) {};  % TP1
+\node[tp, label={...}] at (mosfet.S) {};  % TP2
+% ... etc.
+```
+
+### Solución
+
+Definir el estilo `tp` con `\tikzset` **antes** de utilizarlo, ya sea en el preámbulo del documento o al inicio del entorno `circuitikz`/`tikzpicture`:
+
+```latex
+% Dentro del entorno circuitikz, antes de los nodos que usen 'tp':
+\tikzset{tp/.style={circle, fill=red, inner sep=1.5pt}}
+
+% Ahora los nodos funcionan correctamente:
+\node[tp, label={[label distance=-2pt]270:TP1}] at (8,6) {};
+\node[tp, label={[label distance=-2pt]90:TP2}] at (mosfet.S) {};
+```
+
+> **Nota:** El estilo es personalizable. Se pueden ajustar `fill` (color), `inner sep` (tamaño) y `draw` (borde) según las necesidades del diagrama.
+
+> **Archivo afectado:** `docs/SMPS/SMPS.tex`

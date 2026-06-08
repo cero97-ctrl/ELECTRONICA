@@ -1,0 +1,115 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{circuitikz}
+\usepackage{float}
+
+% Configuramos la página en horizontal para que el esquema respire mejor
+\geometry{a4paper, margin=1.5cm, landscape}
+
+\begin{document}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{circuitikz}[american, thick, scale=0.9, transform shape, font=\footnotesize]
+        
+        % --- ENTRADA DE LÍNEA ---
+        \draw (0, 7) node[ocirc]{} node[left]{\textbf{Fase 1 (L)}} -- (0.5, 7);
+        \draw (0, 2) node[ocirc]{} node[left]{\textbf{Neutro (N)}} -- (0.5, 2);
+        
+        % Ruteo hacia la etapa de salida (Contactos)
+        \draw (0.5, 7) node[circ]{} -- (0.5, 11.5) -- (23, 11.5);
+        \draw (0.5, 2) node[circ]{} -- (0.5, -2.0) -- (26, -2.0);
+        
+        % --- PROTECCIÓN PRIMARIA ---
+        \draw (0.5, 7) -- (1.5, 7) node[circ]{} to[varistor, l=\shortstack{MOV \\ 150V}, *-*] (1.5, 2) node[circ]{};
+        \draw (0.5, 2) -- (1.5, 2);
+        
+        % --- SENSADO DE VOLTAJE (Para el ADC del MCU) ---
+        % Toma una muestra de la línea, la rectifica (medio ciclo), filtra y reduce a <5V
+        \draw (1.5, 7) -- (1.5, 9.5) -- (15.5, 9.5) to[D, l=\shortstack{$D_5$ \\ 1N4007}] (16.5, 9.5) to[R, l=\shortstack{$R_2$ \\ 1M$\Omega$}] (16.5, 5.5) -- (17.6, 5.5);
+        \draw (16.5, 5.5) node[circ]{} to[R, l=\shortstack{$R_3$ \\ 10k$\Omega$}, *-*] (16.5, -1.0);
+        \draw (16.5, 5.5) -- (15.8, 5.5) -- (15.8, 2.3) to[C, l_=\shortstack{$C_4$ \\ 100nF}, -*] (15.8, -1.0);
+        
+        % --- FUENTE CAPACITIVA (Impedancia de caída) ---
+        \draw (1.5, 7) -- (2.5, 7) node[circ]{};
+        \draw (2.5, 7) -- (2.5, 8) to[R, l=\shortstack{$R_1$ \\ 470k$\Omega$}] (4.5, 8) -- (4.5, 7);
+        \draw (2.5, 7) to[C, l_=\shortstack{$C_1$ \\ 680nF}] (4.5, 7) node[circ]{};
+        \draw (4.5, 7) -| (5, 4.5);
+        
+        % Ruteo de neutro al puente rectificador
+        \draw (1.5, 2) -- (7, 2) -- (7, 4.5);
+        
+        % --- PUENTE RECTIFICADOR ---
+        \coordinate (br-left) at (5, 4.5);
+        \coordinate (br-right) at (7, 4.5);
+        \coordinate (br-top) at (6, 6);
+        \coordinate (br-bottom) at (6, 3);
+        \draw (br-left) to[D, *-*] (br-top);
+        \draw (br-right) to[D, *-*] (br-top);
+        \draw (br-bottom) to[D, *-*] (br-left);
+        \draw (br-bottom) to[D, *-*] (br-right);
+        
+        % --- RIELES DE ALTO VOLTAJE DC (24V para el Relé) ---
+        \draw (br-top) -- (6, 6.5) -- (10, 6.5);
+        \draw (br-bottom) -- (6, -1.0) -- (25, -1.0) node[rground]{}; % Riel GND común
+        
+        \draw (8, 6.5) node[circ]{} to[eC, l=\shortstack{$C_2$ \\ 220$\mu$F}, *-*] (8, -1.0);
+        \draw (10, -1.0) node[circ]{} -- (10, 2.5) to[zD, l_=\shortstack{$D_{Z1}$ \\ 24V}] (10, 6) -- (10, 6.5) node[circ]{};
+        \draw (10, 6.5) -- (10, 8.5) -- (24, 8.5); % Salida de 24V hacia el relé
+        
+        % --- RUTA DE ALIMENTACIÓN LÓGICA (5V para MCU) ---
+        \draw (10, 6.5) to[R, l=\shortstack{$R_4$ \\ 1k$\Omega$ (1W)}] (12.5, 6.5) -- (17.6, 6.5);
+        \draw (12.5, -1.0) node[circ]{} -- (12.5, 2.5) to[zD, l_=\shortstack{$D_{Z2}$ \\ 5V}] (12.5, 6) -- (12.5, 6.5) node[circ]{};
+        \draw (14.0, 6.5) node[circ]{} to[eC, l=\shortstack{$C_3$ \\ 10$\mu$F}, *-*] (14.0, -1.0);
+        
+        % --- MICROCONTROLADOR (Cerebro Digital) ---
+        \draw[thick, fill=blue!5] (17.6, 3.6) rectangle (21.4, 7.4);
+        \node[font=\bfseries, align=center] at (19.5, 6.5) {MCU \\ (ATtiny85)};
+        % Etiquetas de Pines
+        \node[right, font=\tiny] at (17.6, 6.5) {VCC};
+        \node[right, font=\tiny] at (17.6, 5.5) {ADC (Sensado)};
+        \node[above, font=\tiny] at (19.5, 3.6) {GND};
+        \node[above, font=\tiny] at (18.5, 3.6) {PB0 (Norm)};
+        \node[above, font=\tiny] at (20.5, 3.6) {PB1 (Falla)};
+        \node[left, font=\tiny] at (21.4, 5.5) {PB3 (Relay)};
+        
+        % Conexión GND MCU
+        \draw (19.5, 3.6) -- (19.5, -1.0) node[circ]{};
+        
+        % --- INDICADORES LED ---
+        \draw (18.5, 3.6) -- (18.5, 3.3) to[R, l=1k$\Omega$] (18.5, 2.3) to[led, l_=Verde] (18.5, -1.0) node[circ]{};
+        \draw (20.5, 3.6) -- (20.5, 3.3) to[R, l=1k$\Omega$] (20.5, 2.3) to[led, l=Rojo] (20.5, -1.0) node[circ]{};
+        
+        % --- ETAPA DE POTENCIA (Driver del Relé) ---
+        \draw (21.4, 5.5) to[R, l=\shortstack{$R_5$ \\ 2.2k$\Omega$}] (23, 5.5);
+        \draw (24, 4.5) node[npn] (Q1) {};
+        \node[right] at (Q1.C) {$Q_1$};
+        \draw (23, 5.5) -| (Q1.B);
+        \draw (Q1.E) -- (24, -1.0) node[circ]{};
+        \draw (Q1.C) -- (24, 6.5) node[circ]{};
+        
+        \draw (24, 8.5) to[L, l_=\shortstack{Relé \\ 24V/30A}, *-*] (24, 6.5);
+        \draw (25.5, 6.5) to[D, l_=\shortstack{$D_6$ \\ 1N4001}, *-*] (25.5, 8.5); % Diodo Flyback
+        \draw (24, 8.5) -- (25.5, 8.5);
+        \draw (24, 6.5) -- (25.5, 6.5);
+        
+        % --- CONTACTOS DE SALIDA Y SNUBBER ---
+        \draw (23, 11.5) to[nos, l_=\shortstack{Contactos \\ Relé \\ 24V/30A}] (26, 11.5) -- (26, 9) -- (27, 9) node[ocirc]{} node[right]{\textbf{Fase 2 (Out)}};
+        
+        % Red Snubber para apagar chispas del motor
+        \draw (23, 11.5) node[circ]{} -- (23, 12.5) to[R, l=\shortstack{$100\Omega$ \\ (Snubber)}] (24.5, 12.5) to[C, l=100nF] (26, 12.5) -- (26, 11.5) node[circ]{};
+        
+        % Retorno del Neutro a la Salida
+        \draw (26, -2.0) -- (26, 0) -- (27, 0) node[ocirc]{} node[right]{\textbf{Neutro}};
+        
+    \end{circuitikz}
+    }
+    \caption{Esquema Mejorado V2.0: Protector de Voltaje 120VAC controlado por Microcontrolador (MCU).}
+\end{figure}
+\end{document}
