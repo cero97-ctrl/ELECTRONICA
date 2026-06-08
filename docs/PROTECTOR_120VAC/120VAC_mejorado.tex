@@ -51,13 +51,17 @@
     \resizebox{\textwidth}{!}{
     \begin{circuitikz}[american, thick, scale=0.9, transform shape, font=\footnotesize]
         
+        % Definición del estilo para los Puntos de Prueba (TP)
+        \tikzset{tp/.style={circle, fill=red, inner sep=1.5pt}}
+        
         % --- ENTRADA DE LÍNEA ---
-        \draw (0, 7) node[ocirc]{} node[left]{\textbf{Fase 1 (L)}} -- (0.5, 7);
-        \draw (0, 2) node[ocirc]{} node[left]{\textbf{Neutro (N)}} -- (0.5, 2);
+        \draw (0, 9) node[ocirc]{} node[left]{\textbf{Fase 1 (L)}} -- (0.5, 9) node[circ]{};
+        \draw (0, 0) node[ocirc]{} node[left]{\textbf{Neutro (N)}} -- (0.5, 0) node[circ]{};
+        \draw (0, 9) to[open, v=120V RMS] (0, 0);
         
         % Ruteo hacia la etapa de salida (Contactos)
-        \draw (0.5, 7) node[circ]{} -- (0.5, 11.5) -- (23, 11.5);
-        \draw (0.5, 2) node[circ]{} -- (0.5, -2.0) -- (26, -2.0);
+        \draw (0.5, 7) -- (0.5, 11.5) -- (23, 11.5);
+        \draw (0.5, 2) -- (0.5, -2.0) -- (26, -2.0);
         
         % --- PROTECCIÓN PRIMARIA ---
         \draw (0.5, 7) -- (1.5, 7) node[circ]{} to[varistor, l=\shortstack{MOV \\ 150V}, *-*] (1.5, 2) node[circ]{};
@@ -90,11 +94,11 @@
         
         % --- RIELES DE ALTO VOLTAJE DC (24V para el Relé) ---
         \draw (br-top) -- (6, 6.5) -- (10, 6.5);
-        \draw (br-bottom) -- (6, -1.0) -- (25, -1.0) node[rground]{}; % Riel GND común
+        \draw (br-bottom) -- (6, -1.0) -- (25.5, -1.0) node[rground]{}; % Riel GND común
         
         \draw (8, 6.5) node[circ]{} to[eC, l=\shortstack{$C_2$ \\ 220$\mu$F}, *-*] (8, -1.0);
         \draw (10, -1.0) node[circ]{} -- (10, 2.5) to[zD, l_=\shortstack{$D_{Z1}$ \\ 24V}] (10, 6) -- (10, 6.5) node[circ]{};
-        \draw (10, 6.5) -- (10, 8.5) -- (24, 8.5); % Salida de 24V hacia el relé
+        \draw (10, 6.5) -- (10, 8.5) -- (25, 8.5); % Salida de 24V hacia el relé
         
         % --- RUTA DE ALIMENTACIÓN LÓGICA (5V para MCU) ---
         \draw (10, 6.5) to[R, l=\shortstack{$R_4$ \\ 1k$\Omega$ (1W)}] (12.5, 6.5) -- (17.6, 6.5);
@@ -121,16 +125,16 @@
         
         % --- ETAPA DE POTENCIA (Driver del Relé) ---
         \draw (21.4, 5.5) to[R, l=\shortstack{$R_5$ \\ 2.2k$\Omega$}] (23, 5.5);
-        \draw (24, 4.5) node[npn] (Q1) {};
-        \node[right] at (Q1.C) {$Q_1$};
+        \draw (25, 4.5) node[npn] (Q1) {};
+        \node[right] at (25.4, 4.5) {$Q_1$};
         \draw (23, 5.5) -| (Q1.B);
-        \draw (Q1.E) -- (24, -1.0) node[circ]{};
-        \draw (Q1.C) -- (24, 6.5) node[circ]{};
+        \draw (Q1.E) -- (25, -1.0) node[circ]{};
+        \draw (Q1.C) -- (25, 6.5) node[circ]{};
         
-        \draw (24, 8.5) to[L, l_=\shortstack{Relé \\ 24V/30A}, *-*] (24, 6.5);
-        \draw (25.5, 6.5) to[D, l_=\shortstack{$D_6$ \\ 1N4001}, *-*] (25.5, 8.5); % Diodo Flyback
-        \draw (24, 8.5) -- (25.5, 8.5);
-        \draw (24, 6.5) -- (25.5, 6.5);
+        \draw (25, 8.5) to[L, l_=\shortstack{Relé \\ 24V/30A}, *-*] (25, 6.5);
+        \draw (26.5, 6.5) to[D, l_=\shortstack{$D_6$ \\ 1N4001}, *-*] (26.5, 8.5); % Diodo Flyback
+        \draw (25, 8.5) -- (26.5, 8.5);
+        \draw (25, 6.5) -- (26.5, 6.5);
         
         % --- CONTACTOS DE SALIDA Y SNUBBER ---
         \draw (23, 11.5) to[nos, l_=\shortstack{Contactos \\ Relé \\ 24V/30A}] (26, 11.5) -- (26, 9) -- (27, 9) node[ocirc]{} node[right]{\textbf{Fase 2 (Out)}};
@@ -140,6 +144,13 @@
         
         % Retorno del Neutro a la Salida
         \draw (26, -2.0) -- (26, 0) -- (27, 0) node[ocirc]{} node[right]{\textbf{Neutro (N)}};
+        
+        % --- PUNTOS DE PRUEBA (TEST POINTS) ---
+        \node[tp, label={[font=\bfseries\tiny, text=red]above left:TP1 (24V)}] at (10, 6.5) {};
+        \node[tp, label={[font=\bfseries\tiny, text=red]above:TP2 (5V)}] at (14.0, 6.5) {};
+        \node[tp, label={[font=\bfseries\tiny, text=red]above left:TP3 (ADC)}] at (16.5, 5.5) {};
+        \node[tp, label={[font=\bfseries\tiny, text=red]below right:TP4 (Drive)}] at (21.4, 5.5) {};
+        \node[tp, label={[font=\bfseries\tiny, text=red]below:TP5 (GND)}] at (14.0, -1.0) {};
         
     \end{circuitikz}
     }
