@@ -20,10 +20,10 @@
         
         % Línea base de tierra (Neutro)
         \draw (-1,0) -- (3,0);
-        \node[ground] at (1.5,0) {};
+        \node[ground, label=above left:$N$] at (1.5,0) {};
         
         % Fuente de tensión AC (amplitud Vo, frecuencia 60 Hz) y nodo 'd' (Fase)
-        \draw (-1,0) to[sV, l=$V_o$, a={60 Hz}] (-1,5) -- (5,5) node[circ, label=above:$d$] (d) {};
+        \draw (-1,0) to[sV, l=$V_o$, a={60 Hz}] (-1,5) -- (5,5) node[circ, label=above:$d\,(L)$] (d) {};
         
         % Nodos del interruptor selector de velocidades (a, b, c)
         \node[circ, label=above:$a$] (sw_a) at (3,4) {};
