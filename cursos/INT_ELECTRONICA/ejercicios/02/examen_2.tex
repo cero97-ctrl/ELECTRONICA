@@ -1,0 +1,47 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\title{\textbf{Examen 2: \\ Circuitos Lineales y Fuentes Dependientes}}
+\author{Prof. CESAR RODRIGUEZ}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Instrucciones}
+Resuelva los siguientes $5$ problemas aplicando los conceptos de superposición, teoremas de Thévenin, máxima transferencia de potencia y análisis con fuentes dependientes. Justifique matemáticamente cada uno de sus pasos.
+
+\vspace{0.5cm}
+
+\begin{enumerate}[leftmargin=*, itemsep=2em]
+
+    \item \textbf{(Superposición - 4 pts.)} Un circuito lineal contiene dos fuentes independientes: una fuente de tensión $V_1$ y una fuente de corriente $I_1$. Al 'apagar' (anular) la fuente $I_1$, la tensión medida en un nodo $A$ es de $5\,\text{V}$. Al anular la fuente $V_1$ y encender $I_1$, la tensión en el nodo $A$ es de $-2\,\text{V}$. Determine la tensión total en el nodo $A$ cuando ambas fuentes operan simultáneamente.
+
+    \item \textbf{(Teorema de Thévenin - 4 pts.)} Suponga una red con una fuente de tensión ideal de $10\,\text{V}$ en serie con una resistencia $R_1 = 2\,\Omega$. En paralelo a este conjunto, hay una resistencia $R_2 = 3\,\Omega$. Calcule la tensión de circuito abierto ($V_{th}$) y la resistencia equivalente ($R_{th}$) vistas desde los terminales de $R_2$ si esta fuera retirada del circuito.
+
+    \item \textbf{(Máxima Transferencia de Potencia - 4 pts.)} Un circuito complejo se ha reducido a su equivalente de Thévenin con $V_{th} = 24\,\text{V}$ y $R_{th} = 600\,\Omega$. ¿Qué valor debe tener una resistencia de carga $R_L$ conectada a los terminales para extraer la máxima potencia posible del circuito? Calcule el valor de dicha potencia máxima en miliVatios ($\text{mW}$).
+
+    \item \textbf{(Análisis Nodal con Supernodo Dependiente - 4 pts.)} En un circuito, el Nodo 1 y el Nodo 2 están conectados por una fuente de tensión dependiente cuyo valor es $V_x = 4 I_a$, donde $I_a$ es la corriente que fluye desde el Nodo 2 hacia el nodo de referencia (tierra) a través de una resistencia de $2\,\Omega$. Formule las ecuaciones del supernodo y la ecuación de restricción necesaria para resolver las tensiones nodales.
+
+    \item \textbf{(Análisis de Mallas con Fuentes Dependientes - 4 pts.)} En una red de dos mallas, la malla 1 contiene una fuente de tensión independiente de $12\,\text{V}$, y la malla 2 contiene una fuente de tensión dependiente de corriente (CCVS) definida como $V_d = 3 i_1$, la cual favorece el sentido horario de $i_2$. Si ambas mallas comparten una resistencia de $4\,\Omega$, formule el sistema de ecuaciones lineales $(2 \times 2)$ en términos de $i_1$ e $i_2$, asumiendo que la malla 1 tiene una resistencia propia $R_1$ y la malla 2 una resistencia propia $R_2$.
+
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+    \textit{¡Éxito en su evaluación!}
+\end{center}
+
+\end{document}

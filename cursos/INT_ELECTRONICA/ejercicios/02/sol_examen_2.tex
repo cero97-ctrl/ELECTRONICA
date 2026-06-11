@@ -1,0 +1,114 @@
+\documentclass[12pt, a4paper]{article}
+
+% Paquetes requeridos
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+% Configuracion de la pagina
+\geometry{a4paper, margin=2.5cm}
+
+\title{\textbf{Solucionario Examen 2: \\ Circuitos Lineales y Fuentes Dependientes}}
+\author{Prof. CESAR RODRIGUEZ}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Soluciones Detalladas}
+
+\begin{enumerate}[leftmargin=*, itemsep=2em]
+
+    \item \textbf{(Superposición - 4 pts.)} Un circuito lineal contiene dos fuentes independientes: una fuente de tensión $V_1$ y una fuente de corriente $I_1$. Al ``apagar'' (anular) la fuente $I_1$, la tensión medida en un nodo $A$ es de $5\,\text{V}$. Al anular la fuente $V_1$ y encender $I_1$, la tensión en el nodo $A$ es de $-2\,\text{V}$. Determine la tensión total en el nodo $A$ cuando ambas fuentes operan simultáneamente.
+    
+    \textbf{Solución:} \\
+    Según el principio de superposición, la respuesta total en cualquier parte de un circuito lineal con múltiples fuentes independientes es la suma algebraica de las respuestas individuales producidas por cada fuente actuando por separado.
+    \begin{align*}
+        V_{A} &= V_{A}^{(V_1 \text{ activa})} + V_{A}^{(I_1 \text{ activa})} \\
+        V_{A} &= 5\,\text{V} + (-2\,\text{V}) \\
+        V_{A} &= 3\,\text{V}
+    \end{align*}
+    \textit{Respuesta:} La tensión total en el nodo $A$ es de $\mathbf{3\,\text{V}}$.
+
+    \item \textbf{(Teorema de Thévenin - 4 pts.)} Suponga una red con una fuente de tensión ideal de $10\,\text{V}$ en serie con una resistencia $R_1 = 2\,\Omega$. En paralelo a este conjunto, hay una resistencia $R_2 = 3\,\Omega$. Calcule la tensión de circuito abierto ($V_{th}$) y la resistencia equivalente ($R_{th}$) vistas desde los terminales de $R_2$ si esta fuera retirada del circuito.
+
+    \textbf{Solución:} \\
+    Al retirar la resistencia $R_2$, los terminales donde estaba conectada quedan en circuito abierto. Al no haber un camino cerrado, la corriente que fluye por $R_1$ es $0\,\text{A}$.
+    \begin{itemize}
+        \item \textbf{Cálculo de $V_{th}$:} Como no hay caída de tensión en $R_1$ (debido a que $V_{R1} = 0\,\text{A} \times 2\,\Omega = 0\,\text{V}$), la tensión en los terminales abiertos es exactamente la tensión de la fuente ideal:
+        \[ V_{th} = 10\,\text{V} \]
+        \item \textbf{Cálculo de $R_{th}$:} Para encontrar la resistencia equivalente, "apagamos" las fuentes independientes. La fuente de tensión de $10\,\text{V}$ se sustituye por un cortocircuito. Mirando desde los terminales abiertos hacia la red, solo observamos la resistencia $R_1$:
+        \[ R_{th} = R_1 = 2\,\Omega \]
+    \end{itemize}
+    \textit{Respuesta:} $\mathbf{V_{th} = 10\,\text{V}}$ y $\mathbf{R_{th} = 2\,\Omega}$.
+
+    \item \textbf{(Máxima Transferencia de Potencia - 4 pts.)} Un circuito complejo se ha reducido a su equivalente de Thévenin con $V_{th} = 24\,\text{V}$ y $R_{th} = 600\,\Omega$. ¿Qué valor debe tener una resistencia de carga $R_L$ conectada a los terminales para extraer la máxima potencia posible del circuito? Calcule el valor de dicha potencia máxima en miliVatios ($\text{mW}$).
+
+    \textbf{Solución:} \\
+    El Teorema de Máxima Transferencia de Potencia establece que la potencia en la carga se maximiza cuando $R_L$ es igual a la resistencia de Thévenin de la red a la que está conectada:
+    \[ R_L = R_{th} = \mathbf{600\,\Omega} \]
+    La ecuación para calcular esta potencia máxima es:
+    \begin{align*}
+        P_{max} &= \frac{V_{th}^2}{4 R_{th}} \\
+        P_{max} &= \frac{(24\,\text{V})^2}{4 \times 600\,\Omega} = \frac{576}{2400}\,\text{W} \\
+        P_{max} &= 0.24\,\text{W} = \mathbf{240\,\text{mW}}
+    \end{align*}
+    \textit{Respuesta:} $\mathbf{R_L = 600\,\Omega}$ y $\mathbf{P_{max} = 240\,\text{mW}}$.
+
+    \item \textbf{(Análisis Nodal con Supernodo Dependiente - 4 pts.)} En un circuito, el Nodo 1 y el Nodo 2 están conectados por una fuente de tensión dependiente cuyo valor es $V_x = 4 I_a$, donde $I_a$ es la corriente que fluye desde el Nodo 2 hacia el nodo de referencia (tierra) a través de una resistencia de $2\,\Omega$. Formule las ecuaciones del supernodo y la ecuación de restricción necesaria para resolver las tensiones nodales.
+
+    \textbf{Solución:} \\
+    Debido a que una fuente de tensión (dependiente en este caso) está conectada entre dos nodos de no referencia (Nodos 1 y 2), se debe formar un \textbf{supernodo} que englobe a ambos.
+    \begin{itemize}
+        \item \textbf{Ecuación de restricción:} Asumiendo la convención típica donde la fuente va del Nodo 1 (+) al Nodo 2 (-), tenemos $V_1 - V_2 = V_x$.
+        Sustituyendo el valor de la fuente dependiente:
+        \[ V_1 - V_2 = 4 I_a \]
+        Por la Ley de Ohm, sabemos que la corriente de control $I_a$ que fluye del Nodo 2 a tierra es $I_a = \frac{V_2 - 0}{2} = \frac{V_2}{2}$. Sustituimos en la restricción:
+        \[ V_1 - V_2 = 4 \left( \frac{V_2}{2} \right) = 2 V_2 \implies \mathbf{V_1 - 3V_2 = 0} \]
+        \item \textbf{Ecuación de LKC en el Supernodo:} La suma algebraica de las corrientes que abandonan el supernodo es igual a cero. (Se suman las corrientes de las ramas conectadas al Nodo 1 más las ramas del Nodo 2, exceptuando la rama interna de la fuente dependiente):
+        \[ \sum i_{\text{salientes\_nodo1}} + \sum i_{\text{salientes\_nodo2}} = 0 \]
+    \end{itemize}
+
+    \item \textbf{(Análisis de Mallas con Fuentes Dependientes - 4 pts.)} En una red de dos mallas, la malla 1 contiene una fuente de tensión independiente de $12\,\text{V}$, y la malla 2 contiene una fuente de tensión dependiente de corriente (CCVS) definida como $V_d = 3 i_1$, la cual favorece el sentido horario de $i_2$. Si ambas mallas comparten una resistencia de $4\,\Omega$, formule el sistema de ecuaciones lineales $(2 \times 2)$ en términos de $i_1$ e $i_2$, asumiendo que la malla 1 tiene una resistencia propia $R_1$ y la malla 2 una resistencia propia $R_2$.
+
+    \textbf{Solución:} \\
+    Aplicamos la Ley de Tensiones de Kirchhoff (LVK) recorriendo cada malla en sentido horario.
+    
+    \textbf{Malla 1:}
+    \begin{align*}
+        -12 + R_1 i_1 + 4(i_1 - i_2) &= 0 \\
+        (R_1 + 4)i_1 - 4 i_2 &= 12 \quad \text{--- (Ec. 1)}
+    \end{align*}
+    
+    \textbf{Malla 2:} \\
+    Como la fuente dependiente favorece la dirección de $i_2$, actúa como una subida de tensión en el recorrido (se atraviesa de $-$ a $+$).
+    \begin{align*}
+        -V_d + R_2 i_2 + 4(i_2 - i_1) &= 0 
+    \end{align*}
+    Sustituimos la dependencia $V_d = 3 i_1$:
+    \begin{align*}
+        -(3 i_1) + R_2 i_2 + 4 i_2 - 4 i_1 &= 0 \\
+        -7 i_1 + (R_2 + 4) i_2 &= 0 \quad \text{--- (Ec. 2)}
+    \end{align*}
+    
+    El sistema lineal es:
+    \[
+    \begin{cases} 
+        (R_1 + 4)i_1 - 4i_2 = 12 \\ 
+        -7i_1 + (R_2 + 4)i_2 = 0 
+    \end{cases}
+    \]
+
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+    \textit{Fin del Solucionario.}
+\end{center}
+
+\end{document}
