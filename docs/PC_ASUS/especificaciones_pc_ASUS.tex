@@ -1,0 +1,67 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{times}
+\usepackage{geometry}
+\usepackage{booktabs}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Reporte Tecnico de Especificaciones del Sistema}} \\
+    \vspace{0.2cm}
+    {\large \textit{Informacion extraida de ASUS UEFI BIOS Utility}}
+\end{center}
+
+\vspace{0.5cm}
+
+\section*{1. Informacion General del Sistema}
+A continuacion se detallan los componentes principales detectados en el firmware de la placa base:
+
+\begin{itemize}
+    \item \textbf{Placa Base (Motherboard):} ASUS P8H61-M LX2 R2.0
+    \item \textbf{Version de la BIOS:} 1601
+    \item \textbf{Modelo del Procesador (CPU):} Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz
+    \item \textbf{Velocidad del Reloj del CPU:} 3400 MHz
+    \item \textbf{Memoria RAM Total Instalada:} 8192 MB (DDR3 1600MHz)
+\end{itemize}
+
+\section*{2. Monitoreo de Parametros Fisicos (Voltajes y Temperaturas)}
+
+\subsection*{2.1. Temperaturas del Hardware}
+\begin{itemize}
+    \item \textbf{CPU (Procesador):} +174.2 F / +79.0 C \\
+    \textit{Alerta Tecnica: Una temperatura de 79 grados Celsius en la interfaz de la BIOS (estado de reposo) es inusualmente alta. Se recomienda revisar el estado del disipador de calor, ventiladores y realizar un cambio de pasta termica de forma prioritaria.}
+    \item \textbf{MB (Placa Base):} +100.4 F / +38.0 C
+\end{itemize}
+
+\subsection*{2.2. Lineas de Voltaje (Power Delivery)}
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Linea de Voltaje / Componente} & \textbf{Valor Medido} \\
+\midrule
+\textbf{CPU Vcore} & 0.744 V \\
+\textbf{3.3V Voltage} & 3.392 V \\
+\textbf{5V Voltage} & 5.200 V \\
+\textbf{12V Voltage} & 12.288 V \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{2.3. Ventiladores y Sistema de Enfriamiento}
+\begin{itemize}
+    \item \textbf{Velocidad del CPU\_FAN:} 2445 RPM
+    \item \textbf{Velocidad del CHA\_FAN (Chasis):} N/A (No detectado o no instalado)
+    \item \textbf{Perfil Q-Fan Control:} Turbo
+\end{itemize}
+
+\section*{3. Prioridades de Arranque (Boot Priority)}
+El orden jerarquico de inicio configurado para el sistema operativo es el siguiente:
+\begin{enumerate}
+    \item \textbf{Dispositivo 1:} \texttt{debian (SM: KINGSTON SA400S37240G)} (Unidad SSD Kingston de 240GB con distribucion Linux Debian)
+    \item \textbf{Dispositivo 2:} Unidad de almacenamiento secundario genérica
+    \item \textbf{Dispositivo 3:} Unidad adicional o periferico
+\end{enumerate}
+
+\end{document}

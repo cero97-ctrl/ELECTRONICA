@@ -1,0 +1,45 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{a4paper, margin=1in}
+
+\title{Informe Definitivo: Viabilidad de IA Local en Equipos Disponibles}
+\author{Prof. CERO y Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Este informe presenta un veredicto técnico sobre la viabilidad de implementar modelos de Inteligencia Artificial (IA) local en dos equipos específicos de nuestro laboratorio: una PC de escritorio ASUS P8H61-M LX2 y un servidor Dell PowerEdge R610. 
+
+La premisa inicial sugiere descartar la PC debido a severas limitaciones térmicas y de memoria, apostando por el servidor como infraestructura principal. Este documento evalúa y confirma dicha afirmación.
+
+\section{Evaluación de la PC ASUS (Core i7-3770)}
+La intuición inicial es completamente acertada. La PC de escritorio presenta bloqueos críticos que la inhabilitan para tareas de IA local intensivas:
+\begin{itemize}
+    \item \textbf{Memoria RAM Insuficiente:} Cuenta con solo 8 GB de RAM DDR3. Los modelos de lenguaje modernos (incluso los más pequeños de 7B u 8B parámetros en formatos altamente cuantizados) consumirán casi la totalidad de esta memoria, dejando al sistema operativo Debian sin recursos y provocando una caída drástica del rendimiento.
+    \item \textbf{Crisis Térmica (Riesgo Crítico):} El procesador registra 79.0 $^\circ$C (174.2 $^\circ$F) estando en reposo dentro de la interfaz UEFI BIOS. La inferencia de IA es un proceso altamente demandante que pondrá el CPU al 100\% de uso. En estas condiciones, el procesador sufrirá \textit{thermal throttling} severo en segundos y el equipo se apagará abruptamente para evitar daños físicos. \textbf{Requiere mantenimiento preventivo urgente} (limpieza, revisión del anclaje del disipador y cambio de pasta térmica) antes de cualquier uso intensivo.
+\end{itemize}
+
+\section{Evaluación del Servidor Dell PowerEdge R610}
+Efectivamente, el servidor es el mejor candidato, aunque con matices importantes relacionados con su antigüedad arquitectónica:
+\begin{itemize}
+    \item \textbf{Ventaja Absoluta (RAM Masiva):} Su soporte para memorias ECC DDR3 de alta capacidad es su mayor fortaleza. Esto permite cargar modelos de Inteligencia Artificial enormes (LLMs) íntegramente en la memoria del sistema, eliminando el cuello de botella que sufre la PC ASUS.
+    \item \textbf{Limitación Arquitectónica (Ausencia de AVX2):} Los procesadores Xeon serie 5500/5600 carecen del conjunto de instrucciones AVX2. Esto imposibilita el uso de librerías modernas de IA precompiladas de manera directa.
+    \item \textbf{El Enfoque de Solución:} Para que este servidor funcione como nodo de IA, se debe utilizar software optimizado para arquitecturas \textit{legacy} e inferencia pura por CPU, como \texttt{llama.cpp} (compilado sin AVX2). La IA será lenta en su tiempo de respuesta (estimado entre 1 a 5 tokens por segundo), pero será totalmente funcional y robusta.
+\end{itemize}
+
+\section{Veredicto Final}
+La hipótesis planteada es correcta. Se deben asignar los roles de la siguiente manera:
+
+\begin{enumerate}
+    \item \textbf{Descartar la PC ASUS como nodo de IA:} Relegarla a tareas de programación, redacción de documentos, cliente ligero o servidor web de pruebas, posterior a la solución de su falla térmica.
+    \item \textbf{Aprobar el servidor Dell R610 como Backend de IA:} Utilizarlo para hospedar la IA local, valiéndose de modelos cuantizados en formato GGUF y procesando la inferencia a través de sus procesadores Xeon. Será ideal para respaldar sistemas RAG (Retrieval-Augmented Generation), bases de datos vectoriales (ChromaDB) u operaciones analíticas asíncronas donde la latencia en la generación de texto no sea un problema.
+\end{enumerate}
+
+\end{document}
