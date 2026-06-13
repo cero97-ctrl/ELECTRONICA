@@ -1,0 +1,79 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{hyperref}
+
+\title{Propuesta de Hardware: Servidor de IA Local basado en AMD}
+\author{Gemini Code Assist y Prof. CERO}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Este documento detalla la propuesta de hardware para la construcción de un servidor de Inteligencia Artificial (IA) local económico y eficiente. Tras evaluar las limitaciones de equipos anteriores (falta de instrucciones AVX2 en servidores \textit{legacy} y problemas térmicos severos en PCs antiguas), se ha seleccionado el procesador \textbf{AMD Ryzen 5 5500} como el motor principal para el nuevo ecosistema.
+
+\section{Características del Procesador (AMD Ryzen 5 5500)}
+El AMD Ryzen 5 5500 es un procesador de escritorio de 6 núcleos y 12 hilos basado en la arquitectura Zen 3 que ofrece una excelente relación calidad-precio. A continuación, se detallan sus ventajas específicas para cargas de trabajo de IA local:
+
+\begin{itemize}
+    \item \textbf{Soporte de Instrucciones AVX2:} Incluye nativamente el conjunto de instrucciones AVX2 (además de FMA3 y AVX). Esto permite la ejecución directa y a máxima velocidad de binarios modernos de IA (como Ollama, PyTorch o TensorFlow) sin arrojar errores de "Instrucción Ilegal".
+    \item \textbf{Capacidad de Memoria RAM (DDR4):} Utiliza la plataforma AM4, compatible con memoria RAM DDR4. Esto permite ensamblar el equipo con 32 GB o 64 GB de RAM a bajo costo, facilitando la carga de Modelos de Lenguaje Grandes (LLMs) cuantizados íntegramente en la memoria del sistema.
+    \item \textbf{Eficiencia Térmica:} Posee un TDP (\textit{Thermal Design Power}) de solo 65 Watts e incluye el disipador Wraith Stealth en su caja. Es altamente eficiente y mantendrá temperaturas estables incluso cuando la inferencia de IA ponga los núcleos al 100\% de su capacidad.
+    \item \textbf{Potencia de Inferencia:} Sus 6 núcleos físicos y 12 hilos de procesamiento lógico brindan una gran capacidad para el cálculo de matrices en CPU, generando tokens de texto de manera mucho más fluida y rápida en comparación con arquitecturas antiguas.
+\end{itemize}
+
+\section{Consideraciones y Limitaciones}
+\begin{itemize}
+    \item \textbf{Estándar PCIe 3.0:} Este procesador soporta tecnología PCIe 3.0 en lugar de PCIe 4.0. Si en el futuro se decide instalar una tarjeta gráfica (GPU) de última generación, existirá una ligera reducción teórica en el ancho de banda máximo disponible para transferir datos a la VRAM. Sin embargo, para presupuestos ajustados e inferencia local directa por CPU, esta limitación es completamente imperceptible.
+\end{itemize}
+
+\section{Recomendaciones de Componentes Complementarios}
+Para completar el ensamble del servidor de IA local manteniendo un presupuesto ajustado y asegurando la compatibilidad con el Ryzen 5 5500, se recomiendan los siguientes componentes:
+
+\subsection{Placa Base (Motherboard)}
+\begin{itemize}
+    \item \textbf{Opción Económica (B450):} Modelos como la \textit{Gigabyte B450M DS3H V2} o la \textit{ASUS Prime B450M-A II}. Son muy económicas y cumplen perfectamente. \textbf{Nota importante:} Al comprar una placa B450, asegúrese de que en la caja indique "AMD Ryzen 5000 Desktop Ready"; de lo contrario, podría requerir una actualización de BIOS previa para reconocer el procesador.
+    \item \textbf{Opción Actualizada (B550):} Modelos como la \textit{MSI B550M PRO-VDH} o la \textit{Gigabyte B550M K}. Suelen soportar la serie 5000 de fábrica de manera nativa y ofrecen un mejor diseño de entrega de energía (VRM).
+\end{itemize}
+
+\subsection{Memoria RAM}
+En el contexto de IA por CPU, la capacidad y la configuración son más importantes que la velocidad extrema:
+\begin{itemize}
+    \item \textbf{Recomendación:} 32 GB (2x16 GB) o 64 GB (2x32 GB) de memoria \textbf{DDR4 a 3200 MHz}. Marcas confiables y económicas incluyen \textit{Corsair Vengeance LPX} o \textit{Kingston FURY Beast}.
+    \item \textbf{Arquitectura Dual-Channel:} Es de vital importancia instalar siempre las memorias en pares idénticos para aprovechar el Dual-Channel. Esto duplica el ancho de banda de comunicación entre la RAM y el procesador, acelerando drásticamente la velocidad de generación de tokens (palabras) en la IA.
+\end{itemize}
+
+\subsection{Fuente de Poder (PSU)}
+Dado que el Ryzen 5 5500 es altamente eficiente (TDP de 65W) y el servidor dependerá inicialmente de la CPU para inferencia:
+\begin{itemize}
+    \item \textbf{Recomendación:} Una fuente de \textbf{500W a 600W con certificación 80 Plus Bronze}. Modelos como la \textit{ARESGAME AGV 500W}, \textit{EVGA 500 BR} o \textit{Corsair CV550} son excelentes opciones. Proveen energía estable y dejan el margen eléctrico exacto por si en el futuro decides añadir una GPU aceleradora de gama media de 75W a 150W.
+\end{itemize}
+
+\subsection{Unidad de Almacenamiento (SSD)}
+Para un servidor de IA, la velocidad del disco afecta directamente el tiempo que tarda en cargar un modelo pesado (ej. un archivo GGUF de 10 GB a 40 GB) desde el almacenamiento hacia la memoria RAM.
+\begin{itemize}
+    \item \textbf{Recomendación Principal (NVMe M.2 PCIe Gen3):} Se recomienda estrictamente utilizar un \textbf{SSD NVMe M.2 (PCIe Gen 3.0, formato 2280)}. Unidades con velocidades de hasta 3500 MB/s son ideales para cargar modelos enormes a la RAM en pocos segundos. Se instalan directamente en la placa base (B450/B550) sin cables, mejorando el flujo de aire.
+    \item \textbf{Capacidad Recomendada:} Aunque una unidad de \textbf{256 GB} es perfectamente compatible y funcional en velocidad, el espacio se llenará rápidamente al almacenar múltiples modelos GGUF o bases de datos vectoriales. Se recomienda usarla solo si el presupuesto es estricto; de lo contrario, apuntar a \textbf{500 GB o 1 TB} (ej. \textit{Crucial P3}, \textit{Kingston NV2} o \textit{WD Blue SN570}) es la mejor inversión.
+    \item \textbf{SSD SATA (Alternativa secundaria):} Aunque son funcionales, están limitados a $\approx$ 550 MB/s. Cargar un modelo grande tomará notablemente más tiempo. Dado que hoy en día los precios entre NVMe y SATA son casi idénticos, el formato M.2 NVMe es la elección definitiva.
+\end{itemize}
+
+\subsection{Gabinete (Case)}
+El chasis no solo alberga los componentes, sino que es el principal responsable de disipar el calor generado durante la inferencia de IA. Para garantizar temperaturas óptimas y prolongar la vida útil del hardware, se debe evitar el aislamiento térmico.
+\begin{itemize}
+    \item \textbf{Regla de Oro (Frontal Mesh):} Es estrictamente necesario adquirir un gabinete con panel frontal de malla perforada (\textit{Mesh}). Los frontales de cristal o plástico sólido bloquean la entrada de aire frío.
+    \item \textbf{Recomendaciones Económicas:} Modelos como el \textit{Thermaltake Versa H18}, \textit{Zalman S2}, o el \textit{DeepCool MATREXX 40 3FS} son opciones extraordinarias de bajo costo. 
+    \item \textbf{Ventajas Adicionales:} Estos modelos soportan placas base Micro-ATX/ATX, incluyen ventiladores preinstalados de fábrica (lo que ahorra costos adicionales) y cuentan con un compartimento inferior aislado para la fuente de poder (PSU Shroud), mejorando el orden de los cables y el flujo de aire interno.
+\end{itemize}
+
+\section{Estimación de Costos}
+Tras una investigación de mercado reciente (consultando los precios actuales en la plataforma Amazon), se ha determinado que el costo total estimado para adquirir todos los componentes recomendados para este ensamble asciende a aproximadamente \textbf{\$808.74 USD}. Esta cifra confirma que el equipo representa una inversión muy accesible, logrando un excelente equilibrio entre precio y rendimiento para la implementación de un nodo de Inteligencia Artificial local.
+
+\section{Veredicto Final}
+Si se acompaña de una placa base económica (ej. chipset B450 o B550) y una cantidad generosa de memoria DDR4, el Ryzen 5 5500 se posiciona como el procesador perfecto para construir un nodo de Inteligencia Artificial local moderno, silencioso y muy económico.
+
+\end{document}
