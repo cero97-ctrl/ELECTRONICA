@@ -24,7 +24,7 @@ __pycache__/
 *.lof
 *.lot
 cursos/INT_ELECTRONICA/ejercicios/
-cursos/INT_ELECTRONICA/examenes/
 
 # Ignorar archivos y carpetas que empiecen con "examen"
 examen*
+examenes/*
