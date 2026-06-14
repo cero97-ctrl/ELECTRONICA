@@ -1,0 +1,94 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% --- Configuración de Enlaces ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{Manual de Usuario Básico: EasyEDA}
+\author{Prof. CERO}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción a EasyEDA}
+
+\textbf{EasyEDA} es una herramienta de Automatización de Diseño Electrónico (EDA) que permite la captura de esquemas, simulación de circuitos (SPICE) y el diseño de placas de circuito impreso (PCB). Su principal ventaja radica en operar desde la nube o mediante un cliente local, integrando una inmensa biblioteca de componentes respaldada por LCSC y conexión directa para la fabricación física con JLCPCB.
+
+\subsection{Ediciones de EasyEDA}
+\begin{itemize}
+    \item \textbf{EasyEDA Standard:} Ideal para estudiantes, educadores y entusiastas del hardware open-source. Es altamente intuitiva y cuenta con millones de librerías creadas por la comunidad.
+    \item \textbf{EasyEDA Pro:} Diseñada para proyectos empresariales complejos, con un motor de diseño de PCB más avanzado y capacidades de ruteo de alta velocidad.
+\end{itemize}
+
+\section{Flujo de Trabajo Básico}
+
+El diseño de un circuito impreso en EasyEDA sigue un flujo de trabajo lógico y lineal que asegura que el diseño final concuerde con el esquema eléctrico.
+
+\subsection{1. Creación del Proyecto}
+Todo diseño comienza con la creación de un nuevo proyecto. En el panel de control, seleccione \textit{File -> New -> Project}. Asigne un nombre descriptivo y un pequeño resumen de la función del circuito.
+
+\subsection{2. Captura del Esquema (Schematic)}
+En esta fase se definen las conexiones lógicas del circuito.
+\begin{itemize}
+    \item \textbf{Búsqueda de Componentes:} Utilice el panel \textit{Library} (atajo: \texttt{Shift + F}). Se recomienda buscar componentes de la librería oficial de LCSC para asegurar la disponibilidad de los modelos 3D y los \textit{footprints} (huellas).
+    \item \textbf{Cableado (Wiring):} Use la herramienta \textit{Wire} (atajo: \texttt{W}) para conectar los pines de los componentes.
+    \item \textbf{Etiquetas de Red (Netlabels):} Para evitar esquemas engorrosos con cables cruzados, asigne \textit{Netlabels} (atajo: \texttt{N}) a los cables. Dos cables con la misma etiqueta están eléctricamente conectados.
+\end{itemize}
+
+\subsection{3. Conversión a PCB}
+Una vez validado el esquema, debe trasladarlo al entorno físico. 
+Haga clic en \textit{Design -> Update/Convert to PCB}. El sistema validará que todos los componentes posean un \textit{footprint} asignado. Si todo es correcto, se abrirá el editor de PCB.
+
+\section{Diseño del PCB (Layout)}
+
+El editor de PCB es el entorno donde los componentes se distribuyen geométricamente sobre la placa.
+
+\subsection{Distribución de Componentes (Placement)}
+\begin{itemize}
+    \item Primero, defina el contorno de la placa (\textit{Board Outline}) dibujando en la capa de color magenta (\texttt{BoardOutline}).
+    \item Arrastre y rote (\texttt{Espacio} o \texttt{R}) los componentes para minimizar el cruce de las líneas guía azules (\textit{Ratsnest}), las cuales indican las conexiones lógicas pendientes.
+\end{itemize}
+
+\subsection{Ruteo (Routing)}
+\begin{itemize}
+    \item \textbf{Capas:} Un diseño básico de dos capas usará \texttt{TopLayer} (Rojo) y \texttt{BottomLayer} (Azul).
+    \item Utilice la herramienta \textit{Track} (atajo: \texttt{W}) para materializar las conexiones.
+    \item Para cambiar de una capa a otra mientras rutea una pista, presione la tecla \texttt{V} para insertar una Vía (conexión inter-capa).
+\end{itemize}
+
+\subsection{Planos de Cobre (Copper Area)}
+Es una buena práctica rellenar los espacios vacíos de la placa con cobre conectado a Tierra (\texttt{GND}). Utilice la herramienta \textit{Copper Area} (atajo: \texttt{E}) y seleccione la red \texttt{GND}. Esto mejora el blindaje electromagnético.
+
+\section{Verificación y Fabricación}
+
+\subsection{Comprobación de Reglas de Diseño (DRC)}
+Antes de fabricar, es imperativo ejecutar el \textbf{DRC (Design Rule Check)}. Esta herramienta verifica que no haya cortocircuitos, que las pistas no sean demasiado delgadas y que los componentes no se superpongan. Se accede desde la pestaña de diseño. ¡No envíe a fabricar un diseño con errores de DRC!
+
+\subsection{Generación de Archivos de Fabricación}
+Para materializar la placa, se requieren los siguientes archivos estandarizados:
+\begin{itemize}
+    \item \textbf{Archivos Gerber:} Contienen la información geométrica capa por capa. Seleccione \textit{Generate Fabrication File (Gerber)}.
+    \item \textbf{BOM (Bill of Materials):} Si desea que la fábrica ensamble los componentes por usted, genere este archivo que lista las partes exactas requeridas.
+    \item \textbf{Pick and Place (CPL):} Archivo que indica a las máquinas robóticas (SMT) las coordenadas (X, Y) y la rotación precisa de cada componente en la placa.
+\end{itemize}
+
+\section{Conclusión}
+EasyEDA reduce significativamente la barrera de entrada al diseño de hardware moderno, ofreciendo un flujo continuo desde la concepción del circuito hasta el ensamblaje robótico (PCBA), haciéndolo una excelente elección tanto para la academia como para prototipado rápido en la industria.
+
+\end{document}

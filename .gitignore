@@ -28,5 +28,3 @@ cursos/INT_ELECTRONICA/examenes/
 
 # Ignorar archivos y carpetas que empiecen con "examen"
 examen*
-examenes/
-examenes*
