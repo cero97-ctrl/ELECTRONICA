@@ -1,0 +1,111 @@
+% Codificación recomendada: UTF-8
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES ---
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{circuitikz}
+\usepackage{float}
+
+% --- CONFIGURACIÓN ---
+\geometry{a4paper, margin=2.5cm}
+\usetikzlibrary{babel} % Para compatibilidad entre circuitikz y babel
+
+\title{\textbf{Esquema Eléctrico del Sistema Basado en ESP8266}}
+\author{Generado por Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american, scale=1.2, transform shape]
+        % Definición de colores según la descripción del documento
+        \colorlet{pista_roja}{red}
+        \colorlet{pista_violeta}{violet}
+        \colorlet{pista_morada}{purple}
+        \colorlet{pista_azul_oscuro}{blue!70!black}
+        \colorlet{pista_azul_claro}{cyan}
+        \colorlet{pista_naranja_claro}{orange}
+        \colorlet{pista_ocre}{brown!80!yellow}
+        \colorlet{pista_azul_marino}{blue!50!black}
+        \colorlet{pista_amarilla}{yellow!80!orange}
+        \colorlet{pista_verde}{green!70!black}
+
+        % --- 1. Módulo WeMos D1 Mini (Centro) ---
+        \draw[thick, fill=gray!10] (0,0) rectangle (2,5.5) node[pos=0.5, align=center, text width=1.5cm] {\textbf{WeMos D1 Mini}};
+        % Pines Izquierdos
+        \node[anchor=east, font=\small] (wemos_5v) at (0, 5) {5V};
+        \node[anchor=east, font=\small] (wemos_gnd_l) at (0, 4.5) {GND};
+        \node[anchor=east, font=\small] (wemos_d8) at (0, 3.5) {D8};
+        \node[anchor=east, font=\small] (wemos_d7) at (0, 3) {D7};
+        \node[anchor=east, font=\small] (wemos_d6) at (0, 2.5) {D6};
+        \node[anchor=east, font=\small] (wemos_d5) at (0, 2) {D5};
+        % Pines Derechos
+        \node[anchor=west, font=\small] (wemos_3v3) at (2, 5) {3V3};
+        \node[anchor=west, font=\small] (wemos_gnd_r) at (2, 4.5) {GND}; % GND también está en este lado
+        \node[anchor=west, font=\small] (wemos_d1) at (2, 3.5) {D1};
+        \node[anchor=west, font=\small] (wemos_d3) at (2, 2.5) {D3};
+        \node[anchor=west, font=\small] (wemos_d4) at (2, 2) {D4};
+
+        % --- 2. Módulo MicroSD (Izquierda) ---
+        \draw[thick, fill=gray!10] (-6, 1.5) rectangle (-4, 5) node[pos=0.5, align=center, text width=1.5cm] {\textbf{MicroSD}};
+        % Pines
+        \node[anchor=west, font=\small] (sd_vcc) at (-4, 4.5) {VCC};
+        \node[anchor=west, font=\small] (sd_gnd) at (-4, 4) {GND};
+        \node[anchor=west, font=\small] (sd_cs) at (-4, 3.5) {CS};
+        \node[anchor=west, font=\small] (sd_mosi) at (-4, 3) {MOSI};
+        \node[anchor=west, font=\small] (sd_miso) at (-4, 2.5) {MISO};
+        \node[anchor=west, font=\small] (sd_sck) at (-4, 2) {SCK};
+
+        % --- 3. Módulo MAX98357A (Derecha) ---
+        \draw[thick, fill=gray!10] (5, 1.5) rectangle (8, 5) node[pos=0.5, align=center, text width=2.5cm] {\textbf{MAX98357A}};
+        % Pines
+        \node[anchor=east, font=\small] (max_vdd) at (5, 4.5) {VDD};
+        \node[anchor=east, font=\small] (max_gnd) at (5, 4) {GND};
+        \node[anchor=east, font=\small] (max_bclk) at (5, 3.5) {BCLK};
+        \node[anchor=east, font=\small] (max_lrc) at (5, 2.5) {LRC};
+        \node[anchor=east, font=\small] (max_din) at (5, 2) {DIN};
+        \node[anchor=west, font=\small] (max_outp) at (8, 3.5) {OUT+};
+        \node[anchor=west, font=\small] (max_outn) at (8, 2.5) {OUT-};
+
+        % --- 4. Altavoz ---
+        \draw[thick, fill=gray!10] (11, 2) rectangle (13, 4) node[pos=0.5, align=center] {\textbf{Altavoz}};
+        % Pines
+        \node[anchor=east, font=\small] (spk_inp) at (11, 3.5) {IN+};
+        \node[anchor=east, font=\small] (spk_inn) at (11, 2.5) {IN-};
+
+        % ========== CABLEADO (WIRING) ==========
+
+        % --- Líneas de Alimentación y Referencia ---
+        \draw[pista_roja, thick] (wemos_5v) -- ++(-2.5,0) |- (sd_vcc);
+        \draw[pista_violeta, thick] (wemos_3v3) -- ++(1.5,0) |- (max_vdd);
+        % Tierra Común
+        \draw[pista_morada, thick] (wemos_gnd_l) -- ++(-0.5,0) coordinate(gnd_bus) |- (sd_gnd);
+        \draw[pista_morada, thick] (gnd_bus) |- (max_gnd);
+
+        % --- Bus de Comunicación SPI (a MicroSD) ---
+        \draw[pista_azul_oscuro, thick] (wemos_d8) -- ++(-0.5,0) |- (sd_cs);
+        \draw[pista_azul_claro, thick] (wemos_d7) -- ++(-0.5,0) |- (sd_mosi);
+        \draw[pista_naranja_claro, thick] (wemos_d6) -- ++(-0.5,0) |- (sd_miso);
+        \draw[pista_ocre, thick] (wemos_d5) -- ++(-0.5,0) |- (sd_sck);
+
+        % --- Interfaz de Audio Digital I²S (a MAX98357A) ---
+        \draw[pista_azul_marino, thick] (wemos_d1) -- ++(0.5,0) |- (max_bclk);
+        \draw[pista_amarilla, thick] (wemos_d3) -- ++(0.5,0) |- (max_lrc);
+        \draw[pista_verde, thick] (wemos_d4) -- ++(0.5,0) |- (max_din);
+
+        % --- Salida de Audio Amplificada ---
+        \draw[pista_roja, thick] (max_outp) -- (spk_inp);
+        \draw[black, thick] (max_outn) -- (spk_inn);
+
+    \end{circuitikz}
+    \caption{Esquema de interconexiones entre WeMos D1 Mini, lector MicroSD, amplificador I²S MAX98357A y altavoz.}
+    \label{fig:esquema_carlos}
+\end{figure}
+
+\end{document}

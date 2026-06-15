@@ -165,7 +165,7 @@ def run_agent(latex_filepath: str, output_filepath: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Agente IA para extraer Netlist de LaTeX y generar JSON para EasyEDA.")
     parser.add_argument("input_file", help="Ruta al archivo LaTeX de entrada (.tex)")
-    parser.add_argument("-o", "--output", default="circuito_easyeda.json", help="Ruta al archivo JSON de salida (por defecto: circuito_easyeda.json)")
+    parser.add_argument("-o", "--output", help="Ruta al archivo JSON de salida (por defecto: misma carpeta y nombre base que el archivo .tex)")
     
     args = parser.parse_args()
     
@@ -174,4 +174,9 @@ if __name__ == "__main__":
     elif not os.path.exists(args.input_file):
         print(f"[x] Error: El archivo de entrada '{args.input_file}' no existe.")
     else:
-        run_agent(args.input_file, args.output)
+        output_filepath = args.output
+        if not output_filepath:
+            base_path = os.path.splitext(args.input_file)[0]
+            output_filepath = f"{base_path}_easyeda.json"
+            
+        run_agent(args.input_file, output_filepath)

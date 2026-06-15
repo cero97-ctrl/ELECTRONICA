@@ -1,0 +1,85 @@
+% Codificación recomendada: UTF-8
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{enumitem}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\begin{document}
+
+\title{\textbf{Análisis de Interconexiones y Componentes del Circuito}}
+\author{Evaluación de Hardware Automatizada}
+\date{\today}
+\maketitle
+
+\section{Componentes del Circuito}
+A partir de la inspección visual del esquema físico provisto, se identifican tres bloques constructivos principales:
+
+\begin{itemize}
+    \item \textbf{Unidad de Procesamiento (MCU):} Módulo \texttt{WeMos D1 Mini}, basado en el microcontrolador Wi-Fi \texttt{ESP8266EX}.
+    \item \textbf{Módulo de Almacenamiento:} Lector de tarjetas \texttt{MicroSD} con interfaz de comunicación por bus SPI y adaptador de niveles integrado.
+    \item \textbf{Módulo de Audio:} Amplificador de audio digital \texttt{MAX98357A}, que opera como un DAC Clase D de alta eficiencia a través del bus de audio \texttt{I²S}.
+\end{itemize}
+
+\section{Red de Interconexiones (Netlist)}
+El esquema de cableado y distribución de señales digitales y de potencia entre los tres módulos principales se define detalladamente a continuación:
+
+\subsection{Líneas de Alimentación y Referencia}
+\begin{itemize}
+    \item \textbf{Línea de 5V (Pista Roja):} Conecta el pin \texttt{5V} del WeMos D1 Mini directamente al pin \texttt{VCC} del módulo MicroSD.
+    \item \textbf{Línea de 3.3V (Pista Violeta/Lila):} Conecta el pin \texttt{3V3} del WeMos D1 Mini al pin \texttt{VDD} del amplificador MAX98357A.
+    \item \textbf{Línea de Tierra Común (Pista Morada):} Interconecta el pin \texttt{GND} del WeMos D1 Mini, el pin \texttt{GND} del lector MicroSD, y el pin \texttt{GND} del amplificador MAX98357A, cerrando todos los lazos de retorno eléctrico.
+\end{itemize}
+
+\subsection{Bus de Comunicación SPI (Módulo MicroSD)}
+Las señales del bus serie periférico se enrutan de la siguiente manera desde la MCU:
+\begin{itemize}
+    \item \textbf{Chip Select (Pista Azul Oscuro):} Pin \texttt{D8} (GPIO15) del WeMos $\rightarrow$ Pin \texttt{CS} del módulo MicroSD.
+    \item \textbf{MOSI (Pista Azul Claro):} Pin \texttt{D7} (GPIO13) del WeMos $\rightarrow$ Pin \texttt{MOSI} del módulo MicroSD.
+    \item \textbf{MISO (Pista Naranja Claro):} Pin \texttt{D6} (GPIO12) del WeMos $\rightarrow$ Pin \texttt{MISO} del módulo MicroSD.
+    \item \textbf{Serial Clock (Pista Ocre/Marrón):} Pin \texttt{D5} (GPIO14) del WeMos $\rightarrow$ Pin \texttt{SCK} del módulo MicroSD.
+\end{itemize}
+
+\subsection{Interfaz de Audio Digital I²S (Amplificador MAX98357A)}
+La transmisión del flujo de audio digital se realiza empleando tres líneas principales:
+\begin{itemize}
+    \item \textbf{Bit Clock / BCLK (Pista Azul Marino):} Pin \texttt{D1} (GPIO5) del WeMos $\rightarrow$ Pin \texttt{BCLK} del módulo MAX98357A.
+    \item \textbf{Word Select / LRC (Pista Amarilla):} Pin \texttt{D3} (GPIO0) del WeMos $\rightarrow$ Pin \texttt{LRC} del módulo MAX98357A.
+    \item \textbf{Data In / DIN (Pista Verde):} Pin \texttt{D4} (GPIO2) del WeMos $\rightarrow$ Pin \texttt{DIN} del módulo MAX98357A.
+\end{itemize}
+
+\section{Tabla Resumen de Conexiones}
+A continuación, se tabula la matriz de conexiones eléctricas para facilitar la verificación física o el desarrollo de un circuito impreso (PCB):
+
+\begin{table}[htbp]
+\centering
+\caption{Mapeo de Pines de Control e Interfaz de Potencia}
+\vspace{2mm}
+\begin{tabular}{llcl}
+\toprule
+\textbf{Origen (WeMos D1)} & \textbf{Destino} & \textbf{Pin Destino} & \textbf{Función Asignada} \\
+\midrule
+5V  & MicroSD   & VCC  & Alimentación del módulo (5V) \\
+3V3 & MAX98357A & VDD  & Alimentación del amplificador (3.3V) \\
+GND & Múltiple  & GND  & Retorno común / Referencia 0V \\
+D8  & MicroSD   & CS   & SPI Bus: Chip Select \\
+D7  & MicroSD   & MOSI & SPI Bus: Master Output Slave Input \\
+D6  & MicroSD   & MISO & SPI Bus: Master Input Slave Output \\
+D5  & MicroSD   & SCK  & SPI Bus: Serial Clock \\
+D4  & MAX98357A & DIN  & I²S Bus: Data Input \\
+D3  & MAX98357A & LRC  & I²S Bus: Left/Right Channel Clock \\
+D1  & MAX98357A & BCLK & I²S Bus: Bit Clock \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Nota Técnica Importante sobre el Hardware}
+Es oportuno mencionar que en el SoC \texttt{ESP8266}, la interfaz de audio \texttt{I²S} posee pines nativos fijos asignados por hardware para poder operar eficientemente mediante DMA sin saturar el núcleo del procesador. 
+La asignación estándar del silicio define a \texttt{GPIO3 (RX)} como la línea de datos (\texttt{I2SO\_DATA}), a \texttt{GPIO2 (D4)} como el selector de canales (\texttt{I2SO\_WS}) y a \texttt{GPIO15 (D8)} como el reloj de bits (\texttt{I2SO\_BCK}). 
+
+Dado que en este circuito \texttt{D8} está ocupado por la línea \texttt{CS} de la tarjeta SD y se ha redirigido el reloj \texttt{BCLK} hacia el pin \texttt{D1 (GPIO5)}, la implementación requerirá técnicas de emulación de señales por software (\textit{bit-banging}) o el uso de librerías con remapeo no estándar. Esto puede inducir retrasos temporales (\textit{jitter}) o interferencias audibles en escenarios de alta transferencia simultánea de datos desde la MicroSD.
+
+\end{document}
