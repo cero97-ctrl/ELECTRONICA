@@ -1,0 +1,43 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+\usepackage{geometry}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\sisetup{
+    output-decimal-marker = {.},
+    per-mode = symbol
+}
+
+\begin{document}
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1]
+        \draw (0,3) node[anchor=east] {A} to[short, o-*] (1,3)
+              to[R, l=$R_1$ (\SI{5}{\ohm})] (4,3)
+              to[short, *-] (4,4)
+              to[R, l=$R_2$ (\SI{20}{\ohm})] (7,4)
+              to[short, -*] (7,3);
+        \draw (4,3) to[short] (4,2)
+              to[R, l=$R_3$ (\SI{20}{\ohm})] (7,2)
+              to[short] (7,3);
+        \draw (1,3) to[short] (1,1)
+              to[R, l=$R_4$ (\SI{15}{\ohm})] (7,1)
+              to[short] (7,3);
+        \draw (7,3) to[short] (8,3)
+              to[R, l=$R_5$ (\SI{2.5}{\ohm})] (8,0)
+              to[short, -o] (0,0) node[anchor=east] {B};
+    \end{circuitikz}
+    \caption{Circuito para el problema de reducción de resistencias.}
+    \label{fig:ej2}
+\end{figure}
+
+\end{document}

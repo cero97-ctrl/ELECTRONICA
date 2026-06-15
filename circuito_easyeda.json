@@ -1,0 +1,64 @@
+{
+    "head": {
+        "docType": "1",
+        "editorVersion": "6.5.34",
+        "c_para": {},
+        "x": "4000",
+        "y": "3000"
+    },
+    "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~none",
+    "shape": [
+        "WIRE~100~300~400~400~#008800~1~solid~Net_1",
+        "WIRE~100~300~400~200~#008800~1~solid~Net_1",
+        "WIRE~100~300~100~100~#008800~1~solid~Net_1",
+        "WIRE~100~300~400~200~#008800~1~solid~Net_2",
+        "WIRE~100~300~100~100~#008800~1~solid~Net_2",
+        "WIRE~400~400~400~200~#008800~1~solid~Net_3",
+        "WIRE~400~400~800~0~#008800~1~solid~Net_3",
+        "WIRE~100~100~800~0~#008800~1~solid~Net_4"
+    ],
+    "BOM": {
+        "gge0": {
+            "name": "Resistor",
+            "designator": "R1",
+            "package": "0805",
+            "val": "5",
+            "supplierPart": "C17414"
+        },
+        "gge1": {
+            "name": "Resistor",
+            "designator": "R2",
+            "package": "0805",
+            "val": "20",
+            "supplierPart": "C17414"
+        },
+        "gge2": {
+            "name": "Resistor",
+            "designator": "R3",
+            "package": "0805",
+            "val": "20",
+            "supplierPart": "C17414"
+        },
+        "gge3": {
+            "name": "Resistor",
+            "designator": "R4",
+            "package": "0805",
+            "val": "15",
+            "supplierPart": "C17414"
+        },
+        "gge4": {
+            "name": "Resistor",
+            "designator": "R5",
+            "package": "0805",
+            "val": "2.5",
+            "supplierPart": "C17414"
+        }
+    },
+    "itemOrder": [
+        "gge0",
+        "gge1",
+        "gge2",
+        "gge3",
+        "gge4"
+    ]
+}
