@@ -1,62 +1,25 @@
 {
-    "head": {
-        "docType": "1",
-        "editorVersion": "6.5.34",
-        "c_para": {},
-        "x": "4000",
-        "y": "3000"
-    },
-    "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~none",
+    "head": "1~6.5.54~",
+    "canvas": "CA~1200~1200~#FFFFFF~yes~#CCCCCC~10~1200~1200~line~10~pixel~5~400~300",
     "shape": [
-        "WIRE~100~300~400~400~#008800~1~solid~Net_1",
-        "WIRE~100~300~100~100~#008800~1~solid~Net_1",
-        "WIRE~100~300~400~200~#008800~1~solid~Net_2",
-        "WIRE~100~300~100~100~#008800~1~solid~Net_2",
-        "WIRE~400~400~400~200~#008800~1~solid~Net_3",
-        "WIRE~400~400~800~0~#008800~1~solid~Net_3"
-    ],
-    "BOM": {
-        "gge0": {
-            "name": "Resistor",
-            "designator": "R1",
-            "package": "0805",
-            "val": "5",
-            "supplierPart": "C17414"
-        },
-        "gge1": {
-            "name": "Resistor",
-            "designator": "R2",
-            "package": "0805",
-            "val": "20",
-            "supplierPart": "C17414"
-        },
-        "gge2": {
-            "name": "Resistor",
-            "designator": "R3",
-            "package": "0805",
-            "val": "20",
-            "supplierPart": "C17414"
-        },
-        "gge3": {
-            "name": "Resistor",
-            "designator": "R4",
-            "package": "0805",
-            "val": "15",
-            "supplierPart": "C17414"
-        },
-        "gge4": {
-            "name": "Resistor",
-            "designator": "R5",
-            "package": "0805",
-            "val": "2.5",
-            "supplierPart": "C17414"
-        }
-    },
-    "itemOrder": [
-        "gge0",
-        "gge1",
-        "gge2",
-        "gge3",
-        "gge4"
+        "LIB~100~300~package`C17414`nameAlias`Value`Value`5`spicePre`R`spiceSymbolName`Resistor`~~0~gge1#@$T~N~94~285~0~#000080~Arial~~~~~comment~5~1~start~gge2#@$T~P~94~275~0~#000080~Arial~~~~~comment~R1~1~start~gge3#@$R~85~295~0~0~30~10~#A00000~1~0~none~gge4#@$P~show~0~1~70~300~180~gge5^^70~300^^M 85 300 h -15~#880000^^0~70~303~0~1~start~~^^0~70~296~0~1~end~~^^^^#@$P~show~0~2~130~300~0~gge6^^130~300^^M 115 300 h 15~#880000^^0~130~303~0~2~start~~^^0~130~296~0~2~end~~^^^^",
+        "LIB~400~400~package`C17414`nameAlias`Value`Value`20`spicePre`R`spiceSymbolName`Resistor`~~0~gge7#@$T~N~394~385~0~#000080~Arial~~~~~comment~20~1~start~gge8#@$T~P~394~375~0~#000080~Arial~~~~~comment~R2~1~start~gge9#@$R~385~395~0~0~30~10~#A00000~1~0~none~gge10#@$P~show~0~1~370~400~180~gge11^^370~400^^M 385 400 h -15~#880000^^0~370~403~0~1~start~~^^0~370~396~0~1~end~~^^^^#@$P~show~0~2~430~400~0~gge12^^430~400^^M 415 400 h 15~#880000^^0~430~403~0~2~start~~^^0~430~396~0~2~end~~^^^^",
+        "LIB~400~200~package`C17414`nameAlias`Value`Value`20`spicePre`R`spiceSymbolName`Resistor`~~0~gge13#@$T~N~394~185~0~#000080~Arial~~~~~comment~20~1~start~gge14#@$T~P~394~175~0~#000080~Arial~~~~~comment~R3~1~start~gge15#@$R~385~195~0~0~30~10~#A00000~1~0~none~gge16#@$P~show~0~1~370~200~180~gge17^^370~200^^M 385 200 h -15~#880000^^0~370~203~0~1~start~~^^0~370~196~0~1~end~~^^^^#@$P~show~0~2~430~200~0~gge18^^430~200^^M 415 200 h 15~#880000^^0~430~203~0~2~start~~^^0~430~196~0~2~end~~^^^^",
+        "LIB~100~100~package`C17414`nameAlias`Value`Value`15`spicePre`R`spiceSymbolName`Resistor`~~0~gge19#@$T~N~94~85~0~#000080~Arial~~~~~comment~15~1~start~gge20#@$T~P~94~75~0~#000080~Arial~~~~~comment~R4~1~start~gge21#@$R~85~95~0~0~30~10~#A00000~1~0~none~gge22#@$P~show~0~1~70~100~180~gge23^^70~100^^M 85 100 h -15~#880000^^0~70~103~0~1~start~~^^0~70~96~0~1~end~~^^^^#@$P~show~0~2~130~100~0~gge24^^130~100^^M 115 100 h 15~#880000^^0~130~103~0~2~start~~^^0~130~96~0~2~end~~^^^^",
+        "LIB~800~0~package`C17414`nameAlias`Value`Value`2.5`spicePre`R`spiceSymbolName`Resistor`~~0~gge25#@$T~N~794~-15~0~#000080~Arial~~~~~comment~2.5~1~start~gge26#@$T~P~794~-25~0~#000080~Arial~~~~~comment~R5~1~start~gge27#@$R~785~-5~0~0~30~10~#A00000~1~0~none~gge28#@$P~show~0~1~770~0~180~gge29^^770~0^^M 785 0 h -15~#880000^^0~770~3~0~1~start~~^^0~770~-4~0~1~end~~^^^^#@$P~show~0~2~830~0~0~gge30^^830~0^^M 815 0 h 15~#880000^^0~830~3~0~2~start~~^^0~830~-4~0~2~end~~^^^^",
+        "W~70 300 70 100~#008800~1~0~none~gge31",
+        "W~130 300 370 400~#008800~1~0~none~gge32",
+        "W~130 300 370 200~#008800~1~0~none~gge33",
+        "W~430 400 430 200~#008800~1~0~none~gge34",
+        "W~430 400 130 100~#008800~1~0~none~gge35",
+        "W~430 400 770 0~#008800~1~0~none~gge36",
+        "W~370 200 70 100~#008800~1~0~none~gge37",
+        "N~70~288~0~#0000FF~Net_1~gge38~start~72~288~~",
+        "N~130~288~0~#0000FF~Net_2~gge39~start~132~288~~",
+        "N~430~388~0~#0000FF~Net_3~gge40~start~432~388~~",
+        "N~370~188~0~#0000FF~Net_4~gge41~start~372~188~~",
+        "N~830~-12~0~#0000FF~GND~gge42~start~832~-12~~",
+        "J~130~300~2.5~#CC0000~gge43",
+        "J~430~400~2.5~#CC0000~gge44"
     ]
 }

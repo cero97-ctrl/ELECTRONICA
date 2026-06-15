@@ -1,0 +1,498 @@
+{
+  "editorVersion": "6.5.54",
+  "docType": "5",
+  "title": "Transformador",
+  "description": "",
+  "colors": {},
+  "schematics": [
+    {
+      "docType": "1",
+      "title": "Experimento #1 Transformador",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": "1",
+          "editorVersion": "6.5.54",
+          "c_para": {},
+          "c_spiceCmd": "TRAN`40u`40m`0`{AC`dec``0`0`{DC`0``0`0`{TF```",
+          "uuid": "6b439f4267f14e7cbf813b9f56f3c869",
+          "x": "0",
+          "y": "0",
+          "portOfADImportHack": "",
+          "importFlag": 0,
+          "transformList": ""
+        },
+        "canvas": "CA~1000~1000~#FFFFE1~yes~#000000~10~1000~1000~dot~10~pixel~5~0~0",
+        "shape": [
+          "LIB~140~430~package``nameAlias`Value`Value`SIN(0 1 50) AC 1`spicePre`V`spiceSymbolName`Vsin`~~0~gge4ad9eabfc8de2319~~~0~~yes~yes~~~#@$T~N~152~443~0~#000080~Arial~~~~~comment~SIN(0 1 50)~1~start~gge21~0~#@$T~P~153~433~0~#000080~Arial~~~~~comment~V1~1~start~gge22~0~#@$E~140~430~10~10~#880000~1~0~none~gge23~0#@$P~show~0~1~120~410~90~gge24~0^^140~410^^M 140 420 v -10~#800^^0~140~422~270~1~end~~~#800^^0~136~416~270~1~start~~~#800^^0~120~397^^0~M 117 400 L 120 403 L 123 400#@$PL~138 424 142 424~#880000~1~0~none~gge25~0#@$PL~140 422 140 426~#880000~1~0~none~gge26~0#@$P~show~0~2~120~410~270~gge27~0^^140~450^^M 140 440 v 10~#800^^0~140~436~270~2~start~~~#800^^0~136~444~270~2~end~~~#800^^0~120~423^^0~M 123 420 L 120 417 L 117 420#@$PL~142 436 138 436~#880000~1~0~none~gge28~0",
+          "LIB~290~430~package`INDUCTOR-1206`nameAlias`Value(H)`Value(H)`1m`spicePre`L`spiceSymbolName`Inductor`~90~0~gged450ceac7adb81c3~~~0~~yes~yes~~~#@$T~N~283.80078125~443~0~#000080~Arial~~~~~comment~100m~1~end~gge76~0~#@$T~P~282.80078125~433~0~#000080~Arial~~~~~comment~L1~1~end~gge77~0~#@$P~show~0~2~290~410~90~gge78~0^^290~410^^M 290 410 v 3~#800^^0~290~417~270~2~end~~~#800^^0~286~409~270~P$2~start~~~#800^^0~290~410^^0~M 287 413 L 290 416 L 293 413#@$P~show~0~1~290~450~270~gge79~0^^290~450^^M 290 450 v -3~#800^^0~290~443~270~1~start~~~#800^^0~286~451~270~P$1~end~~~#800^^0~290~450^^0~M 293 447 L 290 444 L 287 447#@$A~M 290.068 446.883 A 4 3.9 -90 1 0 290.064 438.918~~#880000~1~0~none~gge80~0#@$A~M 290.071 438.4 A 4 3.9 -90 1 0 290.066 430.435~~#880000~1~0~none~gge81~0#@$A~M 290.071 429.933 A 4 3.9 -90 1 0 290.066 421.968~~#880000~1~0~none~gge82~0#@$A~M 290.069 421.3 A 4 3.9 -90 1 0 290.064 413.335~~#880000~1~0~none~gge83~0#@$E~287.3~413.7~1.5~1.5~#A00000~1~0~#880000~gge84~0",
+          "LIB~330~430~package`INDUCTOR-1206`nameAlias`Value(H)`Value(H)`1m`spicePre`L`spiceSymbolName`Inductor`~90~0~gge3f6ee2b1a34b017f~~~0~~yes~yes~~~#@$T~N~336.19921875~443~0~#000080~Arial~~~~~comment~500m~1~start~gge87~0~#@$T~P~337.19921875~433~0~#000080~Arial~~~~~comment~L2~1~start~gge88~0~#@$P~show~0~2~330~410~90~gge89~0^^330~410^^M 330 410 v 3~#800^^0~330~417~270~2~end~~~#800^^0~326~409~270~P$2~start~~~#800^^0~330~410^^0~M 327 413 L 330 416 L 333 413#@$P~show~0~1~330~450~270~gge90~0^^330~450^^M 330 450 v -3~#800^^0~330~443~270~1~start~~~#800^^0~326~451~270~P$1~end~~~#800^^0~330~450^^0~M 333 447 L 330 444 L 327 447#@$A~M 329.932 446.883 A 4 3.9 -90 1 1 329.936 438.918~~#880000~1~0~none~gge91~0#@$A~M 329.929 438.4 A 4 3.9 -90 1 1 329.934 430.435~~#880000~1~0~none~gge92~0#@$A~M 329.929 429.933 A 4 3.9 -90 1 1 329.934 421.968~~#880000~1~0~none~gge93~0#@$A~M 329.931 421.3 A 4 3.9 -90 1 1 329.936 413.335~~#880000~1~0~none~gge94~0#@$E~332.7~413.7~1.5~1.5~#A00000~1~0~#880000~gge95~0",
+          "LIB~170~390~package`0603`nameAlias`Value(Ω)`Value(Ω)`1k`spicePre`R`spiceSymbolName`Resistor`~~0~ggef676b67750d93060~~~0~~yes~yes~~~#@$T~N~164~382~0~#000080~Arial~~~~~comment~1m~1~start~gge106~0~#@$T~P~164~372~0~#000080~Arial~~~~~comment~RSER~1~start~gge107~0~#@$PL~185 390 182 395~#A00000~1~0~none~gge108~0#@$PL~177 385 172 395~#A00000~1~0~none~gge109~0#@$PL~182 395 177 385~#A00000~1~0~none~gge110~0#@$P~show~0~2~190~390~0~gge111~0^^190~390^^M 190 390 h -5~#800^^0~181~390~0~2~end~~~#800^^0~189~386~0~2~start~~~#800^^0~188~390^^0~M 185 387 L 182 390 L 185 393#@$PL~163 395 158 385~#A00000~1~0~none~gge112~0#@$PL~172 395 168 385~#A00000~1~0~none~gge113~0#@$PL~168 385 163 395~#A00000~1~0~none~gge114~0#@$PL~158 385 155 390~#A00000~1~0~none~gge115~0#@$P~show~0~1~150~390~180~gge116~0^^150~390^^M 150 390 h 5~#800^^0~159~390~0~1~start~~~#800^^0~151~386~0~1~end~~~#800^^0~152~390^^0~M 155 393 L 158 390 L 155 387",
+          "LIB~440~430~package`0603`nameAlias`Value(Ω)`Value(Ω)`1k`spicePre`R`spiceSymbolName`Resistor`~90~0~ggeef7576cedd9aafbb~~~0~~yes~yes~~~#@$T~N~447~443~0~#000080~Arial~~~~~comment~1k~1~start~gge130~0~#@$T~P~447~433~0~#000080~Arial~~~~~comment~LOAD~1~start~gge131~0~#@$PL~440 415 445 418~#A00000~1~0~none~gge132~0#@$PL~435 423 445 428~#A00000~1~0~none~gge133~0#@$PL~445 418 435 423~#A00000~1~0~none~gge134~0#@$P~show~0~2~440~410~90~gge135~0^^440~410^^M 440 410 v 5~#800^^0~440~419~270~2~end~~~#800^^0~436~411~270~2~start~~~#800^^0~440~412^^0~M 437 415 L 440 418 L 443 415#@$PL~445 437 435 442~#A00000~1~0~none~gge136~0#@$PL~445 428 435 432~#A00000~1~0~none~gge137~0#@$PL~435 432 445 437~#A00000~1~0~none~gge138~0#@$PL~435 442 440 445~#A00000~1~0~none~gge139~0#@$P~show~0~1~440~450~270~gge140~0^^440~450^^M 440 450 v -5~#800^^0~440~441~270~1~start~~~#800^^0~436~449~270~1~end~~~#800^^0~440~448^^0~M 443 445 L 440 442 L 437 445",
+          "T~L~270~500~0~#000000~~9pt~~italic~~spice~Kstepup L1 L2 1~1~start~gge98~0~pinpart",
+          "T~L~60~20~0~#0000FF~~9pt~~~~comment~A 1:2 step up transformer. \\n \\nThe transformer is simply two ordinary inductors coupled together using the 'K' \\ncoupling statement. \\n \\nThe syntax for this statement is as shown in the schematic where the K defines the statement, \\nthe list of the inductors, La, Lb, Lc, etc., define the inductors to be coupled and the number at the \\nend is the coupling coefficient or coupling factor. This defines how closely coupled the inductors are to each \\nother. \\n \\nA value of 1 defines perfect coupling whilst 0 defines zero coupling between them. \\n \\nIn practice values of between about 0.9 and 0.99 are achievable in real transformers. Lower \\nvalues may be used for wideband tuned filters built using coupled inductors. \\n \\nThe dotted inductors are used to clearly show the phasing of the windings. The dotted \\nends are in phase. \\n  \\nNote that a negative coupling coefficient value can be used but it inverts the phase \\nrelationship between the primary and secondary windings. It is recommended not to do \\nthis as it makes interpreting the phase dots difficult and can cause serious problems \\nin multiwinding coupled inductor circuits.\\n \\nNotice that a small resistance must be included between the voltage source and the \\nprimary inductance to stop spice throwing an error about a loop of voltage sources or a \\nvoltage source and an inductor. Basically it is not allowed to place any combination of \\nvoltage sources or inductors in parallel with each other without some finite resistance \\nbetween them.~1~start~gge124~0~pinpart",
+          "T~L~220~520~0~#0000FF~~9pt~~~~comment~This is the 'K' coupling statement. \\n \\nIt is inserted into the schematic as text and \\nthen do:\\n \\nProperties > Text Attributes > Text type > spice~1~start~gge142~0~pinpart",
+          "T~L~230~640~0~#000000~~9pt~~italic~~spice~Tran 40u 40m~1~start~gge143~0~pinpart",
+          "F~part_netLabel_GNd~140~480~0~gge45~~0^^140~480^^GND~#000080~131.5~468~0~start~0~~~flag_gge7^^PL~140 490 140 480~#000000~1~0~transparent~gge48~0^^PL~130 490 150 490 140 496 130 490~#000000~1~0~transparent~gge49~0",
+          "F~part_netLabel_volProbe~210~390~0~gge53~~0^^210~390^^PRI~#0000FF~226~380~0~start~1~~~flag_gge10^^PL~210.5 389.5 219.75 380 219.75 375 220.5 380.25 224.75 382.25~#000000~1~0~transparent~gge56~0",
+          "W~140 450 140 470 290 470 290 450~#008800~1~0~none~gge36~0",
+          "W~330 450 330 470 290 470~#008800~1~0~none~gge38~0",
+          "W~330 410 330 390 440 390 440 410~#008800~1~0~none~gge40~0",
+          "W~440 450 440 470 330 470~#008800~1~0~none~gge41~0",
+          "W~290 410 290 390 190 390~#008800~1~0~none~gge117~0",
+          "W~150 390 140 390 140 410~#008800~1~0~none~gge118~0",
+          "J~290~470~2.5~#CC0000~gge39~0",
+          "J~140~470~2.5~#CC0000~gge44~0",
+          "J~210~390~2.5~#CC0000~gge100~0",
+          "J~330~470~2.5~#CC0000~gge103~0",
+          "F~part_netLabel_volProbe~440~390~0~gge145~~0^^440~390^^SEC~#0000FF~456~380~0~start~1~~~flag_gge13^^PL~440.5 389.5 449.75 380 449.75 375 450.5 380.25 454.75 382.25~#000000~1~0~transparent~gge148~0",
+          "J~440~390~2.5~#CC0000~gge149~0",
+          "W~140 480 140 470~#008800~1~0~none~gge152~0"
+        ],
+        "BBox": {
+          "x": 60,
+          "y": 9.3,
+          "width": 522.5,
+          "height": 633.6
+        },
+        "colors": {}
+      }
+    },
+    {
+      "docType": 1,
+      "title": "Experimento #2 Transformador",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": 1,
+          "editorVersion": "3.7.5",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": "TRAN`1ms`45m`0`{AC`dec``0`0`{DC`0``0`0`{TF```",
+          "uuid": "782319ab080649649fc982770e87c5b3"
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "LIB~360~160~package`INDUCTOR-1206`nameAlias`Value(H)`spicePre`L`spiceSymbolName`Inductor`Value(H)`100m~90~0~gge5#@$T~N~366.1875~172~0~#000080~Arial~~~~~comment~500m~1~start~gge7#@$T~P~366.2~161~0~#000080~Arial~~~~~comment~L2~1~start~gge9#@$P~show~0~2~360~140~90~gge11^^360~140^^M 360 140 v 3~#800^^0~360~147~270~2~end~~^^0~356~139~270~P$2~start~~^^0~360~140^^0~M 357 143 L 360 146 L 363 143#@$P~show~0~1~360~180~270~gge18^^360~180^^M 360 180 v -3~#800^^0~360~173~270~1~start~~^^0~356~181~270~P$1~end~~^^0~360~180^^0~M 363 177 L 360 174 L 357 177#@$A~M 359.93 176.88 A 3.9 4 0 1 1 359.94 168.92~~#880000~1~0~none~gge25#@$A~M 359.93 168.4 A 3.9 4 0 1 1 359.93 160.44~~#880000~1~0~none~gge26#@$A~M 359.93 159.93 A 3.9 4 0 1 1 359.93 151.97~~#880000~1~0~none~gge27#@$A~M 359.93 151.3 A 3.9 4 0 1 1 359.94 143.33~~#880000~1~0~none~gge28#@$E~362.7~143.7~1.5~1.5~#A00000~1~0~#880000~gge29",
+          "LIB~320~160~package`INDUCTOR-1206`nameAlias`Value(H)`BOM_Manufacturer Part`?`spicePre`L`spiceSymbolName`Inductor`~270~0~gge30#@$T~N~349.546875~172~0~#000080~Arial~~~~~comment~100m~1~end~gge32#@$T~P~337.07~161.01~0~#000080~Arial~~~~~comment~L1~1~end~gge34#@$P~show~0~2~320~140~90~gge36^^320~140^^M 320 140 v 3~#800^^0~320~147~270~2~end~~^^0~316~139~270~P$2~start~~^^0~320~140^^0~M 317 143 L 320 146 L 323 143#@$P~show~0~1~320~180~270~gge43^^320~180^^M 320 180 v -3~#800^^0~320~173~270~1~start~~^^0~316~181~270~P$1~end~~^^0~320~180^^0~M 323 177 L 320 174 L 317 177#@$A~M 320.07 176.88 A 3.9 4 0 1 0 320.06 168.92~~#880000~1~0~none~gge50#@$A~M 320.07 168.4 A 3.9 4 0 1 0 320.07 160.43~~#880000~1~0~none~gge51#@$A~M 320.07 159.93 A 3.9 4 0 1 0 320.07 151.97~~#880000~1~0~none~gge52#@$A~M 320.07 151.3 A 3.9 4 0 1 0 320.06 143.33~~#880000~1~0~none~gge53#@$E~317.3~143.7~1.5~1.5~#A00000~1~0~#880000~gge54",
+          "W~320 140 320 130 280 130~#008800~1~0~none~gge86",
+          "F~part_netLabel_gnD~340~190~0~gge87^^340~190^^GND~#000080~329~177~0~start~0~Times New Roman~9pt^^PL~340 200 340 190~#000000~1~0~none~gge90^^PL~330 200 349 200~#000000~1~0~none~gge91^^PL~334 202 347 202~#000000~1~0~none~gge92^^PL~336 204 343 204~#000000~1~0~none~gge93^^PL~339 206 341 206~#000000~1~0~none~gge94",
+          "W~200 140 200 130 240 130~#008800~1~0~none~gge119",
+          "LIB~450~160~package`R3`nameAlias`Value(Ω)`spicePre`R`spiceSymbolName`Resistor`Value`1K~270~0~gge124#@$T~N~457~172.25~0~#000080~Arial~~~~~comment~1k~1~start~gge126#@$T~P~457.0078125~163.25~0~#000080~Arial~~~~~comment~R2~1~start~gge128#@$PL~450 175 445 172~#A00000~1~0~none~gge130#@$PL~455 167 445 162~#A00000~1~0~none~gge131#@$PL~445 172 455 167~#A00000~1~0~none~gge132#@$P~show~0~2~450~180~270~gge133^^450~180^^M 450 180 v -5~#800^^0~450~171~270~2~start~~^^0~446~179~270~2~end~~^^0~450~178^^0~M 453 175 L 450 172 L 447 175#@$PL~445 153 455 148~#A00000~1~0~none~gge140#@$PL~445 162 455 158~#A00000~1~0~none~gge141#@$PL~455 158 445 153~#A00000~1~0~none~gge142#@$PL~455 148 450 145~#A00000~1~0~none~gge143#@$P~show~0~1~450~140~90~gge144^^450~140^^M 450 140 v 5~#800^^0~450~149~270~1~end~~^^0~446~141~270~1~start~~^^0~450~142^^0~M 447 145 L 450 148 L 453 145",
+          "W~450 140 450 130 420 130 360 130 360 140~#008800~1~0~none~gge151",
+          "W~200 180 200 190 320 190 320 180~#008800~1~0~none~gge153",
+          "W~360 180 360 190 450 190 450 180~#008800~1~0~none~gge164",
+          "W~320 190 360 190~#008800~1~0~none~gge165",
+          "J~320~190~2.5~#CC0000~gge166",
+          "J~360~190~2.5~#CC0000~gge167",
+          "J~340~190~2.5~#CC0000~gge168",
+          "F~part_netLabel_volProbe~320~130~90~gge175^^320~130^^ENT~#0000FF~330~114~270~start~1~Times New Roman~9pt^^PL~320.5 129.5 330 120.25 335 120.25 329.75 119.5 327.75 115.25~#000000~1~0~none~gge178",
+          "LIB~200~160~package``nameAlias`Value`Value`SIN(0 1 50) AC 1`spicePre`V`spiceSymbolName`Vsin`~~0~gge180#@$T~N~212~173~0~#000080~Arial~~~~~comment~SIN(0 1 50)~1~start~gge21#@$T~P~213~163~0~#000080~Arial~~~~~comment~V1~1~start~gge22#@$E~200~160~10~10~#880000~1~0~none~gge23#@$P~show~0~1~180~140~90~gge24^^200~140^^M 200 150 v -10~#800^^0~200~152~270~1~end~~^^0~196~146~270~1~start~~^^0~180~127^^0~M 177 130 L 180 133 L 183 130#@$PL~198 154 202 154~#880000~1~0~none~gge190#@$PL~200 152 200 156~#880000~1~0~none~gge191#@$P~show~0~2~180~140~270~gge192^^200~180^^M 200 170 v 10~#800^^0~200~166~270~2~start~~^^0~196~174~270~2~end~~^^0~180~153^^0~M 183 150 L 180 147 L 177 150#@$PL~202 166 198 166~#880000~1~0~none~gge199",
+          "J~320~130~2.5~#CC0000~gge200",
+          "T~L~300~220~0~#000000~~9pt~~italic~~spice~Kstepup L1 L2 1~1~start~gge203",
+          "T~L~300~240~0~#000000~~9pt~~italic~~spice~Tran 40u 40m~1~start~gge205",
+          "LIB~260~130~package`0603`nameAlias`Value(Ω)`Value(Ω)`1k`spicePre`R`spiceSymbolName`Resistor`~~0~gge207#@$T~N~254~122~0~#000080~Arial~~~~~comment~1m~1~start~gge106#@$T~P~254~112~0~#000080~Arial~~~~~comment~RSER~1~start~gge107#@$PL~275 130 272 135~#A00000~1~0~none~gge108#@$PL~267 125 262 135~#A00000~1~0~none~gge109#@$PL~272 135 267 125~#A00000~1~0~none~gge110#@$P~show~0~2~280~130~0~gge111^^280~130^^M 280 130 h -5~#800^^0~271~130~0~2~end~~^^0~279~126~0~2~start~~^^0~278~130^^0~M 275 127 L 272 130 L 275 133#@$PL~253 135 248 125~#A00000~1~0~none~gge112#@$PL~262 135 258 125~#A00000~1~0~none~gge113#@$PL~258 125 253 135~#A00000~1~0~none~gge114#@$PL~248 125 245 130~#A00000~1~0~none~gge115#@$P~show~0~1~240~130~180~gge116^^240~130^^M 240 130 h 5~#800^^0~249~130~0~1~start~~^^0~241~126~0~1~end~~^^0~242~130^^0~M 245 133 L 248 130 L 245 127",
+          "F~part_netLabel_volProbe~410~130~90~gge223^^410~130^^SAL~#0000FF~420~114~270~start~1~Times New Roman~9pt^^PL~410.5 129.5 420 120.25 425 120.25 419.75 119.5 417.75 115.25~#000000~1~0~none~gge226",
+          "J~410~130~2.5~#CC0000~gge227"
+        ],
+        "BBox": {
+          "x": 190,
+          "y": 90.7,
+          "width": 279.1,
+          "height": 151.8
+        },
+        "colors": []
+      }
+    },
+    {
+      "docType": "1",
+      "title": "Experimento #5.2 Tesla",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": "1",
+          "editorVersion": "6.5.54",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": null,
+          "uuid": "4fbadbc076f845919175557b0de47d93",
+          "x": "0",
+          "y": "0",
+          "portOfADImportHack": "",
+          "importFlag": 0,
+          "transformList": "",
+          "hasIdFlag": true
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5~~0^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt~flag_gge163^^PL~330 310 330 300~#000000~1~0~transparent~gge8~0^^PL~320 310 339 310~#000000~1~0~transparent~gge9~0^^PL~324 312 337 312~#000000~1~0~transparent~gge10~0^^PL~326 314 333 314~#000000~1~0~transparent~gge11~0^^PL~329 316 331 316~#000000~1~0~transparent~gge12~0",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15~0~#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17~0~#@$PL~275 170 272 175~#A00000~1~0~none~gge19~0#@$PL~267 165 262 175~#A00000~1~0~none~gge20~0#@$PL~272 175 267 165~#A00000~1~0~none~gge21~0#@$P~show~0~2~280~170~0~gge22~0^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~~#800^^0~279~166~0~2~start~~~#800^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29~0#@$PL~262 175 258 165~#A00000~1~0~none~gge30~0#@$PL~258 165 253 175~#A00000~1~0~none~gge31~0#@$PL~248 165 245 170~#A00000~1~0~none~gge32~0#@$P~show~0~1~240~170~180~gge33~0^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~~#800^^0~241~166~0~1~end~~~#800^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 60m~1~start~gge105~0~pinpart",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120`Vinitial[V]`0`Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136~~~0~~yes~yes~~~#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138~0~#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140~0~#@$E~220~230~10~10~#880000~1~0~none~gge142~0#@$P~show~0~1~200~210~90~gge143~0^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~~#800^^0~216~216~270~1~start~~~#800^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150~0#@$PL~220 222 220 226~#880000~1~0~none~gge151~0#@$P~show~0~2~200~210~270~gge152~0^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~~#800^^0~216~244~270~2~end~~~#800^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159~0",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`Manufacturer Part`?`~~0~gge160~~~0~~yes~yes~~~#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge162~0~#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164~0~#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166~0#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167~0#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168~0#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169~0#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170~0#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171~0#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172~0#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173~0#@$P~show~0~1~340~160~180~gge174~0^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~~#800^^0~346~166~0~1 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181~0^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~~#800^^0~374~206~0~3 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188~0^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~~#800^^0~346~206~0~2 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195~0^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~~#800^^0~374~166~0~4 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202~0#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203~0#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204~0#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205~0#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206~0~pinpart#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208~0~pinpart",
+          "W~280 170 330 170~#008800~1~0~none~gge210~0",
+          "W~330 210 330 280 220 280 220 250~#008800~1~0~none~gge214~0",
+          "F~part_netLabel_gnD~410~300~0~gge217~~0^^410~300^^GND~#000080~399~287~0~start~0~Times New Roman~9pt~flag_gge166^^PL~410 310 410 300~#000000~1~0~transparent~gge220~0^^PL~400 310 419 310~#000000~1~0~transparent~gge221~0^^PL~404 312 417 312~#000000~1~0~transparent~gge222~0^^PL~406 314 413 314~#000000~1~0~transparent~gge223~0^^PL~409 316 411 316~#000000~1~0~transparent~gge224~0",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233~0",
+          "LIB~440~200~package`NONE`spicePre`X`nameAlias`Model`Manufacturer Part`?`spiceSymbolName`Bridge`~~0~gge237~~~0~~yes~yes~~~#@$T~N~408~165~0~#000080~Arial~~~~~comment~GBJ15005~1~start~gge239~0~#@$T~P~408~155.859375~0~#000080~Arial~~~~~comment~B1~1~start~gge241~0~#@$P~show~0~1~410~200~180~gge243~0^^410~200^^M 410 200 h 10~#880000^^0~423~203~0~-~start~~~#0000FF^^0~414~199~0~1~end~~~#0000FF^^0~417~200^^0~M 420 203 L 423 200 L 420 197#@$P~show~0~2~440~170~90~gge250~0^^440~170^^M 440 170 v 10~#880000^^0~443~183~270~C1~end~~~#0000FF^^0~439~174~270~2~start~~~#0000FF^^0~440~177^^0~M 437 180 L 440 183 L 443 180#@$P~show~0~3~470~200~0~gge257~0^^470~200^^M 470 200 h -10~#880000^^0~457~203~0~+~end~~~#0000FF^^0~466~199~0~3~start~~~#0000FF^^0~463~200^^0~M 460 197 L 457 200 L 460 203#@$P~show~0~4~440~230~270~gge264~0^^440~230^^M 440 230 v -10~#880000^^0~443~217~270~C2~start~~~#0000FF^^0~439~226~270~4~end~~~#0000FF^^0~440~223^^0~M 443 220 L 440 217 L 437 220#@$PL~440 180 420 200 440 220 460 200 440 180~#880000~1~0~none~gge271~0#@$PL~429 183 437 191~#880000~1~0~none~gge272~0#@$PL~457 189 449 197~#880000~1~0~none~gge273~0#@$PL~437 209 429 217~#880000~1~0~none~gge274~0#@$PL~449 203 457 211~#880000~1~0~none~gge275~0#@$PG~423 189 433 187 431 197~#880000~1~0~#880000~gge276~0#@$PG~451 183 453 193 443 191~#880000~1~0~#880000~gge277~0#@$PG~431 203 433 213 423 211~#880000~1~0~#880000~gge278~0#@$PG~443 209 453 207 451 217~#880000~1~0~#880000~gge279~0",
+          "W~390 170 440 170~#008800~1~0~none~gge280~0",
+          "W~390 210 390 230 440 230~#008800~1~0~none~gge281~0",
+          "W~410 200 410 300~#008800~1~0~none~gge595~0",
+          "W~470 200 470 240~#008800~1~0~none~gge596~0",
+          "F~part_netLabel_gnD~470~300~0~gge597~~0^^470~300^^GND~#000080~459~287~0~start~0~Times New Roman~9pt~flag_gge169^^PL~470 310 470 300~#000000~1~0~transparent~gge600~0^^PL~460 310 479 310~#000000~1~0~transparent~gge601~0^^PL~464 312 477 312~#000000~1~0~transparent~gge602~0^^PL~466 314 473 314~#000000~1~0~transparent~gge603~0^^PL~469 316 471 316~#000000~1~0~transparent~gge604~0",
+          "J~470~200~2.5~#CC0000~gge636~0",
+          "LIB~470~260~package`C1`nameAlias`Value(F)`Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge637~2593d6b50646468aa0f4210426aa1d27~~0~~yes~yes~~~6685cb4e75a7496fab4a01ec892ff25d#@$T~N~480~272.34375~0~#000080~Arial~~~~~comment~1u~1~start~gge639~0~#@$T~P~480.0078125~263.2109375~0~#000080~Arial~~~~~comment~C1~1~start~gge641~0~#@$PL~478 262 462 262~#A00000~1~0~none~gge643~0#@$P~show~0~1~450~280~270~gge644~0^^470~280^^M 470 270 v 10~#800^^0~470~266~270~1~start~~~#800^^0~466~274~270~1~end~~~#800^^0~450~293^^0~M 453 290 L 450 287 L 447 290#@$PL~470 250 470 258~#A00000~1~0~none~gge651~0#@$PL~462 258 478 258~#A00000~1~0~none~gge652~0#@$P~show~0~2~450~270~90~gge653~0^^470~240^^M 470 250 v -10~#800^^0~470~254~270~2~end~~~#800^^0~466~246~270~2~start~~~#800^^0~450~257^^0~M 447 260 L 450 263 L 453 260#@$PL~470 262 470 270~#A00000~1~0~none~gge660~0",
+          "LIB~510~220~package`DO35-7`nameAlias`Model`Manufacturer Part`?`spicePre`D`spiceSymbolName`Diode`~270~0~gge661~44856a57bd594eb499525ea6d635ae59~~0~~yes~yes~~~aba53d3b05b64719b9077a7d3ebd131e#@$T~N~520~232.359375~0~#000080~Arial~~~~~comment~1N4001~1~start~gge312~0~#@$T~P~520~223.21875~0~#000080~Arial~~~~~comment~D1~1~start~gge314~0~#@$P~show~0~1~510~200~90~gge316~0^^510~200^^M 510 200 v 15~#800^^0~510~219~270~A~end~~~#800^^0~506~211~270~A~start~~~#800^^0~510~212^^0~M 507 215 L 510 218 L 513 215#@$P~show~0~2~510~240~270~gge323~0^^510~240^^M 510 240 v -15~#800^^0~510~221~270~C~start~~~#800^^0~506~229~270~C~end~~~#800^^0~510~228^^0~M 513 225 L 510 222 L 507 225#@$PL~518 225 502 225~#880000~1~0~none~gge330~0#@$PT~M 504 215 L 510 225 L 517 215 Z ~#880000~1~0~#880000~gge331~0~",
+          "LIB~510~260~package`C1`nameAlias`Value(F)`Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge662~2593d6b50646468aa0f4210426aa1d27~~0~~yes~yes~~~6685cb4e75a7496fab4a01ec892ff25d#@$T~N~520~272.34375~0~#000080~Arial~~~~~comment~1u~1~start~gge334~0~#@$T~P~520.0078125~263.2109375~0~#000080~Arial~~~~~comment~C2~1~start~gge336~0~#@$PL~518 262 502 262~#A00000~1~0~none~gge338~0#@$P~show~0~1~490~280~270~gge339~0^^510~280^^M 510 270 v 10~#800^^0~510~266~270~1~start~~~#800^^0~506~274~270~1~end~~~#800^^0~490~293^^0~M 493 290 L 490 287 L 487 290#@$PL~510 250 510 258~#A00000~1~0~none~gge346~0#@$PL~502 258 518 258~#A00000~1~0~none~gge347~0#@$P~show~0~2~490~270~90~gge348~0^^510~240^^M 510 250 v -10~#800^^0~510~254~270~2~end~~~#800^^0~506~246~270~2~start~~~#800^^0~490~257^^0~M 487 260 L 490 263 L 493 260#@$PL~510 262 510 270~#A00000~1~0~none~gge355~0",
+          "F~part_netLabel_gnD~510~300~0~gge663~~0^^510~300^^GND~#000080~499~287~0~start~0~Times New Roman~9pt~flag_gge172^^PL~510 310 510 300~#000000~1~0~transparent~gge359~0^^PL~500 310 519 310~#000000~1~0~transparent~gge360~0^^PL~504 312 517 312~#000000~1~0~transparent~gge361~0^^PL~506 314 513 314~#000000~1~0~transparent~gge362~0^^PL~509 316 511 316~#000000~1~0~transparent~gge363~0",
+          "LIB~580~220~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge705~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~587~232.34375~0~#000080~Arial~~~~~comment~1k~1~start~gge369~0~#@$T~P~587.0078125~223.2109375~0~#000080~Arial~~~~~comment~R2~1~start~gge371~0~#@$PL~580 205 585 208~#A00000~1~0~none~gge373~0#@$PL~575 213 585 218~#A00000~1~0~none~gge374~0#@$PL~585 208 575 213~#A00000~1~0~none~gge375~0#@$P~show~0~2~580~200~90~gge376~0^^580~200^^M 580 200 v 5~#800^^0~580~209~270~2~end~~~#800^^0~576~201~270~2~start~~~#800^^0~580~202^^0~M 577 205 L 580 208 L 583 205#@$PL~585 227 575 232~#A00000~1~0~none~gge383~0#@$PL~585 218 575 222~#A00000~1~0~none~gge384~0#@$PL~575 222 585 227~#A00000~1~0~none~gge385~0#@$PL~575 232 580 235~#A00000~1~0~none~gge386~0#@$P~show~0~1~580~240~270~gge387~0^^580~240^^M 580 240 v -5~#800^^0~580~231~270~1~start~~~#800^^0~576~239~270~1~end~~~#800^^0~580~238^^0~M 583 235 L 580 232 L 577 235",
+          "LIB~580~280~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge706~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~587~292.34375~0~#000080~Arial~~~~~comment~1k~1~start~gge396~0~#@$T~P~587.0078125~283.2109375~0~#000080~Arial~~~~~comment~R3~1~start~gge398~0~#@$PL~580 265 585 268~#A00000~1~0~none~gge400~0#@$PL~575 273 585 278~#A00000~1~0~none~gge401~0#@$PL~585 268 575 273~#A00000~1~0~none~gge402~0#@$P~show~0~2~580~260~90~gge403~0^^580~260^^M 580 260 v 5~#800^^0~580~269~270~2~end~~~#800^^0~576~261~270~2~start~~~#800^^0~580~262^^0~M 577 265 L 580 268 L 583 265#@$PL~585 287 575 292~#A00000~1~0~none~gge410~0#@$PL~585 278 575 282~#A00000~1~0~none~gge411~0#@$PL~575 282 585 287~#A00000~1~0~none~gge412~0#@$PL~575 292 580 295~#A00000~1~0~none~gge413~0#@$P~show~0~1~580~300~270~gge414~0^^580~300^^M 580 300 v -5~#800^^0~580~291~270~1~start~~~#800^^0~576~299~270~1~end~~~#800^^0~580~298^^0~M 583 295 L 580 292 L 577 295",
+          "F~part_netLabel_gnD~580~300~0~gge707~~0^^580~300^^GND~#000080~569~287~0~start~0~Times New Roman~9pt~flag_gge175^^PL~580 310 580 300~#000000~1~0~transparent~gge424~0^^PL~570 310 589 310~#000000~1~0~transparent~gge425~0^^PL~574 312 587 312~#000000~1~0~transparent~gge426~0^^PL~576 314 583 314~#000000~1~0~transparent~gge427~0^^PL~579 316 581 316~#000000~1~0~transparent~gge428~0",
+          "W~580 240 580 260~#008800~1~0~none~gge708~0",
+          "LIB~650~220~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`100m`L2`1000`K`1`Manufacturer Part`?`~~0~gge709~~~0~~yes~yes~~~#@$T~N~644.578125~195~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge434~0~#@$T~P~643.5859375~194.859375~0~#000080~Arial~~~~~comment~T2~1~start~gge436~0~#@$A~M 660 210 A 4 5 0 0 1 660 200~~#A00000~1~0~none~gge438~0#@$A~M 640 230 A 4 5 0 0 1 640 240~~#A00000~1~0~none~gge439~0#@$A~M 660 240 A 4 5 0 0 1 660 230~~#A00000~1~0~none~gge440~0#@$A~M 660 230 A 4 5 0 0 1 660 220~~#A00000~1~0~none~gge441~0#@$A~M 660 220 A 4 5 0 0 1 660 210~~#A00000~1~0~none~gge442~0#@$A~M 640 220 A 4 5 0 0 1 640 230~~#A00000~1~0~none~gge443~0#@$A~M 640 210 A 4 5 0 0 1 640 220~~#A00000~1~0~none~gge444~0#@$A~M 640 200 A 4 5 0 0 1 640 210~~#A00000~1~0~none~gge445~0#@$P~show~0~1~630~190~180~gge446~0^^620~200^^M 640 200 h -20~#800^^0~644~200~0~1 ~start~~~#800^^0~636~196~0~1 ~end~~~#800^^0~607~190^^0~M 610 193 L 613 190 L 610 187#@$P~show~0~3~630~190~0~gge453~0^^680~240^^M 660 240 h 20~#800^^0~656~240~0~3 ~end~~~#800^^0~664~236~0~3 ~start~~~#800^^0~653~190^^0~M 650 187 L 647 190 L 650 193#@$P~show~0~2~630~190~180~gge460~0^^620~240^^M 640 240 h -20~#800^^0~644~240~0~2 ~start~~~#800^^0~636~236~0~2 ~end~~~#800^^0~607~190^^0~M 610 193 L 613 190 L 610 187#@$P~show~0~4~630~190~0~gge467~0^^680~200^^M 660 200 h 20~#800^^0~656~200~0~4 ~end~~~#800^^0~664~196~0~4 ~start~~~#800^^0~653~190^^0~M 650 187 L 647 190 L 650 193#@$PL~646.5 201 646.5 238~#A00000~1~0~none~gge474~0#@$PL~651.5 201.5 651.5 237.5~#A00000~1~0~none~gge475~0#@$E~634.75~204.25~1.25~1.25~#A00000~1~0~none~gge476~0#@$E~664.25~204.75~1.25~1.25~#A00000~1~0~none~gge477~0#@$T~L~630~222.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge478~0~pinpart#@$T~L~662.5~222.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge480~0~pinpart",
+          "LIB~650~280~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`0.01`L2`100`K`1`Manufacturer Part`?`~~0~gge710~~~0~~yes~yes~~~#@$T~N~644.578125~255~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge484~0~#@$T~P~644.5859375~253.859375~0~#000080~Arial~~~~~comment~T3~1~start~gge486~0~#@$A~M 660 270 A 4 5 0 0 1 660 260~~#A00000~1~0~none~gge488~0#@$A~M 640 290 A 4 5 0 0 1 640 300~~#A00000~1~0~none~gge489~0#@$A~M 660 300 A 4 5 0 0 1 660 290~~#A00000~1~0~none~gge490~0#@$A~M 660 290 A 4 5 0 0 1 660 280~~#A00000~1~0~none~gge491~0#@$A~M 660 280 A 4 5 0 0 1 660 270~~#A00000~1~0~none~gge492~0#@$A~M 640 280 A 4 5 0 0 1 640 290~~#A00000~1~0~none~gge493~0#@$A~M 640 270 A 4 5 0 0 1 640 280~~#A00000~1~0~none~gge494~0#@$A~M 640 260 A 4 5 0 0 1 640 270~~#A00000~1~0~none~gge495~0#@$P~show~0~1~630~250~180~gge496~0^^620~260^^M 640 260 h -20~#800^^0~644~260~0~1 ~start~~~#800^^0~636~256~0~1 ~end~~~#800^^0~607~250^^0~M 610 253 L 613 250 L 610 247#@$P~show~0~3~630~250~0~gge503~0^^680~300^^M 660 300 h 20~#800^^0~656~300~0~3 ~end~~~#800^^0~664~296~0~3 ~start~~~#800^^0~653~250^^0~M 650 247 L 647 250 L 650 253#@$P~show~0~2~630~250~180~gge510~0^^620~300^^M 640 300 h -20~#800^^0~644~300~0~2 ~start~~~#800^^0~636~296~0~2 ~end~~~#800^^0~607~250^^0~M 610 253 L 613 250 L 610 247#@$P~show~0~4~630~250~0~gge517~0^^680~260^^M 660 260 h 20~#800^^0~656~260~0~4 ~end~~~#800^^0~664~256~0~4 ~start~~~#800^^0~653~250^^0~M 650 247 L 647 250 L 650 253#@$PL~646.5 261 646.5 298~#A00000~1~0~none~gge524~0#@$PL~651.5 261.5 651.5 297.5~#A00000~1~0~none~gge525~0#@$E~634.75~264.25~1.25~1.25~#A00000~1~0~none~gge526~0#@$E~664.25~264.75~1.25~1.25~#A00000~1~0~none~gge527~0#@$T~L~630~282.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge528~0~pinpart#@$T~L~662.5~282.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge530~0~pinpart",
+          "W~680 240 680 260~#008800~1~0~none~gge712~0",
+          "LIB~640~350~package`SOT23`catid`20`nameAlias`Model`Manufacturer Part`?`spicePre`Q`spiceSymbolName`NPN`~~0~gge715~645f4e85c7f043fe86f1b1c8a5ca8679~~0~~yes~yes~~~f5bfa7431c694717a3cf970874f7b091#@$T~N~654~362.34375~0~#000080~Arial~~~~~comment~2DC2412R~1~start~gge540~0~#@$T~P~654~353.2109375~0~#000080~Arial~~~~~comment~Q1~1~start~gge542~0~#@$P~show~0~1~650~330~90~gge544~0^^650~330^^M 650 330 v 10~#880000^^0~653~343~270~C~end~~~#0000FF^^0~649~334~270~3~start~~~#0000FF^^0~650~337^^0~M 647 340 L 650 343 L 653 340#@$P~show~0~2~630~350~180~gge551~0^^630~350^^M 630 350 h 10~#880000^^0~643~353~0~B~start~~~#0000FF^^0~634~349~0~1~end~~~#0000FF^^0~637~350^^0~M 640 353 L 643 350 L 640 347#@$P~show~0~3~650~370~270~gge558~0^^650~370^^M 650 370 v -10~#880000^^0~653~357~270~E~start~~~#0000FF^^0~649~366~270~2~end~~~#0000FF^^0~650~363^^0~M 653 360 L 650 357 L 647 360#@$PL~650 340 640 347~#880000~1~0~none~gge565~0#@$PL~640 353 650 360~#880000~1~0~none~gge566~0#@$PL~640 341 640 359~#880000~1~0~none~gge567~0#@$PG~650 360 647 355 644 359~#880000~1~0~#880000~gge568~0",
+          "W~620 240 610 240 610 330 650 330~#008800~1~0~none~gge716~0",
+          "W~620 300 620 350 630 350~#008800~1~0~none~gge717~0",
+          "F~part_netLabel_gnD~680~300~0~gge718~~0^^680~300^^GND~#000080~669~287~0~start~0~Times New Roman~9pt~flag_gge178^^PL~680 310 680 300~#000000~1~0~transparent~gge574~0^^PL~670 310 689 310~#000000~1~0~transparent~gge575~0^^PL~674 312 687 312~#000000~1~0~transparent~gge576~0^^PL~676 314 683 314~#000000~1~0~transparent~gge577~0^^PL~679 316 681 316~#000000~1~0~transparent~gge578~0",
+          "F~part_netLabel_gnD~650~370~0~gge719~~0^^650~370^^GND~#000080~639~357~0~start~0~Times New Roman~9pt~flag_gge181^^PL~650 380 650 370~#000000~1~0~transparent~gge582~0^^PL~640 380 659 380~#000000~1~0~transparent~gge583~0^^PL~644 382 657 382~#000000~1~0~transparent~gge584~0^^PL~646 384 653 384~#000000~1~0~transparent~gge585~0^^PL~649 386 651 386~#000000~1~0~transparent~gge586~0",
+          "W~620 200 580 200~#008800~1~0~none~gge841~0",
+          "W~580 200 510 200 470 200~#008800~1~0~none~gge843~0",
+          "J~510~200~2.5~#CC0000~gge844~0",
+          "F~part_netLabel_volProbe~680~200~0~gge845~~0^^680~200^^P2~#0000FF~696~210~0~start~1~Times New Roman~9pt~flag_gge184^^PL~680.5 200.5 689.75 210 689.75 215 690.5 209.75 694.75 207.75~#000000~1~0~transparent~gge848~0",
+          "J~580~200~2.5~#CC0000~gge849~0",
+          "W~620 260 620 250 580 250~#008800~1~0~none~gge854~0",
+          "J~580~250~2.5~#CC0000~gge855~0",
+          "W~330 300 330 280~#008800~1~0~none~gge857~0",
+          "J~330~280~2.5~#CC0000~gge858~0",
+          "W~470 280 470 300~#008800~1~0~none~gge859~0",
+          "W~510 280 510 300~#008800~1~0~none~gge861~0"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.5,
+          "width": 498.7,
+          "height": 241.5
+        },
+        "colors": {}
+      }
+    },
+    {
+      "docType": 1,
+      "title": "Experimento #5.1 Tesla",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": 1,
+          "editorVersion": "3.7.5",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": "",
+          "uuid": "1254c93432044159a45faf6a5654e694"
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~270~0~gge5^^330~270^^GND~#000080~319~257~0~start~0~Times New Roman~9pt^^PL~330 280 330 270~#000000~1~0~none~gge8^^PL~320 280 339 280~#000000~1~0~none~gge9^^PL~324 282 337 282~#000000~1~0~none~gge10^^PL~326 284 333 284~#000000~1~0~none~gge11^^PL~329 286 331 286~#000000~1~0~none~gge12",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`BOM_Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17#@$PL~275 170 272 175~#A00000~1~0~none~gge19#@$PL~267 165 262 175~#A00000~1~0~none~gge20#@$PL~272 175 267 165~#A00000~1~0~none~gge21#@$P~show~0~2~280~170~0~gge22^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~^^0~279~166~0~2~start~~^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29#@$PL~262 175 258 165~#A00000~1~0~none~gge30#@$PL~258 165 253 175~#A00000~1~0~none~gge31#@$PL~248 165 245 170~#A00000~1~0~none~gge32#@$P~show~0~1~240~170~180~gge33^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~^^0~241~166~0~1~end~~^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 30m~1~start~gge105",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120`Vinitial[V]`0`BOM_Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140#@$E~220~230~10~10~#880000~1~0~none~gge142#@$P~show~0~1~200~210~90~gge143^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~^^0~216~216~270~1~start~~^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150#@$PL~220 222 220 226~#880000~1~0~none~gge151#@$P~show~0~2~200~210~270~gge152^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~^^0~216~244~270~2~end~~^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`BOM_Manufacturer Part`?`~~0~gge160#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge162#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173#@$P~show~0~1~340~160~180~gge174^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~^^0~346~166~0~1 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~^^0~374~206~0~3 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~^^0~346~206~0~2 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~^^0~374~166~0~4 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208",
+          "W~280 170 330 170~#008800~1~0~none~gge210",
+          "W~330 210 330 270 220 270 220 250~#008800~1~0~none~gge214",
+          "J~330~270~2.5~#CC0000~gge216",
+          "F~part_netLabel_gnD~410~270~0~gge217^^410~270^^GND~#000080~399~257~0~start~0~Times New Roman~9pt^^PL~410 280 410 270~#000000~1~0~none~gge220^^PL~400 280 419 280~#000000~1~0~none~gge221^^PL~404 282 417 282~#000000~1~0~none~gge222^^PL~406 284 413 284~#000000~1~0~none~gge223^^PL~409 286 411 286~#000000~1~0~none~gge224",
+          "F~part_netLabel_volProbe~290~170~0~gge228^^290~170^^PRI~#0000FF~306~180~0~start~1~Times New Roman~9pt^^PL~290.5 170.5 299.75 180 299.75 185 300.5 179.75 304.75 177.75~#000000~1~0~none~gge231",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233",
+          "J~290~170~2.5~#CC0000~gge235",
+          "LIB~440~200~package`NONE`spicePre`X`nameAlias`Model`BOM_Manufacturer Part`?`spiceSymbolName`Bridge`~~0~gge237#@$T~N~408~165~0~#000080~Arial~~~~~comment~GBJ15005~1~start~gge239#@$T~P~408~155.859375~0~#000080~Arial~~~~~comment~B1~1~start~gge241#@$P~show~0~1~410~200~180~gge243^^410~200^^M 410 200 h 10~#880000^^0~423~203~0~-~start~~^^0~414~199~0~1~end~~^^0~417~200^^0~M 420 203 L 423 200 L 420 197#@$P~show~0~2~440~170~90~gge250^^440~170^^M 440 170 v 10~#880000^^0~443~183~270~C1~end~~^^0~439~174~270~2~start~~^^0~440~177^^0~M 437 180 L 440 183 L 443 180#@$P~show~0~3~470~200~0~gge257^^470~200^^M 470 200 h -10~#880000^^0~457~203~0~+~end~~^^0~466~199~0~3~start~~^^0~463~200^^0~M 460 197 L 457 200 L 460 203#@$P~show~0~4~440~230~270~gge264^^440~230^^M 440 230 v -10~#880000^^0~443~217~270~C2~start~~^^0~439~226~270~4~end~~^^0~440~223^^0~M 443 220 L 440 217 L 437 220#@$PL~440 180 420 200 440 220 460 200 440 180~#880000~1~0~none~gge271#@$PL~429 183 437 191~#880000~1~0~none~gge272#@$PL~457 189 449 197~#880000~1~0~none~gge273#@$PL~437 209 429 217~#880000~1~0~none~gge274#@$PL~449 203 457 211~#880000~1~0~none~gge275#@$PG~423 189 433 187 431 197~#880000~1~0~#880000~gge276#@$PG~451 183 453 193 443 191~#880000~1~0~#880000~gge277#@$PG~431 203 433 213 423 211~#880000~1~0~#880000~gge278#@$PG~443 209 453 207 451 217~#880000~1~0~#880000~gge279",
+          "W~390 170 440 170~#008800~1~0~none~gge280",
+          "W~390 210 390 230 440 230~#008800~1~0~none~gge281",
+          "W~410 200 410 270~#008800~1~0~none~gge595",
+          "W~470 200 470 230~#008800~1~0~none~gge596",
+          "F~part_netLabel_gnD~470~270~0~gge597^^470~270^^GND~#000080~459~257~0~start~0~Times New Roman~9pt^^PL~470 280 470 270~#000000~1~0~none~gge600^^PL~460 280 479 280~#000000~1~0~none~gge601^^PL~464 282 477 282~#000000~1~0~none~gge602^^PL~466 284 473 284~#000000~1~0~none~gge603^^PL~469 286 471 286~#000000~1~0~none~gge604",
+          "F~part_netLabel_volProbe~470~200~0~gge632^^470~200^^P1~#0000FF~486~210~0~start~1~Times New Roman~9pt^^PL~470.5 200.5 479.75 210 479.75 215 480.5 209.75 484.75 207.75~#000000~1~0~none~gge635",
+          "J~470~200~2.5~#CC0000~gge636",
+          "LIB~470~250~package`C1`nameAlias`Value(F)`BOM_Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge637#@$T~N~480~262.34375~0~#000080~Arial~~~~~comment~1u~1~start~gge639#@$T~P~480.0078125~253.2109375~0~#000080~Arial~~~~~comment~C1~1~start~gge641#@$PL~478 252 462 252~#A00000~1~0~none~gge643#@$P~show~0~1~450~270~270~gge644^^470~270^^M 470 260 v 10~#800^^0~470~256~270~1~start~~^^0~466~264~270~1~end~~^^0~450~283^^0~M 453 280 L 450 277 L 447 280#@$PL~470 240 470 248~#A00000~1~0~none~gge651#@$PL~462 248 478 248~#A00000~1~0~none~gge652#@$P~show~0~2~450~260~90~gge653^^470~230^^M 470 240 v -10~#800^^0~470~244~270~2~end~~^^0~466~236~270~2~start~~^^0~450~247^^0~M 447 250 L 450 253 L 453 250#@$PL~470 252 470 260~#A00000~1~0~none~gge660"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.4,
+          "width": 288.8,
+          "height": 208.4
+        },
+        "colors": []
+      }
+    },
+    {
+      "docType": 1,
+      "title": "Experimento #4 Transformador",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": 1,
+          "editorVersion": "3.7.5",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": "",
+          "uuid": "ec38dafd3a4241e1aeac98a8b2e5a659"
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt^^PL~330 310 330 300~#000000~1~0~none~gge8^^PL~320 310 339 310~#000000~1~0~none~gge9^^PL~324 312 337 312~#000000~1~0~none~gge10^^PL~326 314 333 314~#000000~1~0~none~gge11^^PL~329 316 331 316~#000000~1~0~none~gge12",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`BOM_Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17#@$PL~275 170 272 175~#A00000~1~0~none~gge19#@$PL~267 165 262 175~#A00000~1~0~none~gge20#@$PL~272 175 267 165~#A00000~1~0~none~gge21#@$P~show~0~2~280~170~0~gge22^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~^^0~279~166~0~2~start~~^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29#@$PL~262 175 258 165~#A00000~1~0~none~gge30#@$PL~258 165 253 175~#A00000~1~0~none~gge31#@$PL~248 165 245 170~#A00000~1~0~none~gge32#@$P~show~0~1~240~170~180~gge33^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~^^0~241~166~0~1~end~~^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "LIB~490~230~package`R3`nameAlias`Value(Ω)`BOM_Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge64#@$T~N~497~242.25~0~#000080~Arial~~~~~comment~1k~1~start~gge66#@$T~P~497~233.25~0~#000080~Arial~~~~~comment~R2~1~start~gge68#@$PL~490 215 495 218~#A00000~1~0~none~gge70#@$PL~485 223 495 228~#A00000~1~0~none~gge71#@$PL~495 218 485 223~#A00000~1~0~none~gge72#@$P~show~0~2~490~210~90~gge73^^490~210^^M 490 210 v 5~#800^^0~490~219~270~2~end~~^^0~486~211~270~2~start~~^^0~490~212^^0~M 487 215 L 490 218 L 493 215#@$PL~495 237 485 242~#A00000~1~0~none~gge80#@$PL~495 228 485 232~#A00000~1~0~none~gge81#@$PL~485 232 495 237~#A00000~1~0~none~gge82#@$PL~485 242 490 245~#A00000~1~0~none~gge83#@$P~show~0~1~490~250~270~gge84^^490~250^^M 490 250 v -5~#800^^0~490~241~270~1~start~~^^0~486~249~270~1~end~~^^0~490~248^^0~M 493 245 L 490 242 L 487 245",
+          "F~part_netLabel_volProbe~490~170~0~gge100^^490~170^^SEC~#0000FF~506~180~0~start~1~Times New Roman~9pt^^PL~490.5 170.5 499.75 180 499.75 185 500.5 179.75 504.75 177.75~#000000~1~0~none~gge103",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 12.7m~1~start~gge105",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120V`Vinitial[V]`0V`BOM_Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140#@$E~220~230~10~10~#880000~1~0~none~gge142#@$P~show~0~1~200~210~90~gge143^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~^^0~216~216~270~1~start~~^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150#@$PL~220 222 220 226~#880000~1~0~none~gge151#@$P~show~0~2~200~210~270~gge152^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~^^0~216~244~270~2~end~~^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`BOM_Manufacturer Part`?`~~0~gge160#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~1~start~gge162#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173#@$P~show~0~1~340~160~180~gge174^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~^^0~346~166~0~1 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~^^0~374~206~0~3 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~^^0~346~206~0~2 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~^^0~374~166~0~4 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208",
+          "W~280 170 330 170~#008800~1~0~none~gge210",
+          "W~490 210 490 170 390 170~#008800~1~0~none~gge211",
+          "J~490~170~2.5~#CC0000~gge213",
+          "W~330 210 330 300 220 300 220 250~#008800~1~0~none~gge214",
+          "J~330~300~2.5~#CC0000~gge216",
+          "F~part_netLabel_gnD~390~300~0~gge217^^390~300^^GND~#000080~379~287~0~start~0~Times New Roman~9pt^^PL~390 310 390 300~#000000~1~0~none~gge220^^PL~380 310 399 310~#000000~1~0~none~gge221^^PL~384 312 397 312~#000000~1~0~none~gge222^^PL~386 314 393 314~#000000~1~0~none~gge223^^PL~389 316 391 316~#000000~1~0~none~gge224",
+          "W~490 250 490 300 390 300 390 210~#008800~1~0~none~gge225",
+          "J~390~300~2.5~#CC0000~gge227",
+          "F~part_netLabel_volProbe~290~170~0~gge228^^290~170^^PRI~#0000FF~306~180~0~start~1~Times New Roman~9pt^^PL~290.5 170.5 299.75 180 299.75 185 300.5 179.75 304.75 177.75~#000000~1~0~none~gge231",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233",
+          "J~290~170~2.5~#CC0000~gge235"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.4,
+          "width": 318.3,
+          "height": 208.4
+        },
+        "colors": []
+      }
+    },
+    {
+      "docType": "1",
+      "title": "Experimento #5.0 Tesla",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": "1",
+          "editorVersion": "6.5.54",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": null,
+          "uuid": "9f3072e9e5314659b66dae12fbfd8ed9",
+          "x": "0",
+          "y": "0",
+          "portOfADImportHack": "",
+          "importFlag": 0,
+          "transformList": "",
+          "hasIdFlag": true
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5~~0^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt~flag_gge187^^PL~330 310 330 300~#000000~1~0~transparent~gge8~0^^PL~320 310 339 310~#000000~1~0~transparent~gge9~0^^PL~324 312 337 312~#000000~1~0~transparent~gge10~0^^PL~326 314 333 314~#000000~1~0~transparent~gge11~0^^PL~329 316 331 316~#000000~1~0~transparent~gge12~0",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15~0~#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17~0~#@$PL~275 170 272 175~#A00000~1~0~none~gge19~0#@$PL~267 165 262 175~#A00000~1~0~none~gge20~0#@$PL~272 175 267 165~#A00000~1~0~none~gge21~0#@$P~show~0~2~280~170~0~gge22~0^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~~#800^^0~279~166~0~2~start~~~#800^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29~0#@$PL~262 175 258 165~#A00000~1~0~none~gge30~0#@$PL~258 165 253 175~#A00000~1~0~none~gge31~0#@$PL~248 165 245 170~#A00000~1~0~none~gge32~0#@$P~show~0~1~240~170~180~gge33~0^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~~#800^^0~241~166~0~1~end~~~#800^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 16m~1~start~gge105~0~pinpart",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120`Vinitial[V]`0`Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136~~~0~~yes~yes~~~#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138~0~#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140~0~#@$E~220~230~10~10~#880000~1~0~none~gge142~0#@$P~show~0~1~200~210~90~gge143~0^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~~#800^^0~216~216~270~1~start~~~#800^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150~0#@$PL~220 222 220 226~#880000~1~0~none~gge151~0#@$P~show~0~2~200~210~270~gge152~0^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~~#800^^0~216~244~270~2~end~~~#800^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159~0",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`Manufacturer Part`?`~~0~gge160~~~0~~yes~yes~~~#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~1~start~gge162~0~#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164~0~#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166~0#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167~0#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168~0#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169~0#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170~0#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171~0#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172~0#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173~0#@$P~show~0~1~340~160~180~gge174~0^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~~#800^^0~346~166~0~1 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181~0^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~~#800^^0~374~206~0~3 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188~0^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~~#800^^0~346~206~0~2 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195~0^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~~#800^^0~374~166~0~4 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202~0#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203~0#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204~0#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205~0#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206~0~pinpart#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208~0~pinpart",
+          "W~280 170 330 170~#008800~1~0~none~gge210~0",
+          "W~330 210 330 300 220 300 220 250~#008800~1~0~none~gge214~0",
+          "J~330~300~2.5~#CC0000~gge216~0",
+          "F~part_netLabel_gnD~440~300~0~gge217~~0^^440~300^^GND~#000080~429~287~0~start~0~Times New Roman~9pt~flag_gge190^^PL~440 310 440 300~#000000~1~0~transparent~gge220~0^^PL~430 310 449 310~#000000~1~0~transparent~gge221~0^^PL~434 312 447 312~#000000~1~0~transparent~gge222~0^^PL~436 314 443 314~#000000~1~0~transparent~gge223~0^^PL~439 316 441 316~#000000~1~0~transparent~gge224~0",
+          "F~part_netLabel_volProbe~290~170~0~gge228~~0^^290~170^^PRI~#0000FF~306~180~0~start~1~Times New Roman~9pt~flag_gge193^^PL~290.5 170.5 299.75 180 299.75 185 300.5 179.75 304.75 177.75~#000000~1~0~transparent~gge231~0",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233~0",
+          "J~290~170~2.5~#CC0000~gge235~0",
+          "LIB~470~200~package`NONE`spicePre`X`nameAlias`Model`Manufacturer Part`?`spiceSymbolName`Bridge`~~0~gge237~~~0~~yes~yes~~~#@$T~N~438~165~0~#000080~Arial~~~~~comment~GBJ15005~1~start~gge239~0~#@$T~P~438~155.859375~0~#000080~Arial~~~~~comment~B1~1~start~gge241~0~#@$P~show~0~1~440~200~180~gge243~0^^440~200^^M 440 200 h 10~#880000^^0~453~203~0~-~start~~~#0000FF^^0~444~199~0~1~end~~~#0000FF^^0~447~200^^0~M 450 203 L 453 200 L 450 197#@$P~show~0~2~470~170~90~gge250~0^^470~170^^M 470 170 v 10~#880000^^0~473~183~270~C1~end~~~#0000FF^^0~469~174~270~2~start~~~#0000FF^^0~470~177^^0~M 467 180 L 470 183 L 473 180#@$P~show~0~3~500~200~0~gge257~0^^500~200^^M 500 200 h -10~#880000^^0~487~203~0~+~end~~~#0000FF^^0~496~199~0~3~start~~~#0000FF^^0~493~200^^0~M 490 197 L 487 200 L 490 203#@$P~show~0~4~470~230~270~gge264~0^^470~230^^M 470 230 v -10~#880000^^0~473~217~270~C2~start~~~#0000FF^^0~469~226~270~4~end~~~#0000FF^^0~470~223^^0~M 473 220 L 470 217 L 467 220#@$PL~470 180 450 200 470 220 490 200 470 180~#880000~1~0~none~gge271~0#@$PL~459 183 467 191~#880000~1~0~none~gge272~0#@$PL~487 189 479 197~#880000~1~0~none~gge273~0#@$PL~467 209 459 217~#880000~1~0~none~gge274~0#@$PL~479 203 487 211~#880000~1~0~none~gge275~0#@$PG~453 189 463 187 461 197~#880000~1~0~#880000~gge276~0#@$PG~481 183 483 193 473 191~#880000~1~0~#880000~gge277~0#@$PG~461 203 463 213 453 211~#880000~1~0~#880000~gge278~0#@$PG~473 209 483 207 481 217~#880000~1~0~#880000~gge279~0",
+          "W~390 170 470 170~#008800~1~0~none~gge280~0",
+          "W~390 210 390 230 470 230~#008800~1~0~none~gge281~0",
+          "LIB~500~280~package`C1`nameAlias`Value(F)`Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge282~2593d6b50646468aa0f4210426aa1d27~~0~~yes~yes~~~6685cb4e75a7496fab4a01ec892ff25d#@$T~N~510~292.25~0~#000080~Arial~~~~~comment~4700u~1~start~gge284~0~#@$T~P~510~283.25~0~#000080~Arial~~~~~comment~C1~1~start~gge286~0~#@$PL~508 282 492 282~#A00000~1~0~none~gge288~0#@$P~show~0~1~480~300~270~gge289~0^^500~300^^M 500 290 v 10~#800^^0~500~286~270~1~start~~~#800^^0~496~294~270~1~end~~~#800^^0~480~313^^0~M 483 310 L 480 307 L 477 310#@$PL~500 270 500 278~#A00000~1~0~none~gge296~0#@$PL~492 278 508 278~#A00000~1~0~none~gge297~0#@$P~show~0~2~480~290~90~gge298~0^^500~260^^M 500 270 v -10~#800^^0~500~274~270~2~end~~~#800^^0~496~266~270~2~start~~~#800^^0~480~277^^0~M 477 280 L 480 283 L 483 280#@$PL~500 282 500 290~#A00000~1~0~none~gge305~0",
+          "W~440 200 440 270 440 300~#008800~1~0~none~gge308~0",
+          "LIB~540~230~package`DO35-7`nameAlias`Model`Manufacturer Part`?`spicePre`D`spiceSymbolName`Diode`~270~0~gge310~44856a57bd594eb499525ea6d635ae59~~0~~yes~yes~~~aba53d3b05b64719b9077a7d3ebd131e#@$T~N~550~242.359375~0~#000080~Arial~~~~~comment~1N4001~1~start~gge312~0~#@$T~P~550~233.21875~0~#000080~Arial~~~~~comment~D1~1~start~gge314~0~#@$P~show~0~1~540~210~90~gge316~0^^540~210^^M 540 210 v 15~#800^^0~540~229~270~A~end~~~#800^^0~536~221~270~A~start~~~#800^^0~540~222^^0~M 537 225 L 540 228 L 543 225#@$P~show~0~2~540~250~270~gge323~0^^540~250^^M 540 250 v -15~#800^^0~540~231~270~C~start~~~#800^^0~536~239~270~C~end~~~#800^^0~540~238^^0~M 543 235 L 540 232 L 537 235#@$PL~548 235 532 235~#880000~1~0~none~gge330~0#@$PT~M 534 225 L 540 235 L 547 225 Z ~#880000~1~0~#880000~gge331~0~",
+          "LIB~540~280~package`C1`nameAlias`Value(F)`Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge332~2593d6b50646468aa0f4210426aa1d27~~0~~yes~yes~~~6685cb4e75a7496fab4a01ec892ff25d#@$T~N~550~292.34375~0~#000080~Arial~~~~~comment~100u~1~start~gge334~0~#@$T~P~550.0078125~283.2109375~0~#000080~Arial~~~~~comment~C2~1~start~gge336~0~#@$PL~548 282 532 282~#A00000~1~0~none~gge338~0#@$P~show~0~1~520~300~270~gge339~0^^540~300^^M 540 290 v 10~#800^^0~540~286~270~1~start~~~#800^^0~536~294~270~1~end~~~#800^^0~520~313^^0~M 523 310 L 520 307 L 517 310#@$PL~540 270 540 278~#A00000~1~0~none~gge346~0#@$PL~532 278 548 278~#A00000~1~0~none~gge347~0#@$P~show~0~2~520~290~90~gge348~0^^540~260^^M 540 270 v -10~#800^^0~540~274~270~2~end~~~#800^^0~536~266~270~2~start~~~#800^^0~520~277^^0~M 517 280 L 520 283 L 523 280#@$PL~540 282 540 290~#A00000~1~0~none~gge355~0",
+          "F~part_netLabel_gnD~540~300~0~gge356~~0^^540~300^^GND~#000080~529~287~0~start~0~Times New Roman~9pt~flag_gge196^^PL~540 310 540 300~#000000~1~0~transparent~gge359~0^^PL~530 310 549 310~#000000~1~0~transparent~gge360~0^^PL~534 312 547 312~#000000~1~0~transparent~gge361~0^^PL~536 314 543 314~#000000~1~0~transparent~gge362~0^^PL~539 316 541 316~#000000~1~0~transparent~gge363~0",
+          "W~540 250 540 260~#008800~1~0~none~gge364~0",
+          "LIB~600~220~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge367~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~607~232.34375~0~#000080~Arial~~~~~comment~1k~1~start~gge369~0~#@$T~P~607.0078125~223.2109375~0~#000080~Arial~~~~~comment~R3~1~start~gge371~0~#@$PL~600 205 605 208~#A00000~1~0~none~gge373~0#@$PL~595 213 605 218~#A00000~1~0~none~gge374~0#@$PL~605 208 595 213~#A00000~1~0~none~gge375~0#@$P~show~0~2~600~200~90~gge376~0^^600~200^^M 600 200 v 5~#800^^0~600~209~270~2~end~~~#800^^0~596~201~270~2~start~~~#800^^0~600~202^^0~M 597 205 L 600 208 L 603 205#@$PL~605 227 595 232~#A00000~1~0~none~gge383~0#@$PL~605 218 595 222~#A00000~1~0~none~gge384~0#@$PL~595 222 605 227~#A00000~1~0~none~gge385~0#@$PL~595 232 600 235~#A00000~1~0~none~gge386~0#@$P~show~0~1~600~240~270~gge387~0^^600~240^^M 600 240 v -5~#800^^0~600~231~270~1~start~~~#800^^0~596~239~270~1~end~~~#800^^0~600~238^^0~M 603 235 L 600 232 L 597 235",
+          "LIB~600~280~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge394~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~607~292.34375~0~#000080~Arial~~~~~comment~1k~1~start~gge396~0~#@$T~P~607.0078125~283.2109375~0~#000080~Arial~~~~~comment~R4~1~start~gge398~0~#@$PL~600 265 605 268~#A00000~1~0~none~gge400~0#@$PL~595 273 605 278~#A00000~1~0~none~gge401~0#@$PL~605 268 595 273~#A00000~1~0~none~gge402~0#@$P~show~0~2~600~260~90~gge403~0^^600~260^^M 600 260 v 5~#800^^0~600~269~270~2~end~~~#800^^0~596~261~270~2~start~~~#800^^0~600~262^^0~M 597 265 L 600 268 L 603 265#@$PL~605 287 595 292~#A00000~1~0~none~gge410~0#@$PL~605 278 595 282~#A00000~1~0~none~gge411~0#@$PL~595 282 605 287~#A00000~1~0~none~gge412~0#@$PL~595 292 600 295~#A00000~1~0~none~gge413~0#@$P~show~0~1~600~300~270~gge414~0^^600~300^^M 600 300 v -5~#800^^0~600~291~270~1~start~~~#800^^0~596~299~270~1~end~~~#800^^0~600~298^^0~M 603 295 L 600 292 L 597 295",
+          "F~part_netLabel_gnD~600~300~0~gge421~~0^^600~300^^GND~#000080~589~287~0~start~0~Times New Roman~9pt~flag_gge199^^PL~600 310 600 300~#000000~1~0~transparent~gge424~0^^PL~590 310 609 310~#000000~1~0~transparent~gge425~0^^PL~594 312 607 312~#000000~1~0~transparent~gge426~0^^PL~596 314 603 314~#000000~1~0~transparent~gge427~0^^PL~599 316 601 316~#000000~1~0~transparent~gge428~0",
+          "W~500 200 540 200 600 200 640 200~#008800~1~0~none~gge429~0",
+          "W~600 240 600 260~#008800~1~0~none~gge431~0",
+          "LIB~670~220~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`100m`L2`1000`K`1`Manufacturer Part`?`~~0~gge432~~~0~~yes~yes~~~#@$T~N~664.578125~195~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge434~0~#@$T~P~663.5859375~194.859375~0~#000080~Arial~~~~~comment~T2~1~start~gge436~0~#@$A~M 680 210 A 4 5 0 0 1 680 200~~#A00000~1~0~none~gge438~0#@$A~M 660 230 A 4 5 0 0 1 660 240~~#A00000~1~0~none~gge439~0#@$A~M 680 240 A 4 5 0 0 1 680 230~~#A00000~1~0~none~gge440~0#@$A~M 680 230 A 4 5 0 0 1 680 220~~#A00000~1~0~none~gge441~0#@$A~M 680 220 A 4 5 0 0 1 680 210~~#A00000~1~0~none~gge442~0#@$A~M 660 220 A 4 5 0 0 1 660 230~~#A00000~1~0~none~gge443~0#@$A~M 660 210 A 4 5 0 0 1 660 220~~#A00000~1~0~none~gge444~0#@$A~M 660 200 A 4 5 0 0 1 660 210~~#A00000~1~0~none~gge445~0#@$P~show~0~1~650~190~180~gge446~0^^640~200^^M 660 200 h -20~#800^^0~664~200~0~1 ~start~~~#800^^0~656~196~0~1 ~end~~~#800^^0~627~190^^0~M 630 193 L 633 190 L 630 187#@$P~show~0~3~650~190~0~gge453~0^^700~240^^M 680 240 h 20~#800^^0~676~240~0~3 ~end~~~#800^^0~684~236~0~3 ~start~~~#800^^0~673~190^^0~M 670 187 L 667 190 L 670 193#@$P~show~0~2~650~190~180~gge460~0^^640~240^^M 660 240 h -20~#800^^0~664~240~0~2 ~start~~~#800^^0~656~236~0~2 ~end~~~#800^^0~627~190^^0~M 630 193 L 633 190 L 630 187#@$P~show~0~4~650~190~0~gge467~0^^700~200^^M 680 200 h 20~#800^^0~676~200~0~4 ~end~~~#800^^0~684~196~0~4 ~start~~~#800^^0~673~190^^0~M 670 187 L 667 190 L 670 193#@$PL~666.5 201 666.5 238~#A00000~1~0~none~gge474~0#@$PL~671.5 201.5 671.5 237.5~#A00000~1~0~none~gge475~0#@$E~654.75~204.25~1.25~1.25~#A00000~1~0~none~gge476~0#@$E~684.25~204.75~1.25~1.25~#A00000~1~0~none~gge477~0#@$T~L~650~222.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge478~0~pinpart#@$T~L~682.5~222.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge480~0~pinpart",
+          "LIB~670~280~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`0.01`L2`100`K`1`Manufacturer Part`?`~~0~gge482~~~0~~yes~yes~~~#@$T~N~664.578125~255~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge484~0~#@$T~P~664.5859375~253.859375~0~#000080~Arial~~~~~comment~T3~1~start~gge486~0~#@$A~M 680 270 A 4 5 0 0 1 680 260~~#A00000~1~0~none~gge488~0#@$A~M 660 290 A 4 5 0 0 1 660 300~~#A00000~1~0~none~gge489~0#@$A~M 680 300 A 4 5 0 0 1 680 290~~#A00000~1~0~none~gge490~0#@$A~M 680 290 A 4 5 0 0 1 680 280~~#A00000~1~0~none~gge491~0#@$A~M 680 280 A 4 5 0 0 1 680 270~~#A00000~1~0~none~gge492~0#@$A~M 660 280 A 4 5 0 0 1 660 290~~#A00000~1~0~none~gge493~0#@$A~M 660 270 A 4 5 0 0 1 660 280~~#A00000~1~0~none~gge494~0#@$A~M 660 260 A 4 5 0 0 1 660 270~~#A00000~1~0~none~gge495~0#@$P~show~0~1~650~250~180~gge496~0^^640~260^^M 660 260 h -20~#800^^0~664~260~0~1 ~start~~~#800^^0~656~256~0~1 ~end~~~#800^^0~627~250^^0~M 630 253 L 633 250 L 630 247#@$P~show~0~3~650~250~0~gge503~0^^700~300^^M 680 300 h 20~#800^^0~676~300~0~3 ~end~~~#800^^0~684~296~0~3 ~start~~~#800^^0~673~250^^0~M 670 247 L 667 250 L 670 253#@$P~show~0~2~650~250~180~gge510~0^^640~300^^M 660 300 h -20~#800^^0~664~300~0~2 ~start~~~#800^^0~656~296~0~2 ~end~~~#800^^0~627~250^^0~M 630 253 L 633 250 L 630 247#@$P~show~0~4~650~250~0~gge517~0^^700~260^^M 680 260 h 20~#800^^0~676~260~0~4 ~end~~~#800^^0~684~256~0~4 ~start~~~#800^^0~673~250^^0~M 670 247 L 667 250 L 670 253#@$PL~666.5 261 666.5 298~#A00000~1~0~none~gge524~0#@$PL~671.5 261.5 671.5 297.5~#A00000~1~0~none~gge525~0#@$E~654.75~264.25~1.25~1.25~#A00000~1~0~none~gge526~0#@$E~684.25~264.75~1.25~1.25~#A00000~1~0~none~gge527~0#@$T~L~650~282.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge528~0~pinpart#@$T~L~682.5~282.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge530~0~pinpart",
+          "J~600~200~2.5~#CC0000~gge533~0",
+          "W~700 260 700 240 700 240~#008800~1~0~none~gge534~0",
+          "W~640 260 640 250 600 250~#008800~1~0~none~gge536~0",
+          "J~600~250~2.5~#CC0000~gge537~0",
+          "LIB~660~350~package`SOT23`catid`20`nameAlias`Model`Manufacturer Part`?`spicePre`Q`spiceSymbolName`NPN`~~0~gge538~645f4e85c7f043fe86f1b1c8a5ca8679~~0~~yes~yes~~~f5bfa7431c694717a3cf970874f7b091#@$T~N~674~362.34375~0~#000080~Arial~~~~~comment~2DC2412R~1~start~gge540~0~#@$T~P~674~353.2109375~0~#000080~Arial~~~~~comment~Q1~1~start~gge542~0~#@$P~show~0~1~670~330~90~gge544~0^^670~330^^M 670 330 v 10~#880000^^0~673~343~270~C~end~~~#0000FF^^0~669~334~270~3~start~~~#0000FF^^0~670~337^^0~M 667 340 L 670 343 L 673 340#@$P~show~0~2~650~350~180~gge551~0^^650~350^^M 650 350 h 10~#880000^^0~663~353~0~B~start~~~#0000FF^^0~654~349~0~1~end~~~#0000FF^^0~657~350^^0~M 660 353 L 663 350 L 660 347#@$P~show~0~3~670~370~270~gge558~0^^670~370^^M 670 370 v -10~#880000^^0~673~357~270~E~start~~~#0000FF^^0~669~366~270~2~end~~~#0000FF^^0~670~363^^0~M 673 360 L 670 357 L 667 360#@$PL~670 340 660 347~#880000~1~0~none~gge565~0#@$PL~660 353 670 360~#880000~1~0~none~gge566~0#@$PL~660 341 660 359~#880000~1~0~none~gge567~0#@$PG~670 360 667 355 664 359~#880000~1~0~#880000~gge568~0",
+          "W~640 240 630 240 630 330 670 330~#008800~1~0~none~gge569~0",
+          "W~640 300 640 350 650 350~#008800~1~0~none~gge570~0",
+          "F~part_netLabel_gnD~700~300~0~gge571~~0^^700~300^^GND~#000080~689~287~0~start~0~Times New Roman~9pt~flag_gge202^^PL~700 310 700 300~#000000~1~0~transparent~gge574~0^^PL~690 310 709 310~#000000~1~0~transparent~gge575~0^^PL~694 312 707 312~#000000~1~0~transparent~gge576~0^^PL~696 314 703 314~#000000~1~0~transparent~gge577~0^^PL~699 316 701 316~#000000~1~0~transparent~gge578~0",
+          "F~part_netLabel_gnD~670~370~0~gge579~~0^^670~370^^GND~#000080~659~357~0~start~0~Times New Roman~9pt~flag_gge205^^PL~670 380 670 370~#000000~1~0~transparent~gge582~0^^PL~660 380 679 380~#000000~1~0~transparent~gge583~0^^PL~664 382 677 382~#000000~1~0~transparent~gge584~0^^PL~666 384 673 384~#000000~1~0~transparent~gge585~0^^PL~669 386 671 386~#000000~1~0~transparent~gge586~0",
+          "F~part_netLabel_volProbe~540~200~0~gge591~~0^^540~200^^P1~#0000FF~556~210~0~start~1~Times New Roman~9pt~flag_gge208^^PL~540.5 200.5 549.75 210 549.75 215 550.5 209.75 554.75 207.75~#000000~1~0~transparent~gge594~0",
+          "W~500 200 500 260~#008800~1~0~none~gge597~0",
+          "F~part_netLabel_gnD~500~300~0~gge598~~0^^500~300^^GND~#000080~489~287~0~start~0~Times New Roman~9pt~flag_gge211^^PL~500 310 500 300~#000000~1~0~transparent~gge601~0^^PL~490 310 509 310~#000000~1~0~transparent~gge602~0^^PL~494 312 507 312~#000000~1~0~transparent~gge603~0^^PL~496 314 503 314~#000000~1~0~transparent~gge604~0^^PL~499 316 501 316~#000000~1~0~transparent~gge605~0",
+          "J~500~200~2.5~#CC0000~gge607~0",
+          "J~540~200~2.5~#CC0000~gge608~0",
+          "W~540 210 540 200~#008800~1~0~none~gge609~0"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.5,
+          "width": 510.1,
+          "height": 241.5
+        },
+        "colors": {}
+      }
+    },
+    {
+      "docType": "1",
+      "title": "Divisor de Voltaje",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": "1",
+          "editorVersion": "6.5.54",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": null,
+          "uuid": "d2ad8ef888a04f2f9966fa75ceaf13af",
+          "x": "0",
+          "y": "0",
+          "portOfADImportHack": "",
+          "importFlag": 0,
+          "transformList": "",
+          "hasIdFlag": true
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5~~0^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt~flag_gge142^^PL~330 310 330 300~#000000~1~0~transparent~gge8~0^^PL~320 310 339 310~#000000~1~0~transparent~gge9~0^^PL~324 312 337 312~#000000~1~0~transparent~gge10~0^^PL~326 314 333 314~#000000~1~0~transparent~gge11~0^^PL~329 316 331 316~#000000~1~0~transparent~gge12~0",
+          "LIB~320~170~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~314~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15~0~#@$T~P~314~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17~0~#@$PL~335 170 332 175~#A00000~1~0~none~gge19~0#@$PL~327 165 322 175~#A00000~1~0~none~gge20~0#@$PL~332 175 327 165~#A00000~1~0~none~gge21~0#@$P~show~0~2~340~170~0~gge22~0^^340~170^^M 340 170 h -5~#800^^0~331~170~0~2~end~~~#800^^0~339~166~0~2~start~~~#800^^0~338~170^^0~M 335 167 L 332 170 L 335 173#@$PL~313 175 308 165~#A00000~1~0~none~gge29~0#@$PL~322 175 318 165~#A00000~1~0~none~gge30~0#@$PL~318 165 313 175~#A00000~1~0~none~gge31~0#@$PL~308 165 305 170~#A00000~1~0~none~gge32~0#@$P~show~0~1~300~170~180~gge33~0^^300~170^^M 300 170 h 5~#800^^0~309~170~0~1~start~~~#800^^0~301~166~0~1~end~~~#800^^0~302~170^^0~M 305 173 L 308 170 L 305 167",
+          "LIB~430~230~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge64~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~437~242.25~0~#000080~Arial~~~~~comment~1k~1~start~gge66~0~#@$T~P~437~233.25~0~#000080~Arial~~~~~comment~R2~1~start~gge68~0~#@$PL~430 215 435 218~#A00000~1~0~none~gge70~0#@$PL~425 223 435 228~#A00000~1~0~none~gge71~0#@$PL~435 218 425 223~#A00000~1~0~none~gge72~0#@$P~show~0~2~430~210~90~gge73~0^^430~210^^M 430 210 v 5~#800^^0~430~219~270~2~end~~~#800^^0~426~211~270~2~start~~~#800^^0~430~212^^0~M 427 215 L 430 218 L 433 215#@$PL~435 237 425 242~#A00000~1~0~none~gge80~0#@$PL~435 228 425 232~#A00000~1~0~none~gge81~0#@$PL~425 232 435 237~#A00000~1~0~none~gge82~0#@$PL~425 242 430 245~#A00000~1~0~none~gge83~0#@$P~show~0~1~430~250~270~gge84~0^^430~250^^M 430 250 v -5~#800^^0~430~241~270~1~start~~~#800^^0~426~249~270~1~end~~~#800^^0~430~248^^0~M 433 245 L 430 242 L 427 245",
+          "W~220 210 220 170 300 170~#008800~1~0~none~gge94~0",
+          "W~430 250 430 300 220 300 220 250~#008800~1~0~none~gge96~0",
+          "W~340 170 430 170 430 210~#008800~1~0~none~gge97~0",
+          "J~330~300~2.5~#CC0000~gge99~0",
+          "F~part_netLabel_volProbe~430~170~0~gge100~~0^^430~170^^V2~#0000FF~446~180~0~start~1~Times New Roman~9pt~flag_gge145^^PL~430.5 170.5 439.75 180 439.75 185 440.5 179.75 444.75 177.75~#000000~1~0~transparent~gge103~0",
+          "J~430~170~2.5~#CC0000~gge104~0",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 60m~1~start~gge105~0~pinpart",
+          "F~part_netLabel_volProbe~220~170~0~gge107~~0^^220~170^^V1~#0000FF~236~180~0~start~1~Times New Roman~9pt~flag_gge148^^PL~220.5 170.5 229.75 180 229.75 185 230.5 179.75 234.75 177.75~#000000~1~0~transparent~gge110~0",
+          "J~220~170~2.5~#CC0000~gge111~0",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`1V`Vinitial[V]`0V`Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge112~~~0~~yes~yes~~~#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~SIN(0 1 60)~1~start~gge114~0~#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge116~0~#@$E~220~230~10~10~#880000~1~0~none~gge118~0#@$P~show~0~1~200~210~90~gge119~0^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~~#800^^0~216~216~270~1~start~~~#800^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge126~0#@$PL~220 222 220 226~#880000~1~0~none~gge127~0#@$P~show~0~2~200~210~270~gge128~0^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~~#800^^0~216~244~270~2~end~~~#800^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge135~0"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.6,
+          "width": 250.7,
+          "height": 208.1
+        },
+        "colors": {}
+      }
+    },
+    {
+      "docType": "1",
+      "title": "Experimento #3 Transformador",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": "1",
+          "editorVersion": "6.5.54",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": null,
+          "uuid": "ee8d78a7dfa94570a1e6769fbde6aabb",
+          "x": "0",
+          "y": "0",
+          "portOfADImportHack": "",
+          "importFlag": 0,
+          "transformList": "",
+          "hasIdFlag": true
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5~~0^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt~flag_gge151^^PL~330 310 330 300~#000000~1~0~transparent~gge8~0^^PL~320 310 339 310~#000000~1~0~transparent~gge9~0^^PL~324 312 337 312~#000000~1~0~transparent~gge10~0^^PL~326 314 333 314~#000000~1~0~transparent~gge11~0^^PL~329 316 331 316~#000000~1~0~transparent~gge12~0",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15~0~#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17~0~#@$PL~275 170 272 175~#A00000~1~0~none~gge19~0#@$PL~267 165 262 175~#A00000~1~0~none~gge20~0#@$PL~272 175 267 165~#A00000~1~0~none~gge21~0#@$P~show~0~2~280~170~0~gge22~0^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~~#800^^0~279~166~0~2~start~~~#800^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29~0#@$PL~262 175 258 165~#A00000~1~0~none~gge30~0#@$PL~258 165 253 175~#A00000~1~0~none~gge31~0#@$PL~248 165 245 170~#A00000~1~0~none~gge32~0#@$P~show~0~1~240~170~180~gge33~0^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~~#800^^0~241~166~0~1~end~~~#800^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "LIB~490~230~package`R3`nameAlias`Value(Ω)`Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~90~0~gge64~e90532859c364560b2abf6f882e09c13~~0~~yes~yes~~~04aafbd9ef7547cebdbcb74d2e22b8bc#@$T~N~497~242.25~0~#000080~Arial~~~~~comment~1k~1~start~gge66~0~#@$T~P~497~233.25~0~#000080~Arial~~~~~comment~R2~1~start~gge68~0~#@$PL~490 215 495 218~#A00000~1~0~none~gge70~0#@$PL~485 223 495 228~#A00000~1~0~none~gge71~0#@$PL~495 218 485 223~#A00000~1~0~none~gge72~0#@$P~show~0~2~490~210~90~gge73~0^^490~210^^M 490 210 v 5~#800^^0~490~219~270~2~end~~~#800^^0~486~211~270~2~start~~~#800^^0~490~212^^0~M 487 215 L 490 218 L 493 215#@$PL~495 237 485 242~#A00000~1~0~none~gge80~0#@$PL~495 228 485 232~#A00000~1~0~none~gge81~0#@$PL~485 232 495 237~#A00000~1~0~none~gge82~0#@$PL~485 242 490 245~#A00000~1~0~none~gge83~0#@$P~show~0~1~490~250~270~gge84~0^^490~250^^M 490 250 v -5~#800^^0~490~241~270~1~start~~~#800^^0~486~249~270~1~end~~~#800^^0~490~248^^0~M 493 245 L 490 242 L 487 245",
+          "F~part_netLabel_volProbe~490~170~0~gge100~~0^^490~170^^SEC~#0000FF~506~180~0~start~1~Times New Roman~9pt~flag_gge154^^PL~490.5 170.5 499.75 180 499.75 185 500.5 179.75 504.75 177.75~#000000~1~0~transparent~gge103~0",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 12.7m~1~start~gge105~0~pinpart",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120V`Vinitial[V]`0V`Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136~~~0~~yes~yes~~~#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138~0~#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140~0~#@$E~220~230~10~10~#880000~1~0~none~gge142~0#@$P~show~0~1~200~210~90~gge143~0^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~~#800^^0~216~216~270~1~start~~~#800^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150~0#@$PL~220 222 220 226~#880000~1~0~none~gge151~0#@$P~show~0~2~200~210~270~gge152~0^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~~#800^^0~216~244~270~2~end~~~#800^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159~0",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`Manufacturer Part`?`~~0~gge160~~~0~~yes~yes~~~#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~1~start~gge162~0~#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164~0~#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166~0#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167~0#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168~0#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169~0#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170~0#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171~0#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172~0#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173~0#@$P~show~0~1~340~160~180~gge174~0^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~~#800^^0~346~166~0~1 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181~0^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~~#800^^0~374~206~0~3 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188~0^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~~#800^^0~346~206~0~2 ~end~~~#800^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195~0^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~~#800^^0~374~166~0~4 ~start~~~#800^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202~0#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203~0#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204~0#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205~0#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206~0~pinpart#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208~0~pinpart",
+          "W~280 170 330 170~#008800~1~0~none~gge210~0",
+          "W~490 210 490 170 390 170~#008800~1~0~none~gge211~0",
+          "J~490~170~2.5~#CC0000~gge213~0",
+          "W~330 210 330 300 220 300 220 250~#008800~1~0~none~gge214~0",
+          "J~330~300~2.5~#CC0000~gge216~0",
+          "F~part_netLabel_gnD~390~300~0~gge217~~0^^390~300^^GND~#000080~379~287~0~start~0~Times New Roman~9pt~flag_gge157^^PL~390 310 390 300~#000000~1~0~transparent~gge220~0^^PL~380 310 399 310~#000000~1~0~transparent~gge221~0^^PL~384 312 397 312~#000000~1~0~transparent~gge222~0^^PL~386 314 393 314~#000000~1~0~transparent~gge223~0^^PL~389 316 391 316~#000000~1~0~transparent~gge224~0",
+          "W~490 250 490 300 390 300 390 210~#008800~1~0~none~gge225~0",
+          "J~390~300~2.5~#CC0000~gge227~0",
+          "F~part_netLabel_volProbe~290~170~0~gge228~~0^^290~170^^PRI~#0000FF~306~180~0~start~1~Times New Roman~9pt~flag_gge160^^PL~290.5 170.5 299.75 180 299.75 185 300.5 179.75 304.75 177.75~#000000~1~0~transparent~gge231~0",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233~0",
+          "J~290~170~2.5~#CC0000~gge235~0"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.6,
+          "width": 318,
+          "height": 208.1
+        },
+        "colors": {}
+      }
+    },
+    {
+      "docType": 1,
+      "title": "Experimento #5.1 Tesla",
+      "description": "",
+      "dataStr": {
+        "head": {
+          "docType": 1,
+          "editorVersion": "3.8.2",
+          "c_para": {
+            "Prefix Start": "1"
+          },
+          "c_spiceCmd": "",
+          "uuid": "ece17902d43c40169c1067bb5a9fd958"
+        },
+        "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~0~0",
+        "shape": [
+          "F~part_netLabel_gnD~330~300~0~gge5^^330~300^^GND~#000080~319~287~0~start~0~Times New Roman~9pt^^PL~330 310 330 300~#000000~1~0~none~gge8^^PL~320 310 339 310~#000000~1~0~none~gge9^^PL~324 312 337 312~#000000~1~0~none~gge10^^PL~326 314 333 314~#000000~1~0~none~gge11^^PL~329 316 331 316~#000000~1~0~none~gge12",
+          "LIB~260~170~package`R3`nameAlias`Value(Ω)`BOM_Manufacturer Part`?`spicePre`R`spiceSymbolName`Resistor`~~0~gge13#@$T~N~254~162~0~#000080~Arial~~~~~comment~1k~1~start~gge15#@$T~P~254~153~0~#000080~Arial~~~~~comment~R1~1~start~gge17#@$PL~275 170 272 175~#A00000~1~0~none~gge19#@$PL~267 165 262 175~#A00000~1~0~none~gge20#@$PL~272 175 267 165~#A00000~1~0~none~gge21#@$P~show~0~2~280~170~0~gge22^^280~170^^M 280 170 h -5~#800^^0~271~170~0~2~end~~^^0~279~166~0~2~start~~^^0~278~170^^0~M 275 167 L 272 170 L 275 173#@$PL~253 175 248 165~#A00000~1~0~none~gge29#@$PL~262 175 258 165~#A00000~1~0~none~gge30#@$PL~258 165 253 175~#A00000~1~0~none~gge31#@$PL~248 165 245 170~#A00000~1~0~none~gge32#@$P~show~0~1~240~170~180~gge33^^240~170^^M 240 170 h 5~#800^^0~249~170~0~1~start~~^^0~241~166~0~1~end~~^^0~242~170^^0~M 245 173 L 248 170 L 245 167",
+          "T~L~220~350~0~#000000~~9pt~~italic~~spice~Tran 40u 60m~1~start~gge105",
+          "LIB~220~230~package`2P-5.0`nameAlias`Freq[Hz]`Function`Sin`Amplitude[V]`120`Vinitial[V]`0`BOM_Manufacturer Part`?`spicePre`V`spiceSymbolName`signal`~~0~gge136#@$T~N~232~242.36~0~#000080~Arial~~~~~comment~60~1~start~gge138#@$T~P~232~233.21~0~#000080~Arial~~~~~comment~V1~1~start~gge140#@$E~220~230~10~10~#880000~1~0~none~gge142#@$P~show~0~1~200~210~90~gge143^^220~210^^M 220 220 v -10~#800^^0~220~222~270~1~end~~^^0~216~216~270~1~start~~^^0~200~197^^0~M 197 200 L 200 203 L 203 200#@$PL~218 224 222 224~#880000~1~0~none~gge150#@$PL~220 222 220 226~#880000~1~0~none~gge151#@$P~show~0~2~200~210~270~gge152^^220~250^^M 220 240 v 10~#800^^0~220~236~270~2~start~~^^0~216~244~270~2~end~~^^0~200~223^^0~M 203 220 L 200 217 L 197 220#@$PL~222 236 218 236~#880000~1~0~none~gge159",
+          "LIB~360~190~package`NONE`spicePre`X`Rs1`1`Rs2`1`L1`5`L2`1`K`1`BOM_Manufacturer Part`?`~~0~gge160#@$T~N~354.64~165~0~#000080~Arial~~~~~comment~Mutual_Inductors~0~start~gge162#@$T~P~354.64~155.86~0~#000080~Arial~~~~~comment~T1~1~start~gge164#@$A~M 370 180 A 4 5 0 0 1 370 170~~#A00000~1~0~none~gge166#@$A~M 350 200 A 4 5 0 0 1 350 210~~#A00000~1~0~none~gge167#@$A~M 370 210 A 4 5 0 0 1 370 200~~#A00000~1~0~none~gge168#@$A~M 370 200 A 4 5 0 0 1 370 190~~#A00000~1~0~none~gge169#@$A~M 370 190 A 4 5 0 0 1 370 180~~#A00000~1~0~none~gge170#@$A~M 350 190 A 4 5 0 0 1 350 200~~#A00000~1~0~none~gge171#@$A~M 350 180 A 4 5 0 0 1 350 190~~#A00000~1~0~none~gge172#@$A~M 350 170 A 4 5 0 0 1 350 180~~#A00000~1~0~none~gge173#@$P~show~0~1~340~160~180~gge174^^330~170^^M 350 170 h -20~#800^^0~354~170~0~1 ~start~~^^0~346~166~0~1 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~3~340~160~0~gge181^^390~210^^M 370 210 h 20~#800^^0~366~210~0~3 ~end~~^^0~374~206~0~3 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$P~show~0~2~340~160~180~gge188^^330~210^^M 350 210 h -20~#800^^0~354~210~0~2 ~start~~^^0~346~206~0~2 ~end~~^^0~317~160^^0~M 320 163 L 323 160 L 320 157#@$P~show~0~4~340~160~0~gge195^^390~170^^M 370 170 h 20~#800^^0~366~170~0~4 ~end~~^^0~374~166~0~4 ~start~~^^0~363~160^^0~M 360 157 L 357 160 L 360 163#@$PL~356.5 171 356.5 208~#A00000~1~0~none~gge202#@$PL~361.5 171.5 361.5 207.5~#A00000~1~0~none~gge203#@$E~344.75~174.25~1.25~1.25~#A00000~1~0~none~gge204#@$E~374.25~174.75~1.25~1.25~#A00000~1~0~none~gge205#@$T~L~340~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L1~1~start~gge206#@$T~L~372.5~192.5~0~#A00000~Times New Roman~5pt~~~~comment~L2~1~start~gge208",
+          "W~280 170 330 170~#008800~1~0~none~gge210",
+          "W~330 210 330 280 220 280 220 250~#008800~1~0~none~gge214",
+          "F~part_netLabel_gnD~410~300~0~gge217^^410~300^^GND~#000080~399~287~0~start~0~Times New Roman~9pt^^PL~410 310 410 300~#000000~1~0~none~gge220^^PL~400 310 419 310~#000000~1~0~none~gge221^^PL~404 312 417 312~#000000~1~0~none~gge222^^PL~406 314 413 314~#000000~1~0~none~gge223^^PL~409 316 411 316~#000000~1~0~none~gge224",
+          "W~220 210 220 170 240 170~#008800~1~0~none~gge233",
+          "LIB~440~200~package`NONE`spicePre`X`nameAlias`Model`BOM_Manufacturer Part`?`spiceSymbolName`Bridge`~~0~gge237#@$T~N~408~165~0~#000080~Arial~~~~~comment~GBJ15005~1~start~gge239#@$T~P~408~155.859375~0~#000080~Arial~~~~~comment~B1~1~start~gge241#@$P~show~0~1~410~200~180~gge243^^410~200^^M 410 200 h 10~#880000^^0~423~203~0~-~start~~^^0~414~199~0~1~end~~^^0~417~200^^0~M 420 203 L 423 200 L 420 197#@$P~show~0~2~440~170~90~gge250^^440~170^^M 440 170 v 10~#880000^^0~443~183~270~C1~end~~^^0~439~174~270~2~start~~^^0~440~177^^0~M 437 180 L 440 183 L 443 180#@$P~show~0~3~470~200~0~gge257^^470~200^^M 470 200 h -10~#880000^^0~457~203~0~+~end~~^^0~466~199~0~3~start~~^^0~463~200^^0~M 460 197 L 457 200 L 460 203#@$P~show~0~4~440~230~270~gge264^^440~230^^M 440 230 v -10~#880000^^0~443~217~270~C2~start~~^^0~439~226~270~4~end~~^^0~440~223^^0~M 443 220 L 440 217 L 437 220#@$PL~440 180 420 200 440 220 460 200 440 180~#880000~1~0~none~gge271#@$PL~429 183 437 191~#880000~1~0~none~gge272#@$PL~457 189 449 197~#880000~1~0~none~gge273#@$PL~437 209 429 217~#880000~1~0~none~gge274#@$PL~449 203 457 211~#880000~1~0~none~gge275#@$PG~423 189 433 187 431 197~#880000~1~0~#880000~gge276#@$PG~451 183 453 193 443 191~#880000~1~0~#880000~gge277#@$PG~431 203 433 213 423 211~#880000~1~0~#880000~gge278#@$PG~443 209 453 207 451 217~#880000~1~0~#880000~gge279",
+          "W~390 170 440 170~#008800~1~0~none~gge280",
+          "W~390 210 390 230 440 230~#008800~1~0~none~gge281",
+          "W~410 200 410 300~#008800~1~0~none~gge595",
+          "F~part_netLabel_gnD~470~300~0~gge597^^470~300^^GND~#000080~459~287~0~start~0~Times New Roman~9pt^^PL~470 310 470 300~#000000~1~0~none~gge600^^PL~460 310 479 310~#000000~1~0~none~gge601^^PL~464 312 477 312~#000000~1~0~none~gge602^^PL~466 314 473 314~#000000~1~0~none~gge603^^PL~469 316 471 316~#000000~1~0~none~gge604",
+          "LIB~470~260~package`C1`nameAlias`Value(F)`BOM_Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge637#@$T~N~480~272.34375~0~#000080~Arial~~~~~comment~10u~1~start~gge639#@$T~P~480.0078125~263.2109375~0~#000080~Arial~~~~~comment~C1~1~start~gge641#@$PL~478 262 462 262~#A00000~1~0~none~gge643#@$P~show~0~1~450~280~270~gge644^^470~280^^M 470 270 v 10~#800^^0~470~266~270~1~start~~^^0~466~274~270~1~end~~^^0~450~293^^0~M 453 290 L 450 287 L 447 290#@$PL~470 250 470 258~#A00000~1~0~none~gge651#@$PL~462 258 478 258~#A00000~1~0~none~gge652#@$P~show~0~2~450~270~90~gge653^^470~240^^M 470 250 v -10~#800^^0~470~254~270~2~end~~^^0~466~246~270~2~start~~^^0~450~257^^0~M 447 260 L 450 263 L 453 260#@$PL~470 262 470 270~#A00000~1~0~none~gge660",
+          "LIB~510~220~package`DO35-7`nameAlias`Model`BOM_Manufacturer Part`?`spicePre`D`spiceSymbolName`Diode`~270~0~gge661#@$T~N~520~232.359375~0~#000080~Arial~~~~~comment~1N4001~1~start~gge312#@$T~P~520~223.21875~0~#000080~Arial~~~~~comment~D1~1~start~gge314#@$P~show~0~1~510~200~90~gge316^^510~200^^M 510 200 v 15~#800^^0~510~219~270~A~end~~^^0~506~211~270~A~start~~^^0~510~212^^0~M 507 215 L 510 218 L 513 215#@$P~show~0~2~510~240~270~gge323^^510~240^^M 510 240 v -15~#800^^0~510~221~270~C~start~~^^0~506~229~270~C~end~~^^0~510~228^^0~M 513 225 L 510 222 L 507 225#@$PL~518 225 502 225~#880000~1~0~none~gge330#@$PT~M 504 215 L 510 225 L 517 215 Z ~#880000~1~0~#880000~gge331",
+          "LIB~510~260~package`C1`nameAlias`Value(F)`BOM_Manufacturer Part`?`spicePre`C`spiceSymbolName`Capacitor`~90~0~gge662#@$T~N~520~272.34375~0~#000080~Arial~~~~~comment~1u~1~start~gge334#@$T~P~520.0078125~263.2109375~0~#000080~Arial~~~~~comment~C2~1~start~gge336#@$PL~518 262 502 262~#A00000~1~0~none~gge338#@$P~show~0~1~490~280~270~gge339^^510~280^^M 510 270 v 10~#800^^0~510~266~270~1~start~~^^0~506~274~270~1~end~~^^0~490~293^^0~M 493 290 L 490 287 L 487 290#@$PL~510 250 510 258~#A00000~1~0~none~gge346#@$PL~502 258 518 258~#A00000~1~0~none~gge347#@$P~show~0~2~490~270~90~gge348^^510~240^^M 510 250 v -10~#800^^0~510~254~270~2~end~~^^0~506~246~270~2~start~~^^0~490~257^^0~M 487 260 L 490 263 L 493 260#@$PL~510 262 510 270~#A00000~1~0~none~gge355",
+          "F~part_netLabel_gnD~510~300~0~gge663^^510~300^^GND~#000080~499~287~0~start~0~Times New Roman~9pt^^PL~510 310 510 300~#000000~1~0~none~gge359^^PL~500 310 519 310~#000000~1~0~none~gge360^^PL~504 312 517 312~#000000~1~0~none~gge361^^PL~506 314 513 314~#000000~1~0~none~gge362^^PL~509 316 511 316~#000000~1~0~none~gge363",
+          "W~330 300 330 280~#008800~1~0~none~gge857",
+          "J~330~280~2.5~#CC0000~gge858",
+          "W~470 280 470 300~#008800~1~0~none~gge859",
+          "W~510 280 510 300~#008800~1~0~none~gge861",
+          "J~470~200~2.5~#CC0000~gge864",
+          "F~part_netLabel_volProbe~510~200~0~gge865^^510~200^^P1~#0000FF~526~210~0~start~1~Times New Roman~9pt^^PL~510.5 200.5 519.75 210 519.75 215 520.5 209.75 524.75 207.75~#000000~1~0~none~gge868",
+          "W~510 200 470 200 470 240~#008800~1~0~none~gge869",
+          "F~part_netLabel_volProbe~390~170~0~gge870^^390~170^^P0~#0000FF~406~180~0~start~1~Times New Roman~9pt^^PL~390.5 170.5 399.75 180 399.75 185 400.5 179.75 404.75 177.75~#000000~1~0~none~gge873",
+          "J~390~170~2.5~#CC0000~gge874"
+        ],
+        "BBox": {
+          "x": 210,
+          "y": 144.5,
+          "width": 344.5,
+          "height": 208.5
+        },
+        "colors": []
+      }
+    }
+  ]
+}
