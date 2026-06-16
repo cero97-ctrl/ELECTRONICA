@@ -1,0 +1,102 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\usepackage{booktabs} % Para tablas de mejor calidad
+\usepackage{enumitem} % Para listas personalizadas
+
+% --- Configuración de la página ---
+\geometry{a4paper, margin=2.5cm}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+}
+
+% --- Título y Autor ---
+\title{Análisis Comparativo de Chips Medidores de Energía de Analog Devices}
+\author{Gemini Code Assist}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+Los circuitos integrados (ICs) \textbf{ADE7753}, \textbf{ADE7758} y \textbf{ADE7880} son fabricados por \textbf{Analog Devices (ADI)} y representan un estándar en la industria para la medición de energía eléctrica. Se utilizan ampliamente en el diseño de medidores inteligentes (\textit{smart meters}), analizadores de calidad de la energía y sistemas de gestión energética industrial.
+
+A continuación, se detalla un análisis de cada uno de ellos.
+
+\section{ADE7753 (Medición Monofásica)}
+
+Este es un chip de alto rendimiento diseñado para aplicaciones de medición de energía en sistemas monofásicos.
+
+\begin{itemize}[itemsep=1ex]
+    \item \textbf{Fase:} Monofásico (Single-phase).
+    \item \textbf{Funciones Clave:} Mide energía activa, reactiva y aparente. También calcula los valores RMS de voltaje y corriente.
+    \item \textbf{Característica Distintiva:} Cuenta con un integrador digital interno (di/dt) seleccionable. Esto le permite interactuar directamente con sensores de corriente basados en \textbf{bobinas de Rogowski}, además de los clásicos transformadores de corriente (CT) o resistencias shunt.
+    \item \textbf{Comunicación:} Interfaz serial SPI.
+\end{itemize}
+
+\section{ADE7758 (Medición Trifásica Estándar)}
+
+El ADE7758 es, en esencia, la versión polifásica de la familia, escalando las capacidades de medición a sistemas trifásicos.
+
+\begin{itemize}[itemsep=1ex]
+    \item \textbf{Fase:} Polifásico / Trifásico (Polyphase). Es compatible con sistemas de 3 o 4 hilos (estrella o delta).
+    \item \textbf{Funciones Clave:} Realiza las mismas mediciones que el ADE7753 (energía activa, reactiva, aparente, V-RMS, I-RMS) pero para cada una de las tres fases.
+    \item \textbf{Característica Distintiva:} Muy utilizado en medidores trifásicos comerciales e industriales tradicionales. Dispone de salidas de pulsos para calibración y monitoreo de energía, lo que facilita su integración en sistemas más antiguos.
+    \item \textbf{Comunicación:} Interfaz serial SPI.
+\end{itemize}
+
+\section{ADE7880 (Medición Trifásica Avanzada)}
+
+Este es un chip mucho más moderno y potente, enfocado en aplicaciones de alta gama que requieren no solo medir el consumo, sino también analizar la calidad de la energía.
+
+\begin{itemize}[itemsep=1ex]
+    \item \textbf{Fase:} Polifásico / Trifásico.
+    \item \textbf{Funciones Clave:} Realiza todas las mediciones de energía y RMS con una precisión muy alta.
+    \item \textbf{Característica Distintiva:} Su principal ventaja es el \textbf{análisis de armónicos}. Posee un motor de cálculo dedicado que puede extraer información de armónicos individuales de voltaje y corriente (hasta el armónico 63). Esto lo hace ideal para analizadores de calidad de energía.
+    \item \textbf{Comunicación:} Es más flexible, soportando I2C, SPI y una interfaz de captura de datos de alta velocidad (HSDC).
+\end{itemize}
+
+\newpage
+\section{Tabla Comparativa Resumen}
+
+\begin{table}[h!]
+    \centering
+    \caption{Comparación de características clave.}
+    \renewcommand{\arraystretch}{1.6}
+    \begin{tabular}{@{}l p{3.5cm} p{3.8cm} p{3.8cm}@{}}
+        \toprule
+        \textbf{Característica} & \textbf{ADE7753} & \textbf{ADE7758} & \textbf{ADE7880} \\
+        \midrule
+        \textbf{Fase} & Monofásico & Trifásico & Trifásico \\
+        \addlinespace
+        \textbf{Funciones Base} & Energía Activa/Reactiva/Aparente, V-RMS, I-RMS & Energía Activa/Reactiva/Aparente, V-RMS, I-RMS (por fase) & Energía Activa/Reactiva/Aparente, V-RMS, I-RMS (por fase) \\
+        \addlinespace
+        \textbf{Característica Única} & Soporte nativo para bobinas de Rogowski & Estándar industrial para medidores trifásicos comerciales & \textbf{Análisis de armónicos} (hasta el 63) \\
+        \addlinespace
+        \textbf{Comunicación} & SPI & SPI & SPI, I2C, HSDC \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:comparativa}
+\end{table}
+
+\section{Conclusión}
+
+La elección entre estos tres circuitos integrados depende directamente de la aplicación:
+\begin{itemize}
+    \item \textbf{ADE7753:} Ideal para medidores monofásicos residenciales o sub-medidores, especialmente si se planea usar sensores de corriente flexibles como las bobinas de Rogowski.
+    \item \textbf{ADE7758:} La opción robusta y probada para medidores trifásicos estándar en entornos comerciales o industriales donde no se requiere un análisis profundo de la calidad de la energía.
+    \item \textbf{ADE7880:} La elección predilecta para equipos de gama alta como analizadores de calidad de la red, sistemas de protección de subestaciones o en investigación, donde el análisis de armónicos es un requisito fundamental.
+\end{itemize}
+
+\end{document}
