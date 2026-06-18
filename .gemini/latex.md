@@ -312,3 +312,86 @@ Cada entrada `{<carácter>}{{<reemplazo LaTeX>}}<longitud>` le indica a `listing
 > **Nota:** Si el código fuente contiene otros caracteres especiales (ej. `ü`, `ö`), se deben agregar mapeos adicionales al bloque `literate` siguiendo el mismo patrón.
 
 > **Archivo afectado:** `docs/PROTECTOR_120VAC/120VAC_mejorado.tex`
+
+---
+
+## 8. Signo `=` en Etiquetas de Circuitikz Rompe el Parser de Claves
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con una cascada de errores al procesar un componente de circuitikz cuya etiqueta contiene el carácter `=` dentro de modo matemático:
+
+```text
+! Extra }, or forgotten $.
+\pgf@let@token ...trut \pgf@circ@finallabels {#1}}
+
+l.83               to[nos, l=$t=0$] (2,2)
+
+! Package tikz Error: Giving up on this path. Did you forget a semicolon?.
+l.83               to[nos, l=$t=0$] (2,2)
+```
+
+Los errores subsiguientes incluyen `Undefined control sequence`, `Missing number`, `Missing } inserted` y `Extra }, or forgotten \endgroup`, que son consecuencia del primer error no resuelto.
+
+### Causa
+
+Circuitikz utiliza el sistema de claves de PGF (`pgfkeys`) para procesar las opciones de componentes como `l=<valor>`. Cuando el valor de la etiqueta contiene un signo `=` (por ejemplo, `l=$t=0$`), el parser interpreta el segundo `=` como un separador clave-valor adicional, rompiendo el análisis sintáctico de la expresión completa y generando una cascada de errores.
+
+### Solución
+
+Envolver el valor completo de la etiqueta entre llaves `{...}` para proteger su contenido del parser de claves:
+
+```latex
+% Antes (incorrecto — el '=' interno confunde al parser):
+\draw (0,0) to[nos, l=$t=0$] (2,2);
+
+% Después (correcto — las llaves protegen el contenido):
+\draw (0,0) to[nos, l={$t=0$}] (2,2);
+```
+
+> **Nota:** Esta misma protección con llaves aplica a **cualquier** opción de circuitikz o TikZ cuyo valor contenga caracteres especiales para `pgfkeys`, como `=` o `,`. Ejemplos comunes: `l={$v_{out} = 5\,\text{V}$}`, `v={$v_R = iR$}`.
+
+> **Archivo afectado:** `cursos/INT_ELECTRONICA/ejercicios/03/problemario_sems_4_5.tex`
+
+---
+
+## 9. Formato de Número Inválido en `\SI{}` del Paquete `siunitx`
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con el siguiente error y termina abruptamente:
+
+```text
+! Package siunitx Error: Invalid number '10^3'.
+
+For immediate help type H <return>.
+
+l.92 \[ \tau = R \cdot C = (\SI{10^3}{\ohm}
+                                           ) \cdot ...
+
+! Emergency stop.
+!  ==> Fatal error occurred, no output PDF file produced!
+```
+
+### Causa
+
+El paquete `siunitx` tiene su propio parser numérico que **no** reconoce la notación de potencia con `^` de LaTeX (por ejemplo, `10^3`). El parser espera números en formato estándar o en notación científica con `e` (por ejemplo, `1e3`). Al encontrar el carácter `^`, el parser no puede interpretar el número, emite un error y aborta la compilación con un `Emergency stop` porque la lectura del argumento queda incompleta (runaway argument).
+
+### Solución
+
+Usar la notación con `e` que `siunitx` sí reconoce, o escribir el número directamente:
+
+```latex
+% Antes (incorrecto — siunitx no acepta '^'):
+\SI{10^3}{\ohm}
+
+% Después (correcto — notación científica con 'e'):
+\SI{1e3}{\ohm}
+
+% Alternativa (correcto — valor numérico directo):
+\SI{1000}{\ohm}
+```
+
+> **Nota:** La notación `e` de `siunitx` es equivalente a $\times 10^n$. Por ejemplo, `\SI{4.7e-6}{\farad}` produce "4.7 × 10⁻⁶ F". Si se necesita mostrar explícitamente la potencia de 10 como parte de una expresión matemática, se debe usar modo math puro fuera de `\SI`: `$10^3\,\si{\ohm}$`.
+
+> **Archivo afectado:** `cursos/INT_ELECTRONICA/ejercicios/03/problemario_sems_4_5.tex`
