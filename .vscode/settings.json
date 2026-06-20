@@ -1,3 +1,8 @@
 {
-    "CodeGPT.apiKey": "CodeGPT Plus Beta"
+    "CodeGPT.apiKey": "CodeGPT Plus Beta",
+    "code-runner.executorMapByFileExtension": {
+        ".tex": "pdflatex -interaction=nonstopmode $fileName"
+    },
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.showRunIconInEditorTitleMenu": true
 }
