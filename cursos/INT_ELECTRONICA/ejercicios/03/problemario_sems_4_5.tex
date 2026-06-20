@@ -1,0 +1,239 @@
+\documentclass[12pt, a4paper]{article}
+
+%=============== PAQUETES ===============
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{circuitikz}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+%=============== CONFIGURACIÓN ===============
+\geometry{a4paper, margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=cyan,
+    pdftitle={Problemario Semanas 4 y 5: Condensadores, Bobinas y Transformadores},
+}
+
+% Configuración de unidades SI
+\sisetup{
+    output-decimal-marker = {.},
+    per-mode = symbol
+}
+
+%=============== DOCUMENTO ===============
+\begin{document}
+
+\title{\textbf{Problemario - Semanas 4 y 5} \\ \large Condensadores, Bobinas y Transformadores}
+\author{Plan de Estudios: Introducción a la Electrónica}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+Este documento contiene 10 problemas resueltos diseñados para evaluar la asimilación de los conceptos referentes a las Semanas 4 y 5 del plan de estudios. Los temas incluyen la asociación de componentes reactivos, análisis de circuitos RC y RL en el dominio del tiempo (transitorios), almacenamiento de energía en estado estable (DC) y análisis de transformadores ideales.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Problemas y Soluciones}
+
+% ---------------- PROBLEMA 1 ----------------
+\subsection*{Problema 1: Asociación de Condensadores}
+\textbf{Enunciado:} Determine la capacitancia equivalente $C_{eq}$ del siguiente circuito entre los terminales A y B, sabiendo que $C_1 = \SI{10}{\micro\farad}$, $C_2 = \SI{20}{\micro\farad}$ y $C_3 = \SI{30}{\micro\farad}$.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1]
+        \draw (0,0) node[left]{A} to[short, o-] (0.5,0)
+              to[C, l=$C_1$] (2.5,0)
+              to[short] (3,0)
+              to[short] (3,1)
+              to[C, l=$C_2$] (5,1)
+              to[short] (5,0)
+              to[short, -o] (5.5,0) node[right]{B};
+        \draw (3,0) to[short] (3,-1)
+              to[C, l=$C_3$] (5,-1)
+              to[short] (5,0);
+    \end{circuitikz}
+\end{figure}
+
+\textbf{Solución:}\\
+Primero, observamos que los condensadores $C_2$ y $C_3$ están conectados en paralelo. La capacitancia equivalente de condensadores en paralelo es la suma directa:
+\[ C_{23} = C_2 + C_3 = \SI{20}{\micro\farad} + \SI{30}{\micro\farad} = \SI{50}{\micro\farad} \]
+
+Ahora, este condensador equivalente $C_{23}$ queda en serie con $C_1$. Para condensadores en serie, el inverso de la capacitancia equivalente es la suma de los inversos:
+\[ C_{eq} = \frac{C_1 \cdot C_{23}}{C_1 + C_{23}} = \frac{10 \cdot 50}{10 + 50} = \frac{500}{60} = \SI{8.33}{\micro\farad} \]
+
+% ---------------- PROBLEMA 2 ----------------
+\subsection*{Problema 2: Carga de un Circuito RC (Respuesta al Escalón)}
+\textbf{Enunciado:} En el circuito mostrado, el interruptor se cierra en $t=0$. El condensador está inicialmente descargado ($v_c(0) = \SI{0}{\volt}$). Calcule la constante de tiempo $\tau$ y encuentre la expresión matemática para el voltaje en el condensador $v_c(t)$ para $t \geq 0$. ($V_s = \SI{12}{\volt}$, $R = \SI{1}{\kilo\ohm}$, $C = \SI{100}{\micro\farad}$).
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}
+        \draw (0,0) to[V, l=$V_s$] (0,2)
+              to[nos, l={$t=0$}] (2,2)
+              to[R, l=$R$] (4,2)
+              to[C, l=$C$, v=$v_c(t)$] (4,0)
+              to[short] (0,0);
+    \end{circuitikz}
+\end{figure}
+
+\textbf{Solución:}\\
+La constante de tiempo para un circuito RC se calcula como:
+\[ \tau = R \cdot C = (\SI{1e3}{\ohm}) \cdot (\SI{100e-6}{\farad}) = \SI{0.1}{\second} \]
+
+La ecuación general para la carga de un condensador bajo una fuente DC es:
+\[ v_c(t) = v_c(\infty) + [v_c(0) - v_c(\infty)] e^{-t/\tau} \]
+Sabemos que $v_c(0) = \SI{0}{\volt}$ y en estado estable (mucho tiempo después de cerrar el interruptor, el condensador se comporta como un circuito abierto), el voltaje será el de la fuente $v_c(\infty) = \SI{12}{\volt}$.
+
+Sustituyendo los valores:
+\[ v_c(t) = 12 + [0 - 12] e^{-t/0.1} = 12(1 - e^{-10t})\,\text{V} \quad \text{para } t \geq 0 \]
+
+% ---------------- PROBLEMA 3 ----------------
+\subsection*{Problema 3: Descarga de un Circuito RC}
+\textbf{Enunciado:} Un condensador de $C = \SI{470}{\micro\farad}$ ha sido cargado a un voltaje inicial de $V_0 = \SI{50}{\volt}$. En el instante $t=0$, se desconecta de la fuente y se conecta a través de una resistencia de $R = \SI{10}{\kilo\ohm}$ para descargarse. ¿Cuánto tiempo tomará para que el voltaje en el condensador descienda a $\SI{5}{\volt}$?
+
+\textbf{Solución:}\\
+La constante de tiempo del circuito de descarga es:
+\[ \tau = R \cdot C = (\SI{10e3}{\ohm}) \cdot (\SI{470e-6}{\farad}) = \SI{4.7}{\second} \]
+La ecuación de voltaje durante la descarga es:
+\[ v_c(t) = V_0 e^{-t/\tau} = 50 e^{-t/4.7} \]
+Queremos encontrar $t$ cuando $v_c(t) = \SI{5}{\volt}$:
+\[ 5 = 50 e^{-t/4.7} \implies \frac{5}{50} = e^{-t/4.7} \implies 0.1 = e^{-t/4.7} \]
+Aplicando logaritmo neperiano ($\ln$) a ambos lados:
+\[ \ln(0.1) = -\frac{t}{4.7} \]
+\[ -2.302 = -\frac{t}{4.7} \implies t = 4.7 \cdot 2.302 = \SI{10.82}{\second} \]
+El condensador tardará aproximadamente \SI{10.82}{\second} en alcanzar los \SI{5}{\volt}.
+
+% ---------------- PROBLEMA 4 ----------------
+\subsection*{Problema 4: Impedancia en Circuito RC (Respuesta Sinusoidal)}
+\textbf{Enunciado:} Un circuito serie está compuesto por una resistencia de $R = \SI{100}{\ohm}$ y un condensador de $C = \SI{10}{\micro\farad}$. Se aplica una fuente de voltaje sinusoidal $v_s(t) = 10\cos(1000t)\,\text{V}$. Determine la impedancia total $Z_{eq}$ del circuito y el fasor de corriente $\mathbf{I}$.
+
+\textbf{Solución:}\\
+De la expresión de voltaje $v_s(t)$, identificamos la frecuencia angular $\omega = \SI{1000}{\radian\per\second}$ y el fasor de voltaje $\mathbf{V_s} = 10 \angle 0^\circ\,\text{V}$.
+
+La impedancia de la resistencia es $Z_R = \SI{100}{\ohm}$.\\
+La impedancia del condensador es:
+\[ Z_C = \frac{1}{j\omega C} = \frac{1}{j(1000)(\SI{10e-6}{})} = \frac{1}{j0.01} = -j100\,\Omega \]
+
+La impedancia equivalente de la serie es:
+\[ Z_{eq} = Z_R + Z_C = 100 - j100\,\Omega \]
+En forma polar:
+\[ Z_{eq} = \sqrt{100^2 + (-100)^2} \angle \arctan\left(\frac{-100}{100}\right) = 141.4 \angle -45^\circ\,\Omega \]
+
+La corriente fasorial es:
+\[ \mathbf{I} = \frac{\mathbf{V_s}}{Z_{eq}} = \frac{10 \angle 0^\circ}{141.4 \angle -45^\circ} = 0.0707 \angle 45^\circ\,\text{A} \]
+
+% ---------------- PROBLEMA 5 ----------------
+\subsection*{Problema 5: Asociación de Bobinas}
+\textbf{Enunciado:} Calcule la inductancia equivalente $L_{eq}$ de un circuito formado por dos inductores en paralelo, $L_1 = \SI{5}{\milli\henry}$ y $L_2 = \SI{20}{\milli\henry}$, que a su vez se encuentran conectados en serie con un tercer inductor $L_3 = \SI{6}{\milli\henry}$. Asuma que no hay acoplamiento magnético mutuo.
+
+\textbf{Solución:}\\
+Las bobinas en paralelo se asocian de la misma forma matemática que las resistencias en paralelo:
+\[ L_{12} = \frac{L_1 \cdot L_2}{L_1 + L_2} = \frac{5 \cdot 20}{5 + 20} = \frac{100}{25} = \SI{4}{\milli\henry} \]
+Este equivalente queda en serie con $L_3$. Las bobinas en serie se suman directamente:
+\[ L_{eq} = L_{12} + L_3 = 4 + 6 = \SI{10}{\milli\henry} \]
+
+% ---------------- PROBLEMA 6 ----------------
+\subsection*{Problema 6: Transitorio en un Circuito RL}
+\textbf{Enunciado:} Un circuito RL serie tiene $V_s = \SI{24}{\volt}$, $R = \SI{4}{\ohm}$ y $L = \SI{2}{\henry}$. Si un interruptor conecta la fuente al circuito en $t=0$, y la corriente inicial en el inductor es cero, encuentre la expresión matemática para la corriente $i_L(t)$ a través del inductor.
+
+\textbf{Solución:}\\
+La constante de tiempo para un circuito RL es:
+\[ \tau = \frac{L}{R} = \frac{2}{4} = \SI{0.5}{\second} \]
+La corriente en estado estable ($t \to \infty$), donde el inductor se comporta como un cortocircuito, está limitada solo por la resistencia:
+\[ i_L(\infty) = \frac{V_s}{R} = \frac{24}{4} = \SI{6}{\ampere} \]
+La ecuación general para el encendido en un circuito RL es:
+\[ i_L(t) = i_L(\infty) \left( 1 - e^{-t/\tau} \right) \]
+Sustituyendo los valores:
+\[ i_L(t) = 6 \left( 1 - e^{-t/0.5} \right) = 6(1 - e^{-2t})\,\text{A} \quad \text{para } t \geq 0 \]
+
+% ---------------- PROBLEMA 7 ----------------
+\subsection*{Problema 7: Energía en Componentes Reactivos (Estado Estable DC)}
+\textbf{Enunciado:} Considere el siguiente circuito conectado a una fuente DC durante mucho tiempo (estado estable). Determine la energía almacenada en el condensador $E_C$ y en el inductor $E_L$. Datos: $V_s = \SI{12}{\volt}$, $R_1 = \SI{4}{\ohm}$, $R_2 = \SI{2}{\ohm}$, $L = \SI{2}{\henry}$ y $C = \SI{100}{\micro\farad}$.
+
+\begin{figure}[h!]
+    \centering
+    \begin{circuitikz}[scale=1.2]
+        \draw (0,0) to[V, l=$V_s$] (0,3)
+              to[R, l=$R_1$] (3,3)
+              to[short] (5,3)
+              to[L, l=$L$] (5,1.5)
+              to[R, l=$R_2$] (5,0)
+              to[short] (0,0);
+        \draw (3,3) to[C, l=$C$] (3,0);
+    \end{circuitikz}
+\end{figure}
+
+\textbf{Solución:}\\
+En estado estable con DC, el condensador se comporta como un circuito abierto ($i_C = 0$) y el inductor se comporta como un cortocircuito ($v_L = 0$).
+
+La corriente fluirá únicamente a través de la malla exterior (fuente, $R_1$, inductor corto y $R_2$). Por tanto, la corriente total de la fuente (y la corriente en el inductor) es:
+\[ I_L = \frac{V_s}{R_1 + R_2} = \frac{12}{4 + 2} = \frac{12}{6} = \SI{2}{\ampere} \]
+
+Para el condensador, su voltaje $V_C$ es igual a la caída de tensión en la rama en paralelo con él. Esa rama contiene al inductor (0 V) y a $R_2$.
+\[ V_C = I_L \cdot R_2 = 2 \cdot 2 = \SI{4}{\volt} \]
+
+Calculando las energías almacenadas:
+\[ E_C = \frac{1}{2} C V_C^2 = \frac{1}{2} (\SI{100e-6}{\farad}) (\SI{4}{\volt})^2 = \SI{50e-6}{} \cdot 16 = \SI{800}{\micro\joule} \]
+\[ E_L = \frac{1}{2} L I_L^2 = \frac{1}{2} (\SI{2}{\henry}) (\SI{2}{\ampere})^2 = 1 \cdot 4 = \SI{4}{\joule} \]
+
+% ---------------- PROBLEMA 8 ----------------
+\subsection*{Problema 8: Análisis Básico de Transformador Ideal}
+\textbf{Enunciado:} Un transformador ideal tiene $N_1 = 500$ espiras en el devanado primario y $N_2 = 100$ espiras en el secundario. Si el voltaje primario es $V_1 = \SI{120}{\volt}$ (rms) y se conecta una carga resistiva de $R_L = \SI{12}{\ohm}$ en el secundario, calcule el voltaje en el secundario $V_2$, la corriente en el secundario $I_2$ y la corriente en el primario $I_1$.
+
+\textbf{Solución:}\\
+Usando la relación de transformación de voltaje para transformadores ideales:
+\[ \frac{V_1}{N_1} = \frac{V_2}{N_2} \implies V_2 = V_1 \left( \frac{N_2}{N_1} \right) = 120 \left( \frac{100}{500} \right) = 120 (0.2) = \SI{24}{\volt} \]
+
+La corriente en la carga del secundario por la ley de Ohm es:
+\[ I_2 = \frac{V_2}{R_L} = \frac{24}{12} = \SI{2}{\ampere} \]
+
+En un transformador ideal, la potencia de entrada es igual a la potencia de salida ($V_1 I_1 = V_2 I_2$), por lo tanto la relación de corrientes es inversa a la relación de espiras:
+\[ \frac{I_1}{I_2} = \frac{N_2}{N_1} \implies I_1 = I_2 \left( \frac{N_2}{N_1} \right) = 2 (0.2) = \SI{0.4}{\ampere} \]
+
+% ---------------- PROBLEMA 9 ----------------
+\subsection*{Problema 9: Reflexión de Impedancia en Transformadores}
+\textbf{Enunciado:} Utilizando los datos del transformador del Problema 8 ($N_1 = 500$, $N_2 = 100$, y $R_L = \SI{12}{\ohm}$ conectada al secundario), calcule la impedancia equivalente ($Z_{in}$) vista desde los terminales del devanado primario del transformador. Compruebe su resultado utilizando el voltaje y la corriente del primario calculados previamente.
+
+\textbf{Solución:}\\
+La relación de vueltas se define comúnmente como $a = \frac{N_1}{N_2}$:
+\[ a = \frac{500}{100} = 5 \]
+La impedancia reflejada al primario en un transformador ideal está dada por la ecuación:
+\[ Z_{in} = a^2 \cdot Z_L \]
+Sustituyendo los valores:
+\[ Z_{in} = (5)^2 \cdot 12 = 25 \cdot 12 = \SI{300}{\ohm} \]
+
+\textbf{Comprobación:}\\
+Usando la ley de Ohm en los terminales del primario:
+\[ Z_{in} = \frac{V_1}{I_1} = \frac{120}{0.4} = \SI{300}{\ohm} \]
+Ambos métodos concuerdan de forma exacta.
+
+% ---------------- PROBLEMA 10 ----------------
+\subsection*{Problema 10: Potencia en un Transformador Ideal}
+\textbf{Enunciado:} Un transformador ideal tiene una relación de transformación $a = N_1 / N_2 = 10$. Suministra una potencia activa de $P = \SI{50}{\watt}$ a una carga puramente resistiva que opera a un voltaje de $V_2 = \SI{5}{\volt}$ (rms). Determine el valor de la resistencia de carga $R_L$, así como los valores de voltaje y corriente demandados por el devanado primario ($V_1$ e $I_1$).
+
+\textbf{Solución:}\\
+A partir de la potencia y el voltaje en la carga, podemos encontrar la corriente en el secundario:
+\[ P = V_2 \cdot I_2 \implies I_2 = \frac{P}{V_2} = \frac{50}{5} = \SI{10}{\ampere} \]
+Por la ley de Ohm, la resistencia de carga es:
+\[ R_L = \frac{V_2}{I_2} = \frac{5}{10} = \SI{0.5}{\ohm} \]
+
+Para el devanado primario, usamos la relación de transformación $a = 10$:
+El voltaje del primario será:
+\[ V_1 = a \cdot V_2 = 10 \cdot 5 = \SI{50}{\volt} \]
+La corriente requerida por el primario será:
+\[ I_1 = \frac{I_2}{a} = \frac{10}{10} = \SI{1}{\ampere} \]
+
+(Nota: Se puede corroborar que la potencia absorbida en el primario $P_{in} = V_1 I_1 = 50 \cdot 1 = \SI{50}{\watt}$, manteniendo el principio de conservación de energía en un transformador ideal).
+
+\end{document}
