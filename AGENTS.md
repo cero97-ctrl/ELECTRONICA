@@ -19,10 +19,13 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 ## Scripts Principales
 
 | Script | Propósito |
-|---|---|
+|---|---|---|
 | `execution/env_diagnostic.py` | Diagnóstico del entorno: SO, paquetes, HW, red. |
 | `execution/scrape_single_site.py` | Extrae el contenido principal de una URL y lo guarda en texto. |
-| `execution/alert_user.py` | Emite alertas audibles al completar flujos. |
+| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Gemini/OpenRouter). |
+| `execution/generar_informe.py` | Genera informe LaTeX a partir del JSON de evaluación. |
+| `execution/alert_user.py` | Emite alertas audibles (paplay + fallback bell) al completar flujos. |
+| `flujo_evaluar_examen.py` | Orquestador Layer 2: flujo completo (evaluar → informe → alertar). |
 | `rag_system.py` | Chatbot RAG: vectoriza `.tex`, `.md`, `.pdf` en ChromaDB y responde preguntas con Llama 3 (Groq). |
 | `agent_eda.py` | Agente EDA: extrae netlist/BOM de LaTeX circuitikz y genera JSON para EasyEDA Standard. |
 | `clean_latex.py` | Elimina archivos auxiliares de compilación LaTeX. |
@@ -41,9 +44,9 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 
 | Capa | Directorio | Propósito |
 |---|---|---|
-| **Layer 1: Directives** | `directives/` | SOPs en YAML (11 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento. |
+| **Layer 1: Directives** | `directives/` | SOPs en YAML (13 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, evaluación de exámenes y prácticas de laboratorio. |
 | **Layer 2: Orchestration** | _El agente IA_ | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores. |
-| **Layer 3: Execution** | `execution/` | Scripts Python deterministas (3 archivos) con una sola responsabilidad. |
+| **Layer 3: Execution** | `execution/` | Scripts Python deterministas (5 archivos) con una sola responsabilidad. |
 
 ---
 
@@ -52,8 +55,9 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 - `docs/` — Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, EASYEDA/, RAG/, vLLM/, OPENCODE/, MEDIDOR_ENERGIA/, PC_ASUS/, PC_PARA_IA/, SERVIDOR_POWEREDGE_R610/, SISTEMA_INTERNAC/, CIRC_PARA_RESP_RAPIDAS/, PROYECTO_MECATRONICA/, Ventilador_3_Velocidades/, etc.)
 - `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/)
 - `.agent/` — Instrucciones del sistema para el agente IA (10 archivos .md)
-- `directives/` — SOPs en YAML para flujos de trabajo repetibles (11 archivos)
-- `execution/` — Scripts Python deterministas para la capa de ejecución (3 archivos)
+- `directives/` — SOPs en YAML para flujos de trabajo repetibles (13 archivos)
+- `directives/rubricas/` — Rúbricas YAML para evaluación de prácticas de laboratorio
+- `execution/` — Scripts Python deterministas para la capa de ejecución (5 archivos)
 - `chroma_db/` — Base de datos vectorial (autogenerada, excluida de git)
 - `Agente_EDA/` — Recursos para el agente EDA (schemas, pruebas)
 - `.tmp/` — Archivos temporales y estado de ejecución (`run_state.json`)
@@ -74,5 +78,6 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 ## Configuración
 
 - API key de Groq en `.groq_api_key` (excluido de git)
+- API key de Google (`GOOGLE_API_KEY`) y OpenRouter (`OPENROUTER_API_KEY`) en `.env`
 - Instrucciones del agente en `opencode.json`: `{"instructions": [".agent/*.md"]}`
-- Dependencias Python: langchain, langchain-groq, langchain-chroma, langchain-huggingface, pypdf, sentence-transformers
+- Dependencias Python: langchain, langchain-groq, langchain-chroma, langchain-huggingface, pypdf, sentence-transformers, pymupdf, google-genai

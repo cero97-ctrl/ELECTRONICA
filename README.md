@@ -27,10 +27,21 @@ Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + Llama 
 ### Agente EDA (`agent_eda.py`)
 Extrae netlists/BOM de esquemas LaTeX circuitikz y genera JSON para EasyEDA Standard.
 
+### Evaluación de Exámenes y Prácticas (`flujo_evaluar_examen.py`)
+Orquestador que ejecuta el flujo completo de evaluación:
+1. `evaluar_examen.py` — Evalúa PDF con Gemini/OpenRouter (multimodal)
+2. `generar_informe.py` — Genera informe LaTeX con resultados
+3. `alert_user.py` — Notifica con alerta audible al completar
+
+Soporta exámenes escritos y prácticas de laboratorio mediante rúbricas
+YAML personalizadas en `directives/rubricas/`.
+
 ### Scripts de Ejecución (`execution/`)
 - `env_diagnostic.py` — Diagnóstico del entorno (SO, paquetes, HW, red)
 - `scrape_single_site.py` — Extrae contenido principal de una URL
-- `alert_user.py` — Emite alertas audibles al completar flujos
+- `evaluar_examen.py` — Evaluación con LLM multimodal (Gemini/OpenRouter)
+- `generar_informe.py` — Genera informe LaTeX desde JSON de evaluación
+- `alert_user.py` — Emite alertas audibles (paplay + fallback bell)
 
 ### Utilidades
 - `clean_latex.py` — Elimina archivos auxiliares de compilación LaTeX
@@ -57,6 +68,8 @@ Extrae netlists/BOM de esquemas LaTeX circuitikz y genera JSON para EasyEDA Stan
    ```
 3. Obtén una API Key gratuita de [Groq](https://console.groq.com).
 4. Crea `.groq_api_key` en la raíz con tu clave (sin espacios ni comillas).
+5. Para evaluación de exámenes: obtén una API Key de [Google AI Studio](https://aistudio.google.com/apikey)
+   y configúrala como `GOOGLE_API_KEY` en `.env`.
 
 ## 🚀 Uso
 
@@ -69,6 +82,18 @@ python rag_system.py --update   # forzar reconstrucción de la base vectorial
 **Agente EDA:**
 ```bash
 python agent_eda.py
+```
+
+**Evaluar un examen escrito de Electrónica:**
+```bash
+python flujo_evaluar_examen.py --pdf "cursos/INT_ELECTRONICA/examenes/02/examen_estudiante/alumno.pdf"
+```
+
+**Evaluar una práctica de laboratorio:**
+```bash
+python flujo_evaluar_examen.py \
+  --pdf "practicas/01/informe_estudiante/practica_01.pdf" \
+  --rubrica "directives/rubricas/rubrica_practica_lab.yaml"
 ```
 
 **Diagnóstico del entorno:**
@@ -85,8 +110,9 @@ python execution/env_diagnostic.py
 | `docs/` | Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.) |
 | `cursos/` | Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/) |
 | `.agent/` | Instrucciones del sistema para el agente IA (10 archivos .md) |
-| `directives/` | SOPs en YAML para flujos de trabajo repetibles (11 archivos) |
-| `execution/` | Scripts Python deterministas (3 archivos) |
+| `directives/` | SOPs en YAML para flujos de trabajo repetibles (13 archivos) |
+| `directives/rubricas/` | Rúbricas YAML para evaluación de prácticas de laboratorio |
+| `execution/` | Scripts Python deterministas (5 archivos) |
 | `Agente_EDA/` | Recursos para el agente EDA (schemas, pruebas) |
 | `chroma_db/` | *(Autogenerado)* Base de datos vectorial local |
 | `.tmp/` | Archivos temporales y estado de ejecución (`run_state.json`) |
