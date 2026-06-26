@@ -1,0 +1,18 @@
+Goal: "Realizar un diagnóstico y mantenimiento integral de los recursos del sistema (RAM, ZRAM, Disco) y la base de datos de memoria."
+
+Required inputs:
+  - scope: "Alcance del mantenimiento ('all', 'system', 'db')."
+
+Steps:
+  - step: 1
+    action: "Correr diagnóstico de sistema y base de datos"
+    script: "execution/sys_maintain.py"
+    inputs:
+      scope: "{{scope}}"
+
+Expected outputs:
+  - "Reporte JSON con el estado del sistema, espacio liberado, y estado de integridad de la base de datos."
+
+Edge cases:
+  - error: "Permisos insuficientes para ciertas limpiezas."
+    recovery: "Omitir los pasos que requieren sudo e informar qué partes no pudieron limpiarse."

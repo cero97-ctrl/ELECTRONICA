@@ -2,7 +2,7 @@
 
 ## Descripción General
 
-Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos Integrados (EDA) y Redacción Académica. Integra un asistente RAG, un agente EDA para EasyEDA, y material didáctico en LaTeX.
+Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos Integrados (EDA) y Redacción Académica. Opera bajo una **arquitectura de 3 capas** (Directives → Orchestration → Execution) que separa la lógica probabilística del LLM de la ejecución determinista mediante scripts Python especializados. Integra un asistente RAG, un agente EDA para EasyEDA, y material didáctico en LaTeX.
 
 ---
 
@@ -20,6 +20,9 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 
 | Script | Propósito |
 |---|---|
+| `execution/env_diagnostic.py` | Diagnóstico del entorno: SO, paquetes, HW, red. |
+| `execution/scrape_single_site.py` | Extrae el contenido principal de una URL y lo guarda en texto. |
+| `execution/alert_user.py` | Emite alertas audibles al completar flujos. |
 | `rag_system.py` | Chatbot RAG: vectoriza `.tex`, `.md`, `.pdf` en ChromaDB y responde preguntas con Llama 3 (Groq). |
 | `agent_eda.py` | Agente EDA: extrae netlist/BOM de LaTeX circuitikz y genera JSON para EasyEDA Standard. |
 | `clean_latex.py` | Elimina archivos auxiliares de compilación LaTeX. |
@@ -27,16 +30,33 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 | `merge_pdfs.py` | Une múltiples PDFs en uno solo. |
 | `ren_archivos.py` | Renombra archivos eliminando cadenas específicas del nombre. |
 | `test_generator.py` | Tests del generador JSON EasyEDA (sin dependencias externas). |
+| `git-update.sh` | Script de actualización Git: commit WIP + pull + push vía `update_repo.sh`. |
+| `update_repo.sh` | Gestor de versiones: pull, add, commit y push con opciones (confirm, dry-run, mensaje personalizado). |
+
+---
+
+## Arquitectura de 3 Capas
+
+El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
+
+| Capa | Directorio | Propósito |
+|---|---|---|
+| **Layer 1: Directives** | `directives/` | SOPs en YAML (11 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento. |
+| **Layer 2: Orchestration** | _El agente IA_ | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores. |
+| **Layer 3: Execution** | `execution/` | Scripts Python deterministas (3 archivos) con una sola responsabilidad. |
 
 ---
 
 ## Estructura de Directorios
 
-- `docs/` — Documentación técnica y académica (CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.)
-- `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, LABORATORIO_*)
-- `.agent/` — Instrucciones del sistema para el agente IA (8 archivos .md)
+- `docs/` — Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, EASYEDA/, RAG/, vLLM/, OPENCODE/, MEDIDOR_ENERGIA/, PC_ASUS/, PC_PARA_IA/, SERVIDOR_POWEREDGE_R610/, SISTEMA_INTERNAC/, CIRC_PARA_RESP_RAPIDAS/, PROYECTO_MECATRONICA/, Ventilador_3_Velocidades/, etc.)
+- `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/)
+- `.agent/` — Instrucciones del sistema para el agente IA (10 archivos .md)
+- `directives/` — SOPs en YAML para flujos de trabajo repetibles (11 archivos)
+- `execution/` — Scripts Python deterministas para la capa de ejecución (3 archivos)
 - `chroma_db/` — Base de datos vectorial (autogenerada, excluida de git)
 - `Agente_EDA/` — Recursos para el agente EDA (schemas, pruebas)
+- `.tmp/` — Archivos temporales y estado de ejecución (`run_state.json`)
 
 ---
 
@@ -46,6 +66,7 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 - **LaTeX:** UTF-8, `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz` para diagramas, `siunitx` para unidades
 - **EDA:** Formato EasyEDA Standard (strings `LIB~...` en `shape[]`, sub-elementos `#@$`, pines con `^^`)
 - **RAG:** Actualizaciones incrementales vía `db_state.json`, embeddings multilingüe, memoria conversacional
+- **3-Layer:** Directives en YAML → Orchestration (agente) → Execution (scripts deterministas)
 - **Git:** `chroma_db/`, entornos virtuales, `__pycache__/` y auxiliares LaTeX excluidos vía `.gitignore`
 
 ---

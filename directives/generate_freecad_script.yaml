@@ -1,0 +1,22 @@
+Goal: "Generar modelos 3D paramétricos (STL, STEP, OBJ, PNG), realizar operaciones booleanas, transformaciones, y calcular propiedades físicas (volumen, masa) utilizando FreeCAD en modo headless."
+
+Required inputs:
+  - parameters: "Diccionario JSON con los parámetros geométricos del modelo."
+  - output_format: "Formato de salida deseado (ej. 'STEP', 'STL')."
+  - output_dir: "Directorio de destino para los archivos generados."
+
+Steps:
+  - step: 1
+    action: "Ejecutar script de FreeCAD en modo headless"
+    script: "execution/freecad_generate.py"
+    inputs:
+      params: "{{parameters}}"
+      format: "{{output_format}}"
+      out_dir: "{{output_dir}}"
+
+Expected outputs:
+  - "Archivos 3D generados en la ruta especificada y confirmación en JSON."
+
+Edge cases:
+  - error: "Módulo FreeCAD no encontrado (AppImage/Python issue)."
+    recovery: "Verificar el entorno de ejecución, sugerir configuración de variables de entorno de FreeCAD."

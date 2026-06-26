@@ -1,0 +1,20 @@
+Goal: "Guardar un fragmento de información, aprendizaje o preferencia en la memoria a largo plazo."
+
+Required inputs:
+  - content: "El texto o la información que se debe memorizar."
+  - category: "Categoría de la memoria (ej. 'error', 'preferencia', 'contexto')."
+
+Steps:
+  - step: 1
+    action: "Guardar en la base de datos vectorial (ChromaDB)"
+    script: "execution/db_save_memory.py"
+    inputs:
+      content: "{{content}}"
+      category: "{{category}}"
+
+Expected outputs:
+  - "Confirmación (JSON) de que la memoria se ha guardado exitosamente con su ID generado."
+
+Edge cases:
+  - error: "Fallo de conexión a ChromaDB."
+    recovery: "Verificar si el directorio de ChromaDB tiene permisos correctos o está corrupto, notificar al usuario."

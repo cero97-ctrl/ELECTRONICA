@@ -1,0 +1,22 @@
+Goal: "Extraer el contenido principal de una URL y guardarlo en un archivo de texto."
+
+Required inputs:
+  - url: "La URL de la página web a scrapear."
+  - output_file: "La ruta del archivo de texto donde se guardará el contenido."
+
+Steps:
+  - step: 1
+    action: "Extraer contenido de la web"
+    script: "execution/scrape_single_site.py"
+    inputs:
+      url: "{{url}}"
+      output_file: "{{output_file}}"
+
+Expected outputs:
+  - "Un archivo de texto con el contenido principal (texto limpio) de la URL especificada."
+
+Edge cases:
+  - error: "Acceso denegado (HTTP 403) por protección anti-bot."
+    recovery: "Usar un user-agent de navegador estándar o fallar indicando que la página bloquea bots."
+  - error: "URL inválida o inalcanzable."
+    recovery: "Notificar al usuario y abortar ejecución."

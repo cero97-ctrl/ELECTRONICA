@@ -1,0 +1,18 @@
+Goal: "Eliminar un recuerdo específico de la memoria a largo plazo mediante su ID."
+
+Required inputs:
+  - memory_id: "El identificador único (ID) del recuerdo que se desea borrar."
+
+Steps:
+  - step: 1
+    action: "Borrar el registro por ID de la base de datos vectorial"
+    script: "execution/db_delete_memory.py"
+    inputs:
+      memory_id: "{{memory_id}}"
+
+Expected outputs:
+  - "Confirmación (JSON) de que el elemento ha sido eliminado correctamente."
+
+Edge cases:
+  - error: "El ID proporcionado no existe en la base de datos."
+    recovery: "Ignorar o informar de manera silenciosa que el ID no fue encontrado, sin causar fallo de ejecución general."

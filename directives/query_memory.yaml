@@ -1,0 +1,20 @@
+Goal: "Recuperar información relevante de la memoria a largo plazo basada en una consulta semántica."
+
+Required inputs:
+  - query: "La cadena de búsqueda o pregunta sobre la información pasada."
+  - limit: "Número máximo de resultados a recuperar (por defecto 3)."
+
+Steps:
+  - step: 1
+    action: "Buscar en la base de datos vectorial (ChromaDB)"
+    script: "execution/db_query_memory.py"
+    inputs:
+      query: "{{query}}"
+      limit: "{{limit}}"
+
+Expected outputs:
+  - "Una lista en formato JSON con los fragmentos de memoria recuperados y su puntuación de similitud."
+
+Edge cases:
+  - error: "No se encontraron resultados relevantes."
+    recovery: "Devolver una lista vacía sin fallar, el agente debe manejar la falta de contexto."

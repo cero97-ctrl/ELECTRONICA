@@ -1,0 +1,25 @@
+Goal: "Investigar sobre un tema determinado en la internet y guardar el resultado en un archivo de texto."
+
+Required inputs:
+  - topic: "El tema o término a investigar."
+  - output_file: "Ruta del archivo donde se guardará la investigación."
+
+Steps:
+  - step: 1
+    action: "Ejecutar búsqueda web"
+    script: "execution/web_search.py"
+    inputs:
+      query: "{{topic}}"
+  - step: 2
+    action: "Procesar y guardar resultados"
+    script: "execution/process_search_results.py"
+    inputs:
+      raw_results: "{{search_output}}"
+      output_file: "{{output_file}}"
+
+Expected outputs:
+  - "Un documento de texto consolidado con información relevante sobre el tema solicitado."
+
+Edge cases:
+  - error: "No se encontraron resultados relevantes."
+    recovery: "Notificar al usuario y pedir un término de búsqueda más general o alternativo."

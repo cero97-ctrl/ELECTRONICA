@@ -1,60 +1,117 @@
-# Espacio de Trabajo de Electrónica & Asistente IA (RAG)
+# ELECTRONICA
 
-Este repositorio contiene apuntes, tesis y guías relacionadas con Electrónica, Internet de las Cosas (IoT), y Diseño de Circuitos Integrados (EDA / OpenROAD), todo esto potenciado por un **Asistente de Inteligencia Artificial basado en RAG** (Retrieval-Augmented Generation).
+Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos Integrados (EDA) y Redacción Académica, potenciado por un **Asistente IA con arquitectura de 3 capas** (Directives → Orchestration → Execution).
 
-## 🧠 Asistente RAG (`rag_system.py`)
+---
 
-El script principal `rag_system.py` es un chatbot académico personalizado que lee, vectoriza y responde preguntas basándose **estrictamente** en los documentos locales de este espacio de trabajo.
+## Arquitectura del Sistema
 
-### Características Principales:
-- **Soporte Multiformato:** Procesa archivos Markdown (`.md`), LaTeX (`.tex`) y PDF (`.pdf`).
-- **Actualizaciones Incrementales:** Detecta automáticamente archivos nuevos o modificados para actualizar la base de conocimientos sin reprocesar todo desde cero.
-- **Modelo Multilingüe:** Utiliza embeddings locales de Hugging Face (`paraphrase-multilingual-MiniLM-L12-v2`) altamente optimizados para entender el español a la perfección.
-- **Memoria Conversacional:** El bot es consciente del historial de la charla actual, permitiendo conversaciones fluidas y contextualizadas.
-- **LLM Ultrarrápido:** Impulsado por Llama 3 (vía la API de Groq) para inferencias casi instantáneas.
+El proyecto sigue un marco de **3 capas** que separa la lógica probabilística del LLM de la ejecución determinista:
+
+| Capa | Directorio | Propósito |
+|---|---|---|
+| **Layer 1: Directives** | `directives/` | SOPs en YAML que definen flujos de trabajo repetibles |
+| **Layer 2: Orchestration** | _Agente IA (OpenCode)_ | Toma decisiones, enruta tareas, valida entradas/salidas |
+| **Layer 3: Execution** | `execution/` | Scripts Python deterministas con una sola responsabilidad |
+
+---
+
+## Componentes Principales
+
+### Asistente RAG (`rag_system.py`)
+Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + Llama 3 (Groq):
+- Embeddings multilingües (`paraphrase-multilingual-MiniLM-L12-v2`)
+- Actualizaciones incrementales vía `db_state.json`
+- Memoria conversacional
+
+### Agente EDA (`agent_eda.py`)
+Extrae netlists/BOM de esquemas LaTeX circuitikz y genera JSON para EasyEDA Standard.
+
+### Scripts de Ejecución (`execution/`)
+- `env_diagnostic.py` — Diagnóstico del entorno (SO, paquetes, HW, red)
+- `scrape_single_site.py` — Extrae contenido principal de una URL
+- `alert_user.py` — Emite alertas audibles al completar flujos
+
+### Utilidades
+- `clean_latex.py` — Elimina archivos auxiliares de compilación LaTeX
+- `md_to_pdf.py` — Convierte Markdown a PDF
+- `merge_pdfs.py` — Une múltiples PDFs
+- `ren_archivos.py` — Renombra archivos por lotes
+- `test_generator.py` — Tests del generador JSON EasyEDA
+
+### Control de Versiones
+- `git-update.sh` — Commit WIP + pull + push automatizado
+- `update_repo.sh` — Gestor de versiones con opciones (confirm, dry-run, mensaje personalizado)
+
+---
 
 ## ⚙️ Instalación y Configuración
 
-1. Activa tu entorno virtual de Python (ej. `elect_env`).
-2. Instala las dependencias requeridas (LangChain, ChromaDB, HuggingFace, PyPDF, etc.):
+1. Activa tu entorno virtual Python (ej. `elect_env` o Conda):
    ```bash
-   pip install langchain langchain-community langchain-classic langchain-chroma langchain-huggingface langchain-groq pypdf sentence-transformers
+   conda activate elect_env
    ```
-3. Obtén una API Key gratuita de Groq.
-4. Crea un archivo oculto llamado `.groq_api_key` en la raíz de este directorio y pega tu clave allí (sin espacios ni comillas).
+2. Instala dependencias:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Obtén una API Key gratuita de [Groq](https://console.groq.com).
+4. Crea `.groq_api_key` en la raíz con tu clave (sin espacios ni comillas).
 
 ## 🚀 Uso
 
-Para iniciar el asistente interactivo. Este comando también buscará automáticamente archivos nuevos o modificados y actualizará la base de datos en segundo plano:
+**Asistente RAG:**
 ```bash
 python rag_system.py
+python rag_system.py --update   # forzar reconstrucción de la base vectorial
 ```
 
-Si eliminaste archivos o deseas forzar el borrado y la reconstrucción total de la base de datos vectorial:
+**Agente EDA:**
 ```bash
-python rag_system.py --update
+python agent_eda.py
 ```
-Escribe `salir`, `exit` o `quit` para terminar la sesión de chat.
+
+**Diagnóstico del entorno:**
+```bash
+python execution/env_diagnostic.py
+```
+
+---
 
 ## 📂 Estructura del Proyecto
 
-- `rag_system.py`: Script principal del sistema RAG y chatbot interactivo.
-- `docs/`: Documentación del proyecto, guías y apuntes.
-  - `guia_rag.tex`: Documento académico que explica cómo implementar este mismo sistema RAG paso a paso.
-  - `EDA/`: Apuntes sobre automatización de diseño electrónico y OpenROAD.
-- `cursos/`: Material detallado sobre Tesis y cursos de IoT con Raspberry Pi y Python.
-- `.gemini/`: Directorio oculto que contiene el contexto y directrices personalizadas para el asistente de IA (Gemini).
-  - `07_context.md`: Almacena la memoria conversacional y los resúmenes de las sesiones anteriores, autogenerados por el sistema RAG al salir.
-  - `*.md` (ej. `01_latex_standards.md`): Archivos de instrucciones que definen los estándares, convenciones de código y reglas de formato del proyecto.
-  - `latex.md`: Base de conocimientos e instrucciones estrictas para la IA sobre correcciones de LaTeX.
-- `chroma_db/`: *(Autogenerado)* Directorio que almacena la base de datos vectorial local.
-- `db_state.json`: *(Autogenerado)* Archivo que mantiene el registro de los archivos ya procesados para las actualizaciones incrementales.
-
-## 🛠️ Notas sobre el Control de Versiones
-
-Debido a las políticas de tamaño de archivos de GitHub (límite de 100 MB), la base de datos vectorial local (`chroma_db/`) crece rápidamente y puede causar errores en el empuje (`git push`). Para evitar esto, `chroma_db/`, así como los entornos virtuales y los archivos temporales de compilación de LaTeX, están excluidos permanentemente del repositorio mediante el archivo `.gitignore`.
-
-Si por accidente se añade un archivo pesado al índice y bloquea el envío, puedes removerlo del seguimiento de Git (conservando tu archivo localmente intacto) utilizando el comando: `git rm -r --cached <archivo_o_directorio>`.
+| Directorio | Descripción |
+|---|---|
+| `docs/` | Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.) |
+| `cursos/` | Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/) |
+| `.agent/` | Instrucciones del sistema para el agente IA (10 archivos .md) |
+| `directives/` | SOPs en YAML para flujos de trabajo repetibles (11 archivos) |
+| `execution/` | Scripts Python deterministas (3 archivos) |
+| `Agente_EDA/` | Recursos para el agente EDA (schemas, pruebas) |
+| `chroma_db/` | *(Autogenerado)* Base de datos vectorial local |
+| `.tmp/` | Archivos temporales y estado de ejecución (`run_state.json`) |
+| `db_state.json` | *(Autogenerado)* Registro de archivos procesados para actualizaciones incrementales |
 
 ---
-*Desarrollado con LangChain y modelos Open-Source.*
+
+## Convenciones de Código
+
+- **Python:** PEP 8, type hints, docstrings, modularidad, raw strings para contenido LaTeX
+- **LaTeX:** UTF-8, `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz` para diagramas, `siunitx` para unidades
+- **EDA:** Formato EasyEDA Standard (`LIB~...` en `shape[]`, sub-elementos `#@$`, pines con `^^`)
+- **RAG:** Actualizaciones incrementales, embeddings multilingüe, memoria conversacional
+- **3-Layer:** Directives en YAML → Orchestration → Execution scripts
+- **Git:** `chroma_db/`, entornos virtuales, `__pycache__/` y auxiliares LaTeX excluidos vía `.gitignore`
+
+---
+
+## 🛠️ Notas sobre Git
+
+La base de datos vectorial `chroma_db/` excede el límite de 100 MB de GitHub, por lo que está excluida permanentemente vía `.gitignore`. Para removerla del índice si se añadió por accidente:
+
+```bash
+git rm -r --cached chroma_db/
+```
+
+---
+*Desarrollado con LangChain, ChromaDB, Llama (Groq) y modelos Open-Source.*

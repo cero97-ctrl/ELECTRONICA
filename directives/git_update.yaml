@@ -1,0 +1,20 @@
+Goal: "Gestionar el control de versiones del proyecto, aplicando versionado semántico (SemVer) y sincronizando con el repositorio remoto."
+
+Required inputs:
+  - commit_message: "Mensaje descriptivo del commit."
+  - bump_type: "Tipo de actualización (patch, minor, major) para SemVer. Opcional."
+
+Steps:
+  - step: 1
+    action: "Verificar estado y hacer commit/push"
+    script: "execution/git_sync.py"
+    inputs:
+      message: "{{commit_message}}"
+      bump: "{{bump_type}}"
+
+Expected outputs:
+  - "Mensaje JSON de éxito indicando la versión actual y confirmación de que se empujó al remoto."
+
+Edge cases:
+  - error: "Conflictos de merge (Merge conflicts)."
+    recovery: "Abortar el push y notificar al usuario para resolver manualmente."

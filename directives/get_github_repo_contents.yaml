@@ -1,0 +1,27 @@
+Goal: "Clonar un repositorio de GitHub y generar un archivo con su estructura de directorios."
+
+Required inputs:
+  - repo_url: "URL del repositorio de GitHub a clonar."
+  - output_file: "Ruta del archivo donde se guardará la estructura del directorio."
+
+Steps:
+  - step: 1
+    action: "Clonar el repositorio en .tmp/"
+    script: "execution/clone_repo.py"
+    inputs:
+      repo_url: "{{repo_url}}"
+  - step: 2
+    action: "Generar estructura de directorios y guardarla"
+    script: "execution/generate_tree.py"
+    inputs:
+      target_dir: "{{repo_path}}"
+      output_file: "{{output_file}}"
+
+Expected outputs:
+  - "Un archivo de texto en la ruta especificada que contenga la estructura del árbol de directorios del repositorio."
+
+Edge cases:
+  - error: "El repositorio es privado y requiere autenticación."
+    recovery: "Solicitar al usuario que agregue GITHUB_TOKEN a su archivo .env o proporcione un repo público."
+  - error: "El archivo de salida no se puede escribir (permisos)."
+    recovery: "Validar los permisos de escritura del directorio destino y alertar al usuario si falla."

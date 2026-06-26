@@ -1,0 +1,18 @@
+Goal: "Listar los recuerdos más recientes almacenados en la memoria a largo plazo sin realizar búsqueda semántica."
+
+Required inputs:
+  - limit: "Número máximo de recuerdos recientes a mostrar (por defecto 10)."
+
+Steps:
+  - step: 1
+    action: "Recuperar las últimas entradas de la base de datos"
+    script: "execution/db_list_memories.py"
+    inputs:
+      limit: "{{limit}}"
+
+Expected outputs:
+  - "Una lista en formato JSON con los metadatos y fragmentos de las últimas entradas registradas en la memoria."
+
+Edge cases:
+  - error: "La base de datos está vacía."
+    recovery: "Devolver una lista vacía informando que no hay recuerdos."
