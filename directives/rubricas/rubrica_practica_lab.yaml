@@ -1,0 +1,62 @@
+# Rúbrica para evaluación de informes de práctica de laboratorio de Electrónica
+# Se inyecta como contexto adicional en la System Instruction de Gemini.
+# Cada criterio se evalúa de 0 a 4 puntos (escala: 0=No cumple, 4=Excelente).
+
+criterios:
+  presentacion:
+    peso: 1.0
+    descripcion: >
+      Formato del informe: carátula, objetivos claros, orden, limpieza,
+      uso correcto de unidades y nomenclatura electrónica.
+
+  marco_teorico:
+    peso: 1.5
+    descripcion: >
+      Fundamentos teóricos: explicación correcta de los principios de
+      circuitos/dispositivos involucrados, fórmulas relevantes y referencias
+      a leyes electrónicas (Kirchhoff, Ohm, Thévenin, etc.).
+
+  diagramas:
+    peso: 1.5
+    descripcion: >
+      Diagramas y esquemas: circuitos dibujados correctamente con simbología
+      electrónica estándar, valores de componentes y conexiones claras.
+
+  montaje:
+    peso: 1.5
+    descripcion: >
+      Montaje experimental: disposición correcta en protoboard, identificación
+      de componentes, polaridad, uso adecuado de instrumentos (multímetro,
+      osciloscopio, fuente de alimentación).
+
+  mediciones:
+    peso: 2.0
+    descripcion: >
+      Datos experimentales: tabla de mediciones completa, rangos correctos,
+      precisión adecuada, identificación de errores de medición.
+
+  analisis:
+    peso: 2.0
+    descripcion: >
+      Análisis de resultados: cálculos correctos, comparación teórico-práctica,
+      uso de métodos de análisis de circuitos (nodal, mallas, superposición,
+      Thévenin, etc.), gráficas si aplica.
+
+  conclusiones:
+    peso: 1.5
+    descripcion: >
+      Conclusiones: relación con los objetivos, interpretación de resultados,
+      identificación de fuentes de error, aprendizaje evidenciado.
+
+  gramatica:
+    peso: 0.5
+    descripcion: >
+      Redacción y ortografía: claridad en la exposición, uso de lenguaje
+      técnico apropiado, sin errores ortográficos graves.
+
+niveles:
+  0: "No cumple — ausente o gravemente incorrecto"
+  1: "Insuficiente — parcial, con errores conceptuales importantes"
+  2: "Suficiente — completo pero con errores menores"
+  3: "Bueno — correcto, bien desarrollado"
+  4: "Excelente — riguroso, completo y con análisis profundo"

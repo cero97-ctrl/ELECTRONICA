@@ -1,0 +1,58 @@
+{
+  "status": "ok",
+  "api_backend": "gemini",
+  "estudiante": "2",
+  "archivo": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/02/examen_2.pdf",
+  "modelo": "gemini-2.5-flash",
+  "dpi_renderizado": 200,
+  "paginas_procesadas": 2,
+  "evaluacion": {
+    "puntaje_sugerido": "N/A",
+    "nivel_desempeno": "N/A",
+    "resumen_general": "No se ha proporcionado ninguna respuesta del estudiante para evaluar. Las imágenes corresponden únicamente al enunciado del examen, sin el trabajo realizado por el alumno. Por lo tanto, no es posible realizar una evaluación.",
+    "fortalezas": [],
+    "areas_de_mejora": [],
+    "observaciones_por_pregunta": [
+      {
+        "pregunta": "Pregunta 1 (Superposición)",
+        "puntaje_parcial": "N/A",
+        "evaluacion": "No se ha proporcionado la respuesta del estudiante para esta pregunta.",
+        "errores": []
+      },
+      {
+        "pregunta": "Pregunta 2 (Teorema de Thévenin)",
+        "puntaje_parcial": "N/A",
+        "evaluacion": "No se ha proporcionado la respuesta del estudiante para esta pregunta.",
+        "errores": []
+      },
+      {
+        "pregunta": "Pregunta 3 (Máxima Transferencia de Potencia)",
+        "puntaje_parcial": "N/A",
+        "evaluacion": "No se ha proporcionado la respuesta del estudiante para esta pregunta.",
+        "errores": []
+      },
+      {
+        "pregunta": "Pregunta 4 (Análisis Nodal con Supernodo Dependiente)",
+        "puntaje_parcial": "N/A",
+        "evaluacion": "No se ha proporcionado la respuesta del estudiante para esta pregunta.",
+        "errores": []
+      },
+      {
+        "pregunta": "Pregunta 5 (Análisis de Mallas con Fuentes Dependientes)",
+        "puntaje_parcial": "N/A",
+        "evaluacion": "No se ha proporcionado la respuesta del estudiante para esta pregunta.",
+        "errores": []
+      }
+    ],
+    "errores_conceptuales": [],
+    "errores_procedimentales": [],
+    "recomendaciones_al_estudiante": "Para poder recibir retroalimentación y una evaluación, es necesario que proporciones tus respuestas al examen. Una vez que las compartas, podré analizar tu trabajo y ofrecerte observaciones específicas para mejorar.",
+    "nota_para_el_profesor": "Las imágenes proporcionadas corresponden únicamente al enunciado del examen. No se ha adjuntado ninguna respuesta del estudiante para su evaluación. Por favor, asegúrese de incluir las páginas con las soluciones del alumno para que la evaluación pueda ser realizada."
+  },
+  "timestamp": "2026-06-26T16:05:20.495622Z",
+  "tokens_usados": {
+    "prompt": 1520,
+    "respuesta": 595,
+    "total": 2411
+  }
+}

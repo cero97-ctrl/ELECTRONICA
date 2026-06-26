@@ -1,0 +1,141 @@
+goal: >
+  Evaluar preliminarmente el informe de práctica de laboratorio de Electrónica
+  de un estudiante enviando las páginas del PDF como imágenes al modelo Gemini
+  (multimodal) y obteniendo una evaluación estructurada en JSON con puntaje
+  sugerido por sección, observaciones y retroalimentación formativa sobre el
+  trabajo práctico experimental.
+
+required_inputs:
+  - name: pdf_practica
+    description: >
+      Ruta al archivo PDF del informe de práctica del estudiante.
+      Ejemplo: practicas/01/informe_estudiante/practica_01_estudiante.pdf
+  - name: modelo
+    description: >
+      Modelo Gemini a utilizar. Opciones: gemini-2.5-flash (default, más rápido y
+      económico), gemini-1.5-pro (más potente, mayor costo). Usar gemini-1.5-pro
+      para informes extensos con muchos diagramas, fotos de protoboard y datos
+      experimentales.
+    default: gemini-2.5-flash
+  - name: dpi
+    description: >
+      Resolución de renderizado del PDF en puntos por pulgada (DPI).
+      250 DPI es el balance óptimo entre calidad y velocidad. Usar 300+ si el
+      informe contiene fotos de protoboard, osciloscopio o componentes pequeños.
+    default: 250
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de evaluación: renderiza el PDF en imágenes de alta
+      resolución en memoria y las envía en bloque al modelo Gemini junto con la
+      System Instruction de corrección de prácticas de laboratorio. Se debe
+      proporcionar una rúbrica específica para laboratorio. Recibe la evaluación
+      estructurada en JSON.
+    script: "execution/evaluar_examen.py"
+    inputs:
+      --pdf: "{{pdf_practica}}"
+      --modelo: "{{modelo}}"
+      --dpi: "{{dpi}}"
+      --rubrica: "directives/rubricas/rubrica_practica_lab.yaml"
+    expected_output: >
+      JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
+      evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
+      areas_de_mejora, observaciones_por_seccion, errores_conceptuales,
+      errores_procedimentales, observaciones_montaje, recomendaciones_al_estudiante,
+      nota_para_el_profesor), tokens_usados, timestamp.
+
+  - step: 2
+    description: >
+      Guardar el resultado JSON en .tmp/run_state.json para auditoría y generar
+      el informe LaTeX de la práctica evaluada.
+    script: "execution/generar_informe.py"
+    inputs:
+      --json: ".tmp/evaluacion_{{pdf_practica.stem}}.json"
+      --output: "{{pdf_practica.parent.parent}}/informe_practica/informe_{{pdf_practica.stem}}.tex"
+    expected_output: >
+      Archivo .tex en la carpeta informe_practica/ y resumen impreso con puntaje
+      sugerido, nivel de desempeño y observaciones principales.
+
+  - step: 3
+    description: >
+      Emitir alerta audible de completado al usuario.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok y confirmación de alerta emitida.
+
+expected_outputs:
+  - name: evaluacion_json
+    description: >
+      Objeto JSON completo con la evaluación preliminar de la práctica, guardado
+      en .tmp/ y presentado al profesor con formato legible.
+  - name: informe_latex
+    description: >
+      Archivo .tex con el informe de evaluación de la práctica, guardado en la
+      carpeta informe_practica/ al mismo nivel que la carpeta informe_estudiante/.
+
+edge_cases:
+  - case: "El PDF no existe o la ruta es incorrecta"
+    recovery: >
+      El script retorna código 1 con mensaje claro. Verificar que la ruta sea
+      relativa al directorio raíz del proyecto.
+
+  - case: "GOOGLE_API_KEY no está definida en .env"
+    recovery: >
+      El script retorna código 2. Copiar .env.example como .env y agregar la API
+      key de Google AI Studio (https://aistudio.google.com/apikey).
+
+  - case: "El informe contiene fotos de protoboard u osciloscopio de baja calidad"
+    recovery: >
+      Aumentar DPI a 350 para mejor resolución. Agregar en nota_para_el_profesor
+      que las imágenes de montaje deben revisarse manualmente si el modelo no
+      logra interpretar las conexiones.
+
+  - case: "Error 429 (quota exceeded) de la API de Gemini"
+    recovery: >
+      Esperar 60 segundos y reintentar. Si persiste, cambiar al modelo
+      gemini-1.5-flash que tiene mayor cuota. Máximo 3 reintentos, luego escalar
+      al usuario.
+
+  - case: "El informe tiene muchas páginas (>20) o fotos pesadas"
+    recovery: >
+      Reducir DPI a 150 para las páginas de teoría y mantener 250+ para las de
+      resultados. Si el error de tamaño persiste, dividir el PDF en partes.
+
+  - case: "El modelo no retorna JSON válido (respuesta malformada)"
+    recovery: >
+      El script retorna código 4. Reintentar una vez con temperatura más baja
+      (ya está en 0.2). Si falla 3 veces, cambiar a gemini-1.5-pro.
+
+  - case: "Los valores medidos no coinciden con los esperados teóricamente"
+    recovery: >
+      El modelo debe detectar discrepancias y señalarlas en errores_conceptuales
+      o procedimentales. El profesor verificará si el error es del estudiante o
+      del material de laboratorio.
+
+  - case: "Faltan secciones obligatorias del informe (marco teórico, cálculos, conclusiones)"
+    recovery: >
+      El modelo debe registrar las secciones ausentes en areas_de_mejora y
+      notificar al profesor en nota_para_el_profesor.
+
+metadata:
+  version: "1.0"
+  created: "2026-06-26"
+  author: "agente"
+  script_principal: "execution/evaluar_examen.py"
+  rubrica_asociada: "directives/rubricas/rubrica_practica_lab.yaml"
+  dependencias:
+    - "pymupdf>=1.24.0"
+    - "google-generativeai>=0.8.0"
+    - "python-dotenv>=1.0.0"
+  env_vars_requeridas:
+    - "GOOGLE_API_KEY"
+  notas: >
+    Esta directiva evalúa UNA práctica a la vez. Requiere una rúbrica específica
+    para laboratorio en directives/rubricas/rubrica_practica_lab.yaml que defina
+    los criterios de evaluación experimentales: montaje, mediciones, análisis de
+    datos, y conclusiones. El script execution/evaluar_examen.py se reutiliza
+    con el flag --rubrica para adaptar la System Instruction al contexto de
+    laboratorio.

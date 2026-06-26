@@ -1,0 +1,123 @@
+goal: >
+  Evaluar preliminarmente el examen escrito de un estudiante de Electrónica
+  enviando las páginas del PDF como imágenes al modelo Gemini (multimodal) y obteniendo
+  una evaluación estructurada en JSON con puntaje sugerido, observaciones por pregunta
+  y retroalimentación formativa.
+
+required_inputs:
+  - name: pdf_examen
+    description: >
+      Ruta al archivo PDF del examen del estudiante.
+      Ejemplo: examenes/01/evaluacion_estudiante_01.pdf
+  - name: modelo
+    description: >
+      Modelo Gemini a utilizar. Opciones: gemini-2.5-flash (default, más rápido y económico),
+      gemini-1.5-pro (más potente, mayor costo). Usar gemini-1.5-pro para exámenes complejos
+      con mucho desarrollo matemático o escritura difícil de leer.
+    default: gemini-2.5-flash
+  - name: dpi
+    description: >
+      Resolución de renderizado de las páginas del PDF en puntos por pulgada (DPI).
+      250 DPI es el balance óptimo entre calidad y velocidad. Aumentar a 300 si la
+      letra del estudiante es pequeña o hay fórmulas detalladas.
+    default: 250
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de evaluación: renderiza el PDF en imágenes de alta resolución
+      en memoria y las envía en bloque al modelo Gemini junto con la System Instruction
+      de corrección académica. Recibe la evaluación estructurada en JSON.
+    script: "execution/evaluar_examen.py"
+    inputs:
+      --pdf: "{{pdf_examen}}"
+      --modelo: "{{modelo}}"
+      --dpi: "{{dpi}}"
+    expected_output: >
+      JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
+      evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
+      areas_de_mejora, observaciones_por_pregunta, errores_conceptuales,
+      errores_procedimentales, recomendaciones_al_estudiante, nota_para_el_profesor),
+      tokens_usados, timestamp.
+
+  - step: 2
+    description: >
+      Guardar el resultado JSON en .tmp/run_state.json para auditoría y luego presentar
+      el resumen de la evaluación al profesor de forma legible.
+    script: "interno (orquestación del agente)"
+    inputs:
+      resultado: "output_del_paso_1"
+    expected_output: >
+      Resumen formateado en texto mostrando: nombre del estudiante, puntaje sugerido,
+      nivel de desempeño, fortalezas, áreas de mejora y nota para el profesor.
+
+  - step: 3
+    description: >
+      Emitir alerta audible de completado al usuario.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok y confirmación de alerta emitida.
+
+expected_outputs:
+  - name: evaluacion_json
+    description: >
+      Objeto JSON completo con la evaluación preliminar del examen, guardado en .tmp/
+      y presentado al profesor con formato legible.
+  - name: resumen_impreso
+    description: >
+      Resumen en texto plano con los puntos más relevantes de la evaluación para
+      la revisión rápida del profesor.
+
+edge_cases:
+  - case: "El PDF no existe o la ruta es incorrecta"
+    recovery: >
+      El script retorna código 1 con mensaje claro. Verificar que la ruta sea relativa
+      al directorio raíz del proyecto (ej: examenes/01/evaluacion_X.pdf).
+
+  - case: "GOOGLE_API_KEY no está definida en .env"
+    recovery: >
+      El script retorna código 2. Copiar .env.example como .env y agregar la API key
+      de Google AI Studio (https://aistudio.google.com/apikey).
+
+  - case: "Error 429 (quota exceeded) de la API de Gemini"
+    recovery: >
+      Esperar 60 segundos y reintentar. Si persiste, cambiar al modelo gemini-1.5-flash
+      que tiene mayor cuota. Máximo 3 reintentos, luego escalar al usuario.
+
+  - case: "El PDF tiene muchas páginas (>20) y la respuesta es lenta o hay error de tamaño"
+    recovery: >
+      Reducir DPI a 150 para disminuir el tamaño de las imágenes. Si el error persiste,
+      dividir el PDF en mitades y evaluar por partes.
+
+  - case: "El modelo no retorna JSON válido (respuesta malformada)"
+    recovery: >
+      El script retorna código 4. Reintentar una vez con temperatura más baja (ya está en 0.2).
+      Si falla 3 veces, cambiar a gemini-1.5-pro y documentar el caso en esta directiva.
+
+  - case: "La escritura del estudiante es ilegible o el PDF es de baja calidad"
+    recovery: >
+      Aumentar DPI a 300 o 350 y reintentar. Agregar en nota_para_el_profesor que
+      la legibilidad fue un factor limitante. El profesor deberá revisar esos ítems manualmente.
+
+  - case: "El examen contiene diagramas de circuitos o gráficas complejas"
+    recovery: >
+      Asegurar DPI >= 250 para capturar detalles finos de componentes, valores
+      y conexiones. Si el modelo ignora parte del circuito, agregar en
+      nota_para_el_profesor que los diagramas deben verificarse manualmente.
+
+metadata:
+  version: "1.0"
+  created: "2026-06-24"
+  author: "agente"
+  script_principal: "execution/evaluar_examen.py"
+  dependencias:
+    - "pymupdf>=1.24.0"
+    - "google-generativeai>=0.8.0"
+    - "python-dotenv>=1.0.0"
+  env_vars_requeridas:
+    - "GOOGLE_API_KEY"
+  notas: >
+    Esta directiva evalúa UN examen a la vez. Para procesar todos los exámenes
+    de una carpeta en lote, crear la directiva 'evaluar_carpeta_examenes.yaml'.
