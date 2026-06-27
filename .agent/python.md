@@ -271,3 +271,84 @@ Reescribir el generador para producir el formato correcto:
 - La especificación completa está en: `Agente_EDA/circuito_prueba/schema_easyeda.txt`
 
 > **Archivo afectado:** `agent_eda.py` (función `generate_easyeda_json` y helpers `_build_resistor_lib`, `_build_capacitor_lib`, `_build_generic_lib`, `_build_pin`)
+
+---
+
+## 6. `No se pudo extraer un JSON válido` por Regex Non-Greedy (`\{.*?\}`) en JSON Anidado
+
+### Síntoma / Mensaje de Error
+
+Al intentar extraer un JSON devuelto por un modelo (como Gemini u OpenRouter), el script falla con código 4 y el mensaje:
+
+```text
+Falló elaborar_examen.py (código 4): No se pudo extraer un JSON válido de la respuesta del modelo.
+```
+
+O internamente se lanza:
+```text
+ValueError: No se pudo extraer un JSON válido de la respuesta del modelo.
+```
+
+A pesar de que la inspección directa (raw text) demuestra que el modelo sí generó un JSON válido y completo de varios kilobytes.
+
+### Causa
+
+La función extractora usaba expresiones regulares con coincidencia *non-greedy* (no codiciosa) para capturar el JSON:
+
+```python
+# Incorrecto — el modificador .*? es non-greedy
+match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+```
+
+En objetos JSON simples (`{"clave": "valor"}`) funciona, pero si el JSON contiene **objetos anidados** (como múltiples preguntas de examen, o contenido LaTeX con llaves), el motor regex se detiene en la **primera llave de cierre `}`** que encuentra. 
+
+Esto trunca el string prematuramente (ej. `{"examen": {"titulo": "...", "preguntas": [{"numero": 1}`), lo que hace que `json.loads()` falle por un `JSONDecodeError`, resultando en el fallo total de la extracción.
+
+### Solución
+
+Abandonar el uso de expresiones regulares puras para capturar bloques con llaves anidadas (un lenguaje libre de contexto no se captura bien con regex regulares). En su lugar, usar un **algoritmo de escaneo de llaves balanceadas** que respete las cadenas de texto y secuencias de escape:
+
+```python
+def _find_balanced_json(text: str) -> str | None:
+    """Encuentra el primer objeto JSON balanceado en el texto, respetando strings."""
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            if in_string:
+                escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1] # JSON completo extraído
+    return None
+```
+
+Y usarlo como base en la función extractora principal, buscando primero dentro de un bloque de código y luego como fallback general.
+
+### Puntos Clave
+
+- Nunca usar `\{.*?\}` (non-greedy) para capturar JSON a menos que se tenga la certeza absoluta de que no habrá llaves anidadas ni contenido estructurado.
+- El algoritmo `_find_balanced_json` avanza caracter por caracter saltando lo que hay dentro de strings (`"..."`) para no confundir llaves literales con estructurales.
+- Maneja correctamente caracteres escapados (`\"`, `\\`) que pueden romper el detector de strings.
+
+> **Archivos afectados:** 
+> - `execution/elaborar_examen.py`
+> - `execution/evaluar_examen.py`
+> - `execution/analizar_imagen.py`

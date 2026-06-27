@@ -127,9 +127,28 @@ def flujo_completo(
     code, evaluacion = run_script(cmd_evaluar, capture_json=True)
 
     if code != 0 or evaluacion.get("status") != "ok":
-        msg = evaluacion.get("message", evaluacion.get("raw_output", "Error desconocido"))
-        print_err(f"Falló evaluar_examen.py (código {code}): {msg}")
-        state["steps_failed"].append({"step": 1, "script": "evaluar_examen.py",
+        if api_backend == "groq":
+            print_err("Falló Groq. Intentando como respaldo automático con Gemini...")
+            cmd_fallback = list(cmd_evaluar)
+            if "--api-backend" in cmd_fallback:
+                cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "gemini"
+            if "--modelo" in cmd_fallback:
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "gemini-1.5-flash"
+            code, evaluacion = run_script(cmd_fallback, capture_json=True)
+            
+        if code != 0 or evaluacion.get("status") != "ok":
+            print_err("Falló el respaldo. Intentando como último recurso con OpenRouter...")
+            cmd_fallback = list(cmd_evaluar)
+            if "--api-backend" in cmd_fallback:
+                cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "openrouter"
+            if "--modelo" in cmd_fallback:
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "qwen/qwen-2.5-vl-72b-instruct:free"
+            code, evaluacion = run_script(cmd_fallback, capture_json=True)
+
+        if code != 0 or evaluacion.get("status") != "ok":
+            msg = evaluacion.get("message", evaluacion.get("raw_output", "Error desconocido"))
+            print_err(f"Falló evaluar_examen.py (código {code}): {msg}")
+            state["steps_failed"].append({"step": 1, "script": "evaluar_examen.py",
                                       "code": code, "message": msg})
         state["last_updated"] = now_iso()
         save_state(state)
@@ -235,11 +254,11 @@ Ejemplos:
     )
     parser.add_argument("--pdf", required=True,
                         help="Ruta al PDF del examen del estudiante.")
-    parser.add_argument("--modelo", default="gemini-3.5-flash",
-                        help="Modelo a usar (default: gemini-2.5-flash). Con --api-backend openrouter usa IDs de OpenRouter (ej: qwen/qwen-2.5-vl-72b-instruct:free).")
-    parser.add_argument("--api-backend", default="gemini",
-                        choices=["gemini", "openrouter"],
-                        help="Backend de API: gemini (Google) u openrouter (OpenRouter). (default: gemini).")
+    parser.add_argument("--modelo", default="llama-3.2-90b-vision-preview",
+                        help="Modelo a usar (default: llama-3.2-90b-vision-preview).")
+    parser.add_argument("--api-backend", default="groq",
+                        choices=["gemini", "openrouter", "groq"],
+                        help="Backend de API: gemini, openrouter o groq. (default: groq).")
     parser.add_argument("--dpi", type=int, default=250,
                         help="DPI de renderizado del PDF (default: 250).")
     parser.add_argument("--rubrica", default=None,

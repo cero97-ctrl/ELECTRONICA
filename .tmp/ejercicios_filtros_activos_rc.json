@@ -1,0 +1,85 @@
+{
+  "status": "ok",
+  "api_backend": "groq",
+  "tema": "Filtros Activos RC",
+  "modelo": "llama-3.3-70b-versatile",
+  "nivel": "intermedia",
+  "ejercicios": {
+    "titulo": "Filtros Activos RC",
+    "dificultad": "intermedia",
+    "duracion_sugerida": "90 minutos",
+    "instrucciones": "Realice los cálculos de manera detallada y explique cada paso del proceso de resolución. Utilice fórmulas y ecuaciones de los filtros activos RC para obtener los resultados solicitados.",
+    "preguntas": [
+      {
+        "numero": 1,
+        "enunciado": "Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de corte $f_c = 1000 Hz$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de $R_1$, $R_2$ y $C$ necesarios para lograr las especificaciones del filtro?",
+        "puntaje": "2.0 puntos",
+        "solucion": "La ganancia del filtro pasa altos se da por $A_v = -\\frac{R_2}{R_1}$. La frecuencia de corte está dada por $f_c = \\frac{1}{2\\pi R_2C}$. Se puede resolver el sistema de ecuaciones para encontrar $R_1 = \\frac{R_2}{A_v}$ y $C = \\frac{1}{2\\pi R_2 f_c}$. Sustituyendo $A_v = 10$ y $f_c = 1000 Hz$, se obtiene $R_1 = \\frac{R_2}{10}$ y $C = \\frac{1}{2\\pi R_2 \\cdot 1000}$. Para $R_i = 1 kOmega$, se puede elegir $R_2 = 10 kOmega$ para simplificar, entonces $R_1 = 1 kOmega$ y $C = \\frac{1}{2\\pi \\cdot 10^4 \\cdot 1000} = 15.92 nF$.",
+        "conceptos_evaluados": [
+          "Diseño de filtros pasa altos",
+          "Frecuencia de corte",
+          "Ganancia de voltaje"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": "Un filtro pasa altos con amplificador operacional y componentes RC."
+      },
+      {
+        "numero": 2,
+        "enunciado": "Un filtro pasa bajas tiene una frecuencia de corte $f_c = 500 Hz$ y utiliza un condensador $C = 10 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de corte?",
+        "puntaje": "1.5 puntos",
+        "solucion": "La frecuencia de corte del filtro pasa bajas está dada por $f_c = \\frac{1}{2\\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \\frac{1}{2\\pi f_c C}$. Sustituyendo $f_c = 500 Hz$ y $C = 10 nF$, se encuentra $R = \\frac{1}{2\\pi \\cdot 500 \\cdot 10 \\cdot 10^{-9}} = 31.83 kOmega$.",
+        "conceptos_evaluados": [
+          "Frecuencia de corte",
+          "Componentes RC en filtros pasa bajas"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": "Un filtro pasa bajas con amplificador operacional y componentes RC."
+      },
+      {
+        "numero": 3,
+        "enunciado": "Diseñe un filtro pasa bandas con una frecuencia central $f_0 = 2000 Hz$, una banda pasante de $100 Hz$ y una ganancia $A_v = 5$. La resistencia de entrada $R_i$ es $2 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?",
+        "puntaje": "2.5 puntos",
+        "solucion": "La frecuencia central del filtro pasa bandas está dada por $f_0 = \\frac{1}{2\\pi \\sqrt{R_1 R_2 C_1 C_2}}$ y la banda pasante por $BW = \\frac{1}{2\\pi C_2 \\sqrt{R_1 R_2}}$. La ganancia se da por $A_v = \\frac{R_2}{R_1}$. Se pueden resolver estas ecuaciones simultáneamente para encontrar los valores de $R_1$, $R_2$, $C_1$ y $C_2$ necesarios.",
+        "conceptos_evaluados": [
+          "Diseño de filtros pasa bandas",
+          "Frecuencia central",
+          "Banda pasante"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": "Un filtro pasa bandas con amplificador operacional y componentes RC."
+      },
+      {
+        "numero": 4,
+        "enunciado": "Un filtro notch tiene una frecuencia de resonancia $f_r = 1000 Hz$ y utiliza un condensador $C = 100 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de resonancia?",
+        "puntaje": "2.0 puntos",
+        "solucion": "La frecuencia de resonancia del filtro notch está dada por $f_r = \\frac{1}{2\\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \\frac{1}{2\\pi f_r C}$. Sustituyendo $f_r = 1000 Hz$ y $C = 100 nF$, se encuentra $R = \\frac{1}{2\\pi \\cdot 1000 \\cdot 100 \\cdot 10^{-9}} = 1.59 kOmega$.",
+        "conceptos_evaluados": [
+          "Frecuencia de resonancia",
+          "Componentes RC en filtros notch"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": "Un filtro notch con amplificador operacional y componentes RC."
+      },
+      {
+        "numero": 5,
+        "enunciado": "Diseñe un filtro rechaza bandas con una frecuencia central $f_0 = 1500 Hz$, una banda de rechazo de $200 Hz$ y una ganancia $A_v = 2$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?",
+        "puntaje": "2.5 puntos",
+        "solucion": "La frecuencia central del filtro rechaza bandas está dada por $f_0 = \\frac{1}{2\\pi \\sqrt{R_1 R_2 C_1 C_2}}$ y la banda de rechazo por $BW = \\frac{1}{2\\pi C_2 \\sqrt{R_1 R_2}}$. La ganancia se da por $A_v = \\frac{R_2}{R_1}$. Se pueden resolver estas ecuaciones simultáneamente para encontrar los valores de $R_1$, $R_2$, $C_1$ y $C_2$ necesarios.",
+        "conceptos_evaluados": [
+          "Diseño de filtros rechaza bandas",
+          "Frecuencia central",
+          "Banda de rechazo"
+        ],
+        "dificultad": "alta",
+        "diagrama_sugerido": "Un filtro rechaza bandas con amplificador operacional y componentes RC."
+      }
+    ],
+    "material_permitido": "Calculadora científica, formulario personal de una hoja."
+  },
+  "timestamp": "2026-06-27T23:10:02.620327+00:00",
+  "tokens_usados": {
+    "prompt": 853,
+    "respuesta": 1755,
+    "total": 2608
+  }
+}

@@ -1,0 +1,194 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noshorthands]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.10}
+\usepackage{parskip}
+
+% ── Matemáticas ───────────────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies ──────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{\small\textbf{ELECTRÓNICA} --- Solucionario}
+\fancyhead[R]{\small\itshape Filtros Activos RC}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% ── Colores personalizados ────────────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA ═════════════════════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA}\\[4pt]
+  {\large Solucionario de Ejercicios}\\[8pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  {\LARGE\bfseries Filtros Activos RC}\\[6pt]
+  \rule{\linewidth}{0.6pt}
+\end{center}
+
+\vspace{4pt}
+\noindent\textit{Las siguientes soluciones son una guía de referencia para el profesor.}
+\textit{Los estudiantes pueden presentar desarrollos equivalentes.}
+\vspace{8pt}
+
+
+% ── Solución Ejercicio 1 ─────────────────────────────────────────────────
+\subsection*{Ejercicio 1 \normalfont\normalsize\textit{(2.0 puntos) --- Solución}}
+\textbf{Enunciado:}
+Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de corte $f_c = 1000 Hz$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de $R_1$, $R_2$ y $C$ necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa altos con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\textbf{Conceptos evaluados:} \texttt{Diseño de filtros pasa altos}, \texttt{Frecuencia de corte}, \texttt{Ganancia de voltaje}
+
+\vspace{2mm}
+\textbf{Solución:}
+La ganancia del filtro pasa altos se da por $A_v = -\frac{R_2}{R_1}$. La frecuencia de corte está dada por $f_c = \frac{1}{2\pi R_2C}$. Se puede resolver el sistema de ecuaciones para encontrar $R_1 = \frac{R_2}{A_v}$ y $C = \frac{1}{2\pi R_2 f_c}$. Sustituyendo $A_v = 10$ y $f_c = 1000 Hz$, se obtiene $R_1 = \frac{R_2}{10}$ y $C = \frac{1}{2\pi R_2 \cdot 1000}$. Para $R_i = 1 kOmega$, se puede elegir $R_2 = 10 kOmega$ para simplificar, entonces $R_1 = 1 kOmega$ y $C = \frac{1}{2\pi \cdot 10^4 \cdot 1000} = 15.92 nF$.
+
+\vspace{4pt}
+\rule{\linewidth}{0.2pt}
+\vspace{6pt}
+
+
+
+% ── Solución Ejercicio 2 ─────────────────────────────────────────────────
+\subsection*{Ejercicio 2 \normalfont\normalsize\textit{(1.5 puntos) --- Solución}}
+\textbf{Enunciado:}
+Un filtro pasa bajas tiene una frecuencia de corte $f_c = 500 Hz$ y utiliza un condensador $C = 10 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de corte?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa bajas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\textbf{Conceptos evaluados:} \texttt{Frecuencia de corte}, \texttt{Componentes RC en filtros pasa bajas}
+
+\vspace{2mm}
+\textbf{Solución:}
+La frecuencia de corte del filtro pasa bajas está dada por $f_c = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_c C}$. Sustituyendo $f_c = 500 Hz$ y $C = 10 nF$, se encuentra $R = \frac{1}{2\pi \cdot 500 \cdot 10 \cdot 10^{-9}} = 31.83 kOmega$.
+
+\vspace{4pt}
+\rule{\linewidth}{0.2pt}
+\vspace{6pt}
+
+
+
+% ── Solución Ejercicio 3 ─────────────────────────────────────────────────
+\subsection*{Ejercicio 3 \normalfont\normalsize\textit{(2.5 puntos) --- Solución}}
+\textbf{Enunciado:}
+Diseñe un filtro pasa bandas con una frecuencia central $f_0 = 2000 Hz$, una banda pasante de $100 Hz$ y una ganancia $A_v = 5$. La resistencia de entrada $R_i$ es $2 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa bandas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\textbf{Conceptos evaluados:} \texttt{Diseño de filtros pasa bandas}, \texttt{Frecuencia central}, \texttt{Banda pasante}
+
+\vspace{2mm}
+\textbf{Solución:}
+La frecuencia central del filtro pasa bandas está dada por $f_0 = \frac{1}{2\pi \sqrt{R_1 R_2 C_1 C_2}}$ y la banda pasante por $BW = \frac{1}{2\pi C_2 \sqrt{R_1 R_2}}$. La ganancia se da por $A_v = \frac{R_2}{R_1}$. Se pueden resolver estas ecuaciones simultáneamente para encontrar los valores de $R_1$, $R_2$, $C_1$ y $C_2$ necesarios.
+
+\vspace{4pt}
+\rule{\linewidth}{0.2pt}
+\vspace{6pt}
+
+
+
+% ── Solución Ejercicio 4 ─────────────────────────────────────────────────
+\subsection*{Ejercicio 4 \normalfont\normalsize\textit{(2.0 puntos) --- Solución}}
+\textbf{Enunciado:}
+Un filtro notch tiene una frecuencia de resonancia $f_r = 1000 Hz$ y utiliza un condensador $C = 100 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de resonancia?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro notch con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\textbf{Conceptos evaluados:} \texttt{Frecuencia de resonancia}, \texttt{Componentes RC en filtros notch}
+
+\vspace{2mm}
+\textbf{Solución:}
+La frecuencia de resonancia del filtro notch está dada por $f_r = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_r C}$. Sustituyendo $f_r = 1000 Hz$ y $C = 100 nF$, se encuentra $R = \frac{1}{2\pi \cdot 1000 \cdot 100 \cdot 10^{-9}} = 1.59 kOmega$.
+
+\vspace{4pt}
+\rule{\linewidth}{0.2pt}
+\vspace{6pt}
+
+
+
+% ── Solución Ejercicio 5 ─────────────────────────────────────────────────
+\subsection*{Ejercicio 5 \normalfont\normalsize\textit{(2.5 puntos) --- Solución}}
+\textbf{Enunciado:}
+Diseñe un filtro rechaza bandas con una frecuencia central $f_0 = 1500 Hz$, una banda de rechazo de $200 Hz$ y una ganancia $A_v = 2$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro rechaza bandas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\textbf{Conceptos evaluados:} \texttt{Diseño de filtros rechaza bandas}, \texttt{Frecuencia central}, \texttt{Banda de rechazo}
+
+\vspace{2mm}
+\textbf{Solución:}
+La frecuencia central del filtro rechaza bandas está dada por $f_0 = \frac{1}{2\pi \sqrt{R_1 R_2 C_1 C_2}}$ y la banda de rechazo por $BW = \frac{1}{2\pi C_2 \sqrt{R_1 R_2}}$. La ganancia se da por $A_v = \frac{R_2}{R_1}$. Se pueden resolver estas ecuaciones simultáneamente para encontrar los valores de $R_1$, $R_2$, $C_1$ y $C_2$ necesarios.
+
+\vspace{4pt}
+\rule{\linewidth}{0.2pt}
+\vspace{6pt}
+
+
+
+% ══ FIN DEL SOLUCIONARIO ═══════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \rule{0.6\linewidth}{0.4pt} \\[6pt]
+  \textbf{--- Fin del solucionario ---}
+\end{center}
+
+\vfill
+\begin{center}
+  \footnotesize\color{gray}
+  Solucionario generado automáticamente por el sistema de inteligencia artificial (llama-3.3-70b-versatile) \\
+  ELECTRÓNICA --- Sistema de Evaluación Académica \\
+  Generado el 2026-06-27
+\end{center}
+
+\end{document}

@@ -1,0 +1,194 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noshorthands]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.10}
+\usepackage{parskip}
+
+% ── Matemáticas ───────────────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies ──────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{\small\textbf{ELECTRÓNICA} --- Ejercicios}
+\fancyhead[R]{\small\itshape Filtros Activos RC}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% ── Colores personalizados ────────────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+\definecolor{verdePuntaje}{HTML}{1A6B2F}
+
+% ── Estilos de cajas ─────────────────────────────────────────────────────────
+\tcbset{
+  cajaInstrucciones/.style={
+    enhanced, breakable,
+    colback=grisFondo, colframe=gray!50,
+    fonttitle=\bfseries, coltitle=black,
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA / ENCABEZADO ═══════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA}\\[4pt]
+  {\large Hoja de Ejercicios de Razonamiento y Cálculo}\\[8pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  {\LARGE\bfseries Filtros Activos RC}\\[6pt]
+  \rule{\linewidth}{0.6pt}\\[6pt]
+  {\large \textbf{Dificultad:} Intermedia \hfill
+   \textbf{Duración:} 90 minutos} \\[4pt]
+  {\large \textbf{Fecha:} \rule{4cm}{0.2pt} \hfill
+   \textbf{Estudiante:} \rule{6cm}{0.2pt}} \\[6pt]
+  \rule{\linewidth}{0.2pt}
+\end{center}
+
+% ══ DATOS DE LOS EJERCICIOS ════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{tcolorbox}[cajaInstrucciones, title={Instrucciones}]
+Realice los cálculos de manera detallada y explique cada paso del proceso de resolución. Utilice fórmulas y ecuaciones de los filtros activos RC para obtener los resultados solicitados.
+\medskip
+\textbf{Material permitido:} Calculadora científica, formulario personal de una hoja.
+\end{tcolorbox}
+
+% ══ INDICACIÓN DE PUNTAJE ═════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{center}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white, colframe=azulTitulo,
+    width=0.6\linewidth,
+    boxrule=1.5pt,
+    halign=center, valign=center,
+    top=4pt, bottom=4pt,
+  ]
+    \centering
+    \textbf{Puntaje total: 10.0 puntos} \\
+    \small\textit{Responda cada ejercicio en el espacio provisto. \\
+    Debe mostrar todo el desarrollo matemático para obtener puntaje completo.}
+  \end{tcolorbox}
+\end{center}
+
+% ══ EJERCICIOS ═════════════════════════════════════════════════════════════════
+\section*{Ejercicios}
+
+
+% ── Ejercicio 1 ──────────────────────────────────────────────────────
+\subsection*{Ejercicio 1 \normalfont\normalsize\textit{(2.0 puntos)}}
+Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de corte $f_c = 1000 Hz$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de $R_1$, $R_2$ y $C$ necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa altos con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Ejercicio 2 ──────────────────────────────────────────────────────
+\subsection*{Ejercicio 2 \normalfont\normalsize\textit{(1.5 puntos)}}
+Un filtro pasa bajas tiene una frecuencia de corte $f_c = 500 Hz$ y utiliza un condensador $C = 10 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de corte?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa bajas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Ejercicio 3 ──────────────────────────────────────────────────────
+\subsection*{Ejercicio 3 \normalfont\normalsize\textit{(2.5 puntos)}}
+Diseñe un filtro pasa bandas con una frecuencia central $f_0 = 2000 Hz$, una banda pasante de $100 Hz$ y una ganancia $A_v = 5$. La resistencia de entrada $R_i$ es $2 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro pasa bandas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Ejercicio 4 ──────────────────────────────────────────────────────
+\subsection*{Ejercicio 4 \normalfont\normalsize\textit{(2.0 puntos)}}
+Un filtro notch tiene una frecuencia de resonancia $f_r = 1000 Hz$ y utiliza un condensador $C = 100 nF$. ¿Cuál es el valor de la resistencia $R$ necesaria para lograr esta frecuencia de resonancia?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro notch con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Ejercicio 5 ──────────────────────────────────────────────────────
+\subsection*{Ejercicio 5 \normalfont\normalsize\textit{(2.5 puntos)}}
+Diseñe un filtro rechaza bandas con una frecuencia central $f_0 = 1500 Hz$, una banda de rechazo de $200 Hz$ y una ganancia $A_v = 2$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un filtro rechaza bandas con amplificador operacional y componentes RC.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ══ FIN DE LOS EJERCICIOS ══════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \rule{0.6\linewidth}{0.4pt} \\[6pt]
+  \textbf{--- Fin de la hoja de ejercicios ---}
+\end{center}
+
+\vfill
+\begin{center}
+  \footnotesize\color{gray}
+  Ejercicios generados automáticamente por el sistema de inteligencia artificial (llama-3.3-70b-versatile) \\
+  ELECTRÓNICA --- Sistema de Evaluación Académica \\
+  Generado el 2026-06-27
+\end{center}
+
+\end{document}

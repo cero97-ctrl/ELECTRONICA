@@ -1,36 +1,31 @@
 {
-  "run_id": "flujo-imagen-2026-06-27T15-55-49",
-  "directive": "analizar_imagen.yaml",
-  "imagenes": "docs/IMAGENES/imagen_1.jpeg,docs/IMAGENES/imagen_2.jpeg",
-  "started_at": "2026-06-27T15:55:49.267268+00:00",
-  "last_updated": "2026-06-27T15:56:12.360435+00:00",
-  "current_step": 4,
+  "run_id": "flujo-ejercicios-2026-06-27T23-09-51",
+  "directive": "elaborar_ejercicios.yaml",
+  "tema": "Filtros Activos RC",
+  "started_at": "2026-06-27T23:09:51.017889+00:00",
+  "last_updated": "2026-06-27T23:10:05.275831+00:00",
+  "current_step": 3,
   "steps_completed": [
     {
       "step": 1,
-      "script": "analizar_imagen.py",
+      "script": "elaborar_ejercicios.py",
       "status": "ok",
-      "archivos": [
-        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_1.jpeg",
-        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_2.jpeg"
-      ],
-      "descripcion": "Dos capturas de pantalla de la interfaz de Seguridad de Windows que muestran alertas de seguridad de nivel de gravedad 'Alta'. El sistema ha detectado y bloqueado herramientas de hacking basadas en Python (Impacket) dentro de un entorno virtual de desarrollo dedicado a la ciberseguridad.",
-      "tokens_total": 4928,
-      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/analisis_imagen_1_imagen_2.json"
+      "titulo": "Filtros Activos RC",
+      "n_preguntas": 5,
+      "tokens_total": 2608,
+      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/ejercicios_filtros_activos_rc.json"
     },
     {
       "step": 2,
-      "script": "generar_informe_imagen.py",
+      "script": "generar_ejercicios_latex.py",
       "status": "ok",
-      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex"
+      "archivos_tex": [
+        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/ejercicios.tex",
+        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/sol_ejercicios.tex"
+      ]
     },
     {
       "step": 3,
-      "script": "presentación",
-      "status": "ok"
-    },
-    {
-      "step": 4,
       "script": "alert_user.py",
       "status": "ok",
       "tipo": "success"
@@ -38,11 +33,11 @@
   ],
   "steps_failed": [],
   "context": {
-    "archivos": [
-      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_1.jpeg",
-      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_2.jpeg"
-    ],
-    "descripcion": "Dos capturas de pantalla de la interfaz de Seguridad de Windows que muestran alertas de seguridad de nivel de gravedad 'Alta'. El sistema ha detectado y bloqueado herramientas de hacking basadas en Python (Impacket) dentro de un entorno virtual de desarrollo dedicado a la ciberseguridad.",
-    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex"
+    "titulo": "Filtros Activos RC",
+    "n_preguntas": 5,
+    "archivos_tex": [
+      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/ejercicios.tex",
+      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/sol_ejercicios.tex"
+    ]
   }
 }

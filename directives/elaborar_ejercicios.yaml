@@ -1,0 +1,96 @@
+goal: >
+  Generar una hoja de 5 ejercicios de razonamiento y cálculo sobre un tema
+  específico del plan de estudios de Electrónica, utilizando un LLM para crear
+  los ejercicios originales con sus soluciones, y producir un documento LaTeX
+  profesional listo para imprimir o distribuir a los estudiantes.
+
+required_inputs:
+  - name: tema
+    description: >
+      Tema del plan de estudios sobre el que generar los ejercicios.
+      Debe ser una descripción clara del contenido a evaluar.
+      Ejemplo: "Semana 4: Componentes Reactivos: Condensadores y circuitos RC"
+    example: "Semana 3: Amplificadores Operacionales (A.O.)"
+  - name: path
+    description: >
+      Ruta del directorio donde se guardarán los archivos .tex generados.
+      Ejemplo: ejercicios/Semana4
+    example: "ejercicios/AO"
+
+optional_inputs:
+  - name: nivel
+    description: >
+      Nivel de dificultad de los ejercicios: basica, intermedia o avanzada.
+    default: intermedia
+  - name: modelo
+    description: >
+      Modelo LLM a utilizar. Default: gemini-3.5-flash.
+    default: gemini-3.5-flash
+  - name: api_backend
+    description: >
+      Backend de API: gemini (Google) u openrouter (OpenRouter).
+    default: gemini
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de generación: envía el tema al LLM junto con la
+      System Instruction para crear 5 ejercicios originales de razonamiento
+      y cálculo con soluciones detalladas. Recibe los ejercicios estructurados en JSON.
+    script: "execution/elaborar_ejercicios.py"
+    inputs:
+      --tema: "{{tema}}"
+      --nivel: "{{nivel}}"
+      --modelo: "{{modelo}}"
+      --api-backend: "{{api_backend}}"
+    expected_output: >
+      JSON con las claves: status, tema, modelo, nivel, ejercicios
+      (con titulo, dificultad, duracion_sugerida, instrucciones,
+      preguntas: [{numero, enunciado, puntaje, solucion,
+      conceptos_evaluados, dificultad}]), tokens_usados, timestamp.
+
+  - step: 2
+    description: >
+      Convertir el JSON de los ejercicios en un documento LaTeX profesional con
+      formato (encabezado, instrucciones, ejercicios con espacio
+      para respuestas, solucionario opcional separado).
+    script: "execution/generar_ejercicios_latex.py"
+    inputs:
+      --json: "{{json_tmp}}"
+      --output: "{{output_tex}}"
+      --sol-output: "{{sol_output}}"
+    expected_output: >
+      Archivos .tex listos para compilar con pdflatex.
+
+  - step: 3
+    description: >
+      Emitir alerta audible de completado al usuario.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok y confirmación de alerta emitida.
+
+expected_outputs:
+  - name: ejercicios_json
+    description: >
+      Objeto JSON completo con los ejercicios y soluciones,
+      guardado en .tmp/ para su reutilización.
+  - name: ejercicios_tex
+    description: >
+      Archivo LaTeX de los ejercicios listo para compilar: ejercicios.tex
+  - name: sol_ejercicios_tex
+    description: >
+      Archivo LaTeX del solucionario de los ejercicios: sol_ejercicios.tex
+
+metadata:
+  version: "1.0"
+  created: "2026-06-27"
+  author: "agente"
+  script_principal: "execution/elaborar_ejercicios.py"
+  script_latex: "execution/generar_ejercicios_latex.py"
+  dependencias:
+    - "google-genai>=1.0.0"
+    - "python-dotenv>=1.0.0"
+  env_vars_requeridas:
+    - "GOOGLE_API_KEY"

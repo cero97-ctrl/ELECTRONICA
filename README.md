@@ -29,13 +29,13 @@ Extrae netlists/BOM de esquemas LaTeX circuitikz y genera JSON para EasyEDA Stan
 
 ### Análisis de Imágenes (`flujo_analizar_imagen.py`)
 Orquestador que ejecuta el flujo completo de análisis visual:
-1. `analizar_imagen.py` — Analiza imágenes con Gemini/OpenRouter (multimodal)
+1. `analizar_imagen.py` — Analiza imágenes con LLM multimodal (Groq/Gemini/OpenRouter)
 2. `generar_informe_imagen.py` — Genera informe LaTeX con resultados
 3. `alert_user.py` — Notifica con alerta audible al completar
 
 ### Evaluación de Exámenes y Prácticas (`flujo_evaluar_examen.py`)
 Orquestador que ejecuta el flujo completo de evaluación:
-1. `evaluar_examen.py` — Evalúa PDF con Gemini/OpenRouter (multimodal)
+1. `evaluar_examen.py` — Evalúa PDF con LLM multimodal (Groq/Gemini/OpenRouter)
 2. `generar_informe.py` — Genera informe LaTeX con resultados
 3. `alert_user.py` — Notifica con alerta audible al completar
 
@@ -45,8 +45,8 @@ YAML personalizadas en `directives/rubricas/`.
 ### Scripts de Ejecución (`execution/`)
 - `env_diagnostic.py` — Diagnóstico del entorno (SO, paquetes, HW, red)
 - `scrape_single_site.py` — Extrae contenido principal de una URL
-- `analizar_imagen.py` — Analiza imágenes con LLM multimodal (Gemini/OpenRouter)
-- `evaluar_examen.py` — Evaluación con LLM multimodal (Gemini/OpenRouter)
+- `analizar_imagen.py` — Analiza imágenes con LLM multimodal (Groq/Gemini/OpenRouter)
+- `evaluar_examen.py` — Evaluación con LLM multimodal (Groq/Gemini/OpenRouter)
 - `generar_informe.py` — Genera informe LaTeX desde JSON de evaluación
 - `generar_informe_imagen.py` — Genera informe LaTeX desde JSON de análisis de imágenes
 - `alert_user.py` — Emite alertas audibles (paplay + fallback bell)
@@ -74,10 +74,9 @@ YAML personalizadas en `directives/rubricas/`.
    ```bash
    pip install -r requirements.txt
    ```
-3. Obtén una API Key gratuita de [Groq](https://console.groq.com).
+3. Obtén una API Key de [Groq](https://console.groq.com) (usado por defecto por todos los orquestadores).
 4. Crea `.groq_api_key` en la raíz con tu clave (sin espacios ni comillas).
-5. Para evaluación de exámenes: obtén una API Key de [Google AI Studio](https://aistudio.google.com/apikey)
-   y configúrala como `GOOGLE_API_KEY` en `.env`.
+5. Como respaldo, puedes configurar API Keys de Google (`GOOGLE_API_KEY`) y OpenRouter (`OPENROUTER_API_KEY`) en el archivo `.env`.
 
 ## 🚀 Uso
 
@@ -95,7 +94,7 @@ python agent_eda.py
 **Analizar imágenes con IA multimodal:**
 ```bash
 python flujo_analizar_imagen.py "docs/IMAGENES/*.jpg" --prompt "Describe este circuito"
-python flujo_analizar_imagen.py foto1.jpg,foto2.jpg --modelo gemini-1.5-pro
+python flujo_analizar_imagen.py foto1.jpg,foto2.jpg --modelo llama-3.2-90b-vision-preview
 ```
 
 **Evaluar un examen escrito de Electrónica:**

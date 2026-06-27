@@ -1,0 +1,143 @@
+goal: >
+  Generar un examen de 5 preguntas de razonamiento y cálculo sobre un tema
+  específico del plan de estudios de Electrónica, utilizando un LLM para crear
+  las preguntas originales con sus soluciones, y producir un documento LaTeX
+  profesional listo para imprimir y aplicar a los estudiantes.
+
+required_inputs:
+  - name: tema
+    description: >
+      Tema del plan de estudios sobre el que generar el examen.
+      Debe ser una descripción clara del contenido a evaluar.
+      Ejemplo: "Semana 4: Componentes Reactivos: Condensadores y circuitos RC"
+    example: "Semana 3: Amplificadores Operacionales (A.O.)"
+  - name: output_tex
+    description: >
+      Ruta donde se guardará el archivo .tex del examen generado.
+      Ejemplo: examenes/02/Examen_Semana4.tex
+    example: "examenes/Examen_AO.tex"
+
+optional_inputs:
+  - name: nivel
+    description: >
+      Nivel de dificultad del examen: basica, intermedia o avanzada.
+    default: intermedia
+  - name: modelo
+    description: >
+      Modelo LLM a utilizar. Default: gemini-2.5-flash.
+      Para OpenRouter usar IDs como qwen/qwen-2.5-72b-instruct:free.
+    default: gemini-2.5-flash
+  - name: api_backend
+    description: >
+      Backend de API: gemini (Google) u openrouter (OpenRouter).
+    default: gemini
+  - name: no_soluciones
+    description: >
+      Si se incluye, no se genera el solucionario en el documento LaTeX.
+    default: false
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de generación: envía el tema al LLM junto con la
+      System Instruction para crear 5 preguntas originales de razonamiento
+      y cálculo con soluciones detalladas. Recibe el examen estructurado en JSON.
+    script: "execution/elaborar_examen.py"
+    inputs:
+      --tema: "{{tema}}"
+      --nivel: "{{nivel}}"
+      --modelo: "{{modelo}}"
+      --api-backend: "{{api_backend}}"
+    expected_output: >
+      JSON con las claves: status, tema, modelo, nivel, examen
+      (con titulo, dificultad, duracion_sugerida, instrucciones,
+      preguntas: [{numero, enunciado, puntaje, solucion,
+      conceptos_evaluados, dificultad}]), tokens_usados, timestamp.
+
+  - step: 2
+    description: >
+      Convertir el JSON del examen en un documento LaTeX profesional con
+      formato de examen (encabezado, instrucciones, preguntas con espacio
+      para respuestas, solucionario al final).
+    script: "execution/generar_examen_latex.py"
+    inputs:
+      --json: "{{json_tmp}}"
+      --output: "{{output_tex}}"
+    expected_output: >
+      Archivo .tex listo para compilar con pdflatex. El documento incluye
+      portada, instrucciones, 5 preguntas con puntajes, espacio para
+      desarrollo, y solucionario opcional.
+
+  - step: 3
+    description: >
+      Emitir alerta audible de completado al usuario.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok y confirmación de alerta emitida.
+
+expected_outputs:
+  - name: examen_json
+    description: >
+      Objeto JSON completo con las preguntas del examen y soluciones,
+      guardado en .tmp/ para su reutilización.
+  - name: examen_tex
+    description: >
+      Archivo LaTeX del examen listo para compilar: examen.tex
+  - name: resumen_impreso
+    description: >
+      Resumen en texto plano con los datos del examen generado:
+      tema, número de preguntas, dificultad, duración sugerida.
+
+edge_cases:
+  - case: "El tema está vacío o es demasiado genérico"
+    recovery: >
+      El script retorna código 1 si --tema está vacío. Asegurar que el tema
+      sea específico, ej: "Semana 8: Transistor BJT — polarización DC" en
+      lugar de solo "transistores".
+
+  - case: "El modelo no retorna exactamente 5 preguntas"
+    recovery: >
+      El script emite una advertencia pero continúa. Si es crítico tener
+      exactamente 5, se puede reintentar con temperatura más baja (0.5).
+
+  - case: "GOOGLE_API_KEY no está definida en .env"
+    recovery: >
+      El script retorna código 2. Copiar .env.example como .env y agregar
+      la API key de Google AI Studio.
+
+  - case: "El JSON tiene formato incorrecto o falta campo 'examen'"
+    recovery: >
+      El script retorna código 4. Reintentar una vez. Si persiste, probar
+      con gemini-1.5-pro que suele ser más fiable con formatos JSON.
+
+  - case: "El modelo genera contenido sin sintaxis LaTeX adecuada"
+    recovery: >
+      Asegurar que el prompt especifique claramente el uso de $LaTeX$ para
+      fórmulas. El script de generación LaTeX escapará caracteres especiales
+      adicionales. Si persiste, editar manualmente el .tex generado.
+
+  - case: "Las soluciones contienen errores matemáticos"
+    recovery: >
+      El profesor debe revisar siempre las soluciones antes de publicarlas.
+      Agregar nota en las instrucciones del examen y en el solucionario
+      indicando que son una referencia y pueden contener erratas.
+
+metadata:
+  version: "1.0"
+  created: "2026-06-27"
+  author: "agente"
+  script_principal: "execution/elaborar_examen.py"
+  script_latex: "execution/generar_examen_latex.py"
+  dependencias:
+    - "google-genai>=1.0.0"
+    - "python-dotenv>=1.0.0"
+  env_vars_requeridas:
+    - "GOOGLE_API_KEY"
+  notas: >
+    Esta directiva genera UN examen a la vez. Para generar múltiples
+    exámenes de diferentes temas, ejecutar el flujo varias veces.
+    El nivel de dificultad 'intermedia' es el recomendado para exámenes
+    parciales; 'basica' para quizzes o controles rápidos; 'avanzada'
+    para exámenes finales o de admisión.

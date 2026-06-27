@@ -42,10 +42,10 @@ Este manual describe la estructura de directorios y archivos presentes en el esp
     \item \textbf{\texttt{requirements.txt}}: Dependencias para los scripts deterministas de ejecución: \texttt{psutil} y \texttt{PyYAML}.
     \item \textbf{\texttt{rag\_system.py}}: Script del Chatbot RAG. Vectoriza documentos (TEX, MD, PDF) en ChromaDB y gestiona las respuestas usando el LLM vía Groq.
     \item \textbf{\texttt{agent\_eda.py}}: Agente especializado en EDA. Extrae netlists y BOM de archivos LaTeX (circuitikz) para exportar hacia EasyEDA Standard.
-    \item \textbf{\texttt{execution/evaluar\_examen.py}}: Evalúa exámenes y prácticas de laboratorio usando LLM multimodal (Gemini/OpenRouter). Renderiza el PDF en imágenes y envía en bloque al modelo junto con la System Instruction.
+    \item \textbf{\texttt{execution/evaluar\_examen.py}}: Evalúa exámenes y prácticas de laboratorio usando LLM multimodal (Groq/Gemini/OpenRouter). Renderiza el PDF en imágenes y envía en bloque al modelo junto con la System Instruction.
     \item \textbf{\texttt{execution/generar\_informe.py}}: Genera un informe académico profesional en LaTeX a partir del JSON de evaluación producido por \texttt{evaluar\_examen.py}.
     \item \textbf{\texttt{flujo\_evaluar\_examen.py}}: Orquestador (Layer 2) que ejecuta el flujo completo: evalúa el PDF con el LLM, genera el informe LaTeX y notifica al usuario con alerta audible.
-    \item \textbf{\texttt{execution/analizar\_imagen.py}}: Analiza una o más imágenes (JPG/PNG) con LLM multimodal (Gemini/OpenRouter) y devuelve un análisis estructurado en JSON.
+    \item \textbf{\texttt{execution/analizar\_imagen.py}}: Analiza una o más imágenes (JPG/PNG) con LLM multimodal (Groq/Gemini/OpenRouter) y devuelve un análisis estructurado en JSON.
     \item \textbf{\texttt{execution/generar\_informe\_imagen.py}}: Genera un informe profesional en LaTeX a partir del JSON de análisis producido por \texttt{analizar\_imagen.py}.
     \item \textbf{\texttt{flujo\_analizar\_imagen.py}}: Orquestador (Layer 2) del flujo de análisis de imágenes: analiza con LLM, genera informe LaTeX, presenta resumen y notifica al usuario.
     \item \textbf{\texttt{clean\_latex.py}}: Utilidad para eliminar archivos auxiliares y temporales de compilación de LaTeX (.aux, .log, .out, etc.).

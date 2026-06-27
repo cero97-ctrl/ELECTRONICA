@@ -188,30 +188,63 @@ def pdf_to_images_bytes(pdf_path: str, dpi: int = 250) -> list[bytes]:
 
 # ── Funciones de extracción JSON ───────────────────────────────────────────────
 
+def _find_balanced_json(text: str) -> str | None:
+    """Encuentra el primer objeto JSON balanceado en el texto, respetando strings."""
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            if in_string:
+                escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+    return None
+
+
 def extract_json_from_response(text: str) -> dict:
     """
     Intenta extraer el JSON de la respuesta del modelo.
     Maneja casos donde el modelo envuelva el JSON en bloques de código markdown.
     """
-    # Intento 1: respuesta directa es JSON válido
+    # 1. Intentar parsear directamente toda la respuesta
     try:
         return json.loads(text.strip())
     except json.JSONDecodeError:
         pass
 
-    # Intento 2: JSON dentro de bloque ```json ... ```
-    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    # 2. Buscar bloque ```json ... ``` y extraer todo su contenido
+    match = re.search(r"```(?:json)?\s*(\{.*)\s*```", text, re.DOTALL)
     if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        candidate = _find_balanced_json(match.group(1))
+        if candidate:
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                pass
 
-    # Intento 3: primer objeto JSON encontrado en el texto
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if match:
+    # 3. Buscar el primer objeto JSON balanceado en todo el texto
+    candidate = _find_balanced_json(text)
+    if candidate:
         try:
-            return json.loads(match.group(0))
+            return json.loads(candidate)
         except json.JSONDecodeError:
             pass
 
@@ -384,6 +417,74 @@ def evaluar_con_openrouter(
     return choice.message.content, tokens
 
 
+def evaluar_con_groq(
+    images_bytes: list[bytes],
+    modelo: str,
+    system_instruction: str,
+    api_key: str,
+) -> tuple[str, dict]:
+    """Evalúa usando Groq (API compatible con OpenAI)."""
+    import base64
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://api.groq.com/openai/v1",
+    )
+
+    user_content = []
+    for i, img_bytes in enumerate(images_bytes, start=1):
+        b64 = base64.b64encode(img_bytes).decode("utf-8")
+        user_content.append({
+            "type": "text",
+            "text": f"--- Página {i} de {len(images_bytes)} ---",
+        })
+        user_content.append({
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/png;base64,{b64}",
+                "detail": "high",
+            },
+        })
+    user_content.append({
+        "type": "text",
+        "text": "Analiza el examen completo mostrado en las imágenes anteriores y responde con el JSON de evaluación.",
+    })
+
+    messages = [
+        {"role": "system", "content": system_instruction},
+        {"role": "user", "content": user_content},
+    ]
+
+    response = client.chat.completions.create(
+        model=modelo,
+        messages=messages,
+        temperature=0.2,
+        max_tokens=8192,
+        response_format={"type": "json_object"},
+    )
+
+    tokens = {}
+    try:
+        if hasattr(response, 'usage') and response.usage:
+            tokens = {
+                "prompt": response.usage.prompt_tokens,
+                "respuesta": response.usage.completion_tokens,
+                "total": response.usage.total_tokens,
+            }
+    except (AttributeError, TypeError):
+        pass
+
+    if not response or not hasattr(response, 'choices') or not response.choices:
+        raise RuntimeError(f"El modelo no devolvió una respuesta válida. Es probable que no soporte imágenes o esté caído en Groq.")
+
+    choice = response.choices[0]
+    if not choice.message or choice.message.content is None:
+        raise RuntimeError(f"El modelo devolvió un mensaje vacío. Verifica si el modelo '{modelo}' soporta multimodalidad en Groq.")
+
+    return choice.message.content, tokens
+
+
 # ── Orquestador principal ──────────────────────────────────────────────────────
 
 def evaluar_examen(
@@ -411,6 +512,10 @@ def evaluar_examen(
     # ── 3. Llamar al modelo según backend ──────────────────────────────────────
     if api_backend == "openrouter":
         response_text, tokens = evaluar_con_openrouter(
+            images_bytes, modelo, system_instruction, api_key
+        )
+    elif api_backend == "groq":
+        response_text, tokens = evaluar_con_groq(
             images_bytes, modelo, system_instruction, api_key
         )
     elif _GENAI_SDK == "new":
@@ -471,14 +576,14 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="gemini-2.5-flash",
-        help="Modelo a usar (default: gemini-2.5-flash). Con --api-backend openrouter usa IDs de OpenRouter (ej: qwen/qwen-2.5-vl-72b-instruct:free).",
+        default="llama-3.2-90b-vision-preview",
+        help="Modelo a usar (default: llama-3.2-90b-vision-preview). Con --api-backend openrouter usa IDs de OpenRouter.",
     )
     parser.add_argument(
         "--api-backend",
-        default="gemini",
-        choices=["gemini", "openrouter"],
-        help="Backend de API a usar: gemini (Google) u openrouter (OpenRouter). (default: gemini).",
+        default="groq",
+        choices=["gemini", "openrouter", "groq"],
+        help="Backend de API a usar: gemini, openrouter o groq. (default: groq).",
     )
     parser.add_argument(
         "--dpi",
@@ -522,7 +627,7 @@ def main():
         sys.exit(1)
 
     # ── Validar SDK según backend ──────────────────────────────────────────────
-    if args.api_backend == "openrouter":
+    if args.api_backend in ["openrouter", "groq"]:
         if not _OPENROUTER_AVAILABLE:
             print(json.dumps({
                 "status": "error", "code": 1,
@@ -541,6 +646,15 @@ def main():
     if args.api_backend == "openrouter":
         api_key = os.getenv("OPENROUTER_API_KEY")
         key_name = "OPENROUTER_API_KEY"
+    elif args.api_backend == "groq":
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            try:
+                with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".groq_api_key"), "r") as f:
+                    api_key = f.read().strip()
+            except Exception:
+                pass
+        key_name = "GROQ_API_KEY"
     else:
         api_key = os.getenv("GOOGLE_API_KEY")
         key_name = "GOOGLE_API_KEY"

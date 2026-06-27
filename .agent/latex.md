@@ -551,4 +551,101 @@ Para cadenas extremadamente largas sin espacios (como hashes o URLs):
 > - `docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex`
 > - `execution/generar_informe_imagen.py` (origen del problema — función `tex()`)
 
+---
 
+## 12. `Bad math environment delimiter` por Escapes en f-strings de Python (`\[`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar un documento LaTeX autogenerado por un script Python, la compilación falla repentinamente en líneas de texto o encabezados donde se esperaba un salto de línea con espaciado personalizado (ej. `\\[4pt]`). El error mostrado es:
+
+```text
+! LaTeX Error: Bad math environment delimiter.
+l.68 ...large Examen de Razonamiento y Cálculo}\[
+                                                  8pt]
+```
+
+Posteriormente pueden aparecer errores como `Command \end{equation*} invalid in math mode.` debido a que LaTeX cree que se inició un bloque matemático y nunca se cerró.
+
+### Causa
+
+El generador Python usa *f-strings* regulares (`f"..."`) en lugar de *raw f-strings* (`fr"..."`). 
+Cuando se desea insertar un salto de línea LaTeX con tamaño (ej. `\\[4pt]`), en un f-string normal de Python las barras invertidas dobles `\\` se escapan y se evalúan como una sola barra `\`. 
+
+Por lo tanto, la secuencia Python `\\[4pt]` se imprime en el archivo `.tex` generado como `\[4pt]`. 
+En LaTeX, el comando `\[` es un delimitador de apertura para el entorno de ecuaciones matemáticas sin numeración (`displaymath`). LaTeX interpreta el `\[` como inicio de matemáticas y el `4pt]` como contenido literal de la ecuación, rompiendo la estructura de la página y el compilador.
+
+### Solución
+
+Al utilizar *f-strings* convencionales para generar código LaTeX, se deben agregar **cuatro** barras invertidas consecutivas para producir dos barras reales en el texto de salida.
+
+```python
+# Antes (incorrecto, genera `\[4pt]`):
+head = f"""
+\begin{{center}}
+  {{\Large\bfseries\color{{azulTitulo}} ELECTRÓNICA}}\\[4pt]
+\end{{center}}
+"""
+
+# Después (correcto, genera `\\[4pt]`):
+head = f"""
+\begin{{center}}
+  {{\Large\bfseries\color{{azulTitulo}} ELECTRÓNICA}}\\\\[4pt]
+\end{{center}}
+"""
+```
+
+**Nota:** Si en su lugar usas cadenas raw (`r"..."` o `fr"..."`), no necesitas la doble escapada. `\\[4pt]` en una raw string producirá correctamente `\\[4pt]` en el archivo. Sin embargo, en plantillas grandes con múltiples comandos LaTeX (como `\begin`, `\fancyhead`, etc.), cambiar una cadena normal a raw de golpe puede romper todos los demás comandos donde solo pusiste `\\comando` creyendo que se requería escape.
+
+> **Archivos afectados:**
+> - `execution/generar_examen_latex.py` (Líneas donde se define el encabezado y pie de examen/solucionario).
+
+---
+
+## 13. Símbolos Matemáticos Incompatibles en Modo Texto (`\text{...}`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar un documento que contiene notación matemática generada por un LLM, la compilación falla con cientos de errores en cascada indicando la falta de delimitadores matemáticos o llaves de cierre:
+
+```text
+! Missing } inserted.
+<inserted text>
+                }
+l.182   \rule{0.6\linewidth}{0.4pt} \\[6pt]
+
+! Missing $ inserted.
+<inserted text>
+                $
+```
+
+Estos errores a menudo apuntan erróneamente al final de un bloque, entorno o ecuación (ej. `\rule...`) en lugar de apuntar a la verdadera línea defectuosa donde inició el desajuste de entornos.
+
+### Causa
+
+El problema ocurre porque el código generado insertó macros que son estrictamente matemáticas (como `\Omega` o `\mu`) dentro del comando `\text{...}`, el cual obliga a LaTeX a procesar su contenido en modo texto. 
+
+```latex
+% Incorrecto (Provoca fallos en cascada "Missing $ inserted"):
+La resistencia equivalente es $4.7\text{ k\Omega}$
+El capacitor de entrada es $1\text{ \mu F}$
+```
+
+Cuando LaTeX encuentra `\Omega` en modo texto, intenta forzar la entrada a modo matemático automáticamente, insertando un símbolo `$` que desbalancea el entorno actual, desencadenando múltiples advertencias y deteniendo eventualmente la compilación.
+
+### Solución
+
+Los comandos matemáticos **deben** estar rodeados por el entorno matemático (`$`...`$`). Al utilizar `\text{...}` (proporcionado por `amsmath`), asegúrate de que el texto puro quede dentro y el comando matemático regrese al bloque matemático.
+
+```latex
+% Correcto (Cerrando \text{} antes del símbolo matemático):
+La resistencia equivalente es $4.7\text{ k}\Omega$
+El capacitor de entrada es $1\text{ }\mu\text{F}$
+% o mejor aún:
+El capacitor de entrada es $1\,\mu\text{F}$
+```
+
+**Estrategia automatizada:** En flujos donde el LLM pueda generar frecuentemente errores de sintaxis como `\text{ k\Omega}`, es recomendable aplicar una limpieza (sanitización) mediante expresiones regulares antes de mandar el archivo a compilar con `pdflatex`.
+
+> **Archivos afectados (Históricamente):**
+> - Archivos `.tex` generados automáticamente por el modelo `gemini-2.5-flash` y otros LLMs propensos a cometer descuidos con el anidamiento de `\text{}`.

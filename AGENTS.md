@@ -22,8 +22,8 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 |---|---|---|
 | `execution/env_diagnostic.py` | Diagnóstico del entorno: SO, paquetes, HW, red. |
 | `execution/scrape_single_site.py` | Extrae el contenido principal de una URL y lo guarda en texto. |
-| `execution/analizar_imagen.py` | Analiza imágenes con LLM multimodal (Gemini/OpenRouter) y obtiene descripción JSON. |
-| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Gemini/OpenRouter). |
+| `execution/analizar_imagen.py` | Analiza imágenes con LLM multimodal (Groq/Gemini/OpenRouter) y obtiene descripción JSON. |
+| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Groq/Gemini/OpenRouter). |
 | `execution/generar_informe.py` | Genera informe LaTeX a partir del JSON de evaluación. |
 | `execution/generar_informe_imagen.py` | Genera informe LaTeX a partir del JSON de análisis de imágenes. |
 | `execution/alert_user.py` | Emite alertas audibles (paplay + fallback bell) al completar flujos. |
@@ -73,7 +73,7 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 - **LaTeX:** UTF-8, `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz` para diagramas, `siunitx` para unidades
 - **EDA:** Formato EasyEDA Standard (strings `LIB~...` en `shape[]`, sub-elementos `#@$`, pines con `^^`)
 - **RAG:** Actualizaciones incrementales vía `db_state.json`, embeddings multilingüe, memoria conversacional
-- **3-Layer:** Directives en YAML → Orchestration (agente) → Execution (scripts deterministas)
+- **3-Layer:** Directives en YAML → Orchestration (agente) → Execution (scripts deterministas). Cada vez que se solicite crear un orquestador, debe interpretarse que dicho orquestador debe ir acompañado de un archivo en la carpeta `directives/` y de al menos otro archivo en la carpeta `execution/` para mantener la concordancia con la arquitectura de 3 capas.
 - **Git:** `chroma_db/`, entornos virtuales, `__pycache__/` y auxiliares LaTeX excluidos vía `.gitignore`
 
 ---
