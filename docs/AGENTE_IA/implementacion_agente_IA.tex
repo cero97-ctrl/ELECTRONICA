@@ -1,0 +1,170 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\title{Metodología de 6 Pasos para el\\Diseño y Codificación de Agentes de IA}
+\author{ELECTRONICA}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+La construcción de agentes de inteligencia artificial requiere un enfoque estructurado que garantice claridad, mantenibilidad y resultados predecibles. La siguiente metodología adapta los pasos clásicos del desarrollo de software (PRD, TRD, UI/UX, App Flow, Esquema Backend, Plan de Implementación) al contexto específico de agentes de IA.
+
+\section{Mapa de Adaptación}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{>{\bfseries}p{3cm} p{5.5cm} p{5.5cm}}
+\toprule
+\textbf{Paso} & \textbf{En App Convencional} & \textbf{En Agente de IA} \\
+\midrule
+PRD & Funcionalidades de usuario & Capacidades del agente, tools que necesita, límites \\
+\midrule
+TRD & Stack web (React, Django, etc.) & Modelo/API, vector store, framework de agente (LangChain, CrewAI), tools, memoria \\
+\midrule
+Diseño UI/UX & Pantallas y componentes & Interfaz de interacción (CLI, chat, web) y \textit{experience} del agente (system prompt, tone) \\
+\midrule
+App Flow & Navegación entre vistas & Flujo de razonamiento $\rightarrow$ tool call $\rightarrow$ validación $\rightarrow$ respuesta (con \textit{humans-in-the-loop} si aplica) \\
+\midrule
+Esquema Backend & DB, endpoints, lógica & System prompt, tools/skills, memoria (RAG/Chroma), orquestación multi-agente \\
+\midrule
+Plan Impl. & Sprints por feature & Iterar: prompt $\rightarrow$ tool $\rightarrow$ validar $\rightarrow$ registrar errores en memoria $\rightarrow$ refinar \\
+\bottomrule
+\end{tabular}
+\caption{Adaptación de la metodología de 6 pasos al desarrollo de agentes de IA.}
+\label{tab:adaptacion}
+\end{table}
+
+\section{Desglose de Cada Paso}
+
+\subsection{PRD --- \textit{Product Requirements Document}}
+
+Define el \textbf{qué} y el \textbf{para quién} del agente.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Propósito:} ¿Qué problema resuelve el agente?
+  \item \textbf{Capacidades:} Lista de habilidades concretas (responder preguntas técnicas, generar código, evaluar exámenes, etc.).
+  \item \textbf{Tools necesarias:} Acceso a web, sistema de archivos, APIs externas, bases de datos vectoriales.
+  \item \textbf{Límites:} Restricciones explícitas (no ejecutar código arbitrario, no acceder a ciertos directorios, etc.).
+  \item \textbf{Usuarios:} ¿Quién interactúa con el agente? ¿Desarrolladores, estudiantes, operadores?
+\end{itemize}
+
+\subsection{TRD --- \textit{Technical Requirements Document}}
+
+Define el \textbf{cómo} desde la perspectiva técnica.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Modelo base:} LLM seleccionado (GPT-4, Llama 3, Groq, etc.) y parámetros de inferencia.
+  \item \textbf{Framework de agente:} LangChain, CrewAI, AutoGen, o implementación propia.
+  \item \textbf{Vector store:} ChromaDB, Pinecone, Weaviate para memoria a largo plazo (RAG).
+  \item \textbf{Memoria conversacional:} Buffer de historial, resumen, o memoria híbrida.
+  \item \textbf{Stack de ejecución:} Entorno Conda, contenedores Docker, sandboxing.
+  \item \textbf{APIs externas:} Conexiones a servicios (Groq, OpenRouter, Google Gemini, etc.).
+\end{itemize}
+
+\subsection{Diseño UI/UX}
+
+Define la \textbf{interfaz de interacción} y la \textbf{personalidad} del agente.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Interfaz:} CLI, chat web (Streamlit/Gradio), integración en editor (VS Code), o API.
+  \item \textbf{System prompt:} Tono, rol, reglas de comportamiento y restricciones.
+  \item \textbf{Feedback:} Indicadores de progreso, manejo de errores amigable, confirmaciones antes de acciones destructivas.
+  \item \textbf{Accesibilidad:} Multi-idioma, formato de respuestas (markdown, LaTeX, texto plano).
+\end{itemize}
+
+\section{Arquitectura de Núcleo: El Bucle Orquestador-LLM}
+
+El corazón de un agente de IA es un \textbf{script orquestador} que actúa como middleware entre el usuario y uno o varios modelos de lenguaje (LLMs). Este orquestador no es un mero enrutador: construye dinámicamente los prompts con contexto relevante (memoria, herramientas disponibles, historial), decide qué LLM invocar según la tarea, ejecuta las llamadas a las APIs, valida y post-procesa las respuestas, y finalmente presenta el resultado al usuario.
+
+\begin{center}
+\framebox[\textwidth]{
+\begin{minipage}{0.9\textwidth}
+\small
+\textbf{Ciclo fundamental:} \\
+Usuario $\xrightarrow{\text{consulta}}$ Orquestador $\xrightarrow{\text{prompt + contexto}}$ LLM(s) $\xrightarrow{\text{respuesta cruda}}$ Orquestador $\xrightarrow{\text{validación + post-procesado}}$ Usuario
+\end{minipage}
+}
+\end{center}
+
+\subsection{Responsabilidades del Orquestador}
+
+\begin{enumerate}[leftmargin=*]
+  \item Recibir la consulta del usuario.
+  \item Enriquecerla con contexto: memoria a largo plazo (RAG), historial conversacional, herramientas disponibles, directivas del proyecto.
+  \item Decidir qué LLM o secuencia de LLMs invocar (ej. Groq para rapidez, Gemini para multimodal, OpenRouter como respaldo).
+  \item Construir el prompt final con system instructions + contexto + consulta.
+  \item Ejecutar la(s) llamada(s) a la(s) API(s) del LLM.
+  \item Validar la respuesta cruda: esquema JSON, coherencia, integridad.
+  \item Post-procesar: limpiar trailing commas, extraer bloques, formatear salida.
+  \item Actualizar el estado y la memoria con el resultado.
+  \item Devolver la respuesta al usuario.
+\end{enumerate}
+
+\subsection{App Flow}
+
+Define el \textbf{flujo de razonamiento y acción} completo del agente.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Ciclo principal (detallado):}
+  \begin{enumerate}
+    \item Recibir entrada del usuario.
+    \item Consultar memoria (RAG) para contexto relevante.
+    \item Construir prompt enriquecido: system prompt + herramientas + memoria + consulta.
+    \item Seleccionar LLM según tipo de tarea (texto, imagen, código).
+    \item Ejecutar llamada a la API del LLM.
+    \item Validar y sanitizar la respuesta del LLM.
+    \item Si la respuesta requiere acción (tool call), ejecutar la herramienta y realimentar el resultado al LLM.
+    \item Generar respuesta final al usuario.
+    \item Guardar la interacción en la memoria persistente.
+  \end{enumerate}
+  \item \textbf{Puntos de decisión:} ¿Cuándo preguntar al usuario? ¿Cuándo abortar? ¿Cuándo cambiar de LLM?
+  \item \textbf{Handoff:} Si hay múltiples agentes, ¿cómo se delegan tareas entre orquestadores?
+  \item \textbf{Recuperación de errores:} Retry budget (máximo 3 intentos), escalado a humano, logging en \texttt{.tmp/run\_state.json}.
+\end{itemize}
+
+\subsection{Esquema Backend}
+
+Define la \textbf{arquitectura interna} del agente.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{System prompt:} Documento maestro con instrucciones, contexto del proyecto, registro de errores previos.
+  \item \textbf{Tools/Skills:} Catálogo de funciones ejecutables (scraping, EDA, cálculos, generación de informes).
+  \item \textbf{Memoria persistente:} Base de datos vectorial (ChromaDB) con embeddings de documentos y conversaciones.
+  \item \textbf{Script orquestador (Layer 2):} Capa central que decide qué LLM invocar, construye los prompts con contexto (memoria + tools + directivas), ejecuta las llamadas a las APIs, valida y post-procesa las respuestas. Es el \textit{middleware} entre el usuario y los LLMs.
+  \item \textbf{Tools/Skills (Layer 3):} Funciones deterministas (scripts Python) que el orquestador invoca según la decisión del LLM: scraping, EDA, generación de informes, etc.
+  \item \textbf{Estado de ejecución:} Archivo JSON de estado (\texttt{.tmp/run\_state.json}) para trazabilidad y recuperación.
+\end{itemize}
+
+\subsection{Plan de Implementación}
+
+Define el \textbf{cómo se construye} el agente de forma iterativa.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Fase 1 --- Base:} System prompt + tool de diagnóstico + interacción CLI básica.
+  \item \textbf{Fase 2 --- Memoria:} Integración de RAG (ChromaDB + embeddings).
+  \item \textbf{Fase 3 --- Habilidades:} Incorporación de tools específicas (scraping, EDA, evaluación).
+  \item \textbf{Fase 4 --- Robusteza:} Manejo de errores, logging, retry budget, auto-corrección.
+  \item \textbf{Fase 5 --- Refinamiento:} Iterar sobre la base de errores registrados, mejorar prompts, añadir nuevas capacidades.
+\end{itemize}
+
+\section{Conclusión}
+
+Esta metodología separa la \textbf{intención} (PRD) de la \textbf{ejecución} (TRD, Backend) y la \textbf{experiencia} (UI/UX, App Flow), permitiendo iterar sobre cada capa sin acoplamiento excesivo. El resultado es un agente de IA cuyo comportamiento es predecible, depurable y mejorable de forma sistemática.
+
+\end{document}
