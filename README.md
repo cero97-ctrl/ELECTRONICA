@@ -27,6 +27,12 @@ Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + Llama 
 ### Agente EDA (`agent_eda.py`)
 Extrae netlists/BOM de esquemas LaTeX circuitikz y genera JSON para EasyEDA Standard.
 
+### Análisis de Imágenes (`flujo_analizar_imagen.py`)
+Orquestador que ejecuta el flujo completo de análisis visual:
+1. `analizar_imagen.py` — Analiza imágenes con Gemini/OpenRouter (multimodal)
+2. `generar_informe_imagen.py` — Genera informe LaTeX con resultados
+3. `alert_user.py` — Notifica con alerta audible al completar
+
 ### Evaluación de Exámenes y Prácticas (`flujo_evaluar_examen.py`)
 Orquestador que ejecuta el flujo completo de evaluación:
 1. `evaluar_examen.py` — Evalúa PDF con Gemini/OpenRouter (multimodal)
@@ -39,8 +45,10 @@ YAML personalizadas en `directives/rubricas/`.
 ### Scripts de Ejecución (`execution/`)
 - `env_diagnostic.py` — Diagnóstico del entorno (SO, paquetes, HW, red)
 - `scrape_single_site.py` — Extrae contenido principal de una URL
+- `analizar_imagen.py` — Analiza imágenes con LLM multimodal (Gemini/OpenRouter)
 - `evaluar_examen.py` — Evaluación con LLM multimodal (Gemini/OpenRouter)
 - `generar_informe.py` — Genera informe LaTeX desde JSON de evaluación
+- `generar_informe_imagen.py` — Genera informe LaTeX desde JSON de análisis de imágenes
 - `alert_user.py` — Emite alertas audibles (paplay + fallback bell)
 
 ### Utilidades
@@ -84,6 +92,12 @@ python rag_system.py --update   # forzar reconstrucción de la base vectorial
 python agent_eda.py
 ```
 
+**Analizar imágenes con IA multimodal:**
+```bash
+python flujo_analizar_imagen.py "docs/IMAGENES/*.jpg" --prompt "Describe este circuito"
+python flujo_analizar_imagen.py foto1.jpg,foto2.jpg --modelo gemini-1.5-pro
+```
+
 **Evaluar un examen escrito de Electrónica:**
 ```bash
 python flujo_evaluar_examen.py --pdf "cursos/INT_ELECTRONICA/examenes/02/examen_estudiante/alumno.pdf"
@@ -107,12 +121,12 @@ python execution/env_diagnostic.py
 
 | Directorio | Descripción |
 |---|---|
-| `docs/` | Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.) |
+| `docs/` | Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.) |
 | `cursos/` | Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/) |
 | `.agent/` | Instrucciones del sistema para el agente IA (10 archivos .md) |
-| `directives/` | SOPs en YAML para flujos de trabajo repetibles (13 archivos) |
+| `directives/` | SOPs en YAML para flujos de trabajo repetibles (14 archivos) |
 | `directives/rubricas/` | Rúbricas YAML para evaluación de prácticas de laboratorio |
-| `execution/` | Scripts Python deterministas (5 archivos) |
+| `execution/` | Scripts Python deterministas (7 archivos) |
 | `Agente_EDA/` | Recursos para el agente EDA (schemas, pruebas) |
 | `chroma_db/` | *(Autogenerado)* Base de datos vectorial local |
 | `.tmp/` | Archivos temporales y estado de ejecución (`run_state.json`) |
