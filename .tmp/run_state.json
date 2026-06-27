@@ -1,26 +1,26 @@
 {
-  "run_id": "flujo-examen_Sebastian_Pulido-2026-06-26T16-25-49",
+  "run_id": "flujo-examen_Tirzo_Mata-2026-06-27T10-43-07",
   "directive": "evaluar_examen_estudiante.yaml",
-  "estudiante": "Sebastian Pulido",
-  "pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/02/examen_estudiante/examen_Sebastian_Pulido.pdf",
-  "started_at": "2026-06-26T16:25:49.277814+00:00",
-  "last_updated": "2026-06-26T16:26:43.848521+00:00",
+  "estudiante": "Tirzo Mata",
+  "pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/examen_estudiante/examen_Tirzo_Mata.pdf",
+  "started_at": "2026-06-27T10:43:07.997960+00:00",
+  "last_updated": "2026-06-27T10:43:44.973820+00:00",
   "current_step": 3,
   "steps_completed": [
     {
       "step": 1,
       "script": "evaluar_examen.py",
       "status": "ok",
-      "puntaje_sugerido": "6.0/10",
-      "nivel_desempeno": "Suficiente",
-      "tokens_total": 7719,
-      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/evaluacion_examen_Sebastian_Pulido.json"
+      "puntaje_sugerido": "10.0/10",
+      "nivel_desempeno": "Excelente",
+      "tokens_total": 8452,
+      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/evaluacion_examen_Tirzo_Mata.json"
     },
     {
       "step": 2,
       "script": "generar_informe.py",
       "status": "ok",
-      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/02/informe_examen/informe_examen_Sebastian_Pulido.tex"
+      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/informe_examen/informe_examen_Tirzo_Mata.tex"
     },
     {
       "step": 3,
@@ -31,8 +31,8 @@
   ],
   "steps_failed": [],
   "context": {
-    "puntaje": "6.0/10",
-    "nivel": "Suficiente",
-    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/02/informe_examen/informe_examen_Sebastian_Pulido.tex"
+    "puntaje": "10.0/10",
+    "nivel": "Excelente",
+    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/informe_examen/informe_examen_Tirzo_Mata.tex"
   }
 }
