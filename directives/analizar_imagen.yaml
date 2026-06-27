@@ -1,0 +1,118 @@
+goal: >
+  Analizar una o más imágenes (JPG/PNG) utilizando un modelo multimodal (Gemini/OpenRouter)
+  y obtener una descripción estructurada en JSON con el contenido, elementos detectados,
+  texto extraído y observaciones relevantes según el contexto especificado.
+
+required_inputs:
+  - name: imagenes
+    description: >
+      Ruta(s) a los archivos de imagen (.jpg, .jpeg, .png). Se puede pasar una lista
+      separada por comas o un patrón glob (ej. "*.jpg"). Ejemplo: fotos/circuito.jpg
+  - name: modelo
+    description: >
+      Modelo multimodal a utilizar. Opciones: gemini-2.5-flash (default, más rápido y económico),
+      gemini-1.5-pro (más potente), o modelos de OpenRouter con soporte de visión
+      (ej. qwen/qwen-2.5-vl-72b-instruct:free).
+    default: gemini-2.5-flash
+  - name: prompt
+    description: >
+      Instrucción o contexto para guiar el análisis de las imágenes.
+      Ejemplo: "Analiza este diagrama de circuito e identifica cada componente con su valor."
+    default: "Describe detalladamente lo que ves en la(s) imagen(es)."
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de análisis: lee las imágenes desde el disco, las convierte
+      a PNG en memoria (si es necesario) y las envía al LLM multimodal junto con el
+      prompt de análisis. Recibe la respuesta estructurada en JSON.
+    script: "execution/analizar_imagen.py"
+    inputs:
+      --imagenes: "{{imagenes}}"
+      --modelo: "{{modelo}}"
+      --prompt: "{{prompt}}"
+    expected_output: >
+      JSON con las claves: status, archivos_procesados, modelo, analisis (con
+      descripcion_general, elementos_detectados, texto_extraido, observaciones),
+      tokens_usados, timestamp.
+
+  - step: 2
+    description: >
+      Guardar el resultado JSON en .tmp/ para auditoría y presentar el análisis
+      al usuario de forma legible.
+    script: "interno (orquestación del agente)"
+    inputs:
+      resultado: "output_del_paso_1"
+    expected_output: >
+      Resumen formateado en texto mostrando: archivos analizados, descripción general,
+      elementos detectados y observaciones.
+
+  - step: 3
+    description: >
+      Emitir alerta audible de completado al usuario.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok y confirmación de alerta emitida.
+
+expected_outputs:
+  - name: analisis_json
+    description: >
+      Objeto JSON completo con el análisis de las imágenes, guardado en .tmp/
+      y presentado al usuario con formato legible.
+  - name: resumen_impreso
+    description: >
+      Resumen en texto plano con los puntos más relevantes del análisis.
+
+edge_cases:
+  - case: "Los archivos de imagen no existen o la ruta es incorrecta"
+    recovery: >
+      El script retorna código 1 con mensaje claro. Verificar que las rutas sean
+      correctas y los archivos tengan extensiones .jpg, .jpeg, o .png.
+
+  - case: "GOOGLE_API_KEY u OPENROUTER_API_KEY no está definida en .env"
+    recovery: >
+      El script retorna código 2. Copiar .env.example como .env y agregar la API key
+      correspondiente al backend seleccionado.
+
+  - case: "Error 429 (quota exceeded) de la API"
+    recovery: >
+      Esperar 60 segundos y reintentar. Si persiste, cambiar a un modelo con mayor cuota.
+      Máximo 3 reintentos, luego escalar al usuario.
+
+  - case: "Las imágenes son demasiado grandes (>20 MB total)"
+    recovery: >
+      Reducir la resolución de las imágenes antes de enviarlas o analizar una por una.
+      El script ya redimensiona imágenes que exceden 2048px en su lado más largo.
+
+  - case: "El modelo no retorna JSON válido (respuesta malformada)"
+    recovery: >
+      El script retorna código 4. Reintentar una vez con temperatura más baja (ya está en 0.2).
+      Si falla 3 veces, cambiar de modelo y documentar el caso en esta directiva.
+
+  - case: "No se proporciona ningún prompt de análisis"
+    recovery: >
+      El script usa un prompt por defecto ("Describe detalladamente lo que ves en la(s) imagen(es).")
+      para un análisis general.
+
+  - case: "Formato de imagen no soportado"
+    recovery: >
+      El script valida las extensiones (.jpg, .jpeg, .png). Si el archivo tiene otra extensión,
+      se omite con una advertencia.
+
+metadata:
+  version: "1.0"
+  created: "2026-06-27"
+  author: "agente"
+  script_principal: "execution/analizar_imagen.py"
+  dependencias:
+    - "Pillow>=10.0.0"
+    - "google-generativeai>=0.8.0"
+    - "python-dotenv>=1.0.0"
+  env_vars_requeridas:
+    - "GOOGLE_API_KEY"
+    - "OPENROUTER_API_KEY"
+  notas: >
+    Esta directiva analiza UN lote de imágenes a la vez. Para procesar imágenes
+    de forma recurrente, usar un bucle en el orquestador.

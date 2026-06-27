@@ -395,3 +395,160 @@ Usar la notación con `e` que `siunitx` sí reconoce, o escribir el número dire
 > **Nota:** La notación `e` de `siunitx` es equivalente a $\times 10^n$. Por ejemplo, `\SI{4.7e-6}{\farad}` produce "4.7 × 10⁻⁶ F". Si se necesita mostrar explícitamente la potencia de 10 como parte de una expresión matemática, se debe usar modo math puro fuera de `\SI`: `$10^3\,\si{\ohm}$`.
 
 > **Archivo afectado:** `cursos/INT_ELECTRONICA/ejercicios/03/problemario_sems_4_5.tex`
+
+---
+
+## 10. Uso de `\\` Dentro de `\multicolumn` en un Entorno `tabular`
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con una cascada de errores que comienza con:
+
+```text
+! Missing \endgroup inserted.
+l.78 ...{imagen\_1.jpeg}\\\texttt{imagen\_2.jpeg}}
+! Missing } inserted.
+l.79 \end
+! Missing \cr inserted.
+l.79 \end
+! Misplaced \cr.
+l.79 \end
+```
+
+Latexmk puede además cachear el error y reportar en ejecuciones posteriores:
+
+```text
+Collected error summary (may duplicate other messages):
+  pdflatex: gave an error in previous invocation of latexmk.
+```
+
+### Causa
+
+En un entorno `tabular`, el comando `\\` tiene un significado especial: indica el fin de una fila de la tabla. Cuando se utiliza `\\` dentro de un `\multicolumn{...}{...}{...}` para intentar insertar un salto de línea dentro de una celda, LaTeX lo interpreta como un terminador de fila, rompiendo la estructura de la tabla y generando errores en cascada de `Missing \endgroup`, `Missing }` y `Misplaced \cr`.
+
+En este caso, el script generador `execution/generar_informe_imagen.py` unía los nombres de archivos con `\\\\` (que produce `\\` en el LaTeX generado) dentro de un `\multicolumn`:
+
+```python
+# Código Python que generaba el error:
+archivos_items = "\\\\".join(
+    f"\\texttt{{{tex(Path(a).name)}}}" for a in archivos
+)
+# Producía: \texttt{imagen\_1.jpeg}\\\texttt{imagen\_2.jpeg}
+# Dentro de: \multicolumn{3}{l}{...}
+```
+
+### Solución
+
+#### Opción A: Separar con comas (Aplicada)
+
+Unir los nombres de archivo con comas en lugar de `\\`:
+
+```python
+# Correcto:
+archivos_items = ", ".join(
+    f"\\texttt{{{tex(Path(a).name)}}}" for a in archivos
+)
+```
+
+Produce:
+
+```latex
+\textbf{Archivos:} & \multicolumn{3}{l}{\texttt{imagen\_1.jpeg}, \texttt{imagen\_2.jpeg}} \\
+```
+
+#### Opción B: Usar `\newline` en lugar de `\\`
+
+Si se necesita un archivo por línea dentro de la celda, usar `\newline` que funciona dentro de `\multicolumn`:
+
+```latex
+% Correcto con \newline:
+\textbf{Archivos:} & \multicolumn{3}{l}{\texttt{imagen\_1.jpeg}\newline\texttt{imagen\_2.jpeg}} \\
+```
+
+#### Opción C: Usar una `tabularx` con `p{}`/`m{}` o un `\parbox`
+
+Para listas más largas, envolver en un `\parbox` o usar columnas de ancho fijo:
+
+```latex
+\textbf{Archivos:} & \multicolumn{3}{l}{\parbox[t]{10cm}{%
+  \texttt{imagen\_1.jpeg}\\
+  \texttt{imagen\_2.jpeg}%
+}} \\
+```
+
+> **Regla general:** Nunca usar `\\` directamente dentro de `\multicolumn` en un `tabular`. Usar `, `, `\newline`, o envolver en `\parbox`.
+
+> **Archivo afectado:** `execution/generar_informe_imagen.py` (generador automático de informes LaTeX)
+
+---
+
+## 11. Líneas que Sobresalen del Margen Derecho por Rutas Windows Largas (`\textbackslash\{\}`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, el log reporta múltiples advertencias de `Overfull \hbox`:
+
+```text
+Overfull \hbox (63.15594pt too wide) in paragraph at lines 96--97
+Overfull \hbox (11.99368pt too wide) in paragraph at lines 111--118
+Overfull \hbox (127.7444pt too wide) in paragraph at lines 119--127
+```
+
+En el PDF resultante, las líneas afectadas sobresalen visiblemente por el margen derecho de la página.
+
+### Causa
+
+Las rutas de archivos Windows se escaparon usando secuencias `\textbackslash\{\}` para representar cada barra invertida. Por ejemplo:
+
+```latex
+C:\textbackslash\{\}Users\textbackslash\{\}E550\textbackslash\{\}Desktop\textbackslash\{\}CYBERSEGURIDAD\textbackslash\{\}venv\textbackslash\{\}Lib\textbackslash\{\}site-packages\textbackslash\{\}impacket\textbackslash\{\}spnego.py
+```
+
+Esta secuencia produce una cadena monolítica sin puntos de ruptura de línea. LaTeX no puede insertar saltos en ninguna posición dentro de la cadena, por lo que la línea completa se extiende más allá del margen cuando la ruta es suficientemente larga.
+
+El problema se origina en la función `tex()` del script generador `execution/generar_informe_imagen.py`, que escapa la barra invertida `\` a `\textbackslash{}` y las llaves `{` `}` a `\{` `\}`, produciendo la combinación `\textbackslash\{\}` que es correcta semánticamente pero no permite ruptura.
+
+### Solución
+
+#### Opción A: Usar `\path{}` del paquete `url` (Aplicada)
+
+El paquete `url` (incluido con `\usepackage{url}`) proporciona el comando `\path{}` que renderiza rutas de archivo en fuente monoespaciada y permite saltos de línea automáticos en los separadores (`\`, `/`, `.`):
+
+```latex
+% En el preámbulo:
+\usepackage{url}
+
+% En el cuerpo:
+\path{C:\Users\E550\Desktop\CYBERSEGURIDAD\venv\Lib\site-packages\impacket\spnego.py}
+```
+
+> **Nota:** Dentro de `\path{}` no se necesita escapar las barras invertidas ni los guiones bajos — el comando los maneja literalmente, similar a `\verb`.
+
+#### Opción B: Agregar `\sloppy` y `\emergencystretch` como medida general
+
+Para dar más flexibilidad al algoritmo de ruptura de líneas en todo el documento:
+
+```latex
+% En el preámbulo:
+\sloppy
+\emergencystretch 3em
+```
+
+Esto permite que LaTeX acepte espacios inter-palabra más amplios antes de reportar un overfull, reduciendo los desbordes en párrafos con palabras largas o monoespaciadas. No es una solución específica para rutas, pero ayuda como complemento.
+
+#### Opción C: Envolver en `\seqsplit{}` del paquete `seqsplit`
+
+Para cadenas extremadamente largas sin espacios (como hashes o URLs):
+
+```latex
+\usepackage{seqsplit}
+\texttt{\seqsplit{C:\textbackslash{}Users\textbackslash{}E550\textbackslash{}...}}
+```
+
+> **Regla general para rutas de archivo:** Usar siempre `\path{}` (del paquete `url`) para rutas Windows/Unix en lugar de escaparlas manualmente con `\textbackslash\{\}`. El comando `\path{}` es más legible en el fuente LaTeX y produce saltos de línea automáticos en el PDF.
+
+> **Archivos afectados:**
+> - `docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex`
+> - `execution/generar_informe_imagen.py` (origen del problema — función `tex()`)
+
+

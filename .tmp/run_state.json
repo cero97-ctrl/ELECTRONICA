@@ -1,29 +1,36 @@
 {
-  "run_id": "flujo-examen_Tirzo_Mata-2026-06-27T10-43-07",
-  "directive": "evaluar_examen_estudiante.yaml",
-  "estudiante": "Tirzo Mata",
-  "pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/examen_estudiante/examen_Tirzo_Mata.pdf",
-  "started_at": "2026-06-27T10:43:07.997960+00:00",
-  "last_updated": "2026-06-27T10:43:44.973820+00:00",
-  "current_step": 3,
+  "run_id": "flujo-imagen-2026-06-27T15-55-49",
+  "directive": "analizar_imagen.yaml",
+  "imagenes": "docs/IMAGENES/imagen_1.jpeg,docs/IMAGENES/imagen_2.jpeg",
+  "started_at": "2026-06-27T15:55:49.267268+00:00",
+  "last_updated": "2026-06-27T15:56:12.360435+00:00",
+  "current_step": 4,
   "steps_completed": [
     {
       "step": 1,
-      "script": "evaluar_examen.py",
+      "script": "analizar_imagen.py",
       "status": "ok",
-      "puntaje_sugerido": "10.0/10",
-      "nivel_desempeno": "Excelente",
-      "tokens_total": 8452,
-      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/evaluacion_examen_Tirzo_Mata.json"
+      "archivos": [
+        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_1.jpeg",
+        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_2.jpeg"
+      ],
+      "descripcion": "Dos capturas de pantalla de la interfaz de Seguridad de Windows que muestran alertas de seguridad de nivel de gravedad 'Alta'. El sistema ha detectado y bloqueado herramientas de hacking basadas en Python (Impacket) dentro de un entorno virtual de desarrollo dedicado a la ciberseguridad.",
+      "tokens_total": 4928,
+      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/analisis_imagen_1_imagen_2.json"
     },
     {
       "step": 2,
-      "script": "generar_informe.py",
+      "script": "generar_informe_imagen.py",
       "status": "ok",
-      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/informe_examen/informe_examen_Tirzo_Mata.tex"
+      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex"
     },
     {
       "step": 3,
+      "script": "presentación",
+      "status": "ok"
+    },
+    {
+      "step": 4,
       "script": "alert_user.py",
       "status": "ok",
       "tipo": "success"
@@ -31,8 +38,11 @@
   ],
   "steps_failed": [],
   "context": {
-    "puntaje": "10.0/10",
-    "nivel": "Excelente",
-    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/01/informe_examen/informe_examen_Tirzo_Mata.tex"
+    "archivos": [
+      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_1.jpeg",
+      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/imagen_2.jpeg"
+    ],
+    "descripcion": "Dos capturas de pantalla de la interfaz de Seguridad de Windows que muestran alertas de seguridad de nivel de gravedad 'Alta'. El sistema ha detectado y bloqueado herramientas de hacking basadas en Python (Impacket) dentro de un entorno virtual de desarrollo dedicado a la ciberseguridad.",
+    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_imagen_1_imagen_2.tex"
   }
 }
