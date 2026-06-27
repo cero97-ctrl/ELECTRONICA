@@ -120,7 +120,7 @@ python execution/env_diagnostic.py
 
 | Directorio | Descripción |
 |---|---|
-| `docs/` | Documentación técnica y académica (19 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, etc.) |
+| `docs/` | Documentación técnica y académica (20 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, MANUAL/, etc.) |
 | `cursos/` | Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/) |
 | `.agent/` | Instrucciones del sistema para el agente IA (10 archivos .md) |
 | `directives/` | SOPs en YAML para flujos de trabajo repetibles (14 archivos) |
