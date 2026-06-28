@@ -82,18 +82,89 @@ _LATEX_ESCAPE = [
 _MATH_PATTERN = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
 
 
+def _fix_math_ascii_greek(math_part: str) -> str:
+    """Convierte nombres ASCII de letras griegas a comandos LaTeX dentro de $...$.
+
+    Usa un solo regex por pass (lowercase / uppercase) para evitar que
+    reemplazos posteriores actúen dentro de reemplazos anteriores.
+    Las minúsculas requieren lookbehind de no-letra para evitar falsos
+    positivos dentro de palabras (ej. 'mu' dentro de 'emu').
+    Las mayúsculas permiten letras antes (ej. 'kOmega' → 'k\\Omega').
+    """
+    # Minúsculas: solo precedidas por no-letra (número, espacio, $, puntuación)
+    re_lower = re.compile(
+        r'(?<!\\)(?<![a-zA-Z])(' + '|'.join([
+            'varepsilon', 'vartheta', 'varphi', 'varsigma',
+            'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta',
+            'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu',
+            'nu', 'omicron', 'pi', 'rho', 'sigma', 'tau',
+            'upsilon', 'phi', 'chi', 'psi', 'omega',
+        ]) + r')(?![a-zA-Z])'
+    )
+    math_part = re_lower.sub(lambda m: '\\' + m.group(1), math_part)
+
+    # Mayúsculas: permiten prefijo de letra (k, M, G antes de Omega)
+    re_upper = re.compile(
+        r'(?<!\\)(' + '|'.join([
+            'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta',
+            'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu',
+            'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau',
+            'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega',
+        ]) + r')(?![a-zA-Z])'
+    )
+    math_part = re_upper.sub(lambda m: '\\' + m.group(1), math_part)
+
+    return math_part
+
+
+def _fix_math_ascii_commands(math_part: str) -> str:
+    """Convierte nombres ASCII de comandos matemáticos comunes a LaTeX dentro de $...$."""
+    _MATH_ASCII_CMDS = re.compile(
+        r'(?<!\\)(?<![a-zA-Z])(' + '|'.join([
+            'approx', 'cdot', 'circ', 'partial', 'nabla', 'infty',
+            'propto', 'sim', 'equiv', 'cong', 'neg', 'wedge', 'vee',
+            'subset', 'supset', 'subseteq', 'supseteq',
+            'rightarrow', 'leftarrow', 'Rightarrow', 'Leftarrow',
+            'leftrightarrow', 'Leftrightarrow', 'mapsto', 'longrightarrow',
+            'Longrightarrow', 'longmapsto',
+            'langle', 'rangle', 'lceil', 'rceil', 'lfloor', 'rfloor',
+            'perp', 'top', 'bot',
+            'angle', 'measuredangle',
+            'triangle', 'triangledown',
+            'forall', 'exists', 'nexists',
+            'varnothing', 'emptyset',
+            'aleph', 'hbar', 'ell', 'imath', 'jmath',
+            'Re', 'Im',
+            'log', 'ln', 'lg', 'exp', 'sin', 'cos', 'tan', 'cot',
+            'sec', 'csc', 'arcsin', 'arccos', 'arctan',
+            'sinh', 'cosh', 'tanh', 'coth',
+            'max', 'min', 'sup', 'inf', 'lim', 'det', 'arg',
+        ]) + r')(?![a-zA-Z])'
+    )
+    return _MATH_ASCII_CMDS.sub(lambda m: '\\' + m.group(1), math_part)
+
+
 def tex(s: str) -> str:
     if not s:
         return ""
     # Arreglar errores comunes de los LLMs al querer generar saltos de línea
     s = s.replace("$\\$", "\n\n")
     s = s.replace("$\\\\$", "\n\n")
+    # LLMs a veces emiten caracteres de control (tab, form-feed) en lugar de \\
+    s = s.replace("\t", "\\")
+    s = s.replace("\f", "\\")
     for char, repl in _UNICODE_TO_LATEX:
         s = s.replace(char, repl)
     parts = _MATH_PATTERN.split(s)
     result = []
     for part in parts:
         if part.startswith("$"):
+            part = _fix_math_ascii_greek(part)
+            part = _fix_math_ascii_commands(part)
+            part = part.replace("\\imes", "\\times")
+            part = part.replace("\\rac", "\\frac")
+            part = part.replace("\\au", "\\tau")
+            part = part.replace("\\%", "%").replace("%", "\\%")
             result.append(part)
         else:
             for char, repl in _LATEX_ESCAPE:

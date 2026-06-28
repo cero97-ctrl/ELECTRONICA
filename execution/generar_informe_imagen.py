@@ -92,6 +92,11 @@ def tex(s: str) -> str:
         if i % 2 == 0:
             for char, repl in _LATEX_ESCAPE:
                 part = part.replace(char, repl)
+        else:
+            part = part.replace("\\imes", "\\times")
+            part = part.replace("\\rac", "\\frac")
+            part = part.replace("\\au", "\\tau")
+            part = part.replace("\\%", "%").replace("%", "\\%")
         result.append(part)
     return "$".join(result)
 

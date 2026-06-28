@@ -1,0 +1,135 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{parskip}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{Informe de Análisis} --- Imágenes}
+\fancyhead[R]{\small 2026-06-28}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces y URLs ──────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+\usepackage{url}
+\def\path#1{\url{#1}}
+
+% ── Permitir saltos de línea más flexibles ───────────────────────────────────
+\sloppy
+\emergencystretch 3em
+
+% ── Colores personalizados ────────────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+
+% ── Estilos de cajas ─────────────────────────────────────────────────────────
+\tcbset{
+  cajaTitulo/.style={
+    enhanced, breakable,
+    colback=azulTitulo!8, colframe=azulTitulo,
+    fonttitle=\bfseries\large, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulTitulo},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    colback=grisFondo, colframe=gray!50,
+    fonttitle=\bfseries, coltitle=black,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA ══════════════════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Análisis de Imágenes}\\[4pt]
+  {\large Informe de Análisis}\\[12pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  \rule{\linewidth}{0.6pt}
+\end{center}
+
+% ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{tcolorbox}[cajaTitulo, title=Datos del análisis]
+\begin{tabular}{@{}llll@{}}
+  \textbf{Fecha:}       & 2026-06-28  &
+  \textbf{Modelo usado:} & gemini-2.5-flash \\[4pt]
+  \textbf{Archivos:}    & \multicolumn{3}{l}{\texttt{555.png}} \\
+\end{tabular}
+\end{tcolorbox}
+
+% ══ DESCRIPCIÓN GENERAL ══════════════════════════════════════════════════════
+\section*{Descripción general}
+La imagen muestra un diagrama esquemático de un circuito electrónico basado en el temporizador 555, configurado para controlar un LED. El circuito parece ser un multivibrador astable, utilizando una red RC para la temporización y un LED conectado a la salida para indicar el estado.
+
+% ══ ELEMENTOS DETECTADOS ═════════════════════════════════════════════════════
+\section*{Elementos detectados}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item \textbf{Circuito Integrado 555 Timer}: El componente central del circuito, etiquetado como '555 Timer'. Se muestran sus ocho pines numerados y etiquetados (Pin1 a Pin8). Pin 8 (VCC) y Pin 4 (Reset) están conectados a la línea de alimentación positiva. Pin 1 (GND) está conectado a tierra. Pin 7 (Discharge) está conectado a la unión de dos resistencias. Pin 6 (Threshold) y Pin 2 (Trigger) están unidos y conectados a la red de temporización RC. Pin 5 (Control Voltage) está conectado a tierra a través de un condensador. Pin 3 (Output) está conectado a un LED a través de una resistencia.
+  \item \textbf{Resistencias}: Se observan cuatro resistencias en el circuito. Tres de ellas forman parte de la red de temporización (conectadas a VCC, Pin 7, Pin 6/2 y el condensador de temporización). La cuarta resistencia está en serie con el LED, conectada a la salida (Pin 3) del 555.
+  \item \textbf{Condensador de Temporización (C1)}: Un condensador electrolítico (indicado por el signo '+') conectado entre la unión de las resistencias de temporización y los pines 6/2, y tierra. Este es el condensador principal que determina la frecuencia de oscilación.
+  \item \textbf{Condensador de Control (C2)}: Un pequeño condensador, etiquetado como 'C2', conectado entre el Pin 5 (Control Voltage) del 555 y tierra. Su función es filtrar ruido en el voltaje de control.
+  \item \textbf{LED (Diodo Emisor de Luz)}: Un diodo emisor de luz conectado a la salida (Pin 3) del 555 a través de una resistencia limitadora de corriente. Se indica que 'When output is HIGH the LED is ON'.
+  \item \textbf{Líneas de Alimentación}: Líneas horizontales que representan la alimentación positiva (arriba) y tierra (abajo), a las que se conectan varios componentes.
+  \item \textbf{Flecha de Corriente}: Una flecha verde etiquetada 'current' que ilustra el flujo de corriente desde el Pin 3 del 555, a través de la resistencia y el LED, hacia tierra, cuando la salida está en estado ALTO.
+\end{itemize}
+
+% ══ TEXTO EXTRAÍDO ═══════════════════════════════════════════════════════════
+\section*{Texto extraído}
+555 Timer
+Pin8
+Pin4
+Pin7
+Pin3
+Pin6
+Pin2
+Pin1
+Pin5
+When output is HIGH the LED is ON
+(555 Timer is sourcing current)
+current
+C2
+
+% ══ OBSERVACIONES ════════════════════════════════════════════════════════════
+\section*{Observaciones}
+El circuito ilustra una aplicación común del temporizador 555 como multivibrador astable, donde la salida (Pin 3) conmuta entre estados ALTO y BAJO, haciendo que el LED parpadee. La configuración de los pines 2 y 6 unidos y conectados a la red RC (R1, R2, C1) es característica de este modo de operación. El texto aclara que el 555 está 'sourcing current' (suministrando corriente) cuando su salida es ALTA, lo que enciende el LED. La presencia de C2 en el Pin 5 es una práctica estándar para estabilizar el voltaje de control interno del 555.
+
+% ══ SUGERENCIAS ═════════════════════════════════════════════════════════════
+
+
+% ══ PIE DE INFORME ════════════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \footnotesize\color{gray}
+  Informe generado automáticamente por el sistema de análisis con IA (gemini-2.5-flash) y soporte LaTeX. \\
+  Generado el 2026-06-28 \textbullet\ ELECTRÓNICA --- Sistema de Análisis de Imágenes.
+\end{center}
+
+\end{document}

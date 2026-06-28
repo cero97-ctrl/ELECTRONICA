@@ -111,7 +111,12 @@ def tex(s: str) -> str:
         if i % 2 == 0:          # segmento de texto plano
             for char, repl in _LATEX_ESCAPE:
                 part = part.replace(char, repl)
-        # segmento impar = interior de $…$ → no tocar
+        else:
+            # segmento impar = interior de $…$ → arreglar LLM typos
+            part = part.replace("\\imes", "\\times")
+            part = part.replace("\\rac", "\\frac")
+            part = part.replace("\\au", "\\tau")
+            part = part.replace("\\%", "%").replace("%", "\\%")
         result.append(part)
     return "$".join(result)
 

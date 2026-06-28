@@ -1,3 +1,12 @@
+"""
+fix_latex.py - Corrige errores de compilación LaTeX causados por comandos
+matemáticos (\\Omega, \\mu, \\times, \\SI{}{}, etc.) colocados dentro de
+\\text{}. Extrae dichos comandos fuera de \\text{} para que queden en modo
+matemático, preservando el texto circundante dentro de \\text{}.
+
+Uso: python3 fix_latex.py <archivo.tex> [archivo2.tex ...]
+"""
+
 import re
 import sys
 

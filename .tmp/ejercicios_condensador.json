@@ -1,0 +1,83 @@
+{
+  "status": "ok",
+  "api_backend": "groq",
+  "tema": "condensador",
+  "modelo": "llama-3.3-70b-versatile",
+  "nivel": "intermedia",
+  "ejercicios": {
+    "titulo": "Ejercicios de Electrónica: Condensadores",
+    "dificultad": "intermedia",
+    "duracion_sugerida": "90 minutos",
+    "instrucciones": "Realice los cálculos con precisión y explique cada paso de sus soluciones. Utilice una calculadora científica y un formulario personal de una hoja si es necesario.",
+    "preguntas": [
+      {
+        "numero": 1,
+        "enunciado": "Un condensador de $10 mu F$ se carga a través de una resistencia de $5 kOmega$ con una batería de $12V$. Calcule la carga $Q$ en el condensador después de $2$ milisegundos. ($RC = 50 \times 10^{-3} s$).",
+        "puntaje": "2.0 puntos",
+        "solucion": "La carga $Q$ en el condensador se puede calcular usando la fórmula $Q = CV(1 - e^{-t/RC})$. Sustituyendo los valores dados: $Q = 10 \times 10^{-6} F \times 12V (1 - e^{-2 \times 10^{-3} s / (50 \times 10^{-3} s)})$. Calculando: $Q = 120 \times 10^{-6} (1 - e^{-0.04})$. Con $e^{-0.04} approx 0.96$, entonces $Q approx 120 \times 10^{-6} \times 0.04 = 4.8 \times 10^{-6} C$.",
+        "conceptos_evaluados": [
+          "Carga de condensadores",
+          "Constante de tiempo (RC)"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": null
+      },
+      {
+        "numero": 2,
+        "enunciado": "Un circuito tiene un condensador de $22 mu F$ en serie con una resistencia de $2 kOmega$ y una fuente de alimentación de $15V$. Calcule la corriente $I$ en el circuito $1$ milisegundo después de cerrar el interruptor. ($RC = 44 \times 10^{-3} s$).",
+        "puntaje": "2.0 puntos",
+        "solucion": "La corriente $I$ se puede calcular usando la fórmula $I = \frac{V}{R}e^{-t/RC}$. Sustituyendo los valores: $I = \frac{15V}{2 \times 10^{3} Omega}e^{-1 \times 10^{-3} s / (44 \times 10^{-3} s)}$. Simplificando: $I = 7.5 \times 10^{-3} e^{-0.0227}$. Con $e^{-0.0227} approx 0.977$, entonces $I approx 7.5 \times 10^{-3} \times 0.977 = 7.33 \times 10^{-3} A$.",
+        "conceptos_evaluados": [
+          "Corriente en condensadores",
+          "Descarga de condensadores"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": null
+      },
+      {
+        "numero": 3,
+        "enunciado": "Un condensador de $100 nF$ está conectado en paralelo con una resistencia de $10 MOmega$ y una fuente de $5V$. Calcule el tiempo necesario para que el condensador se cargue al $90%$ de la tensión de la fuente. ($RC = 1 s$).",
+        "puntaje": "2.5 puntos",
+        "solucion": "El tiempo $t$ necesario para que el condensador se cargue al $90%$ se puede encontrar usando la fórmula $0.9 = 1 - e^{-t/RC}$. Reordenando: $e^{-t/RC} = 0.1$. Tomando el logaritmo natural: $-t/RC = ln(0.1)$. Sustituyendo $RC = 1 s$: $-t = ln(0.1)$. Con $ln(0.1) approx -2.3026$, entonces $t approx 2.3026 s$.",
+        "conceptos_evaluados": [
+          "Carga de condensadores",
+          "Constante de tiempo (RC)",
+          "Logaritmos"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": null
+      },
+      {
+        "numero": 4,
+        "enunciado": "Un circuito RC tiene un condensador de $4.7 mu F$ y una resistencia de $6.8 kOmega$. Si la tensión en el condensador es de $10V$ en $t = 0$, calcule la tensión $V_C$ en el condensador después de $1$ milisegundo. ($RC = 31.96 \times 10^{-3} s$).",
+        "puntaje": "2.0 puntos",
+        "solucion": "La tensión $V_C$ en el condensador se puede calcular usando la fórmula $V_C = V_0 e^{-t/RC}$. Sustituyendo los valores: $V_C = 10V e^{-1 \times 10^{-3} s / (31.96 \times 10^{-3} s)}$. Calculando: $V_C = 10V e^{-0.0314}$. Con $e^{-0.0314} approx 0.969$, entonces $V_C approx 10V \times 0.969 = 9.69V$.",
+        "conceptos_evaluados": [
+          "Descarga de condensadores",
+          "Constante de tiempo (RC)"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": null
+      },
+      {
+        "numero": 5,
+        "enunciado": "Un condensador de $2.2 mu F$ se conecta en serie con una resistencia de $1 kOmega$ y una fuente de $20V$. Calcule la energía almacenada en el condensador después de $5$ milisegundos. ($RC = 2.2 \times 10^{-3} s$).",
+        "puntaje": "1.5 puntos",
+        "solucion": "La energía $E$ almacenada en el condensador se puede calcular usando la fórmula $E = \frac{1}{2}CV^2$. Primero, calcule la tensión $V$ en el condensador después de $5$ ms usando $V = V_0(1 - e^{-t/RC})$. Sustituyendo: $V = 20V(1 - e^{-5 \times 10^{-3} s / (2.2 \times 10^{-3} s)})$. Con $e^{-2.27} approx 0.103$, entonces $V approx 20V \times (1 - 0.103) = 20V \times 0.897 = 17.94V$. Ahora, $E = \frac{1}{2} \times 2.2 \times 10^{-6} F \times (17.94V)^2 approx 0.5 \times 2.2 \times 10^{-6} \times 322.36 approx 0.3539 \times 10^{-3} J$.",
+        "conceptos_evaluados": [
+          "Energía en condensadores",
+          "Carga de condensadores"
+        ],
+        "dificultad": "alta",
+        "diagrama_sugerido": null
+      }
+    ],
+    "material_permitido": "Calculadora científica, formulario personal de una hoja."
+  },
+  "timestamp": "2026-06-28T11:51:16.669513+00:00",
+  "tokens_usados": {
+    "prompt": 850,
+    "respuesta": 1755,
+    "total": 2605
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "status": "ok",
+  "api_backend": "groq",
+  "tema": "condensadores",
+  "modelo": "llama-3.3-70b-versatile",
+  "nivel": "intermedia",
+  "ejercicios": {
+    "titulo": "Ejercicios de Electrónica: Condensadores",
+    "dificultad": "intermedia",
+    "duracion_sugerida": "90 minutos",
+    "instrucciones": "Resuelve los siguientes ejercicios de condensadores, mostrando todos los pasos y fórmulas necesarias. Utiliza una calculadora científica y un formulario personal de una hoja si es necesario.",
+    "preguntas": [
+      {
+        "numero": 1,
+        "enunciado": "Un condensador de $10 mu F$ se carga a través de una resistencia de $5 kOmega$ con una batería de $12 V$. Encuentra el tiempo de carga para que el condensador alcance el $90%$ de la tensión de la batería. $t = ?$",
+        "puntaje": "2.0 puntos",
+        "solucion": "La carga de un condensador sigue la ley $v_C(t) = V_{cc} (1 - e^{-\frac{t}{RC}})$. Para $v_C(t) = 0.9 cdot 12V$, resolviendo para $t$ se obtiene: $t = -RC cdot ln(1 - \frac{v_C}{V_{cc}})$. Sustituyendo los valores, $t = -5 cdot 10^3 cdot 10^{-6} cdot ln(1 - \frac{0.9 cdot 12}{12}) = -5 cdot 10^{-3} cdot ln(0.1) approx 0.023$ segundos.",
+        "conceptos_evaluados": [
+          "Carga de condensadores",
+          "Ley de carga",
+          "Constante de tiempo"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": "Circuito con condensador, resistencia y batería en serie."
+      },
+      {
+        "numero": 2,
+        "enunciado": "Dos condensadores, uno de $2 mu F$ y otro de $4 mu F$, se conectan en paralelo. ¿Cuál es la capacitancia equivalente del circuito?",
+        "puntaje": "1.5 puntos",
+        "solucion": "La fórmula para condensadores en paralelo es $C_{eq} = C_1 + C_2$. Sustituyendo los valores, $C_{eq} = 2 mu F + 4 mu F = 6 mu F$.",
+        "conceptos_evaluados": [
+          "Condensadores en paralelo",
+          "Capacitancia equivalente"
+        ],
+        "dificultad": "baja",
+        "diagrama_sugerido": "Dos condensadores conectados en paralelo."
+      },
+      {
+        "numero": 3,
+        "enunciado": "Un condensador de $100 nF$ se carga con una tensión de $50 V$ y luego se desconecta de la fuente. Luego, se conecta en paralelo con otro condensador de $200 nF$ sin carga. ¿Cuál es la tensión final en ambos condensadores?",
+        "puntaje": "2.2 puntos",
+        "solucion": "La carga total $Q$ se conserva. Inicialmente, $Q = C_1 cdot V_1 = 100 cdot 10^{-9} cdot 50$. Cuando se conectan, $Q = (C_1 + C_2) cdot V_{final}$. Igualando, $100 cdot 10^{-9} cdot 50 = (100 + 200) cdot 10^{-9} cdot V_{final}$. Resolviendo para $V_{final}$, $V_{final} = \frac{100 cdot 50}{300} = \frac{5000}{300} approx 16.67 V$.",
+        "conceptos_evaluados": [
+          "Conservación de la carga",
+          "Condensadores en paralelo"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": "Condensador cargado conectado en paralelo con otro condensador sin carga."
+      },
+      {
+        "numero": 4,
+        "enunciado": "Un circuito RC tiene una resistencia de $2 kOmega$ y un condensador de $15 mu F$. Si la tensión de la batería es de $20 V$, ¿cuál es la corriente en el circuito después de $1 ms$ de conectado?",
+        "puntaje": "2.3 puntos",
+        "solucion": "La corriente $i(t)$ en un circuito RC viene dada por $i(t) = \frac{V_{cc}}{R} cdot e^{-\frac{t}{RC}}$. Sustituyendo los valores, $i(1ms) = \frac{20}{2 cdot 10^3} cdot e^{-\frac{1 cdot 10^{-3}}{2 cdot 10^3 cdot 15 cdot 10^{-6}}} = 10 cdot e^{-\frac{1}{30}} approx 10 cdot 0.967 approx 9.67 mA$.",
+        "conceptos_evaluados": [
+          "Corriente en circuitos RC",
+          "Decaimiento exponencial"
+        ],
+        "dificultad": "media",
+        "diagrama_sugerido": "Circuito RC con batería, resistencia y condensador en serie."
+      },
+      {
+        "numero": 5,
+        "enunciado": "Un condensador de $500 pF$ está conectado en serie con una resistencia de $1 MOmega$ y una batería de $5 V$. Encuentra la constante de tiempo del circuito y la tensión en el condensador después de $1 mu s$.",
+        "puntaje": "2.5 puntos",
+        "solucion": "La constante de tiempo $\tau = RC = 1 cdot 10^6 cdot 500 cdot 10^{-12} = 0.5 cdot 10^{-3} = 0.5 ms$. La tensión en el condensador $v_C(t) = V_{cc} (1 - e^{-\frac{t}{RC}})$. Para $t = 1 mu s$, $v_C(1mu s) = 5 (1 - e^{-\frac{1 cdot 10^{-6}}{0.5 cdot 10^{-3}}}) = 5 (1 - e^{-2 cdot 10^{-3}}) approx 5 (1 - 0.998) approx 0.01 V$.",
+        "conceptos_evaluados": [
+          "Constante de tiempo",
+          "Carga de condensadores",
+          "Tensión en condensadores"
+        ],
+        "dificultad": "alta",
+        "diagrama_sugerido": "Circuito con condensador, resistencia y batería en serie."
+      }
+    ],
+    "material_permitido": "Calculadora científica, formulario personal de una hoja."
+  },
+  "timestamp": "2026-06-28T11:35:19.364957+00:00",
+  "tokens_usados": {
+    "prompt": 850,
+    "respuesta": 1623,
+    "total": 2473
+  }
+}

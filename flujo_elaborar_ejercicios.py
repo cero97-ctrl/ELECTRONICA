@@ -176,8 +176,8 @@ def flujo_completo(
     # ══ PASO 2: Generar LaTeX ══════════════════════════════════════════════════
     print_step(2, total_pasos, "Generando documentos LaTeX...")
 
-    output_tex = output_dir / "ejercicios.tex"
-    sol_output = output_dir / "sol_ejercicios.tex"
+    output_tex = output_dir / f"ejercicios_{nombre_base}.tex"
+    sol_output = output_dir / f"sol_ejercicios_{nombre_base}.tex"
 
     cmd_latex = [
         PYTHON, str(GENERAR_TEX),
@@ -261,7 +261,7 @@ Ejemplos:
     parser.add_argument("--tema", required=True,
                         help="Tema del plan de estudios sobre el que generar los ejercicios.")
     parser.add_argument("--path", required=True,
-                        help="Ruta del directorio donde se guardarán ejercicios.tex y sol_ejercicios.tex.")
+                        help="Ruta del directorio donde se guardarán los .tex (ej. ejercicios_{tema}.tex).")
     parser.add_argument("--nivel", default="intermedia",
                         choices=["basica", "intermedia", "avanzada"],
                         help="Nivel de dificultad (default: intermedia).")

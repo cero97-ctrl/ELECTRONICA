@@ -94,6 +94,10 @@ def tex(s: str) -> str:
     result = []
     for part in parts:
         if part.startswith("$"):
+            part = part.replace("\\imes", "\\times")
+            part = part.replace("\\rac", "\\frac")
+            part = part.replace("\\au", "\\tau")
+            part = part.replace("\\%", "%").replace("%", "\\%")
             result.append(part)
         else:
             for char, repl in _LATEX_ESCAPE:
