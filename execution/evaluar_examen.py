@@ -576,14 +576,14 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="llama-3.2-90b-vision-preview",
-        help="Modelo a usar (default: llama-3.2-90b-vision-preview). Con --api-backend openrouter usa IDs de OpenRouter.",
+        default="gemini-2.5-flash",
+        help="Modelo a usar (default: gemini-2.5-flash). Con --api-backend openrouter usa IDs de OpenRouter.",
     )
     parser.add_argument(
         "--api-backend",
-        default="groq",
+        default="gemini",
         choices=["gemini", "openrouter", "groq"],
-        help="Backend de API a usar: gemini, openrouter o groq. (default: groq).",
+        help="Backend de API a usar: gemini, openrouter o groq. (default: gemini).",
     )
     parser.add_argument(
         "--dpi",

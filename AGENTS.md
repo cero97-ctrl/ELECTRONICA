@@ -22,8 +22,8 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 |---|---|---|
 | `execution/env_diagnostic.py` | Diagnóstico del entorno: SO, paquetes, HW, red. |
 | `execution/scrape_single_site.py` | Extrae el contenido principal de una URL y lo guarda en texto. |
-| `execution/analizar_imagen.py` | Analiza imágenes con LLM multimodal (Groq/Gemini/OpenRouter) y obtiene descripción JSON. |
-| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Groq/Gemini/OpenRouter). |
+| `execution/analizar_imagen.py` | Analiza imágenes con LLM multimodal (Gemini/OpenRouter) y obtiene descripción JSON. |
+| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Gemini/OpenRouter). |
 | `execution/generar_informe.py` | Genera informe LaTeX a partir del JSON de evaluación. |
 | `execution/generar_informe_imagen.py` | Genera informe LaTeX a partir del JSON de análisis de imágenes. |
 | `execution/alert_user.py` | Emite alertas audibles (paplay + fallback bell) al completar flujos. |

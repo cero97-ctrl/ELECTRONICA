@@ -85,6 +85,9 @@ _MATH_PATTERN = re.compile(r'(\$\$.*?\$\$|\$.*?\$)', re.DOTALL)
 def tex(s: str) -> str:
     if not s:
         return ""
+    # Arreglar errores comunes de los LLMs al querer generar saltos de línea
+    s = s.replace("$\\$", "\n\n")
+    s = s.replace("$\\\\$", "\n\n")
     for char, repl in _UNICODE_TO_LATEX:
         s = s.replace(char, repl)
     parts = _MATH_PATTERN.split(s)
@@ -198,7 +201,8 @@ def generar_examen_latex(data: dict) -> str:
     """Genera el documento LaTeX del examen (sin soluciones)."""
     examen = data.get("examen", {})
     modelo     = data.get("modelo", "N/A")
-    timestamp  = data.get("timestamp", datetime.utcnow().isoformat() + "Z")
+    from datetime import timezone
+    timestamp  = data.get("timestamp", datetime.now(timezone.utc).isoformat() + "Z")
     fecha_str  = timestamp[:10]
 
     titulo      = examen.get("titulo", "Examen de Electrónica")
@@ -306,7 +310,8 @@ def generar_solucionario_latex(data: dict) -> str:
     """Genera el documento LaTeX del solucionario como documento independiente."""
     examen    = data.get("examen", {})
     modelo    = data.get("modelo", "N/A")
-    timestamp = data.get("timestamp", datetime.utcnow().isoformat() + "Z")
+    from datetime import timezone
+    timestamp = data.get("timestamp", datetime.now(timezone.utc).isoformat() + "Z")
     fecha_str = timestamp[:10]
     titulo    = examen.get("titulo", "Examen de Electrónica")
     preguntas = examen.get("preguntas", [])
@@ -431,11 +436,12 @@ def main():
         sol_path.write_text(sol_latex, encoding="utf-8")
         archivos_generados.append(str(sol_path.resolve()))
 
+    from datetime import timezone
     result = {
         "status": "ok",
         "archivos_tex": archivos_generados,
         "tema": data.get("tema", "N/A"),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
     sys.exit(0)

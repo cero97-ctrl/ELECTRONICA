@@ -554,8 +554,8 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="llama-3.2-90b-vision-preview",
-        help="Modelo multimodal a usar (default: llama-3.2-90b-vision-preview).",
+        default="gemini-2.5-flash",
+        help="Modelo multimodal a usar (default: gemini-2.5-flash).",
     )
     parser.add_argument(
         "--prompt",
@@ -564,9 +564,9 @@ Ejemplos:
     )
     parser.add_argument(
         "--api-backend",
-        default="groq",
+        default="gemini",
         choices=["gemini", "openrouter", "groq"],
-        help="Backend de API: gemini, openrouter o groq. (default: groq).",
+        help="Backend de API: gemini, openrouter o groq. (default: gemini).",
     )
     parser.add_argument(
         "--max-dim",

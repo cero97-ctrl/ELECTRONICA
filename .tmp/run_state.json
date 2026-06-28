@@ -1,43 +1,11 @@
 {
-  "run_id": "flujo-ejercicios-2026-06-27T23-09-51",
-  "directive": "elaborar_ejercicios.yaml",
-  "tema": "Filtros Activos RC",
-  "started_at": "2026-06-27T23:09:51.017889+00:00",
-  "last_updated": "2026-06-27T23:10:05.275831+00:00",
-  "current_step": 3,
-  "steps_completed": [
-    {
-      "step": 1,
-      "script": "elaborar_ejercicios.py",
-      "status": "ok",
-      "titulo": "Filtros Activos RC",
-      "n_preguntas": 5,
-      "tokens_total": 2608,
-      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/ejercicios_filtros_activos_rc.json"
-    },
-    {
-      "step": 2,
-      "script": "generar_ejercicios_latex.py",
-      "status": "ok",
-      "archivos_tex": [
-        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/ejercicios.tex",
-        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/sol_ejercicios.tex"
-      ]
-    },
-    {
-      "step": 3,
-      "script": "alert_user.py",
-      "status": "ok",
-      "tipo": "success"
-    }
-  ],
+  "run_id": "flujo-examen-2026-06-28T01-04-13",
+  "directive": "elaborar_examen.yaml",
+  "tema": "leyes de kirchhoff",
+  "started_at": "2026-06-28T01:04:13.717034+00:00",
+  "last_updated": "2026-06-28T01:04:13.717040+00:00",
+  "current_step": 0,
+  "steps_completed": [],
   "steps_failed": [],
-  "context": {
-    "titulo": "Filtros Activos RC",
-    "n_preguntas": 5,
-    "archivos_tex": [
-      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/ejercicios.tex",
-      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/ejercicios/04/sol_ejercicios.tex"
-    ]
-  }
+  "context": {}
 }

@@ -8,12 +8,12 @@ Ejecuta el flujo completo definido en la directiva elaborar_examen.yaml:
   3. alert_user.py             → Notifica al usuario con alerta audible
 
 Uso:
-    python3 flujo_elaborar_examen.py --tema "Semana 4: Condensadores" --output examenes/Examen_Semana4.tex
-    python3 flujo_elaborar_examen.py --tema "Transistor BJT" --output examenes/Examen_BJT.tex --nivel avanzada
-    python3 flujo_elaborar_examen.py --tema "A.O." --output examenes/Examen_AO.tex
+    python3 flujo_elaborar_examen.py --tema "Semana 4: Condensadores" --output examenes/
+    python3 flujo_elaborar_examen.py --tema "Transistor BJT" --output examenes/ --nivel avanzada
+    python3 flujo_elaborar_examen.py --tema "A.O." --output examenes/
 
-El examen .tex se guarda en la ruta especificada por --output.
-El solucionario se genera automáticamente como sol_{nombre_del_examen}.tex en el mismo directorio.
+--output es un directorio. El nombre del archivo .tex se genera automáticamente a partir del tema.
+El solucionario se genera como sol_{nombre_del_examen}.tex en el mismo directorio.
 """
 
 import argparse
@@ -191,7 +191,9 @@ def flujo_completo(
     code, tex_result = run_script(cmd_latex, capture_json=True)
 
     if code != 0 or tex_result.get("status") != "ok":
-        msg = tex_result.get("message", tex_result.get("raw_output", "Error desconocido"))
+        msg = tex_result.get("message")
+        if not msg:
+            msg = tex_result.get("stderr") or tex_result.get("raw_output", "Error desconocido")
         print_err(f"Falló generar_examen_latex.py (código {code}): {msg}")
         state["steps_failed"].append({"step": 2, "script": "generar_examen_latex.py",
                                       "code": code, "message": msg})
@@ -255,16 +257,16 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python3 flujo_elaborar_examen.py --tema "Semana 4: Condensadores" --output examenes/Examen_Semana4.tex
-  python3 flujo_elaborar_examen.py --tema "Transistor BJT" --output examenes/Examen_BJT.tex --nivel avanzada
-  python3 flujo_elaborar_examen.py --tema "A.O." --output examenes/Examen_AO.tex --modelo gemini-1.5-pro
-  python3 flujo_elaborar_examen.py --tema "Semana 1: Circuitos DC" --output examenes/Examen_DC.tex
+  python3 flujo_elaborar_examen.py --tema "Semana 4: Condensadores" --output examenes/
+  python3 flujo_elaborar_examen.py --tema "Transistor BJT" --output examenes/ --nivel avanzada
+  python3 flujo_elaborar_examen.py --tema "A.O." --output examenes/ --modelo gemini-1.5-pro
+  python3 flujo_elaborar_examen.py --tema "Semana 1: Circuitos DC" --output examenes/
         """,
     )
     parser.add_argument("--tema", required=True,
                         help="Tema del plan de estudios sobre el que generar el examen.")
     parser.add_argument("--output", required=True,
-                        help="Ruta donde se guardará el archivo .tex del examen.")
+                        help="Directorio donde se guardarán examen_{tema}.tex y sol_examen_{tema}.tex.")
     parser.add_argument("--nivel", default="intermedia",
                         choices=["basica", "intermedia", "avanzada"],
                         help="Nivel de dificultad del examen (default: intermedia).")
@@ -283,8 +285,18 @@ def main():
         print_err("El tema no puede estar vacío.")
         sys.exit(1)
 
-    output_tex = Path(args.output)
-    output_tex.parent.mkdir(parents=True, exist_ok=True)
+    import re
+    out_path = Path(args.output).resolve()
+    if out_path.is_dir() or args.output.endswith("/"):
+        out_path.mkdir(parents=True, exist_ok=True)
+        safe_tema = re.sub(r'[^a-zA-Z0-9]+', '_', args.tema).strip('_').lower()
+        output_tex = out_path / f"examen_{safe_tema}.tex"
+    else:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        if out_path.suffix != ".tex":
+            output_tex = out_path.with_suffix(".tex")
+        else:
+            output_tex = out_path
 
     print(f"\n{'═'*56}")
     print("  ELECTRÓNICA — Flujo de Elaboración de Exámenes")

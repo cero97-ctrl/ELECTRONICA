@@ -81,6 +81,9 @@ _LATEX_ESCAPE = [
 def tex(s: str) -> str:
     if not s:
         return ""
+    # Arreglar errores comunes de los LLMs al querer generar saltos de línea
+    s = s.replace("$\\$", "\n\n")
+    s = s.replace("$\\\\$", "\n\n")
     for char, repl in _UNICODE_TO_LATEX:
         s = s.replace(char, repl)
     parts = s.split("$")

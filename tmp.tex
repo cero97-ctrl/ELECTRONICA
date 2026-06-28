@@ -1,0 +1,194 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noshorthands]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.10}
+\usepackage{parskip}
+
+% ── Matemáticas ───────────────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies ──────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{\small\textbf{ELECTRÓNICA} --- Examen}
+\fancyhead[R]{\small\itshape Examen de Electrónica: Leyes de Kirchhoff}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% ── Colores personalizados ────────────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+\definecolor{verdePuntaje}{HTML}{1A6B2F}
+
+% ── Estilos de cajas ─────────────────────────────────────────────────────────
+\tcbset{
+  cajaInstrucciones/.style={
+    enhanced, breakable,
+    colback=grisFondo, colframe=gray!50,
+    fonttitle=\bfseries, coltitle=black,
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+}
+
+% ──────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA / ENCABEZADO ═══════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA}\\[4pt]
+  {\large Examen de Razonamiento y Cálculo}\\[8pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  {\LARGE\bfseries Examen de Electrónica: Leyes de Kirchhoff}\\[6pt]
+  \rule{\linewidth}{0.6pt}\\[6pt]
+  {\large \textbf{Dificultad:} Intermedia \hfill
+   \textbf{Duración:} 90 minutos} \\[4pt]
+  {\large \textbf{Fecha:} \rule{4cm}{0.2pt} \hfill
+   \textbf{Estudiante:} \rule{6cm}{0.2pt}} \\[6pt]
+  \rule{\linewidth}{0.2pt}
+\end{center}
+
+% ══ DATOS DEL EXAMEN ═══════════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{tcolorbox}[cajaInstrucciones, title={Instrucciones}]
+Resolver cada pregunta paso a paso, justificando los cálculos y utilizando la notación y fórmulas correctas. Se permite el uso de una calculadora científica y un formulario personal de una hoja.
+\medskip
+\textbf{Material permitido:} Calculadora científica, formulario personal de una hoja.
+\end{tcolorbox}
+
+% ══ INDICACIÓN DE PUNTAJE ═════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{center}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white, colframe=azulTitulo,
+    width=0.6\linewidth,
+    boxrule=1.5pt,
+    halign=center, valign=center,
+    top=4pt, bottom=4pt,
+  ]
+    \centering
+    \textbf{Puntaje total: 10.0 puntos} \\
+    \small\textit{Responda cada pregunta en el espacio provisto. \\
+    Debe mostrar todo el desarrollo matemático para obtener puntaje completo.}
+  \end{tcolorbox}
+\end{center}
+
+% ══ PREGUNTAS ══════════════════════════════════════════════════════════════════
+\section*{Preguntas}
+
+
+% ── Pregunta 1 ──────────────────────────────────────────────────────
+\subsection*{Pregunta 1 \normalfont\normalsize\textit{(2.0 puntos)}}
+En el circuito mostrado, determine la corriente $I_1$ que atraviesa la resistencia $R_1$ de $2Omega$ y la corriente $I_2$ que atraviesa la resistencia $R_2$ de $3Omega$, sabiendo que la fuente de voltaje es de $12V$. Utilice la Primera Ley de Kirchhoff para encontrar las corrientes desconocidas. $R_3 = 4Omega$.
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un circuito con una fuente de voltaje de $12V$, resistencias $R_1 = 2Omega$, $R_2 = 3Omega$, y $R_3 = 4Omega$ conectadas en serie.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Pregunta 2 ──────────────────────────────────────────────────────
+\subsection*{Pregunta 2 \normalfont\normalsize\textit{(2.2 puntos)}}
+Un circuito tiene dos fuentes de voltaje en serie, $V_1 = 10V$ y $V_2 = 6V$, con resistencias $R_1 = 2Omega$ y $R_2 = 3Omega$ también en serie. Determine la corriente $I$ que circula por el circuito y el voltaje $V_{out}$ en los bornes de $R_2$ utilizando las Leyes de Kirchhoff.
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un circuito con dos fuentes de voltaje $V_1$ y $V_2$ en serie con resistencias $R_1$ y $R_2$ también en serie.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Pregunta 3 ──────────────────────────────────────────────────────
+\subsection*{Pregunta 3 \normalfont\normalsize\textit{(2.5 puntos)}}
+En el circuito mostrado, se desconocen las corrientes $I_1$, $I_2$, e $I_3$. Las resistencias son $R_1 = 4Omega$, $R_2 = 6Omega$, y $R_3 = 3Omega$. Las fuentes de voltaje son $V_1 = 12V$ y $V_2 = 8V$. Utilice las Leyes de Kirchhoff para determinar estas corrientes.
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un circuito con dos fuentes de voltaje $V_1$ y $V_2$, y tres resistencias $R_1$, $R_2$, $R_3$ configuradas en dos lazos con un nodo común.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Pregunta 4 ──────────────────────────────────────────────────────
+\subsection*{Pregunta 4 \normalfont\normalsize\textit{(2.0 puntos)}}
+Un circuito tiene dos resistencias $R_1 = 10Omega$ y $R_2 = 15Omega$ conectadas en paralelo, con una fuente de voltaje $V = 20V$ conectada a ellas. Determine la corriente total $I_{total}$ que sale de la fuente y las corrientes $I_1$ e $I_2$ que circulan por cada resistencia.
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un circuito con una fuente de voltaje $V$ y dos resistencias $R_1$ y $R_2$ en paralelo.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ── Pregunta 5 ──────────────────────────────────────────────────────
+\subsection*{Pregunta 5 \normalfont\normalsize\textit{(3.3 puntos)}}
+En un circuito con varias ramas y fuentes de voltaje, se aplican las Leyes de Kirchhoff para encontrar las corrientes desconocidas. Considerando el circuito con fuentes de voltaje $V_1 = 15V$ y $V_2 = 10V$, y resistencias $R_1 = 5Omega$, $R_2 = 8Omega$, $R_3 = 12Omega$, determine las corrientes $I_1$, $I_2$, e $I_3$.
+
+  \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
+    Un circuito con dos fuentes de voltaje $V_1$ y $V_2$, y tres resistencias $R_1$, $R_2$, $R_3$ configuradas en dos lazos con un nodo común.
+  \end{tcolorbox}
+
+\vspace{2mm}
+\rule{\linewidth}{0.2pt}
+\vspace{3cm}  % espacio para respuesta
+
+
+
+% ══ FIN DEL EXAMEN ═════════════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \rule{0.6\linewidth}{0.4pt} \\[6pt]
+  \textbf{--- Fin del examen ---}
+\end{center}
+
+\vfill
+\begin{center}
+  \footnotesize\color{gray}
+  Examen generado automáticamente por el sistema de inteligencia artificial (llama-3.3-70b-versatile) \\
+  ELECTRÓNICA --- Sistema de Evaluación Académica \\
+  Generado el 2026-06-28
+\end{center}
+
+\end{document}

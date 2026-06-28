@@ -1,0 +1,8 @@
+{
+  "status": "ok",
+  "archivos_tex": [
+    "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/tmp.tex"
+  ],
+  "tema": "leyes de kirchhoff",
+  "timestamp": "2026-06-28T00:37:48.315099Z"
+}

@@ -139,7 +139,7 @@ def flujo_completo(
             if "--api-backend" in cmd_fallback:
                 cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "gemini"
             if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "gemini-1.5-flash"
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "gemini-2.5-flash"
             code, analisis = run_script(cmd_fallback, capture_json=True)
             
         if code != 0 or analisis.get("status") != "ok":
@@ -148,7 +148,7 @@ def flujo_completo(
             if "--api-backend" in cmd_fallback:
                 cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "openrouter"
             if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "qwen/qwen-2.5-vl-72b-instruct:free"
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "google/gemini-2.5-flash"
             code, analisis = run_script(cmd_fallback, capture_json=True)
 
         if code != 0 or analisis.get("status") != "ok":
@@ -306,16 +306,16 @@ Ejemplos:
         "imagenes",
         help="Ruta(s) a las imágenes separadas por coma, o patrón glob (ej: '*.jpg').",
     )
-    parser.add_argument("--modelo", default="llama-3.2-90b-vision-preview",
-                        help="Modelo a usar (default: llama-3.2-90b-vision-preview).")
+    parser.add_argument("--modelo", default="gemini-2.5-flash",
+                        help="Modelo a usar (default: gemini-2.5-flash).")
     parser.add_argument(
         "--prompt",
         default="Describe detalladamente lo que ves en la(s) imagen(es).",
         help="Instrucción de análisis para el modelo.",
     )
-    parser.add_argument("--api-backend", default="groq",
+    parser.add_argument("--api-backend", default="gemini",
                         choices=["gemini", "openrouter", "groq"],
-                        help="Backend de API: gemini, openrouter o groq. (default: groq).")
+                        help="Backend de API: gemini, openrouter o groq. (default: gemini).")
     parser.add_argument(
         "--output-dir",
         default=None,
