@@ -1,0 +1,144 @@
+\documentclass[a3paper,landscape,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, raster}
+\usepackage{fontawesome5}
+\usepackage{xcolor}
+\usepackage{palatino} % Fuente elegante
+
+% Paleta de colores profesionales
+\definecolor{primary}{RGB}{30, 58, 138}    % Azul oscuro
+\definecolor{secondary}{RGB}{59, 130, 246} % Azul vibrante
+\definecolor{accent}{RGB}{16, 185, 129}    % Esmeralda
+\definecolor{lightbg}{RGB}{248, 250, 252}  % Fondo muy claro
+\definecolor{layer1}{RGB}{39, 174, 96}     % Verde (Directivas)
+\definecolor{layer2}{RGB}{142, 68, 173}    % Púrpura (Orquestación)
+\definecolor{layer3}{RGB}{211, 84, 0}      % Naranja oscuro (Ejecución)
+
+\pagecolor{lightbg}
+\pagestyle{empty}
+
+\tcbset{
+    base/.style={
+        enhanced,
+        colframe=primary,
+        colback=white,
+        coltitle=white,
+        fonttitle=\bfseries\large,
+        title={#1},
+        attach boxed title to top left={xshift=5mm, yshift=-3mm},
+        boxed title style={
+            colback=primary,
+            rounded corners,
+            arc=2mm,
+            boxrule=0pt
+        },
+        boxrule=1.2pt,
+        arc=3mm,
+        drop fuzzy shadow
+    },
+    innerbox/.style 2 args={
+        enhanced,
+        colframe=#1,
+        colback=#1!5,
+        coltitle=white,
+        fonttitle=\bfseries,
+        title={#2},
+        boxrule=1pt,
+        arc=2mm,
+        drop fuzzy shadow
+    }
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace*{0.2cm}
+    \huge\textbf{\textcolor{primary}{\faRobot\ Arquitectura del Agente IA y Marco Operativo}} \\[0.3cm]
+    \Large\textcolor{secondary}{Orquestación Autónoma de 3 Capas, Memoria Evolutiva y Self-Healing}
+    \vspace{0.5cm}
+\end{center}
+
+\begin{tcbraster}[raster columns=3, raster equal height=rows, raster column skip=1cm]
+% Columna 1: Identidad y Rol
+\begin{tcolorbox}[base=\faIdBadge\ Identidad y Entorno]
+\textbf{Rol Principal:} Orquestador Autónomo
+\begin{itemize}
+    \item Actúa como \textbf{middleware} entre la intención humana y la ejecución determinista.
+    \item Modifica archivos y ejecuta comandos en el sistema de manera autónoma.
+    \item \textbf{Límite de Recursos:} 4GB RAM estrictos.
+    \item \textbf{Stack de Entorno:} SO Linux, Conda (Python), Docker (C/C++ y \texttt{build-essential}).
+\end{itemize}
+\vspace{0.3cm}
+\begin{tcolorbox}[innerbox={red!80!black}{\faExclamationTriangle\ REGLA DE ORO}]
+\textbf{Nunca ejecutar ni depurar a ciegas.} Conocer el entorno real antes de operaciones complejas.
+\end{tcolorbox}
+\vspace{0.3cm}
+\textbf{\faBrain\ Protocolo de Memoria (ChromaDB)}
+\begin{itemize}
+    \item \textbf{Consulta:} Buscar errores y flujos pasados.
+    \item \textbf{Registro:} Guardar nuevos hallazgos y correcciones.
+    \item \textbf{Autocorrección:} Apoyarse en memoria antes de soluciones desde cero.
+\end{itemize}
+\end{tcolorbox}% <-- IMPORTANTE: Sin saltos de línea para que sigan en la misma fila del raster
+% Columna 2: Las 3 Capas
+\begin{tcolorbox}[base=\faLayerGroup\ La Arquitectura de 3 Capas]
+\begin{tcolorbox}[innerbox={layer1}{\faFileCode\ Layer 1: Directives (Qué hacer)}]
+Manuales de operación estandarizados (SOPs).
+\begin{itemize}
+    \item \textbf{Formato:} Archivos \texttt{.yaml} en \texttt{directives/}.
+    \item \textbf{Contiene:} Goal, Inputs, Steps, Outputs.
+\end{itemize}
+\end{tcolorbox}
+\vspace{0.2cm}
+\begin{tcolorbox}[innerbox={layer2}{\faNetworkWired\ Layer 2: Orchestration (Tú)}]
+El núcleo de inteligencia (IA probabilística).
+\begin{itemize}
+    \item Enruta tareas y sanitiza entradas.
+    \item Gestiona fallos (\textit{Self-Healing}).
+    \item Delega toda lógica en scripts deterministas.
+\end{itemize}
+\end{tcolorbox}
+\vspace{0.2cm}
+\begin{tcolorbox}[innerbox={layer3}{\faCogs\ Layer 3: Execution (Cómo hacerlo)}]
+Entorno reproducible y determinista.
+\begin{itemize}
+    \item \textbf{Herramientas:} Scripts Python o Docker.
+    \item Validan sus salidas y fallan ruidosamente.
+    \item \textbf{Salida:} Preferiblemente JSON o Stdout.
+\end{itemize}
+\end{tcolorbox}
+\end{tcolorbox}% <-- IMPORTANTE: Sin saltos de línea
+% Columna 3: Flujo y Self-Annealing
+\begin{tcolorbox}[base=\faProjectDiagram\ Algoritmo de Ejecución]
+\textbf{Flujo Paso a Paso}
+\begin{enumerate}
+    \item \textbf{Diagnóstico:} Extraer estado del sistema.
+    \item \textbf{Búsqueda:} Leer directiva y memoria.
+    \item \textbf{Pre-Análisis:} Predecir resultados.
+    \item \textbf{Planificación:} Mapear herramientas.
+    \item \textbf{Ejecución:} Operar terminal y archivos.
+    \item \textbf{Trazabilidad:} Guardar en \texttt{run\_state.json}.
+    \item \textbf{Validación:} Comparar output real y esperado.
+    \item \textbf{Notificación:} Alertar vía audios.
+    \item \textbf{Limpieza:} Eliminar basura temporal.
+\end{enumerate}
+\vspace{0.3cm}
+\begin{tcolorbox}[innerbox={accent!90!black}{\faStethoscope\ Self-Annealing (Autocuración)}]
+\begin{itemize}
+    \item \textbf{Presupuesto:} Máximo 3 reintentos.
+    \item \textbf{Análisis de Causa:} Lógica, Entorno o Recursos.
+    \item \textbf{Principio:} Fiabilidad $>$ Velocidad.
+\end{itemize}
+\end{tcolorbox}
+\end{tcolorbox}
+\end{tcbraster}
+
+\vfill
+\begin{center}
+    \small \textcolor{gray}{\textit{Generado automáticamente basado en AGENT\_FRAMEWORK.md y AGENT\_INSTRUCTIONS.md}}
+\end{center}
+
+\end{document}

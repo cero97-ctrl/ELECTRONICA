@@ -649,3 +649,42 @@ El capacitor de entrada es $1\,\mu\text{F}$
 
 > **Archivos afectados (Históricamente):**
 > - Archivos `.tex` generados automáticamente por el modelo `gemini-2.5-flash` y otros LLMs propensos a cometer descuidos con el anidamiento de `\text{}`.
+
+---
+
+## 14. Clave Desconocida en `tcolorbox` (`/tcb/fill`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar un documento que utiliza el paquete `tcolorbox`, la compilación falla con el siguiente error:
+
+```text
+! Package pgfkeys Error: I do not know the key '/tcb/fill', to which you passed
+ 'primary', and I am going to ignore it. Perhaps you misspelled it.
+```
+
+### Causa
+
+Se intentó utilizar la clave `fill` dentro de las opciones de un `tcolorbox` o en uno de sus estilos internos (como `boxed title style`). Aunque `fill` es válido en TikZ, las cajas principales y títulos de `tcolorbox` utilizan su propio motor de claves de color de fondo, el cual se define con `colback`.
+
+### Solución
+
+Reemplazar la clave `fill` por `colback` dentro de las opciones de `tcolorbox`.
+
+```latex
+% Antes (incorrecto - fill no es una clave de tcolorbox):
+boxed title style={
+    fill=primary,
+    rounded corners,
+    arc=2mm
+}
+
+% Después (correcto - usando colback):
+boxed title style={
+    colback=primary,
+    rounded corners,
+    arc=2mm
+}
+```
+
+> **Nota:** La clave `fill` sí es válida cuando se usa en estilos puramente de TikZ dentro de `tcolorbox`, como por ejemplo en `interior style={fill=white}`.
