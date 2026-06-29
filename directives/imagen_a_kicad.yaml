@@ -1,0 +1,34 @@
+Goal: "Convertir la imagen de un circuito electrónico en un archivo de esquemático de KiCAD 8.0.9."
+
+Required inputs:
+  - imagenes: "Rutas de las imágenes (separadas por comas) o patrón glob."
+  - modelo: "Modelo multimodal a utilizar."
+  - output_dir: "Carpeta donde se guardará el esquemático .kicad_sch."
+
+Steps:
+  - step: 1
+    action: "Extraer Netlist JSON de la imagen"
+    script: "execution/extraer_netlist_imagen.py"
+    inputs:
+      imagenes: "{{imagenes}}"
+      modelo: "{{modelo}}"
+      api_backend: "{{api_backend}}"
+  - step: 2
+    action: "Generar archivo KiCAD esquemático"
+    script: "execution/generar_kicad_sch.py"
+    inputs:
+      json: "JSON resultante del paso anterior"
+      output: "{{output_dir}}/esquematico.kicad_sch"
+  - step: 3
+    action: "Notificar finalización del flujo"
+    script: "execution/alert_user.py"
+    inputs:
+      status: "success o error"
+
+Expected outputs:
+  - "JSON temporal con la definición de la red en .tmp/"
+  - "Archivo .kicad_sch compatible con KiCAD 8"
+
+Edge cases:
+  - error: "No se puede extraer el Netlist"
+    recovery: "Reportar al usuario y emitir alerta de error."
