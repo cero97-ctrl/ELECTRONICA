@@ -1,0 +1,190 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+
+\title{Manual para Iniciar un Nuevo Proyecto\\basado en la Arquitectura de 3 Capas}
+\author{Agente IA (Orquestador)}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+Este manual describe los pasos para iniciar un nuevo espacio de trabajo bajo la arquitectura de 3 capas (Directives $\to$ Orchestration $\to$ Execution). El objetivo es proporcionar una estructura reutilizable que maximice la fiabilidad, separando la lógica probabilística del LLM de la ejecución determinista mediante scripts especializados.
+
+\section{Estructura de Directorios}
+
+Crear la siguiente estructura en la raíz del nuevo proyecto:
+
+\begin{lstlisting}
+proyecto/
+|-- .agent/           # Instrucciones del sistema para el agente IA
+|-- directives/       # SOPs en YAML (Layer 1)
+|-- execution/        # Scripts deterministas (Layer 3)
+|-- .tmp/             # Archivos temporales (regenerables)
+|-- .env              # Credenciales y configuracion (no committear)
+|-- opencode.json     # Configuracion del agente
+|-- .gitignore        # Exclusiones de seguimiento
+|-- requirements.txt  # Dependencias (se completa al definir el proyecto)
+\end{lstlisting}
+
+\section{Paso 1: Archivos del Agente (.agent/)}
+
+Copiar los archivos \texttt{FRAMEWORK.md} e \texttt{INSTRUCTIONS.md} desde la plantilla ubicada en \texttt{docs/AGENTE\_IA/} a la carpeta \texttt{.agent/} del nuevo proyecto. Estos archivos definen el marco operativo y las instrucciones del agente.
+
+Personalizar los siguientes puntos en \texttt{INSTRUCTIONS.md}:
+
+\begin{itemize}
+    \item \textbf{Sección 1:} Ajustar el tono, las restricciones de entorno y el stack tecnológico (SO, gestor de paquetes, lenguajes).
+    \item \textbf{Sección 8:} Definir el formato de documentación del proyecto (Markdown, LaTeX, etc.).
+    \item \textbf{Sección 10:} Completar las directrices de dominio técnico: lenguaje principal, frameworks, infraestructura, seguridad y flujo de trabajo.
+\end{itemize}
+
+En \texttt{FRAMEWORK.md}:
+
+\begin{itemize}
+    \item \textbf{Available Directives:} Listar los flujos de trabajo repetibles propios del proyecto.
+    \item \textbf{Setup:} Documentar los pasos de instalación específicos del proyecto.
+\end{itemize}
+
+\section{Paso 2: Configuración del Agente (opencode.json)}
+
+Crear \texttt{opencode.json} en la raíz del proyecto para que el agente cargue las instrucciones desde \texttt{.agent/}:
+
+\begin{lstlisting}
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [".agent/*.md"]
+}
+\end{lstlisting}
+
+\section{Paso 3: Crear las Primeras Directivas (directives/)}
+
+Cada directiva es un archivo YAML que describe un flujo de trabajo repetible. Estructura recomendada:
+
+\begin{lstlisting}
+# directives/mi_flujo.yaml
+goal: "Descripcion del objetivo"
+required_inputs:
+  - name: "entrada_1"
+    description: "Que datos se necesitan"
+steps:
+  - script: "execution/mi_script.py"
+    mapping:
+      entrada_1: "{entrada_1}"
+expected_outputs: "Descripcion del resultado esperado"
+edge_cases:
+  - "Que hacer si algo falla"
+\end{lstlisting}
+
+Crear al menos una directiva inicial para validar que el flujo funciona. Ejemplos comunes: \texttt{scrape\_website.yaml}, \texttt{research\_topic.yaml}, \texttt{git\_update.yaml}.
+
+\section{Paso 4: Crear los Scripts de Ejecución (execution/)}
+
+Cada script debe cumplir:
+
+\begin{itemize}
+    \item Una sola responsabilidad.
+    \item Entradas por argumentos CLI.
+    \item Secretos en \texttt{.env}.
+    \item Salida por stdout (preferiblemente JSON).
+    \item Códigos de salida: 0 (éxito), 1+ (fallos categorizados).
+    \item Validar sus propias salidas y fallar ruidosamente si algo está mal.
+\end{itemize}
+
+Ejemplo mínimo en Python:
+
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+"""Descripcion breve de la funcion del script."""
+import sys
+
+def main():
+    # Validar entradas
+    # Ejecutar logica
+    # Validar salida
+    print('{"status": "ok"}')
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
+\end{lstlisting}
+
+\section{Paso 5: Archivos de Configuración}
+
+\subsection{.gitignore}
+Crear un \texttt{.gitignore} genérico:
+
+\begin{lstlisting}
+__pycache__/
+*.pyc
+.env
+.tmp/
+chroma_db/
+*.aux
+*.log
+*.out
+*.toc
+venv/
+.venv/
+\end{lstlisting}
+
+\subsection{.env}
+Plantilla para credenciales:
+
+\begin{lstlisting}
+# API Keys
+# API_KEY=tu_clave_aqui
+\end{lstlisting}
+
+\section{Flujo de Trabajo del Agente}
+
+Una vez configurada la estructura, el agente opera siguiendo este ciclo:
+
+\begin{enumerate}
+    \item \textbf{Validación de Entorno:} Verificar que el sistema cumple los requisitos.
+    \item \textbf{Búsqueda:} Revisar \texttt{directives/} para ver si existe un SOP para la tarea solicitada.
+    \item \textbf{Planificación:} Seleccionar la directiva y el script de ejecución correspondiente.
+    \item \textbf{Ejecución:} Invocar el script con las entradas validadas.
+    \item \textbf{Validación:} Confirmar que la salida coincide con lo esperado.
+    \item \textbf{Registro:} Guardar el estado en \texttt{.tmp/run\_state.json}.
+    \item \textbf{Notificación:} Informar al usuario del resultado.
+    \item \textbf{Aprendizaje:} Si surge un error, documentarlo y actualizar la directiva.
+\end{enumerate}
+
+\section{Buenas Prácticas}
+
+\begin{itemize}
+    \item \textbf{Reutilizar antes de construir:} Revisar \texttt{execution/} antes de crear un nuevo script.
+    \item \textbf{Directivas atómicas:} Cada directiva debe describir un solo flujo de trabajo.
+    \item \textbf{Versionado de directivas:} Si cambia la lógica, conservar versiones antiguas (v1, v2).
+    \item \textbf{Máximo 3 reintentos:} Si un flujo falla 3 veces, escalar al usuario.
+    \item \textbf{Validar siempre:} Después de cada paso, confirmar esquema, cantidades y archivos generados.
+    \item \textbf{Documentar errores:} Mantener un registro de errores comunes y sus soluciones (ej. \texttt{errores.md}) para evitar regresiones.
+\end{itemize}
+
+\section{Conclusión}
+
+Con esta estructura, el nuevo proyecto queda listo para operar bajo la arquitectura de 3 capas. El esqueleto inicial es mínimo pero escalable: las directivas, scripts y configuraciones se agregan según el proyecto va tomando forma.
+
+\end{document}

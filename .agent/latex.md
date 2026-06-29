@@ -688,3 +688,70 @@ boxed title style={
 ```
 
 > **Nota:** La clave `fill` sí es válida cuando se usa en estilos puramente de TikZ dentro de `tcolorbox`, como por ejemplo en `interior style={fill=white}`.
+
+---
+
+## 15. Caracteres de Dibujo de Árbol (├ └) Dentro de `lstlisting` (Paquete `listings`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla con múltiples errores repetidos en las líneas que contienen caracteres de dibujo de árbol (├, └) dentro de un entorno `lstlisting`:
+
+```text
+LaTeX Error: Invalid UTF-8 byte sequence (�\lst@FillFixed@\lst@EC�).
+...
+LaTeX Error: Invalid UTF-8 byte "9C.
+...
+l.37 ├──
+               .agent/           # Instrucciones del sistema para ...
+
+LaTeX Error: Invalid UTF-8 byte "94.
+...
+l.44 └──
+               requirements.txt  # Dependencias ...
+```
+
+### Causa
+
+El paquete `listings` no soporta nativamente la codificación UTF-8 cuando se compila con `pdflatex`. Los caracteres multibyte de dibujo de árbol (├ U+251C, └ U+2514, ─ U+2500) utilizados para representar estructuras de directorios no son reconocidos por el motor de tipografía, que espera secuencias de un solo byte. El error se manifiesta en cada línea que contiene estos caracteres dentro de un bloque `lstlisting`.
+
+Notar que existe una diferencia con el error #7: mientras que las tildes y eñes se pueden mapear con `literate`, los caracteres de dibujo de árbol no tienen equivalentes directos en LaTeX y mapearlos con `literate` sería poco práctico.
+
+### Solución
+
+Reemplazar los caracteres de dibujo de árbol (├, └, ─) por sus equivalentes ASCII dentro del bloque `lstlisting`:
+
+```latex
+% Antes (incorrecto — caracteres UTF-8 no soportados):
+\begin{lstlisting}
+proyecto/
+├── src/
+├── docs/
+└── README.md
+\end{lstlisting}
+
+% Después (correcto — ASCII puro):
+\begin{lstlisting}
+proyecto/
+|-- src/
+|-- docs/
+|-- README.md
+\end{lstlisting}
+```
+
+Alternativamente, se puede usar el paquete `pmboxdraw` que añade soporte para caracteres de dibujo de caja en modo texto:
+
+```latex
+\usepackage{pmboxdraw}
+```
+
+Sin embargo, la opción más simple y portable es usar `|--` en lugar de los caracteres Unicode.
+
+### Puntos Clave
+
+- Usar `|--` en lugar de `├──` para ramas intermedias.
+- Usar `|--` en lugar de `└──` para la última rama (o `\--` si se requiere diferenciación visual).
+- Evitar siempre caracteres Unicode de dibujo de caja/línea dentro de `lstlisting` con `pdflatex`.
+- Si se usa `xelatex` o `lualatex` en lugar de `pdflatex`, este problema no existe, ya que esos motores manejan UTF-8 nativamente.
+
+> **Archivo afectado:** `docs/AGENTE_IA/manual_nuevo_proy.tex` (árbol de directorios en listing)
