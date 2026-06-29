@@ -57,7 +57,7 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 
 - `docs/` — Documentación técnica y académica (20 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, MEDIDOR_ENERGIA/, PC_ASUS/, PC_PARA_IA/, SERVIDOR_POWEREDGE_R610/, SISTEMA_INTERNAC/, CIRC_PARA_RESP_RAPIDAS/, PROYECTO_MECATRONICA/, Ventilador_3_Velocidades/, MANUAL/, etc.)
 - `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/)
-- `.agent/` — Instrucciones del sistema para el agente IA (10 archivos .md)
+- `.agent/` — Instrucciones del sistema para el agente IA (4 archivos: `AGENT_FRAMEWORK.md`, `AGENT_INSTRUCTIONS.md`, `latex.md`, `python.md`)
 - `directives/` — SOPs en YAML para flujos de trabajo repetibles (14 archivos)
 - `directives/rubricas/` — Rúbricas YAML para evaluación de prácticas de laboratorio
 - `execution/` — Scripts Python deterministas para la capa de ejecución (7 archivos)
