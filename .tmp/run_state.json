@@ -1,9 +1,9 @@
 {
-  "run_id": "flujo-kicad-2026-06-29T01-55-56",
+  "run_id": "flujo-kicad-2026-06-29T10-42-59",
   "directive": "imagen_a_kicad.yaml",
   "imagenes": "docs/IMAGENES/555.png",
-  "started_at": "2026-06-29T01:55:56.001492+00:00",
-  "last_updated": "2026-06-29T01:55:56.001501+00:00",
+  "started_at": "2026-06-29T10:42:59.679709+00:00",
+  "last_updated": "2026-06-29T10:42:59.679720+00:00",
   "current_step": 0,
   "steps_completed": [
     {

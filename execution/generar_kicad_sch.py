@@ -13,6 +13,7 @@ import argparse
 import json
 import sys
 import uuid
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -31,6 +32,7 @@ TYPE_MAP = {
     "VCC": "power:VCC",
     "IC_555": "Timer:NE555P",
     "555_Timer": "Timer:NE555P",
+    "NE555": "Timer:NE555P",
 }
 
 def generate_uuid() -> str:
@@ -104,6 +106,13 @@ def extract_symbol_from_lib(lib_id: str) -> str:
         
     return f'    (symbol "{lib_id}" (pin_names (offset 1.016)) (in_bom yes) (on_board yes))'
 
+def extract_pins_from_sym(sym_block: str) -> dict:
+    pins = {}
+    for match in re.finditer(r"\(pin\s+[^)]+\s+[^)]+\s*\(at\s+([\-\d\.]+)\s+([\-\d\.]+)\s+[\d\.]+\).*?\(number\s+\"([^\"]+)\"", sym_block, re.DOTALL):
+        x, y, num = match.groups()
+        pins[num] = (float(x), float(y))
+    return pins
+
 def generate_kicad_sch(netlist: dict, output_file: Path) -> dict:
     try:
         components = netlist.get("components", [])
@@ -118,11 +127,16 @@ def generate_kicad_sch(netlist: dict, output_file: Path) -> dict:
         # Registrar librerías usadas
         used_lib_ids = set([get_symbol_lib_id(c.get("type", "")) for c in components])
         
+        lib_pin_info = {}
+        
         if used_lib_ids:
             lines.append(f'  (lib_symbols')
             for lib_id in sorted(used_lib_ids):
                 # Extraemos el dibujo completo del símbolo
-                lines.append(extract_symbol_from_lib(lib_id))
+                sym_block = extract_symbol_from_lib(lib_id)
+                lines.append(sym_block)
+                # Extraemos las posiciones relativas de los pines
+                lib_pin_info[lib_id] = extract_pins_from_sym(sym_block)
             lines.append(f'  )')
         
         pin_positions = {}
@@ -145,24 +159,24 @@ def generate_kicad_sch(netlist: dict, output_file: Path) -> dict:
             lines.append(f'    (in_bom yes) (on_board yes) (dnp no) (uuid "{comp_uuid}")')
             
             # Propiedad Reference (ID)
-            lines.append(f'    (property "Reference" "{cid}" (at {cx} {cy-5} 0)')
+            lines.append(f'    (property "Reference" "{cid}" (id 0) (at {cx} {cy-5} 0)')
             lines.append(f'      (effects (font (size 1.27 1.27)))')
             lines.append(f'    )')
             
             # Propiedad Value
-            lines.append(f'    (property "Value" "{cval}" (at {cx} {cy+5} 0)')
+            lines.append(f'    (property "Value" "{cval}" (id 1) (at {cx} {cy+5} 0)')
             lines.append(f'      (effects (font (size 1.27 1.27)))')
             lines.append(f'    )')
             
             lines.append(f'  )')
             
-            # Registrar posiciones de los pines (aproximación para dibujar alambres)
-            # En KiCad real, los pines están a cierta distancia del centro
-            # Usaremos una heurística muy simple: pin 1 a cx-5, pin 2 a cx+5
-            pin_positions[f"{cid}-1"] = (cx - 5.08, cy)
-            pin_positions[f"{cid}-2"] = (cx + 5.08, cy)
-            if "Q_" in ctype: # Transistor
-                pin_positions[f"{cid}-3"] = (cx, cy + 5.08)
+            # Registrar posiciones de los pines usando las coordenadas reales extraídas
+            local_pins = lib_pin_info.get(lib_id, {})
+            for pin_num, (lx, ly) in local_pins.items():
+                # En KiCad: librería Y hacia arriba, esquemático Y hacia abajo
+                abs_x = cx + lx
+                abs_y = cy - ly
+                pin_positions[f"{cid}-{pin_num}"] = (abs_x, abs_y)
 
         # Colocar Conexiones (Wires)
         for conn in connections:
@@ -177,16 +191,34 @@ def generate_kicad_sch(netlist: dict, output_file: Path) -> dict:
                 
             p1_x, p1_y = pin_positions[first_pin]
             
+            # Añadir un junction en el primer pin si hay más de 2 conexiones al mismo nodo
+            if len(pins) > 2:
+                lines.append(f'  (junction (at {p1_x} {p1_y}) (diameter 0) (color 0 0 0 0)')
+                lines.append(f'    (uuid "{generate_uuid()}")')
+                lines.append(f'  )')
+                
             for other_pin in pins[1:]:
                 if other_pin not in pin_positions:
                     continue
                 p2_x, p2_y = pin_positions[other_pin]
                 
-                # Wire directo de p1 a p2
-                lines.append(f'  (wire (pts (xy {p1_x} {p1_y}) (xy {p2_x} {p2_y}))')
-                lines.append(f'    (stroke (width 0) (type default))')
-                lines.append(f'    (uuid "{generate_uuid()}")')
-                lines.append(f'  )')
+                # Rutado Ortogonal (en L)
+                mid_x = p2_x
+                mid_y = p1_y
+                
+                # Segmento horizontal
+                if p1_x != mid_x:
+                    lines.append(f'  (wire (pts (xy {p1_x} {p1_y}) (xy {mid_x} {mid_y}))')
+                    lines.append(f'    (stroke (width 0) (type default))')
+                    lines.append(f'    (uuid "{generate_uuid()}")')
+                    lines.append(f'  )')
+                    
+                # Segmento vertical
+                if mid_y != p2_y:
+                    lines.append(f'  (wire (pts (xy {mid_x} {mid_y}) (xy {p2_x} {p2_y}))')
+                    lines.append(f'    (stroke (width 0) (type default))')
+                    lines.append(f'    (uuid "{generate_uuid()}")')
+                    lines.append(f'  )')
 
         lines.append(f')')
         

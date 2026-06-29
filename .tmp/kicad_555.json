@@ -10,48 +10,48 @@
       {
         "id": "R1",
         "type": "R",
-        "value": "",
+        "value": "10k",
         "x": 50,
         "y": 30
       },
       {
         "id": "R2",
         "type": "R",
-        "value": "",
+        "value": "10k",
         "x": 50,
         "y": 70
       },
       {
         "id": "R3",
         "type": "R",
-        "value": "",
+        "value": "10k",
         "x": 150,
         "y": 120
       },
       {
         "id": "C1",
-        "type": "C",
-        "value": "",
+        "type": "C_Polarized",
+        "value": "10uF",
         "x": 50,
         "y": 130
       },
       {
         "id": "C2",
         "type": "C",
-        "value": "",
+        "value": "100nF",
         "x": 120,
-        "y": 160
+        "y": 150
       },
       {
         "id": "D1",
         "type": "LED",
         "value": "",
         "x": 150,
-        "y": 160
+        "y": 150
       },
       {
         "id": "U1",
-        "type": "555_Timer",
+        "type": "NE555",
         "value": "",
         "x": 100,
         "y": 100
@@ -79,30 +79,30 @@
         "pins": [
           "C1-2",
           "U1-1",
-          "C2-1",
+          "C2-2",
           "D1-2",
           "GND1-1"
         ]
       },
       {
-        "net_name": "Net_R1_R2_U1_7",
+        "net_name": "Net_R1_R2",
         "pins": [
           "R1-2",
-          "R2-1",
-          "U1-7"
+          "R2-1"
         ]
       },
       {
-        "net_name": "Net_R2_C1_U1_2_6",
+        "net_name": "Net_Timing",
         "pins": [
           "R2-2",
           "C1-1",
           "U1-2",
-          "U1-6"
+          "U1-6",
+          "U1-7"
         ]
       },
       {
-        "net_name": "Net_U1_3_R3_D1",
+        "net_name": "Net_Output",
         "pins": [
           "U1-3",
           "R3-2",
@@ -110,18 +110,18 @@
         ]
       },
       {
-        "net_name": "Net_U1_5_C2",
+        "net_name": "Net_Control_Voltage",
         "pins": [
           "U1-5",
-          "C2-2"
+          "C2-1"
         ]
       }
     ]
   },
-  "timestamp": "2026-06-29T01:56:14.301126+00:00",
+  "timestamp": "2026-06-29T10:43:22.053297+00:00",
   "tokens_usados": {
     "prompt": 662,
-    "respuesta": 713,
-    "total": 3318
+    "respuesta": 709,
+    "total": 3385
   }
 }
