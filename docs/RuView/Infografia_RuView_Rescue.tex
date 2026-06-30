@@ -1,0 +1,97 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{tikz}
+
+\definecolor{primary}{RGB}{33, 64, 154}
+\definecolor{secondary}{RGB}{237, 28, 36}
+\definecolor{accent}{RGB}{247, 148, 29}
+\definecolor{bglight}{RGB}{245, 245, 245}
+
+\tcbuselibrary{skins}
+
+\tcbset{
+    infobox/.style={
+        enhanced,
+        colback=white,
+        colframe=primary,
+        boxrule=1pt,
+        arc=4pt,
+        left=5pt,
+        right=5pt,
+        top=5pt,
+        bottom=5pt,
+        fonttitle=\bfseries\large,
+        coltitle=white,
+        attach boxed title to top left={xshift=10pt, yshift=-10pt},
+        boxed title style={colback=primary, arc=4pt, boxrule=0pt}
+    }
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace*{0.5cm}
+    {\Huge \textbf{\textcolor{primary}{RuView Rescue}}}\\[0.5cm]
+    {\LARGE \textbf{Plan de Implementación y Arquitectura}}\\[0.2cm]
+    {\large \textit{Grupo de Investigación: Tecnología Venezolana}}\\[1cm]
+\end{center}
+
+\begin{tcolorbox}[infobox, title=Descripción del Proyecto, colframe=secondary, boxed title style={colback=secondary}]
+Este plan detalla el desarrollo del proyecto \textbf{RuView} aplicado a la búsqueda y rescate en escenarios de desastre (ej. sismos). Su núcleo se basa en usar señales WiFi (CSI) para detectar signos vitales (respiración) a través de escombros, manteniendo estrictamente una \textbf{arquitectura de 3 capas} (Directives $\rightarrow$ Orchestration $\rightarrow$ Execution).
+\end{tcolorbox}
+
+\vspace{0.5cm}
+\begin{multicols}{2}
+
+\begin{tcolorbox}[infobox, title=Fase 1: Nodo ESP32 (Hardware)]
+Desarrollo en C/C++ (ESP-IDF/Arduino) para el ESP32-S3.
+\begin{itemize}
+    \item \textbf{CSI:} Modo promiscuo para captura de WiFi.
+    \item \textbf{Acelerómetro:} MPU6050 vía I2C para registrar ruido mecánico.
+    \item \textbf{Transmisión:} UDP hacia el servidor central.
+\end{itemize}
+\textit{Objetivo:} Capturar datos físicos crudos con ultra-baja latencia.
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox, title=Fase 2: Motor Central (3 Capas)]
+Servidor local (Raspberry Pi/PC).
+\begin{itemize}
+    \item \textbf{Capa 1 (Directives):} \texttt{ruview\_rescue.yaml}. Parámetros, umbrales y puertos.
+    \item \textbf{Capa 2 (Orchestration):} Script Python UDP que enruta la data y despacha alertas.
+    \item \textbf{Capa 3 (Execution):} Script Python para filtrado matemático. Uso de filtro adaptativo NLMS para restar vibración de maquinaria pesada y FFT para detectar respiración (0.2 - 0.5 Hz).
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox, title=Fase 3: Diseño KiCAD]
+Diseño de la Placa de Circuito Impreso (PCB) para el nodo táctico.
+\begin{itemize}
+    \item Aislamiento contra ruido de fuentes conmutadas.
+    \item Protección del acelerómetro.
+    \item Optimización con antenas direccionales.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[infobox, title=Fase 4: Inteligencia Artificial]
+\begin{enumerate}
+    \item \textbf{Data:} Recolección masiva con v1 (Python).
+    \item \textbf{Nube:} Entrenamiento de Redes Neuronales (PyTorch/TensorFlow).
+    \item \textbf{Cuantización:} Exportación a modelo ultraligero (TFLite).
+    \item \textbf{Edge AI:} Inferencia local en Raspberry Pi migrando el motor de ejecución a \textbf{Rust (v2)} para máxima eficiencia (0\% dependencia de internet).
+\end{enumerate}
+\end{tcolorbox}
+
+\end{multicols}
+
+\vspace{1cm}
+\begin{center}
+    \textit{Arquitectura de Monitoreo Espacial y Procesamiento de Señales Avanzadas.}
+\end{center}
+
+\end{document}

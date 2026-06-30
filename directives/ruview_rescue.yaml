@@ -1,0 +1,27 @@
+name: ruview_rescue_pipeline
+description: Flujo de procesamiento de señales CSI y filtrado de vibraciones para rescate.
+version: 1.0
+
+# SOP (Standard Operating Procedure)
+steps:
+  - action: start_listener
+    description: "Inicia el servidor UDP para recibir datos del ESP32."
+    port: 5005
+    buffer_size: 4096
+
+  - action: parse_payload
+    description: "Desempaqueta el JSON o la trama binaria que contiene CSI y (AccX, AccY, AccZ)."
+
+  - action: check_vibration
+    description: "Comprueba si la vibración (Acelerómetro) supera el umbral crítico para pausar lecturas o aplicar el filtro adaptativo."
+    threshold: 2.5 # Gravedades o unidades relativas
+
+  - action: apply_filter
+    description: "Delega el filtrado (NLMS) y la FFT a la Capa 3 (execution/ruview_signal_processing.py)."
+    target_frequency: 
+      min_hz: 0.2 # 12 respiraciones por minuto
+      max_hz: 0.5 # 30 respiraciones por minuto
+
+  - action: emit_alert
+    description: "Si se detecta un patrón claro de respiración y el umbral de confianza es superado, emitir alerta de rescate."
+    confidence_threshold: 0.85
