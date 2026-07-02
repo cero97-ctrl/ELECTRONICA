@@ -126,7 +126,8 @@ export default {
               messages: [
                 { role: 'system', content: 'Eres un agente experto. Responde en español.' },
                 { role: 'user', content: message }
-              ]
+              ],
+              max_tokens: 2048
             })
           });
 
@@ -146,7 +147,7 @@ export default {
           if (!env.GOOGLE_API_KEY) {
             throw new Error('La clave GOOGLE_API_KEY no está configurada.');
           }
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GOOGLE_API_KEY}`;
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GOOGLE_API_KEY}`;
           const gResponse = await fetch(geminiUrl, {
             method: 'POST',
             headers: {
@@ -866,7 +867,7 @@ const UI_HTML = `<!DOCTYPE html>
           <select id="model-provider" class="provider-selector">
             <option value="groq">Groq (Qwen 3.6 27B)</option>
             <option value="openrouter">OpenRouter (Gemini 2.5 Flash)</option>
-            <option value="google">Google API (Gemini 1.5 Flash)</option>
+            <option value="google">Google API (Gemini 2.5 Flash)</option>
           </select>
         </div>
         <div class="chat-history" id="chat-history">

@@ -1,0 +1,118 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\definecolor{lightgray}{rgb}{0.95, 0.95, 0.95}
+\definecolor{codegray}{rgb}{0.5, 0.5, 0.5}
+\definecolor{codeblue}{rgb}{0.1, 0.2, 0.6}
+
+\lstset{
+    backgroundcolor=\color{lightgray},
+    basicstyle=\small\ttfamily,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    commentstyle=\color{codegray},
+    keepspaces=true,
+    keywordstyle=\color{codeblue},
+    numbers=left,
+    numbersep=5pt,
+    numberstyle=\tiny\color{codegray},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{lightgray}
+}
+
+\title{Manual de Operación y Despliegue \\ \large Cloudflare Serverless Agent}
+\author{Espacio de Trabajo - Electrónica}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introducción}
+Este manual describe el flujo de trabajo para el desarrollo, prueba y despliegue del \textbf{Cloudflare Serverless Agent} en la dirección de producción \href{https://cloudflare-agent.cero-agents.workers.dev/}{cloudflare-agent.cero-agents.workers.dev}. El proyecto local está ubicado en la ruta:
+\begin{verbatim}
+/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/Proyectos/cloudflare-agent
+\end{verbatim}
+
+\section{Estructura del Proyecto}
+El proyecto consta de los siguientes archivos principales:
+\begin{itemize}
+    \item \textbf{package.json}: Define los scripts de npm y las dependencias (como \texttt{wrangler} y \texttt{pdf-lib}).
+    \item \textbf{wrangler.toml}: Configuración de Wrangler para el Worker de Cloudflare, especificando el nombre del servicio (\texttt{cloudflare-agent}) y el punto de entrada (\texttt{src/index.ts}).
+    \item \textbf{src/index.ts}: Código fuente TypeScript principal que implementa los endpoints (\texttt{/}, \texttt{/status}, \texttt{/chat}, \texttt{/quote}).
+    \item \textbf{.dev.vars}: Archivo local (excluido de git) donde se configuran los tokens/claves de API para el entorno de desarrollo local.
+\end{itemize}
+
+\section{Flujo de Desarrollo Local}
+Antes de realizar un despliegue en producción, es recomendable probar y validar los cambios de forma local.
+
+\subsection{Inicio del Servidor de Desarrollo}
+Para arrancar el entorno de desarrollo local, ejecuta desde la carpeta raíz del proyecto:
+\begin{lstlisting}[language=bash]
+npm run dev
+\end{lstlisting}
+O de forma directa mediante Wrangler:
+\begin{lstlisting}[language=bash]
+npx wrangler dev
+\end{lstlisting}
+
+Esto iniciará un servidor local (por lo general en \texttt{http://localhost:8787}) que emulará el entorno del Worker de Cloudflare. Este servidor leerá automáticamente las variables de entorno definidas en el archivo local \texttt{.dev.vars}.
+
+\section{Flujo de Despliegue a Producción}
+Cuando los cambios estén validados y listos para producción, sigue el siguiente procedimiento:
+
+\subsection{Autenticación (Si es requerida)}
+Si no has iniciado sesión o si la sesión con Cloudflare ha expirado, debes autenticarte en Wrangler ejecutando:
+\begin{lstlisting}[language=bash]
+npx wrangler login
+\end{lstlisting}
+Esto abrirá el navegador para ingresar tus credenciales y autorizar la CLI en tu máquina local.
+
+\subsection{Despliegue del Código}
+Para compilar y subir los cambios a la infraestructura de Cloudflare, ejecuta:
+\begin{lstlisting}[language=bash]
+npm run deploy
+\end{lstlisting}
+O bien:
+\begin{lstlisting}[language=bash]
+npx wrangler deploy
+\end{lstlisting}
+Una vez completado de manera exitosa, los cambios se verán reflejados inmediatamente en \href{https://cloudflare-agent.cero-agents.workers.dev/}{https://cloudflare-agent.cero-agents.workers.dev/}.
+
+\section{Configuración de Secrets en Producción}
+El código en \texttt{src/index.ts} depende de tres variables de entorno fundamentales para realizar llamadas a los LLMs:
+\begin{itemize}
+    \item \texttt{GROQ\_API\_KEY}
+    \item \texttt{OPENROUTER\_API\_KEY}
+    \item \texttt{GOOGLE\_API\_KEY}
+\end{itemize}
+
+Dado que \texttt{.dev.vars} no se despliega en producción por seguridad, debes configurar estas claves de API en Cloudflare de la siguiente manera:
+
+\begin{lstlisting}[language=bash]
+npx wrangler secret put GROQ_API_KEY
+npx wrangler secret put OPENROUTER_API_KEY
+npx wrangler secret put GOOGLE_API_KEY
+\end{lstlisting}
+
+Ejecuta cada comando individualmente e ingresa el valor de la clave correspondiente cuando la CLI te lo solicite.
+
+\end{document}
