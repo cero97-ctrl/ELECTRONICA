@@ -463,8 +463,8 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="llama-3.3-70b-versatile",
-        help="Modelo a usar (default: llama-3.3-70b-versatile). Con --api-backend openrouter usa IDs de OpenRouter.",
+        default="qwen/qwen3.6-27b",
+        help="Modelo a usar (default: qwen/qwen3.6-27b). Con --api-backend openrouter usa IDs de OpenRouter.",
     )
     parser.add_argument(
         "--api-backend",

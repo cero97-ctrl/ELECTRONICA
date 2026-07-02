@@ -1,0 +1,37 @@
+Goal: "Desarrollar, probar localmente y desplegar un Agente de IA serverless en Cloudflare Workers usando Wrangler."
+
+Required inputs: []
+
+Steps:
+  - step: 1
+    action: "Instalar las dependencias locales del subproyecto"
+    command: "npm install"
+    cwd: "Proyectos/cloudflare-agent"
+  - step: 2
+    action: "Iniciar el entorno de desarrollo local con Wrangler v3"
+    command: "npx wrangler dev"
+    cwd: "Proyectos/cloudflare-agent"
+    note: "Esto levanta un simulador local en http://localhost:8787"
+  - step: 3
+    action: "Ejecutar pruebas locales automatizadas"
+    script: "execution/test_cloudflare_worker.py"
+    inputs:
+      endpoint: "http://localhost:8787"
+  - step: 4
+    action: "Autenticar la terminal en Cloudflare para despliegue"
+    command: "npx wrangler login"
+    note: "Requerido solo la primera vez para enlazar la cuenta del usuario"
+  - step: 5
+    action: "Desplegar el Agente en producción (nube de Cloudflare)"
+    command: "npx wrangler deploy"
+    cwd: "Proyectos/cloudflare-agent"
+
+Expected outputs:
+  - "Un servidor simulador local en http://localhost:8787 listo para recibir peticiones de prueba."
+  - "Un agente serverless activo e independiente en la nube de Cloudflare listo para integraciones reales."
+
+Edge cases:
+  - error: "El comando de despliegue o wrangler falla por versión de Node.js."
+    recovery: "Forzar el uso de wrangler@3 en package.json, ya que soporta Node.js v18.19.1."
+  - error: "El puerto 8787 ya está en uso."
+    recovery: "Iniciar wrangler especificando un puerto alternativo: wrangler dev --port 8788."

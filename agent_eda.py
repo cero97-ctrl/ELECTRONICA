@@ -45,16 +45,16 @@ def initialize_llm():
     try:
         return ChatGroq(
             groq_api_key=api_key,
-            model_name="llama-3.3-70b-versatile", # Se recomienda un modelo grande para razonamiento lógico
+            model_name="qwen/qwen3.6-27b", # Se recomienda un modelo grande para razonamiento lógico (Qwen 3.6 27B)
             temperature=0.1 # Baja temperatura para resultados deterministas
         )
     except Exception as e:
-        print(f"[-] Advertencia: El modelo 'llama-3.3-70b-versatile' no está disponible o fue depreciado.")
+        print(f"[-] Advertencia: El modelo 'qwen/qwen3.6-27b' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
-        print("[*] Intentando inicializar con el modelo de respaldo 'llama-3.1-70b-versatile'...")
+        print("[*] Intentando inicializar con el modelo de respaldo 'llama-3.1-8b-instant'...")
         return ChatGroq(
             groq_api_key=api_key,
-            model_name="llama-3.1-70b-versatile", # Modelo de respaldo seguro
+            model_name="llama-3.1-8b-instant", # Modelo de respaldo seguro
             temperature=0.1
         )
 

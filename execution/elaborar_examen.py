@@ -459,8 +459,8 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="llama-3.3-70b-versatile",
-        help="Modelo a usar (default: llama-3.3-70b-versatile).",
+        default="qwen/qwen3.6-27b",
+        help="Modelo a usar (default: qwen/qwen3.6-27b).",
     )
     parser.add_argument(
         "--api-backend",

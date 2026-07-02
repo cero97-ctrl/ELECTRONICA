@@ -265,8 +265,8 @@ Ejemplos:
     parser.add_argument("--nivel", default="intermedia",
                         choices=["basica", "intermedia", "avanzada"],
                         help="Nivel de dificultad (default: intermedia).")
-    parser.add_argument("--modelo", default="llama-3.3-70b-versatile",
-                        help="Modelo a usar (default: llama-3.3-70b-versatile).")
+    parser.add_argument("--modelo", default="qwen/qwen3.6-27b",
+                        help="Modelo a usar (default: qwen/qwen3.6-27b).")
     parser.add_argument("--api-backend", default="groq",
                         choices=["gemini", "openrouter", "groq"],
                         help="Backend de API: gemini, openrouter o groq. (default: groq).")
