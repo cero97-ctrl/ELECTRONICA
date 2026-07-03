@@ -1,0 +1,168 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{comment}
+
+% --- Paquetes para Mejoras Visuales ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{framed}
+
+% --- Definición de Colores y Estilos ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{
+    style=mystyle,
+    extendedchars=true,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1
+}
+
+\title{Manual de Configuración: Google Colab en VS Code con Aceleración GPU}
+\author{Prof. CERO / Área de Electrónica}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+Este manual proporciona una guía paso a paso para configurar y ejecutar cuadernos de Jupyter (\texttt{.ipynb}) en el entorno de desarrollo \textbf{Visual Studio Code} utilizando el runtime en la nube de \textbf{Google Colab}. 
+
+Esta integración permite aprovechar la infraestructura en la nube de Google, en particular sus aceleradores de hardware como la GPU NVIDIA Tesla T4, directamente desde la comodidad del editor de VS Code y sin necesidad de ejecutar recursos pesados localmente.
+
+\section{Configuración del Servidor de Google Colab}
+
+Para conectar un archivo \texttt{.ipynb} en VS Code al runtime de Google Colab, se deben seguir los siguientes pasos:
+
+\begin{enumerate}
+    \item Abra su archivo de cuaderno, por ejemplo \texttt{test\_colab.ipynb}, en Visual Studio Code.
+    \item En la esquina superior derecha del editor del cuaderno, haga clic en el botón de selección de kernel (\textbf{Select Kernel}).
+    \item En el menú desplegable, seleccione la opción \textbf{New Colab Server} (o conéctese a uno existente si ya tiene una sesión activa).
+    \item A continuación, el sistema solicitará la selección del tipo de acelerador de hardware:
+    \begin{itemize}
+        \item \textbf{CPU}: Para tareas de cómputo generales sin necesidades de procesamiento gráfico intensivo.
+        \item \textbf{GPU}: Para entrenamiento de modelos de aprendizaje profundo y operaciones matriciales masivas. Seleccione \textbf{GPU} para pruebas de aceleración de hardware.
+    \end{itemize}
+    \item Si seleccionó GPU, el elija el tipo de GPU. La opción estándar y gratuita provista por Colab es la \textbf{T4} (NVIDIA Tesla T4).
+    \item Ingrese un nombre personalizado para la sesión del servidor (por ejemplo, \texttt{PRUEBA}) y presione \texttt{Enter}.
+    \item Finalmente, seleccione el entorno de lenguaje correspondiente. Dado que la mayoría de los cuadernos de IA y procesamiento matemático se desarrollan en Python, seleccione \textbf{Python 3}.
+\end{enumerate}
+
+Una vez finalizados estos pasos, verá en la esquina superior derecha o inferior izquierda del notebook el indicador en verde \texttt{Colab (idle)}, confirmando que el entorno está listo para recibir instrucciones.
+
+\section{Ejecución y Monitoreo del Entorno}
+
+Con el kernel conectado, puede ejecutar las celdas del cuaderno:
+
+\begin{itemize}
+    \item Para ejecutar celdas individuales, haga clic en el botón de reproducción al lado de la celda deseada o presione \texttt{Ctrl + Enter} (o \texttt{Shift + Enter} para ejecutar y avanzar).
+    \item Para ejecutar todo el cuaderno de forma secuencial, haga clic en el botón \textbf{Run All} (Ejecutar todo) en la barra superior.
+\end{itemize}
+
+El script provisto en \texttt{test\_colab.ipynb} permite verificar la conexión y la configuración de hardware mediante las siguientes celdas de código.
+
+\subsection{Verificación de Recursos Generales}
+El primer bloque de código obtiene información de CPU, sistema operativo y PyTorch:
+
+\begin{lstlisting}[language=Python]
+import sys, platform, psutil, torch
+print(f"Python: {sys.version}")
+print(f"SO: {platform.system()} {platform.release()}")
+print(f"RAM: {psutil.virtual_memory().total / 1e9:.1f} GB")
+print(f"PyTorch: {torch.__version__}")
+\end{lstlisting}
+
+Al ejecutarse en un entorno estándar de Colab, debería reportar aproximadamente \texttt{13.6 GB} de RAM y un sistema operativo basado en \texttt{Linux}.
+
+\subsection{Detección de Aceleración por GPU (CUDA)}
+Para comprobar que la GPU está configurada correctamente y disponible para PyTorch, se emplea el siguiente bloque:
+
+\begin{lstlisting}[language=Python]
+import torch
+print(f"CUDA disponible: {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    print(f"GPU: {torch.cuda.get_device_name(0)}")
+    print(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+\end{lstlisting}
+
+Si el runtime fue configurado con GPU T4, la salida será similar a:
+\begin{verbatim}
+CUDA disponible: True
+GPU: Tesla T4
+VRAM: 15.6 GB
+\end{verbatim}
+
+\subsection{Cálculo de Prueba (Multiplicación de Matrices)}
+Finalmente, se realiza una prueba de cálculo matricial para garantizar que los tensores se envíen y multipliquen de forma efectiva en la GPU o CPU:
+
+\begin{lstlisting}[language=Python]
+if torch.cuda.is_available():
+    x = torch.rand(3, 3).cuda()
+    y = torch.rand(3, 3).cuda()
+    z = torch.mm(x, y)
+    print("Multiplicación de matrices en GPU:")
+    print(z)
+else:
+    x = torch.rand(3, 3)
+    y = torch.rand(3, 3)
+    z = torch.mm(x, y)
+    print("Multiplicación de matrices en CPU:")
+    print(z)
+\end{lstlisting}
+
+\section{Gestión del Ciclo de Vida del Servidor}
+
+Es fundamental entender cómo manejar las sesiones activas en VS Code para maximizar el uso de los recursos:
+
+\subsection{Reinicio del Estado del Cuaderno}
+Si desea repetir una prueba o limpiar el entorno para iniciar desde cero:
+\begin{enumerate}
+    \item Haga clic en el botón \textbf{Clear All Outputs} (icono de la escoba/lista) en la barra superior del cuaderno para limpiar los resultados visualizados en el editor.
+    \item Haga clic en \textbf{Restart} (icono de la flecha circular) para reiniciar el kernel. Esto vaciará todas las variables guardadas en la RAM del runtime, dándole un entorno completamente limpio sin cerrar la conexión física.
+\end{enumerate}
+
+\subsection{Ciclo de Vida y Expiración}
+\begin{itemize}
+    \item \textbf{Persistencia de servidores en la misma sesión}: Si abre un nuevo archivo \texttt{.ipynb} en la misma sesión de VS Code, no necesita volver a configurar un servidor de Colab. Simplemente elija \textbf{Select Kernel} $\rightarrow$ seleccione el servidor existente (por ejemplo, \texttt{PRUEBA}) y defina \textbf{Python 3}.
+    \item \textbf{Caducidad del Servidor}: Las sesiones gratuitas de Google Colab son efímeras y expiran tras unas horas de inactividad o un máximo de 12 horas. Cuando esto ocurra o al reiniciar VS Code, deberá establecer una nueva sesión mediante la opción \textbf{New Colab Server}.
+\end{itemize}
+
+\end{document}
