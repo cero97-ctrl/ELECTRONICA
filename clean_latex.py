@@ -3,14 +3,15 @@ import os
 import argparse
 
 # Extensiones que deseamos CONSERVAR
-KEEP_EXTENSIONS = [".tex", ".pdf", ".py", ".md", ".json", ".sh", ".png", ".jpg", ".jpeg", ".zip"]
+KEEP_EXTENSIONS = [".tex", ".pdf", ".py", ".md", ".json", ".sh", ".png", ".jpg", ".jpeg", ".zip", ".ipynb", ".kicad_sch", ".txt"]
 
 def clean_latex_aux_files(directory):
     if not os.path.exists(directory):
         print(f"Error: El directorio no existe -> {directory}")
         return
 
-    print(f"Buscando archivos para eliminar recursivamente (conservando solo .tex, .pdf, .py, .md, .json, .sh, .png, .jpg, .jpeg, .zip) en:\n{directory}\n")
+    keep_str = ", ".join(KEEP_EXTENSIONS)
+    print(f"Buscando archivos para eliminar recursivamente (conservando solo {keep_str}) en:\n{directory}\n")
     deleted_count = 0
 
     for root, _, files in os.walk(directory):

@@ -107,7 +107,7 @@ else:
 
         if docs:
             print(f"Se cargaron {len(docs)} documentos. Dividiendo y procesando...")
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
             splits = text_splitter.split_documents(docs)
             
             print("Añadiendo nuevos fragmentos a la base de conocimientos...")
@@ -121,7 +121,7 @@ else:
         print("No se encontraron archivos para procesar.")
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 6}) # Recupera los 6 fragmentos más relevantes
+retriever = vectorstore.as_retriever(search_kwargs={"k": 4}) # Recupera los 4 fragmentos más relevantes para ahorrar tokens
 llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
 
 # 6. Crear memoria conversacional y el Prompt RAG
@@ -168,7 +168,7 @@ try:
 
         response = rag_chain.invoke({
             "input": pregunta,
-            "chat_history": chat_history
+            "chat_history": chat_history[-6:] # Limita el historial a los últimos 6 mensajes (3 turnos) para ahorrar tokens
         })
 
         print("\n--- RESPUESTA ---")
