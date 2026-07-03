@@ -1,0 +1,30 @@
+Goal: "Levantar un servidor MCP local para recibir código LaTeX, compilarlo y retornar el PDF resultante de forma segura."
+
+Required inputs:
+  - latex_code: "El string de texto con el código LaTeX completo a compilar."
+  - job_name: "El nombre base del archivo de salida (opcional)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP (vía stdio o sse) con el código LaTeX."
+  - step: 2
+    action: "Invocar el script de compilación para generar el PDF."
+    script: "execution/compile_latex.py"
+    inputs:
+      latex_content: "{{latex_code}}"
+      job_name: "{{job_name}}"
+  - step: 3
+    action: "Limpiar archivos auxiliares de compilación."
+    script: "clean_latex.py"
+  - step: 4
+    action: "Retornar la respuesta al cliente MCP con la ruta absoluta del PDF generado."
+
+Expected outputs:
+  - "Un archivo PDF generado en el directorio de salida temporal .tmp/latex_build/."
+  - "Una respuesta estructurada al cliente MCP indicando el estado de la compilación y la ubicación del archivo PDF."
+
+Edge cases:
+  - error: "Errores sintácticos de LaTeX o paquetes faltantes en el código enviado."
+    recovery: "Capturar el error de pdflatex (líneas que inician con '!') del archivo .log y retornarlo de forma amigable al cliente de IA."
+  - error: "El compilador pdflatex no está instalado en el servidor que corre el MCP."
+    recovery: "Notificar al cliente que se requiere la instalación de la distribución TeX Live/pdflatex en el sistema anfitrión."
