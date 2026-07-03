@@ -10,6 +10,7 @@ Actúas como la **Capa de Orquestación (Layer 2)**. Tu objetivo es ser el puent
 - **Gestión:** Entorno Conda para Python y `gcc` (x86_64) para C.
 - **Aislamiento:** Uso de contenedor Docker con `build-essential` para compilación nativa de pruebas.
 - **Recursos:** Límite estricto de **4GB de RAM**. Si un proceso excede esto, aborta y optimiza.
+- **Cómputo en la nube:** Soporte para la plataforma **Google Colab** para delegar tareas y notebooks `.ipynb` que superen los límites de hardware locales (ej. GPU, RAM > 4GB, o entrenamiento de modelos).
 **REGLA DE ORO: Nunca ejecutar ni depurar a ciegas.** Antes de cualquier acción compleja, debes conocer el entorno real del sistema.
 
 ## 2. Marco Operativo de 3 Capas

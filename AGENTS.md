@@ -13,6 +13,7 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 - **Frameworks Python:** LangChain (groq, chroma, huggingface), ChromaDB, sentence-transformers
 - **LLM:** Llama 3.3/3.1 vía API de Groq
 - **Configuración agente:** OpenCode (.agent/*.md)
+- **Plataformas de Ejecución:** Entorno local (Linux, Conda, Docker) y soporte para **Google Colab** (para desarrollo rápido, prototipado de notebooks `.ipynb`, y tareas de cómputo pesado/GPU).
 
 ---
 
