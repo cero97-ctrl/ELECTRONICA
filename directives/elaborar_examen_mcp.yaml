@@ -1,0 +1,44 @@
+Goal: "Levantar un servidor MCP local para recibir peticiones de elaboración de exámenes, orquestar la generación de preguntas mediante scripts LLM, convertir a LaTeX y compilar automáticamente tanto el examen como el solucionario a PDF, limpiando auxiliares."
+
+Required inputs:
+  - tema: "El tema específico de electrónica sobre el cual elaborar el examen."
+  - nivel: "Nivel de dificultad del examen: basica, intermedia, avanzada (opcional, default: intermedia)."
+  - modelo: "Modelo a usar para la elaboración (opcional, default: qwen/qwen3.6-27b)."
+  - api_backend: "Backend de API a usar: gemini, openrouter o groq (opcional, default: groq)."
+  - output_dir: "Directorio de destino para guardar examen y solucionario (opcional, default: examenes/)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP con el tema y los parámetros de configuración."
+  - step: 2
+    action: "Invocar el script orquestador flujo_elaborar_examen.py pasándole los parámetros correspondientes."
+    script: "flujo_elaborar_examen.py"
+    inputs:
+      tema: "{{tema}}"
+      nivel: "{{nivel}}"
+      modelo: "{{modelo}}"
+      api_backend: "{{api_backend}}"
+      output: "{{output_dir}}"
+  - step: 3
+    action: "Compilar el examen LaTeX generado a formato PDF (.pdf) y limpiar archivos auxiliares."
+    script: "execution/compile_latex.py"
+  - step: 4
+    action: "Compilar el solucionario LaTeX generado a formato PDF (.pdf) y limpiar archivos auxiliares."
+    script: "execution/compile_latex.py"
+  - step: 5
+    action: "Verificar si el flujo completó con éxito todos los pasos y emitir la alerta de notificación acústica."
+    script: "execution/alert_user.py"
+  - step: 6
+    action: "Retornar al cliente MCP las rutas absolutas del Examen PDF, Solucionario PDF, y detalles del examen elaborado."
+
+Expected outputs:
+  - "El examen compilado en PDF (.pdf) junto con su código fuente LaTeX (.tex)."
+  - "El solucionario compilado en PDF (.pdf) junto con su código fuente LaTeX (.tex)."
+  - "Un archivo de evaluación en formato JSON en el directorio temporal .tmp/."
+  - "Una respuesta estructurada de texto al cliente MCP con los resultados resumidos de la elaboración y las rutas de los archivos generados."
+
+Edge cases:
+  - error: "El tema provisto está vacío o no es válido."
+    recovery: "Retornar un error descriptivo inmediato al cliente de la IA indicando que el tema no puede estar vacío."
+  - error: "Fallo de conexión o límites de API de LLM superados en la elaboración."
+    recovery: "El orquestador interno aplicará de forma automática el respaldo en cascada (Groq -> Gemini -> OpenRouter) para garantizar la continuidad. Si todos fallan, se reportará el error del log de ejecución."

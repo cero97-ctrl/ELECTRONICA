@@ -25,7 +25,7 @@ from pathlib import Path
 
 # ── Configuración ──────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent.resolve()
-PYTHON       = "/home/cero/anaconda3/bin/python3"
+PYTHON       = sys.executable
 EVALUAR      = SCRIPT_DIR / "execution" / "evaluar_examen.py"
 GENERAR      = SCRIPT_DIR / "execution" / "generar_informe.py"
 ALERTAR      = SCRIPT_DIR / "execution" / "alert_user.py"
@@ -113,7 +113,7 @@ def flujo_completo(
     }
     save_state(state)
 
-    total_pasos = 3
+    total_pasos = 4
 
     # ══ PASO 1: Evaluar examen con LLM ═══════════════════════════════════════════
     print_step(1, total_pasos, f"Evaluando examen con {modelo}...")
@@ -208,14 +208,54 @@ def flujo_completo(
     state["last_updated"] = now_iso()
     save_state(state)
 
-    # ══ PASO 3: Alerta de completado ═══════════════════════════════════════════
-    print_step(3, total_pasos, "Notificando al usuario...")
+    # ══ PASO 3: Compilar informe LaTeX a PDF ═════════════════════════════════════
+    print_step(3, total_pasos, "Compilando informe LaTeX a PDF...")
+    
+    output_pdf = "N/A"
+    try:
+        latex_content = output_tex.read_text(encoding="utf-8")
+        job_name = output_tex.stem
+        output_parent = str(output_tex.parent.resolve())
+        
+        from execution.compile_latex import compile_latex_code
+        comp_res = compile_latex_code(latex_content, job_name=job_name, output_dir=output_parent)
+        
+        if comp_res["success"]:
+            output_pdf = Path(comp_res["pdf_path"])
+            print_ok(f"PDF generado exitosamente: {output_pdf}")
+            
+            state["current_step"] = 3
+            state["steps_completed"].append({
+                "step": 3, "script": "compile_latex.py", "status": "ok",
+                "archivo_pdf": str(output_pdf),
+            })
+            state["context"]["archivo_pdf"] = str(output_pdf)
+            state["last_updated"] = now_iso()
+            save_state(state)
+        else:
+            print_err(f"Falló la compilación del informe PDF: {comp_res.get('error')}")
+            state["steps_failed"].append({
+                "step": 3, "script": "compile_latex.py",
+                "code": 1, "message": comp_res.get("error", "Error desconocido")
+            })
+            state["last_updated"] = now_iso()
+            save_state(state)
+            subprocess.run([PYTHON, str(ALERTAR), "error"], capture_output=True)
+            return 1
+            
+    except Exception as e:
+        print_err(f"Error crítico al compilar el PDF: {str(e)}")
+        subprocess.run([PYTHON, str(ALERTAR), "error"], capture_output=True)
+        return 1
+
+    # ══ PASO 4: Alerta de completado ═══════════════════════════════════════════
+    print_step(4, total_pasos, "Notificando al usuario...")
     subprocess.run([PYTHON, str(ALERTAR), "success"], capture_output=True)
     print_ok("Alerta de completado emitida.")
 
-    state["current_step"] = 3
+    state["current_step"] = 4
     state["steps_completed"].append({
-        "step": 3, "script": "alert_user.py", "status": "ok",
+        "step": 4, "script": "alert_user.py", "status": "ok",
         "tipo": "success",
     })
     state["last_updated"] = now_iso()
@@ -228,13 +268,11 @@ def flujo_completo(
     print(f"{bar}")
     print(f"  Puntaje sugerido : {puntaje}")
     print(f"  Nivel            : {nivel}")
+    print(f"  Informe PDF      : {output_pdf}")
     print(f"  Informe LaTeX    : {output_tex}")
     print(f"  JSON de evaluac. : {json_tmp}")
     print(f"  Modelo usado     : {modelo}  |  Tokens: {tokens}")
     print(f"{bar}\n")
-    print("  💡 Para compilar el PDF:")
-    print(f"     cd {output_tex.parent}")
-    print(f"     pdflatex {output_tex.name}\n")
 
     return 0
 

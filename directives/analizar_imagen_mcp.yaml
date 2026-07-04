@@ -1,0 +1,40 @@
+Goal: "Levantar un servidor MCP local para recibir peticiones de análisis de imágenes de electrónica, orquestar el análisis de esquemáticos o circuitos con un LLM multimodal, convertir el resultado a LaTeX y compilar automáticamente el informe a PDF, limpiando auxiliares."
+
+Required inputs:
+  - imagenes: "Ruta absoluta o relativa a la(s) imagen(es) a analizar (separadas por comas, o patrón glob)."
+  - prompt: "Instrucciones de análisis o preguntas sobre el circuito (opcional, default: 'Describe detalladamente lo que ves en la(s) imagen(es)')."
+  - modelo: "Modelo de visión a usar para el análisis (opcional, default: gemini-2.5-flash)."
+  - api_backend: "Backend de API a usar: gemini o openrouter (opcional, default: gemini)."
+  - output_dir: "Directorio de destino para guardar el informe LaTeX y PDF (opcional, default: docs/IMAGENES/informe_imagen/)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP con la(s) imagen(es) y parámetros de configuración."
+  - step: 2
+    action: "Invocar el orquestador flujo_analizar_imagen.py pasándole los parámetros correspondientes."
+    script: "flujo_analizar_imagen.py"
+  - step: 3
+    action: "Ejecutar la consulta de visión multimodal al LLM para obtener la descripción estructurada (JSON)."
+    script: "execution/analizar_imagen.py"
+  - step: 4
+    action: "Convertir la descripción general, elementos y texto extraídos a LaTeX (.tex)."
+    script: "execution/generar_informe_imagen.py"
+  - step: 5
+    action: "Compilar el informe LaTeX generado a formato PDF (.pdf) y limpiar archivos auxiliares."
+    script: "execution/compile_latex.py"
+  - step: 6
+    action: "Verificar si el flujo completó con éxito todos los pasos y emitir la alerta acústica de éxito."
+    script: "execution/alert_user.py"
+  - step: 7
+    action: "Retornar al cliente MCP el informe en PDF generado junto con la descripción general y elementos detectados."
+
+Expected outputs:
+  - "El informe compilado en PDF (.pdf) junto con su código fuente LaTeX (.tex)."
+  - "Un archivo de análisis en formato JSON en el directorio temporal .tmp/."
+  - "Una respuesta estructurada de texto al cliente MCP con los resultados resumidos del análisis visual y la ruta del PDF compilado."
+
+Edge cases:
+  - error: "No se encuentra o no existe ninguna imagen en la(s) ruta(s) provista(s)."
+    recovery: "Retornar un error descriptivo inmediato al cliente indicando la inexistencia del archivo de imagen y abortar."
+  - error: "Fallo de conexión o límites de API de LLM superados en la visión multimodal."
+    recovery: "El orquestador interno aplicará de forma automática el respaldo en cascada (Gemini -> OpenRouter) para garantizar la continuidad. Si todos fallan, se reportará el error del log de ejecución."

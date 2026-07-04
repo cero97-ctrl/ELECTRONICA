@@ -26,7 +26,7 @@ from pathlib import Path
 
 # ── Configuración ──────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent.resolve()
-PYTHON       = "/home/cero/anaconda3/bin/python3"
+PYTHON       = sys.executable
 ELABORAR     = SCRIPT_DIR / "execution" / "elaborar_examen.py"
 GENERAR_TEX  = SCRIPT_DIR / "execution" / "generar_examen_latex.py"
 ALERTAR      = SCRIPT_DIR / "execution" / "alert_user.py"
@@ -102,7 +102,7 @@ def flujo_completo(
     }
     save_state(state)
 
-    total_pasos = 3
+    total_pasos = 4
 
     # ══ PASO 1: Generar examen con LLM ═════════════════════════════════════════
     print_step(1, total_pasos, f"Generando examen con {modelo}...")
@@ -215,14 +215,73 @@ def flujo_completo(
     state["last_updated"] = now_iso()
     save_state(state)
 
-    # ══ PASO 3: Alerta de completado ═══════════════════════════════════════════
-    print_step(3, total_pasos, "Notificando al usuario...")
+    # ══ PASO 3: Compilar examen y solucionario LaTeX a PDF ═══════════════════════
+    print_step(3, total_pasos, "Compilando examen y solucionario LaTeX a PDF...")
+    
+    examen_pdf = "N/A"
+    solucionario_pdf = "N/A"
+    try:
+        from execution.compile_latex import compile_latex_code
+        
+        # 1. Compilar Examen
+        latex_content_exam = output_tex.read_text(encoding="utf-8")
+        job_name_exam = output_tex.stem
+        output_parent = str(output_tex.parent.resolve())
+        
+        comp_res_exam = compile_latex_code(latex_content_exam, job_name=job_name_exam, output_dir=output_parent)
+        
+        # 2. Compilar Solucionario
+        latex_content_sol = sol_output.read_text(encoding="utf-8")
+        job_name_sol = sol_output.stem
+        
+        comp_res_sol = compile_latex_code(latex_content_sol, job_name=job_name_sol, output_dir=output_parent)
+        
+        if comp_res_exam["success"] and comp_res_sol["success"]:
+            examen_pdf = Path(comp_res_exam["pdf_path"])
+            solucionario_pdf = Path(comp_res_sol["pdf_path"])
+            print_ok(f"Examen PDF generado: {examen_pdf}")
+            print_ok(f"Solucionario PDF generado: {solucionario_pdf}")
+            
+            state["current_step"] = 3
+            state["steps_completed"].append({
+                "step": 3, "script": "compile_latex.py", "status": "ok",
+                "examen_pdf": str(examen_pdf),
+                "solucionario_pdf": str(solucionario_pdf),
+            })
+            state["context"]["examen_pdf"] = str(examen_pdf)
+            state["context"]["solucionario_pdf"] = str(solucionario_pdf)
+            state["last_updated"] = now_iso()
+            save_state(state)
+        else:
+            err_msg = ""
+            if not comp_res_exam["success"]:
+                err_msg += f"Examen: {comp_res_exam.get('error')}. "
+            if not comp_res_sol["success"]:
+                err_msg += f"Solucionario: {comp_res_sol.get('error')}."
+                
+            print_err(f"Falló la compilación de PDFs: {err_msg}")
+            state["steps_failed"].append({
+                "step": 3, "script": "compile_latex.py",
+                "code": 1, "message": err_msg
+            })
+            state["last_updated"] = now_iso()
+            save_state(state)
+            subprocess.run([PYTHON, str(ALERTAR), "error"], capture_output=True)
+            return 1
+            
+    except Exception as e:
+        print_err(f"Error crítico al compilar los PDFs: {str(e)}")
+        subprocess.run([PYTHON, str(ALERTAR), "error"], capture_output=True)
+        return 1
+
+    # ══ PASO 4: Alerta de completado ═══════════════════════════════════════════
+    print_step(4, total_pasos, "Notificando al usuario...")
     subprocess.run([PYTHON, str(ALERTAR), "success"], capture_output=True)
     print_ok("Alerta de completado emitida.")
 
-    state["current_step"] = 3
+    state["current_step"] = 4
     state["steps_completed"].append({
-        "step": 3, "script": "alert_user.py", "status": "ok",
+        "step": 4, "script": "alert_user.py", "status": "ok",
         "tipo": "success",
     })
     state["last_updated"] = now_iso()
@@ -239,12 +298,12 @@ def flujo_completo(
     print(f"  Duración sugerida : {duracion}")
     print(f"  Dificultad        : {nivel}")
     print(f"  Modelo usado      : {modelo}  |  Tokens: {tokens}")
+    print(f"  Examen PDF        : {examen_pdf}")
+    print(f"  Solucionario PDF  : {solucionario_pdf}")
     print(f"  Examen LaTeX      : {output_tex}")
     print(f"  Solucionario LaTeX: {sol_output}")
     print(f"  JSON del examen   : {json_tmp}")
     print(f"{bar}\n")
-    print("  💡 Para compilar los PDFs:")
-    print(f"     pdflatex {output_tex.name}  &&  pdflatex {sol_output.name}\n")
 
     return 0
 

@@ -96,7 +96,7 @@ Eres un profesor universitario de Electrónica con amplia experiencia en la elab
 5. **Cada pregunta debe incluir:**
    - Enunciado claro con datos numéricos y valores de componentes.
    - Puntaje sugerido según su complejidad y peso en el examen total (la suma debe dar 10.0).
-   - Solución detallada paso a paso con el desarrollo matemático completo.
+   - Solución directa, estructurada y matemáticamente completa (en LaTeX), de forma concisa y evitando explicaciones conversacionales redundantes para optimizar la longitud del archivo.
    - Conceptos evaluados (lista de temas específicos que la pregunta cubre).
 6. **Formato LaTeX:** los enunciados y soluciones deben usar sintaxis LaTeX para fórmulas matemáticas ($V_{out}$, $I_C$, $\frac{dv}{dt}$, etc.) y referencias a componentes.
 7. **Diagramas:** si la pregunta requiere un circuito eléctrico, incluir una descripción textual detallada del diagrama con valores de componentes y conexiones para que el profesor lo dibuje con circuitikz.
@@ -115,7 +115,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional, con
         "numero": 1,
         "enunciado": "Enunciado completo de la pregunta con fórmulas $LaTeX$.",
         "puntaje": "2.0 puntos",
-        "solucion": "Solución detallada y completa paso a paso con desarrollo matemático $LaTeX$.",
+        "solucion": "Desarrollo matemático en LaTeX paso a paso, conciso y directo al grano (sin rodeos explicativos).",
         "conceptos_evaluados": ["Concepto 1", "Concepto 2"],
         "dificultad": "baja | media | alta",
         "diagrama_sugerido": "Descripción textual del circuito o diagrama necesario (si aplica). De lo contrario, null."
@@ -214,6 +214,7 @@ def generar_con_nuevo_sdk(
             system_instruction=system_instruction,
             temperature=0.7,
             max_output_tokens=8192,
+            response_mime_type="application/json",
         ),
     )
     tokens = {}
@@ -245,6 +246,7 @@ def generar_con_sdk_legacy(
             temperature=0.7,
             top_p=0.95,
             max_output_tokens=8192,
+            response_mime_type="application/json",
         ),
     )
     prompt = (

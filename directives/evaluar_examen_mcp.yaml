@@ -1,0 +1,40 @@
+Goal: "Levantar un servidor MCP local para recibir peticiones de evaluación de exámenes en PDF, orquestar el flujo de evaluación mediante scripts externos y generar informes de salida en LaTeX y JSON."
+
+Required inputs:
+  - pdf_path: "Ruta al archivo PDF del examen del estudiante a evaluar."
+  - modelo: "Modelo a usar para la evaluación (opcional, default: gemini-2.5-flash)."
+  - api_backend: "Backend de API a usar: gemini, openrouter o groq (opcional, default: gemini)."
+  - rubrica: "Ruta al archivo YAML de la rúbrica del examen (opcional)."
+  - output_dir: "Carpeta de salida del informe LaTeX (opcional)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP con la ruta del PDF y los parámetros de configuración."
+  - step: 2
+    action: "Invocar el script orquestador flujo_evaluar_examen.py pasándole los parámetros correspondientes."
+    script: "flujo_evaluar_examen.py"
+    inputs:
+      pdf: "{{pdf_path}}"
+      modelo: "{{modelo}}"
+      api_backend: "{{api_backend}}"
+      rubrica: "{{rubrica}}"
+      output_dir: "{{output_dir}}"
+  - step: 3
+    action: "Compilar el informe LaTeX (.tex) generado a formato PDF (.pdf) y limpiar archivos auxiliares."
+    script: "execution/compile_latex.py"
+  - step: 4
+    action: "Verificar si el flujo completó con éxito todos los pasos y emitir la alerta de notificación acústica."
+    script: "execution/alert_user.py"
+  - step: 5
+    action: "Retornar al cliente MCP la ruta absoluta del PDF compilado, el informe LaTeX generado, el puntaje sugerido, el nivel de desempeño y los detalles del análisis."
+
+Expected outputs:
+  - "Un informe compilado en PDF (.pdf) en la carpeta de destino junto con su código fuente LaTeX (.tex)."
+  - "Un archivo de evaluación en formato JSON en el directorio temporal .tmp/."
+  - "Una respuesta estructurada de texto al cliente MCP con los resultados resumidos de la evaluación y las rutas de los archivos generados."
+
+Edge cases:
+  - error: "El archivo PDF del examen no existe o la ruta provista no es accesible."
+    recovery: "Retornar un error descriptivo inmediato al cliente de la IA indicando que la ruta no existe."
+  - error: "Fallo de conexión o límites de API de LLM superados en la evaluación."
+    recovery: "El orquestador interno aplicará de forma automática el respaldo en cascada (Gemini -> Groq -> OpenRouter) para garantizar la continuidad. Si todos fallan, se reportará el error del log de ejecución."

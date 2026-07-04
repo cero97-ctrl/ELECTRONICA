@@ -38,6 +38,10 @@ Este manual describe la estructura de directorios y archivos presentes en el esp
     \item \textbf{\texttt{AGENTS.md}}: Reglas globales del proyecto, convenciones de código y estructura general del espacio de trabajo.
     \item \textbf{\texttt{.env}}: Plantilla de variables de entorno con credenciales comentadas (\texttt{GROQ\_API\_KEY}, \texttt{GITHUB\_TOKEN}) como referencia para la configuración local.
     \item \textbf{\texttt{.groq\_api\_key}}: Archivo oculto con la clave API de Groq (excluido de git vía \texttt{.gitignore}), usado por \texttt{rag\_system.py} y \texttt{agent\_eda.py}.
+    \item \textbf{\texttt{mcp\_latex\_server.py}}: Servidor MCP local (Layer 2) que expone la herramienta \texttt{compilar\_latex} para automatizar la compilación de reportes académicos.
+    \item \textbf{\texttt{mcp\_evaluar\_server.py}}: Servidor MCP local (Layer 2) que expone la herramienta \texttt{evaluar\_examen\_estudiante} con compilación integrada de informes de evaluación a PDF.
+    \item \textbf{\texttt{mcp\_elaborar\_server.py}}: Servidor MCP local (Layer 2) que expone la herramienta \texttt{elaborar\_nuevo\_examen} con generación de preguntas y compilación secuencial de examen y solucionario a PDF.
+    \item \textbf{\texttt{mcp\_analizar\_server.py}}: Servidor MCP local (Layer 2) que expone la herramienta \texttt{analizar\_imagenes\_circuito} para análisis de visión y compilación de informes técnicos.
     \item \textbf{\texttt{.gitignore}}: Exclusiones de seguimiento git: \texttt{chroma\_db/}, entornos virtuales, \texttt{\_\_pycache\_\_}, archivos auxiliares LaTeX, clave API de Groq.
     \item \textbf{\texttt{requirements.txt}}: Dependencias para los scripts deterministas de ejecución: \texttt{psutil} y \texttt{PyYAML}.
     \item \textbf{\texttt{rag\_system.py}}: Script del Chatbot RAG. Vectoriza documentos (TEX, MD, PDF) en ChromaDB y gestiona las respuestas usando el LLM vía Groq.
@@ -66,6 +70,18 @@ Este manual describe la estructura de directorios y archivos presentes en el esp
     \item \textbf{\texttt{docs/MANUAL/manual.tex}}: El presente manual en formato LaTeX, que describe la arquitectura, estructura y componentes del espacio de trabajo.
     \item \textbf{\texttt{git-update.sh} y \texttt{update\_repo.sh}}: Scripts de automatización en bash para sincronización y actualización del repositorio Git.
 \end{itemize}
+
+\section{Servidores MCP Locales (Model Context Protocol)}
+El Model Context Protocol (MCP) es un estándar abierto que permite conectar modelos de inteligencia artificial en la nube con recursos locales del sistema de forma segura. En este proyecto se han implementado cuatro servidores MCP locales desarrollados en Python mediante el framework \texttt{fastmcp}:
+
+\begin{itemize}
+    \item \textbf{Servidor LaTeX (\texttt{mcp\_latex\_server.py})}: Expone la herramienta \texttt{compilar\_latex} para compilar cualquier archivo LaTeX a PDF con resolución de referencias y limpieza en una sola llamada de herramienta.
+    \item \textbf{Servidor Evaluador (\texttt{mcp\_evaluar\_server.py})}: Expone \texttt{evaluar\_examen\_estudiante}. Automatiza el análisis de exámenes, generación de informes y compilación a PDF en caliente.
+    \item \textbf{Servidor Elaborador (\texttt{mcp\_elaborar\_server.py})}: Expone \texttt{elaborar\_nuevo\_examen}. Genera 5 preguntas con LLM, crea los fuentes LaTeX y compila automáticamente examen y solucionario de forma secuencial.
+    \item \textbf{Servidor de Visión (\texttt{mcp\_analizar\_server.py})}: Expone \texttt{analizar\_imagenes\_circuito}. Analiza diagramas o fotos, genera informe LaTeX y compila el documento técnico a PDF.
+\end{itemize}
+
+La integración de estos servidores proporciona un ahorro significativo de tokens al evitar que el cliente de IA maneje grandes volúmenes de logs de compilación o código fuente en su contexto. Asimismo, permite la automatización total de flujos de trabajo sin intervención manual.
 
 \section{Conclusión}
 Esta estructura garantiza una alta modularidad. El agente IA actúa como "middleware" o capa de orquestación (Capa 2), leyendo intenciones, buscando las instrucciones en \texttt{directives/}, delegando el trabajo duro a \texttt{execution/} y documentando hallazgos en \texttt{chroma\_db/} o en archivos \texttt{.tex}. Todo ello cumpliendo con las reglas de codificación y formato estipuladas.

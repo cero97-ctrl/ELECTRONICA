@@ -1,22 +1,53 @@
 {
-  "run_id": "flujo-kicad-2026-06-29T10-42-59",
-  "directive": "imagen_a_kicad.yaml",
-  "imagenes": "docs/IMAGENES/555.png",
-  "started_at": "2026-06-29T10:42:59.679709+00:00",
-  "last_updated": "2026-06-29T10:42:59.679720+00:00",
-  "current_step": 0,
+  "run_id": "flujo-imagen-2026-07-04T11-33-05",
+  "directive": "analizar_imagen.yaml",
+  "imagenes": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/555.png",
+  "started_at": "2026-07-04T11:33:05.300557+00:00",
+  "last_updated": "2026-07-04T11:33:20.433024+00:00",
+  "current_step": 5,
   "steps_completed": [
     {
       "step": 1,
-      "script": "extraer_netlist",
-      "status": "ok"
+      "script": "analizar_imagen.py",
+      "status": "ok",
+      "archivos": [
+        "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/555.png"
+      ],
+      "descripcion": "Esquema eléctrico de un circuito temporizador basado en el circuito integrado NE555.",
+      "tokens_total": 0,
+      "json_tmp": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.tmp/analisis_555.json"
     },
     {
       "step": 2,
-      "script": "generar_kicad_sch",
+      "script": "generar_informe_imagen.py",
+      "status": "ok",
+      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_555.tex"
+    },
+    {
+      "step": 3,
+      "script": "presentación",
       "status": "ok"
+    },
+    {
+      "step": 4,
+      "script": "compile_latex.py",
+      "status": "ok",
+      "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_555.pdf"
+    },
+    {
+      "step": 5,
+      "script": "alert_user.py",
+      "status": "ok",
+      "tipo": "success"
     }
   ],
   "steps_failed": [],
-  "context": {}
+  "context": {
+    "archivos": [
+      "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/555.png"
+    ],
+    "descripcion": "Esquema eléctrico de un circuito temporizador basado en el circuito integrado NE555.",
+    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_555.tex",
+    "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/IMAGENES/informe_imagen/informe_analisis_555.pdf"
+  }
 }

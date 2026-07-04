@@ -63,18 +63,22 @@ def compile_latex_code(latex_content: str, job_name: str = "document", output_di
     success = False
     
     # Primera pasada
-    proc1 = subprocess.run(cmd, capture_output=True, text=True)
-    logs.append(f"--- PASADA 1 STDOUT ---\n{proc1.stdout}")
+    proc1 = subprocess.run(cmd, capture_output=True)
+    stdout1 = proc1.stdout.decode("utf-8", errors="ignore")
+    stderr1 = proc1.stderr.decode("utf-8", errors="ignore")
+    logs.append(f"--- PASADA 1 STDOUT ---\n{stdout1}")
     if proc1.stderr:
-        logs.append(f"--- PASADA 1 STDERR ---\n{proc1.stderr}")
+        logs.append(f"--- PASADA 1 STDERR ---\n{stderr1}")
         
     # Verificar si se generó el PDF. Si no se generó, falló críticamente en la pasada 1.
     if os.path.exists(pdf_path):
         # Segunda pasada para resolver referencias cruzadas, índices y circuitikz
-        proc2 = subprocess.run(cmd, capture_output=True, text=True)
-        logs.append(f"--- PASADA 2 STDOUT ---\n{proc2.stdout}")
+        proc2 = subprocess.run(cmd, capture_output=True)
+        stdout2 = proc2.stdout.decode("utf-8", errors="ignore")
+        stderr2 = proc2.stderr.decode("utf-8", errors="ignore")
+        logs.append(f"--- PASADA 2 STDOUT ---\n{stdout2}")
         if proc2.stderr:
-            logs.append(f"--- PASADA 2 STDERR ---\n{proc2.stderr}")
+            logs.append(f"--- PASADA 2 STDERR ---\n{stderr2}")
         
         success = os.path.exists(pdf_path)
     else:

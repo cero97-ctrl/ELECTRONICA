@@ -38,6 +38,9 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 | `ren_archivos.py` | Renombra archivos eliminando cadenas específicas del nombre. |
 | `test_generator.py` | Tests del generador JSON EasyEDA (sin dependencias externas). |
 | `mcp_latex_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `compilar_latex` para clientes MCP. |
+| `mcp_evaluar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `evaluar_examen_estudiante` para evaluar exámenes en PDF. |
+| `mcp_elaborar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `elaborar_nuevo_examen` para generar y compilar de forma automática exámenes y solucionarios. |
+| `mcp_analizar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `analizar_imagenes_circuito` para analizar imágenes y compilar informes a PDF. |
 | `execution/compile_latex.py` | Compilador determinista de LaTeX (Capa de ejecución 3) con soporte para referencias y limpieza. |
 | `git-update.sh` | Script de actualización Git: commit WIP + pull + push vía `update_repo.sh`. |
 | `update_repo.sh` | Gestor de versiones: pull, add, commit y push con opciones (confirm, dry-run, mensaje personalizado). |
@@ -50,8 +53,8 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 
 | Capa | Directorio | Propósito |
 |---|---|---|
-| **Layer 1: Directives** | `directives/` | SOPs en YAML (15 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio y compilación MCP. |
-| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP. |
+| **Layer 1: Directives** | `directives/` | SOPs en YAML (16 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio y compilación/evaluación MCP. |
+| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales. |
 | **Layer 3: Execution** | `execution/` | Scripts Python deterministas (8 archivos) con una sola responsabilidad (ej. `execution/compile_latex.py`). |
 
 ---
@@ -61,7 +64,7 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 - `docs/` — Documentación técnica y académica (20 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, MEDIDOR_ENERGIA/, PC_ASUS/, PC_PARA_IA/, SERVIDOR_POWEREDGE_R610/, SISTEMA_INTERNAC/, CIRC_PARA_RESP_RAPIDAS/, PROYECTO_MECATRONICA/, Ventilador_3_Velocidades/, MANUAL/, etc.)
 - `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/)
 - `.agent/` — Instrucciones del sistema para el agente IA (4 archivos: `AGENT_FRAMEWORK.md`, `AGENT_INSTRUCTIONS.md`, `latex.md`, `python.md`)
-- `directives/` — SOPs en YAML para flujos de trabajo repetibles (15 archivos)
+- `directives/` — SOPs en YAML para flujos de trabajo repetibles (16 archivos)
 - `directives/rubricas/` — Rúbricas YAML para evaluación de prácticas de laboratorio
 - `execution/` — Scripts Python deterministas para la capa de ejecución (8 archivos)
 - `chroma_db/` — Base de datos vectorial (autogenerada, excluida de git)

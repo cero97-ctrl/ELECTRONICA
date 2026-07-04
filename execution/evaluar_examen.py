@@ -280,6 +280,7 @@ def evaluar_con_nuevo_sdk(
             system_instruction=system_instruction,
             temperature=0.2,
             max_output_tokens=8192,
+            response_mime_type="application/json",
         ),
     )
 
@@ -317,6 +318,7 @@ def evaluar_con_sdk_legacy(
             temperature=0.2,
             top_p=0.95,
             max_output_tokens=8192,
+            response_mime_type="application/json",
         ),
     )
 

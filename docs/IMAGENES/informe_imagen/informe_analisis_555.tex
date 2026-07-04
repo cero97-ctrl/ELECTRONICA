@@ -29,7 +29,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\textbf{Informe de Análisis} --- Imágenes}
-\fancyhead[R]{\small 2026-06-28}
+\fancyhead[R]{\small 2026-07-04}
 \fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -79,7 +79,7 @@
 \vspace{4pt}
 \begin{tcolorbox}[cajaTitulo, title=Datos del análisis]
 \begin{tabular}{@{}llll@{}}
-  \textbf{Fecha:}       & 2026-06-28  &
+  \textbf{Fecha:}       & 2026-07-04  &
   \textbf{Modelo usado:} & gemini-2.5-flash \\[4pt]
   \textbf{Archivos:}    & \multicolumn{3}{l}{\texttt{555.png}} \\
 \end{tabular}
@@ -87,49 +87,36 @@
 
 % ══ DESCRIPCIÓN GENERAL ══════════════════════════════════════════════════════
 \section*{Descripción general}
-La imagen muestra un diagrama esquemático de un circuito electrónico basado en el temporizador 555, configurado para controlar un LED. El circuito parece ser un multivibrador astable, utilizando una red RC para la temporización y un LED conectado a la salida para indicar el estado.
+Esquema eléctrico de un circuito temporizador basado en el circuito integrado NE555.
 
 % ══ ELEMENTOS DETECTADOS ═════════════════════════════════════════════════════
 \section*{Elementos detectados}
 \begin{itemize}[leftmargin=1.5em, itemsep=2pt]
-  \item \textbf{Circuito Integrado 555 Timer}: El componente central del circuito, etiquetado como '555 Timer'. Se muestran sus ocho pines numerados y etiquetados (Pin1 a Pin8). Pin 8 (VCC) y Pin 4 (Reset) están conectados a la línea de alimentación positiva. Pin 1 (GND) está conectado a tierra. Pin 7 (Discharge) está conectado a la unión de dos resistencias. Pin 6 (Threshold) y Pin 2 (Trigger) están unidos y conectados a la red de temporización RC. Pin 5 (Control Voltage) está conectado a tierra a través de un condensador. Pin 3 (Output) está conectado a un LED a través de una resistencia.
-  \item \textbf{Resistencias}: Se observan cuatro resistencias en el circuito. Tres de ellas forman parte de la red de temporización (conectadas a VCC, Pin 7, Pin 6/2 y el condensador de temporización). La cuarta resistencia está en serie con el LED, conectada a la salida (Pin 3) del 555.
-  \item \textbf{Condensador de Temporización (C1)}: Un condensador electrolítico (indicado por el signo '+') conectado entre la unión de las resistencias de temporización y los pines 6/2, y tierra. Este es el condensador principal que determina la frecuencia de oscilación.
-  \item \textbf{Condensador de Control (C2)}: Un pequeño condensador, etiquetado como 'C2', conectado entre el Pin 5 (Control Voltage) del 555 y tierra. Su función es filtrar ruido en el voltaje de control.
-  \item \textbf{LED (Diodo Emisor de Luz)}: Un diodo emisor de luz conectado a la salida (Pin 3) del 555 a través de una resistencia limitadora de corriente. Se indica que 'When output is HIGH the LED is ON'.
-  \item \textbf{Líneas de Alimentación}: Líneas horizontales que representan la alimentación positiva (arriba) y tierra (abajo), a las que se conectan varios componentes.
-  \item \textbf{Flecha de Corriente}: Una flecha verde etiquetada 'current' que ilustra el flujo de corriente desde el Pin 3 del 555, a través de la resistencia y el LED, hacia tierra, cuando la salida está en estado ALTO.
+  \item \textbf{NE555}: Circuito integrado temporizador de 8 pines.
+  \item \textbf{R1}: Resistencia de temporización conectada entre Vcc y el pin 7.
+  \item \textbf{R2}: Resistencia conectada entre los pines 7 y 6/2.
+  \item \textbf{C1}: Condensador electrolítico que determina el tiempo de carga junto a R1 y R2.
+  \item \textbf{LED}: Diodo emisor de luz conectado a la salida (pin 3) para indicar el estado.
 \end{itemize}
 
 % ══ TEXTO EXTRAÍDO ═══════════════════════════════════════════════════════════
 \section*{Texto extraído}
-555 Timer
-Pin8
-Pin4
-Pin7
-Pin3
-Pin6
-Pin2
-Pin1
-Pin5
-When output is HIGH the LED is ON
-(555 Timer is sourcing current)
-current
-C2
+VCC, GND, OUT, TRIG, RESET, THRESH, DISCH, CONT
 
 % ══ OBSERVACIONES ════════════════════════════════════════════════════════════
 \section*{Observaciones}
-El circuito ilustra una aplicación común del temporizador 555 como multivibrador astable, donde la salida (Pin 3) conmuta entre estados ALTO y BAJO, haciendo que el LED parpadee. La configuración de los pines 2 y 6 unidos y conectados a la red RC (R1, R2, C1) es característica de este modo de operación. El texto aclara que el 555 está 'sourcing current' (suministrando corriente) cuando su salida es ALTA, lo que enciende el LED. La presencia de C2 en el Pin 5 es una práctica estándar para estabilizar el voltaje de control interno del 555.
+El circuito está configurado en modo astable para generar una oscilación periódica.
 
 % ══ SUGERENCIAS ═════════════════════════════════════════════════════════════
-
+\section*{Sugerencias}
+Asegurar que los voltajes de alimentación no excedan los 15V especificados para el NE555 estándar.
 
 % ══ PIE DE INFORME ════════════════════════════════════════════════════════════
 \vspace{12pt}
 \begin{center}
   \footnotesize\color{gray}
   Informe generado automáticamente por el sistema de análisis con IA (gemini-2.5-flash) y soporte LaTeX. \\
-  Generado el 2026-06-28 \textbullet\ ELECTRÓNICA --- Sistema de Análisis de Imágenes.
+  Generado el 2026-07-04 \textbullet\ ELECTRÓNICA --- Sistema de Análisis de Imágenes.
 \end{center}
 
 \end{document}
