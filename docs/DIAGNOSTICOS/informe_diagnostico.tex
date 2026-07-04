@@ -1,0 +1,77 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Reporte Técnico de Diagnóstico del Sistema}
+\author{Agente IA Antigravity (Orquestador MCP)}
+\date{04 de July de 2026 a las 09:28}
+
+\begin{document}
+\maketitle
+
+\section{Resumen del Sistema}
+Este documento presenta el diagnóstico del hardware y software de la máquina anfitriona donde están alojados los servidores MCP locales del espacio de trabajo. El diagnóstico ha sido generado y compilado de forma automática de extremo a extremo.
+
+\section{Especificaciones del Software y Núcleo}
+A continuación se detallan las características principales del sistema operativo y del entorno virtual de desarrollo de Python.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+\hline
+\textbf{Parámetro} & \textbf{Valor} \\ \hline
+Sistema Operativo & Linux \\
+Versión/Release & 6.8.0-134-generic \\
+Arquitectura & x86\_64 \\
+Nombre del Host (Hostname) & ZETA \\
+Versión de Python & 3.12.3 \\
+Entorno Conda Activo & N/A \\
+Codificación por Defecto & utf-8 \\
+Tiempo de Actividad (Uptime) & 3.4 horas \\ \hline
+\end{tabular}
+\caption{Características del software y sistema base.}
+\end{table}
+
+\section{Especificaciones de Hardware}
+Detalles del procesador, memoria RAM disponible y almacenamiento en disco.
+
+\subsection{Procesador (CPU)}
+\begin{itemize}
+    \item \textbf{Modelo:} Intel(R) Celeron(R) N4020 CPU @ 1.10GHz
+    \item \textbf{Núcleos (Cores):} 2 núcleos lógicos
+\end{itemize}
+
+\subsection{Memoria RAM}
+\begin{itemize}
+    \item \textbf{Memoria Total:} 3.63 GB
+    \item \textbf{Memoria Disponible:} 0.11 GB
+    \item \textbf{Porcentaje en Uso:} 96.9\%
+\end{itemize}
+
+\subsection{Almacenamiento (Disco Raíz)}
+\begin{itemize}
+    \item \textbf{Capacidad Total:} 233.18 GB
+    \item \textbf{Espacio Usado:} 209.41 GB
+    \item \textbf{Espacio Libre:} 11.86 GB
+    \item \textbf{Porcentaje en Uso:} 89.8\%
+\end{itemize}
+
+\subsection{Tarjetas Gráficas (GPUs)}
+No se detectaron GPUs aceleradas de NVIDIA activas o `nvidia-smi` no está instalado.
+
+
+\section{Herramientas de Desarrollo y Compilación}
+Estado de instalación de herramientas de desarrollo esenciales en el sistema:
+
+\begin{itemize}
+    \item \textbf{Git:} Instalado
+    \item \textbf{Curl:} Instalado
+    \item \textbf{PdfLaTeX (Compilador LaTeX):} Instalado
+\end{itemize}
+
+\end{document}

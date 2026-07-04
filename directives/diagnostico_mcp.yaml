@@ -1,0 +1,34 @@
+Goal: "Levantar un servidor MCP local para recibir peticiones de diagnóstico de sistema, ejecutar scripts deterministas en Python para telemetría de hardware/software, formatear y generar un reporte técnico profesional en LaTeX, y compilarlo automáticamente a PDF en docs/DIAGNOSTICOS/."
+
+Required inputs:
+  - output_dir: "Directorio de destino para guardar el reporte LaTeX y PDF (opcional, default: docs/DIAGNOSTICOS/)."
+  - filename: "Nombre base del archivo del reporte (opcional, default: informe_diagnostico)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP con la configuración de salida."
+  - step: 2
+    action: "Ejecutar el script determinista de telemetría execution/env_diagnostic.py para obtener el estado del hardware y software en JSON."
+    script: "execution/env_diagnostic.py"
+  - step: 3
+    action: "Formatear el JSON obtenido y generar el archivo fuente LaTeX (.tex) estructurado en tablas detalladas."
+    script: "flujo_diagnostico.py"
+  - step: 4
+    action: "Compilar el archivo LaTeX generado a formato PDF (.pdf) y limpiar los archivos auxiliares temporales."
+    script: "execution/compile_latex.py"
+  - step: 5
+    action: "Notificar al usuario mediante alerta acústica (paplay/bell) que el reporte ha concluido de forma exitosa."
+    script: "execution/alert_user.py"
+  - step: 6
+    action: "Retornar al cliente MCP el resumen clave del diagnóstico de sistema y la ruta del PDF compilado."
+
+Expected outputs:
+  - "El informe técnico de diagnóstico compilado en PDF (.pdf) junto con su código fuente LaTeX (.tex)."
+  - "Un archivo de estado de ejecución en formato JSON en .tmp/."
+  - "Una respuesta de éxito estructurada al cliente MCP."
+
+Edge cases:
+  - error: "El directorio de salida docs/DIAGNOSTICOS no es escribible o no existe."
+    recovery: "Intentar crearlo recursivamente. Si falla, guardar en la carpeta temporal .tmp/ y reportar la situación al cliente MCP."
+  - error: "Fallo al ejecutar pdflatex o en el script de compilación."
+    recovery: "Retornar un error detallado indicando los logs del compilador para diagnóstico del usuario."

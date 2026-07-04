@@ -41,6 +41,7 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 | `mcp_evaluar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `evaluar_examen_estudiante` para evaluar exámenes en PDF. |
 | `mcp_elaborar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `elaborar_nuevo_examen` para generar y compilar de forma automática exámenes y solucionarios. |
 | `mcp_analizar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `analizar_imagenes_circuito` para analizar imágenes y compilar informes a PDF. |
+| `mcp_diagnostico_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `generar_diagnostico_sistema` para telemetría de hardware/software y generación de reportes en PDF. |
 | `execution/compile_latex.py` | Compilador determinista de LaTeX (Capa de ejecución 3) con soporte para referencias y limpieza. |
 | `git-update.sh` | Script de actualización Git: commit WIP + pull + push vía `update_repo.sh`. |
 | `update_repo.sh` | Gestor de versiones: pull, add, commit y push con opciones (confirm, dry-run, mensaje personalizado). |
@@ -54,7 +55,7 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 | Capa | Directorio | Propósito |
 |---|---|---|
 | **Layer 1: Directives** | `directives/` | SOPs en YAML (16 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio y compilación/evaluación MCP. |
-| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales. |
+| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` / `mcp_diagnostico_server.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales. |
 | **Layer 3: Execution** | `execution/` | Scripts Python deterministas (8 archivos) con una sola responsabilidad (ej. `execution/compile_latex.py`). |
 
 ---
