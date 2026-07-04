@@ -1,0 +1,225 @@
+\documentclass[12pt,a4paper]{article}
+
+% Paquetes esenciales
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{siunitx}
+\DeclareSIUnit\flops{FLOPS}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,shadows}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Diseño de Red de Cómputo en Paralelo},
+    pdfpagemode=FullScreen,
+}
+
+\title{Diseño y Planificación de una Red de Computadoras para Procesamiento en Paralelo}
+\author{Prof. CERO y Antigravity AI}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+El procesamiento en paralelo y la computación distribuida representan pilares fundamentales en el desarrollo de la ciencia de la computación moderna, la simulación física y el entrenamiento/inferencia de modelos de Inteligencia Artificial (IA). En entornos académicos y de laboratorio, la adquisición de supercomputadoras comerciales suele ser prohibitiva. No obstante, la arquitectura de un \textbf{Clúster Beowulf} (un sistema de computadoras de consumo masivo conectadas a través de una red local dedicada) permite construir infraestructura de computación de alto rendimiento (HPC) a una fracción del costo tradicional.
+
+Este documento presenta la propuesta técnica formal para diseñar, estructurar y presupuestar un clúster de cómputo en paralelo utilizando hardware preexistente en el laboratorio (un servidor Dell PowerEdge R610 y una PC ASUS P8H61-M LX2) complementado con un nodo de cómputo moderno optimizado para cargas de trabajo de IA (procesador AMD Ryzen 5 5500).
+
+\section{Arquitectura del Clúster y Especificaciones de los Nodos}
+El clúster diseñado está compuesto por cuatro sistemas con roles y capacidades claramente diferenciados:
+\begin{enumerate}
+    \item \textbf{Nodo Maestro (Laptop):} Encargado del control del sistema, monitoreo de trabajos, distribución de código mediante SSH y visualización final.
+    \item \textbf{Nodo A (AMD Ryzen 5 5500 - Propuesta):} Actúa como el nodo de cómputo principal para operaciones vectoriales aceleradas debido a su soporte nativo para instrucciones AVX2.
+    \item \textbf{Nodo B (Dell PowerEdge R610 - Headless):} Actúa como nodo de capacidad masiva para almacenamiento centralizado, bases de datos vectoriales y procesamiento general multihilo sin requisitos de AVX2.
+    \item \textbf{Nodo C (PC ASUS i7-3770 - Worker):} Actúa como un nodo de procesamiento secundario tras someterse a mantenimiento correctivo térmico.
+\end{enumerate}
+
+Las especificaciones consolidadas de los nodos se detallan en la Tabla~\ref{tab:nodos}.
+
+\begin{table}[h!]
+\centering
+\caption{Especificaciones Técnicas Consolidadas de los Nodos del Clúster}
+\label{tab:nodos}
+\vspace{0.2cm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lllll}
+\toprule
+\textbf{Característica} & \textbf{Nodo Maestro} & \textbf{Nodo A (Ryzen 5)} & \textbf{Nodo B (Dell R610)} & \textbf{Nodo C (PC ASUS)} \\ \midrule
+\textbf{Procesador} & Intel Core (Laptop) & AMD Ryzen 5 5500 & 2x Intel Xeon E5620 & Intel Core i7-3770 \\
+\textbf{Núcleos / Hilos} & Varia según laptop & 6 / 12 & 8 / 16 (Total) & 4 / 8 \\
+\textbf{Frecuencia Base} & Varia & \SI{3.6}{\giga\hertz} & \SI{2.4}{\giga\hertz} & \SI{3.4}{\giga\hertz} \\
+\textbf{Soporte Vectorial} & AVX2 / AVX & AVX2, FMA3, AVX & SSE4.2 (Sin AVX) & AVX (Sin AVX2) \\
+\textbf{Memoria RAM} & \SI{16}{\giga\byte} LPDDR4 & \SI{64}{\giga\byte} DDR4 & \SI{96}{\giga\byte} DDR3 ECC & \SI{8}{\giga\byte} DDR3 \\
+\textbf{Almacenamiento} & SSD NVMe & SSD NVMe \SI{1}{\tera\byte} & 4x SAS \SI{300}{\giga\byte} (RAID) & SSD SATA \SI{240}{\giga\byte} \\
+\textbf{SO} & Linux / Windows & Debian 12 / Ubuntu & Debian 12 Headless & Debian 12 \\
+\textbf{Rol del Clúster} & Maestro (Orquestador) & Worker Principal (IA) & Worker/Storage Central & Worker Secundario \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\newpage
+\section{Plano de Red y Topología}
+
+\subsection{Topología Física y Lógica}
+La topología lógica del clúster se basa en una estrella conmutada mediante un switch Gigabit Ethernet de alta velocidad. Los nodos se comunican a través de cables de red trenzados Categoría 6 para minimizar la pérdida de paquetes y la latencia. La Figura~\ref{fig:red} ilustra la distribución del clúster.
+
+\begin{figure}[h!]
+\centering
+\resizebox{0.95\textwidth}{!}{
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    every node/.style={fill=white, font=\small},
+    align=center
+]
+    % Central Switch
+    \node (switch) [draw, rectangle, fill=blue!10, rounded corners, minimum width=4cm, minimum height=1cm, drop shadow] 
+        {\textbf{Switch Gigabit Ethernet Dedicated (1 Gbps)}\\D-Link / TP-Link};
+
+    % Nodos
+    \node (maestro) [draw, ellipse, fill=green!10, left=2cm of switch, yshift=2.5cm, drop shadow]
+        {\textbf{Laptop Maestro}\\IP: 192.168.1.10\\Control/Desarrollo};
+        
+    \node (nodoA) [draw, rectangle, fill=orange!10, rounded corners, above=2cm of switch, drop shadow]
+        {\textbf{Nodo A (AMD Ryzen 5)}\\IP: 192.168.1.11\\Worker Principal (AVX2)};
+
+    \node (nodoB) [draw, rectangle, fill=red!10, rounded corners, right=2cm of switch, yshift=-2.5cm, drop shadow]
+        {\textbf{Nodo B (Dell R610)}\\IP: 192.168.1.12\\NFS / Vector DB / Cómputo CPU};
+
+    \node (nodoC) [draw, rectangle, fill=purple!10, rounded corners, left=2cm of switch, yshift=-2.5cm, drop shadow]
+        {\textbf{Nodo C (PC ASUS)}\\IP: 192.168.1.13\\Worker Secundario};
+
+    % Conexiones
+    \draw [thick, <->, >=stealth, draw=blue!80] (maestro) -- (switch.west) node [midway, above, sloped] {RJ45 / Wi-Fi};
+    \draw [thick, <->, >=stealth, draw=blue!80] (nodoA) -- (switch.north) node [midway, right] {Cat6 Ethernet};
+    \draw [thick, <->, >=stealth, draw=blue!80] (nodoB) -- (switch.east) node [midway, below, sloped] {Cat6 Ethernet};
+    \draw [thick, <->, >=stealth, draw=blue!80] (nodoC) -- (switch.south) node [midway, below, sloped] {Cat6 Ethernet};
+
+\end{tikzpicture}
+}
+\caption{Plano de Red Lógico del Clúster de Procesamiento en Paralelo}
+\label{fig:red}
+\end{figure}
+
+\subsection{Configuraciones de Red y Servicios}
+Para que el clúster opere de manera fluida y transparente, se configuran tres servicios principales:
+\begin{enumerate}
+    \item \textbf{Direccionamiento IP Estático:} Configurado en el archivo \texttt{/etc/network/interfaces} o mediante el panel de control de red en cada nodo, garantizando IPs fijas dentro de la subred \texttt{192.168.1.0/24}.
+    \item \textbf{Autenticación SSH Basada en Llaves:} Para evitar interrupciones en la ejecución de scripts distribuidos (MPI o RPC), se distribuyen llaves criptográficas públicas de tipo \texttt{ED25519}. El nodo maestro se conecta a todos los trabajadores mediante comandos como:
+    \begin{verbatim}
+    ssh-copy-id -i ~/.ssh/id_ed25519.pub usuario@192.168.1.11
+    \end{verbatim}
+    \item \textbf{NFS (Network File System):} El Nodo B (Dell R610) exporta un directorio de almacenamiento masivo redundante mediante su servidor NFS. Los nodos A y C montan esta partición en su sistema de archivos local (\texttt{/mnt/cluster\_shared}), asegurando que cualquier código o dataset esté disponible instantáneamente de forma compartida sin duplicidad.
+\end{enumerate}
+
+\newpage
+\section{Estimaciones de Rendimiento del Clúster}
+
+\subsection{Capacidad Teórica de Cómputo (FLOPS)}
+Calculamos la capacidad máxima de rendimiento matemático en precisión simple (FP32) basada en la frecuencia máxima de CPU, el número de núcleos y las operaciones vectoriales por ciclo (FMA y tamaño de registro vectorial):
+
+\begin{equation}
+\text{GFLOPS} = \text{Núcleos} \times \text{Frecuencia (GHz)} \times \frac{\text{Flops}}{\text{Ciclo}}
+\end{equation}
+
+El factor de FLOPS por ciclo depende fuertemente de la presencia de instrucciones vectoriales:
+\begin{itemize}
+    \item \textbf{AVX2 + FMA (Ryzen 5 5500):} Permite registros de 256 bits (8 floats FP32) con Fused Multiply-Accumulate (FMA), equivalentes a 16 FLOPS por ciclo por núcleo.
+    \item \textbf{AVX (Intel i7-3770):} Permite registros de 256 bits, equivalentes a 8 FLOPS por ciclo por núcleo (sin FMA directo de un ciclo).
+    \item \textbf{SSE4.2 (Intel Xeon E5620):} Registros de 128 bits, equivalentes a 4 FLOPS por ciclo por núcleo.
+\end{itemize}
+
+El cálculo detallado se presenta en la Tabla~\ref{tab:flops}.
+
+\begin{table}[h!]
+\centering
+\caption{Capacidad de Cómputo Teórica del Clúster (Precisión Simple FP32)}
+\label{tab:flops}
+\vspace{0.2cm}
+\begin{tabular}{lccccr}
+\toprule
+\textbf{Nodo} & \textbf{Núcleos} & \textbf{Frecuencia (Turbo)} & \textbf{Instrucciones} & \textbf{FLOPS/Ciclo} & \textbf{GFLOPS} \\ \midrule
+\textbf{Nodo A} & 6 & \SI{4.2}{\giga\hertz} & AVX2 + FMA & 16 & 403.20 \\
+\textbf{Nodo B} & 8 & \SI{2.66}{\giga\hertz} & SSE4.2 & 4 & 85.12 \\
+\textbf{Nodo C} & 4 & \SI{3.9}{\giga\hertz} & AVX & 8 & 124.80 \\ \midrule
+\textbf{Total} & \textbf{18} & - & - & - & \textbf{613.12} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La capacidad teórica máxima consolidada del clúster es de \textbf{\SI{613.12}{\giga\flops}} en operaciones de coma flotante de precisión simple.
+
+\subsection{Análisis de Latencia y Cuello de Botella de Red}
+A pesar de la elevada capacidad de cómputo conjunta, la interconexión mediante una red Gigabit Ethernet (\SI{1}{\giga\text{bit/s}}) impone un cuello de botella de transferencia de datos de \SI{125}{\mega\byte/\second} teóricos (aproximadamente \SI{112}{\mega\byte/\second} reales debido a cabeceras TCP/IP).
+\begin{itemize}
+    \item \textbf{Velocidad de Bus Local vs Red:} El bus de memoria del Nodo A (DDR4 Dual-Channel @ \SI{3200}{\mega\hertz}) ofrece un ancho de banda de \SI{51.2}{\giga\byte/\second}, que es \textbf{450 veces más rápido} que la velocidad de comunicación de red.
+    \item \textbf{Implicación de Diseño:} El clúster no debe utilizarse para algoritmos que requieran comunicación constante y sincronía a nivel de registros en cada iteración (paralelismo de grano fino). En su lugar, es óptimo para algoritmos de **grano grueso** (ej., MapReduce, procesamiento de bloques independientes o inferencia distribuida por capas).
+\end{itemize}
+
+\subsection{Rendimiento en Inferencia de Modelos de Lenguaje (LLM)}
+En inferencia distribuida utilizando `llama.cpp RPC`, el cuello de botella es la latencia de red al transmitir los estados de los tensores entre capas. 
+\begin{itemize}
+    \item \textbf{Evaluación de Velocidad:} Si un modelo de \num{8} millones de parámetros (Llama-3 8B, cuantizado a Q4\_K\_M, aprox. \SI{4.8}{\giga\byte}) se divide equitativamente entre el Nodo A y el Nodo B:
+    \begin{itemize}
+        \item La comunicación de red agregará una latencia adicional por token de aprox. \SI{15}{\milli\second}.
+        \item El rendimiento proyectado es de \textbf{4 a 8 tokens por segundo}. Aunque es más lento que una inferencia local en GPU, permite cargar modelos que exceden la memoria RAM de un solo equipo (por ejemplo, un modelo de 70B parámetros que requiere más de \SI{40}{\giga\byte} de RAM).
+    \end{itemize}
+\end{itemize}
+
+\newpage
+\section{Presupuesto Final y Lista de Materiales (BOM)}
+La implementación del clúster de cómputo en paralelo aprovecha el hardware preexistente en el laboratorio, lo que permite minimizar sustancialmente los costos de adquisición. El presupuesto detallado se expone en la Tabla~\ref{tab:presupuesto}.
+
+\begin{table}[h!]
+\centering
+\caption{Lista de Materiales y Presupuesto Consolidado del Clúster}
+\label{tab:presupuesto}
+\vspace{0.2cm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llccr}
+\toprule
+\textbf{Componente} & \textbf{Especificación Técnica} & \textbf{Cant.} & \textbf{Estado} & \textbf{Precio (USD)} \\ \midrule
+\textbf{Procesador} & AMD Ryzen 5 5500 (6 Cores/12 Threads, c/ cooler) & 1 & Nuevo (Propuesto) & \$84.00 \\
+\textbf{Placa Base} & MSI B550M PRO-VDH (Soporte Ryzen 5000) & 1 & Nuevo (Propuesto) & \$99.99 \\
+\textbf{Memoria RAM} & Corsair Vengeance LPX DDR4 \SI{64}{\giga\byte} (2x32GB) 3200MHz & 1 & Nuevo (Propuesto) & \$135.99 \\
+\textbf{SSD NVMe} & Crucial P3 \SI{1}{\tera\byte} PCIe Gen 3 M.2 & 1 & Nuevo (Propuesto) & \$62.99 \\
+\textbf{Fuente Poder} & EVGA 500 BR (500W, 80 Plus Bronze) & 1 & Nuevo (Propuesto) & \$54.99 \\
+\textbf{Gabinete} & DeepCool MATREXX 40 3FS (Frontal Mesh) & 1 & Nuevo (Propuesto) & \$49.99 \\
+\textbf{Switch Red} & TP-Link TL-SG108 (8 puertos Gigabit, metal) & 1 & Adquisición & \$24.99 \\
+\textbf{Cables Cat6} & Cables de red RJ45 Cat6 Snagless (\SI{3}{\meter}) & 4 & Adquisición & \$19.80 \\
+\textbf{Pasta Térmica} & Arctic MX-4 (\SI{4}{\gram}, para mantenimiento PC ASUS) & 1 & Mantenimiento & \$7.99 \\
+\textbf{Servidor Dell R610} & Dual Xeon, \SI{96}{\giga\byte} RAM DDR3 ECC & 1 & Disponible (Lab) & \$0.00 \\
+\textbf{PC ASUS i7} & Intel Core i7-3770, \SI{8}{\giga\byte} RAM DDR3 & 1 & Disponible (Lab) & \$0.00 \\ \midrule
+\textbf{Costo Total} & & & & \textbf{\$540.74} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\textit{Nota de Presupuesto:} El análisis inicial contemplaba componentes opcionales adicionales, pero ajustando a la lista estrictamente necesaria para levantar el nodo AMD Ryzen y la infraestructura de interconexión, el costo de adquisición real es de \textbf{\$540.74 USD}, representando una solución de alto rendimiento costo-eficiente.
+
+\section{Conclusiones y Recomendaciones de Despliegue}
+El diseño de clúster propuesto es perfectamente viable y aprovecha las fortalezas de cada pieza de hardware disponible:
+\begin{enumerate}
+    \item \textbf{Mantenimiento Preventivo Inmediato:} Antes de iniciar cualquier prueba del clúster, es mandatorio realizar el mantenimiento a la PC ASUS (limpieza de polvo y cambio de pasta térmica con Arctic MX-4) debido a que su temperatura de \SI{79.0}{\celsius} en reposo provocará bloqueos térmicos.
+    \item \textbf{Optimización del Dell R610:} El software de inferencia o cálculo en el Dell R610 debe ser compilado con deshabilitación estricta de AVX/AVX2 para evitar la señal de instrucción ilegal (*SIGILL*).
+    \item \textbf{Aplicabilidad Didáctica y Científica:} La infraestructura se presta óptimamente para enseñar conceptos de MPI, MapReduce, redes locales y sincronización de hilos distribuidos.
+\end{enumerate}
+
+\end{document}
