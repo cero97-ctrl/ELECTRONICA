@@ -42,7 +42,11 @@ Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos
 | `mcp_elaborar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `elaborar_nuevo_examen` para generar y compilar de forma automática exámenes y solucionarios. |
 | `mcp_analizar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `analizar_imagenes_circuito` para analizar imágenes y compilar informes a PDF. |
 | `mcp_diagnostico_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `generar_diagnostico_sistema` para telemetría de hardware/software y generación de reportes en PDF. |
+| `flujo_telegram.py` | Orquestador Layer 2 (Gateway): proxy seguro por Long Polling hacia servidores MCP locales vía Telegram. |
+| `execution/telegram_api.py` | (Capa de ejecución 3) Funciones deterministas HTTP puras para interactuar con la API de Telegram. |
+| `execution/mcp_client.py` | (Capa de ejecución 3) Cliente asíncrono para invocar herramientas en servidores MCP locales vía `stdio`. |
 | `execution/compile_latex.py` | Compilador determinista de LaTeX (Capa de ejecución 3) con soporte para referencias y limpieza. |
+| `manage_bot.sh` | Script bash interactivo para Start/Stop/Status del servicio systemd del orquestador de Telegram. |
 | `git-update.sh` | Script de actualización Git: commit WIP + pull + push vía `update_repo.sh`. |
 | `update_repo.sh` | Gestor de versiones: pull, add, commit y push con opciones (confirm, dry-run, mensaje personalizado). |
 
@@ -54,8 +58,8 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 
 | Capa | Directorio | Propósito |
 |---|---|---|
-| **Layer 1: Directives** | `directives/` | SOPs en YAML (16 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio y compilación/evaluación MCP. |
-| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` / `mcp_diagnostico_server.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales. |
+| **Layer 1: Directives** | `directives/` | SOPs en YAML (17 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio, orquestación Telegram y compilación/evaluación MCP. |
+| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` / `mcp_diagnostico_server.py` / `flujo_telegram.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales o actúa como gateway proxy seguro. |
 | **Layer 3: Execution** | `execution/` | Scripts Python deterministas (8 archivos) con una sola responsabilidad (ej. `execution/compile_latex.py`). |
 
 ---
@@ -89,5 +93,6 @@ El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
 
 - API key de Groq en `.groq_api_key` (excluido de git)
 - API key de Google (`GOOGLE_API_KEY`) y OpenRouter (`OPENROUTER_API_KEY`) en `.env`
+- Token del Bot de Telegram (`TELEGRAM_BOT_TOKEN`) en `.env` para comunicación remota.
 - Instrucciones del agente en `opencode.json`: `{"instructions": [".agent/*.md"]}`
 - Dependencias Python: langchain, langchain-groq, langchain-chroma, langchain-huggingface, pypdf, sentence-transformers, pymupdf, google-genai

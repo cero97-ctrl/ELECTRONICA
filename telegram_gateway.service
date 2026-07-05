@@ -1,0 +1,17 @@
+[Unit]
+Description=Telegram Gateway MCP Orchestrator
+After=network.target
+
+[Service]
+Type=simple
+User=cero
+WorkingDirectory=/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA
+# Asegúrate de usar el ejecutable python del entorno virtual (.venv)
+ExecStart=/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/.venv/bin/python /home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/flujo_telegram.py
+Restart=always
+RestartSec=5
+# Si usas variables de entorno necesarias a nivel sistema, puedes especificarlas aquí,
+# pero como estás usando python-dotenv (.env) no es estrictamente necesario declararlas todas aquí.
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+name: Telegram Gateway Orchestrator
+description: SOP and configuration for the Telegram Long Polling Bot acting as an MCP Gateway
+version: 1.0.0
+
+configuration:
+  telegram:
+    poll_timeout: 30
+    parse_mode: Markdown
+  
+  security:
+    # Agregaremos tu chat_id aquí una vez que lo obtengamos para que el bot solo te escuche a ti.
+    # Por ahora dejaremos una lista vacía, lo cual significa que en modo estricto rechazará todo,
+    # o implementaremos un modo de "descubrimiento" para tu primer mensaje.
+    allowed_chat_ids: [1315284048]
+    
+  mcp_servers:
+    # Mapeo de prefijos/comandos a servidores MCP (Layer 2) locales
+    # Comando : Script a ejecutar
+    latex: mcp_latex_server.py
+    evaluar: mcp_evaluar_server.py
+    elaborar: mcp_elaborar_server.py
+    analizar: mcp_analizar_server.py
+    diagnostico: mcp_diagnostico_server.py
+
+guidelines:
+  - "SECURITY FIRST: Only process commands from chat_ids present in the allowed_chat_ids list. Log rejected attempts but do not reply to them."
+  - "LONG POLLING: Use a while loop with HTTP timeouts slightly larger than the Telegram poll_timeout to avoid dropped connections."
+  - "ERROR HANDLING: If a local MCP server crashes or times out, format a clean error message for the Telegram user."
+  - "JSON-RPC: Convert Telegram commands into properly structured JSON-RPC 2.0 payloads for the local MCP servers."
+  - "RESPONSES: Keep responses concise. If an MCP server returns large outputs, consider truncating."

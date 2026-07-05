@@ -1,8 +1,8 @@
 {
-  "run_id": "flujo-diagnostico-2026-07-04T13-28-16",
+  "run_id": "flujo-diagnostico-2026-07-05T15-27-41",
   "directive": "diagnostico_mcp.yaml",
-  "started_at": "2026-07-04T13:28:16.264575+00:00",
-  "last_updated": "2026-07-04T13:28:29.229924+00:00",
+  "started_at": "2026-07-05T15:27:41.491789+00:00",
+  "last_updated": "2026-07-05T15:27:45.235195+00:00",
   "current_step": 4,
   "steps_completed": [
     {
@@ -40,21 +40,21 @@
         "python_version": "3.12.3",
         "conda_env": "N/A",
         "encoding": "utf-8",
-        "uptime": "3.4 horas"
+        "uptime": "4.1 horas"
       },
       "hardware": {
         "cpu_model": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
         "cpu_cores": 2,
         "ram": {
           "total_gb": 3.63,
-          "available_gb": 0.11,
-          "percent_used": 96.9
+          "available_gb": 0.15,
+          "percent_used": 95.9
         },
         "disk": {
           "total_gb": 233.18,
-          "used_gb": 209.41,
-          "free_gb": 11.86,
-          "percent_used": 89.8
+          "used_gb": 208.62,
+          "free_gb": 12.64,
+          "percent_used": 89.5
         },
         "gpus": []
       },

@@ -1,0 +1,125 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{url}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+}
+
+\title{Especificación y Dinámica del Flujo de Trabajo\\en el Espacio de Trabajo Multidisciplinario}
+\author{Prof. César Rodríguez \\ Departamento de Electrónica \\ Agente IA (Orquestador)}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+
+El presente documento especifica la arquitectura, dinámica operacional y protocolos de ejecución que gobiernan este espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos Integrados (EDA) y Redacción Académica. 
+
+Con el fin de mitigar la naturaleza probabilística y los sesgos de alucinación inherentes a los modelos de lenguaje de gran tamaño (LLM), el espacio de trabajo implementa una rigurosa \textbf{arquitectura de tres capas}. Esta estructura separa las intenciones declarativas de alto nivel de las acciones imperativas y deterministas, garantizando un índice de fiabilidad técnica óptimo y un comportamiento robusto ante errores.
+
+\section{Arquitectura de Tres Capas}
+
+La arquitectura del sistema se divide en tres niveles con responsabilidades claramente demarcadas:
+
+\begin{enumerate}
+    \item \textbf{Capa 1: Directivas (Directives - \path{directives/})} \\
+    Constituye el manual de operaciones de la organización. Consiste en procedimientos estandarizados de operación (SOPs) definidos exclusivamente en formato YAML. Cada archivo especifica de forma declarativa un flujo de trabajo repetible: el objetivo principal (\textit{Goal}), los datos y variables de entrada (\textit{Required inputs}), la secuencia lógica de pasos (\textit{Steps}), las salidas esperadas (\textit{Expected outputs}) y los protocolos de mitigación de fallas (\textit{Edge cases}).
+    
+    \item \textbf{Capa 2: Orquestación (Orchestration - El Agente / \path{flujo_*.py})} \\
+    Actúa como el motor inteligente de toma de decisiones. Es el intermediario entre la intención conceptual del usuario y los recursos del sistema. El agente interpreta la directiva de la Capa 1, valida y sanitiza los parámetros de entrada, gestiona el flujo secuencial y el presupuesto de reintentos (\textit{Retry Budget}), captura errores, y registra el progreso de forma persistente en \path{.tmp/run_state.json}.
+    
+    \item \textbf{Capa 3: Ejecución (Execution - \path{execution/})} \\
+    Consiste en scripts deterministas en Python o contenedores Docker aislados. Estos scripts tienen una única responsabilidad (ej. compilar LaTeX, vectorizar documentos, convertir PDFs a imágenes). Reciben sus parámetros a través de argumentos de interfaz de línea de comandos (CLI), no improvisan ni razonan, validan estrictamente sus salidas y retornan códigos de salida estándar (0 en caso de éxito, y códigos de error categorizados en caso de fallo).
+\end{enumerate}
+
+\section{Servidores MCP (Model Context Protocol)}
+
+Los servidores MCP (archivos con el prefijo \path{mcp_*_server.py}) son aplicaciones construidas sobre el framework \texttt{FastMCP} de Anthropic que exponen herramientas (\textit{tools}) específicas para que clientes externos o interfaces de agente interactúen con el espacio de trabajo de manera estandarizada.
+
+\subsection{Filosofía y Rol}
+Los servidores MCP no contienen lógica de ejecución compleja. Su único propósito es servir de fachada adaptadora. Reciben una petición estructurada JSON-RPC, resuelven las rutas de archivos de manera absoluta, invocan el script orquestador correspondiente (Capa 2) utilizando el mismo intérprete de Python activo en el entorno virtual (\path{sys.executable}), leen el resultado de la ejecución en \path{.tmp/run_state.json}, y devuelven una respuesta Markdown limpia y amigable al cliente.
+
+\subsection{Esquema de Activación}
+El ciclo de vida del servidor MCP está diseñado para ser eficiente y no consumir recursos del sistema de forma innecesaria:
+\begin{itemize}
+    \item \textbf{Activación Automática bajo Demanda (Client-spawned):} Es el método predeterminado. Cuando el usuario abre un cliente de IA compatible (como Claude Desktop, Cursor o VS Code), este lee el archivo de configuración, lanza el proceso de Python en segundo plano y se comunica de manera bidireccional mediante el canal estándar de entrada y salida (\texttt{stdio}).
+    \item \textbf{Activación para Pruebas Manuales:} Un desarrollador puede levantar el servidor localmente en terminal para depuración ejecutando de forma directa:
+    \begin{lstlisting}[language=bash]
+python3 mcp_latex_server.py
+    \end{lstlisting}
+    \item \textbf{Desactivación Automática:} Cuando el cliente que invocó el servidor se cierra, el sistema operativo envía una señal de terminación al subproceso de Python, cerrando el servidor limpiamente y liberando la memoria.
+\end{itemize}
+
+\section{Dinámica del Flujo ante una Instrucción del Usuario}
+
+Cuando el usuario ingresa una instrucción en este espacio de trabajo, se desencadena la siguiente secuencia lógica de ejecución:
+
+\begin{figure}[h]
+    \centering
+    \path{Instrucción (Usuario) -> Agente (Entendimiento) -> Servidor MCP -> Orquestador (Capa 2) -> Scripts (Capa 3) -> Notificación (Física)}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{Trigger (Detonador):} El usuario introduce una instrucción en lenguaje natural (ej: \textit{"Evalúa el examen en PDF del alumno"}).
+    \item **Análisis y Consulta Semántica:** El agente IA (Capa 2) procesa la entrada, verifica su entorno y consulta la memoria semántica persistente (ChromaDB) en búsqueda de contextos previos o fallas conocidas similares.
+    \item **Selección de Herramienta:** El cliente de IA invoca la herramienta registrada en el servidor MCP relevante (ej. \path{evaluar_examen_estudiante}).
+    \item \textbf{Llamada al Orquestador (Capa 2):} El servidor MCP traduce la llamada JSON-RPC y ejecuta el script director (ej. \path{flujo_evaluar_examen.py}).
+    \item \textbf{Ejecución de Operarios (Capa 3):} El orquestador ejecuta de forma secuencial y determinista los scripts en \path{execution/}, guardando el estado incremental y los códigos de salida de cada paso en \path{.tmp/run_state.json}.
+    \item \textbf{Verificación y Auto-curación (Self-healing):} Si un operario falla (código de salida $\ne 0$), el orquestador analiza la salida del error, ajusta dinámicamente las entradas o el entorno, y realiza hasta 3 reintentos.
+    \item \textbf{Alerta y Respuesta Final:} El orquestador ejecuta \path{execution/alert_user.py} para generar una alerta auditiva exitosa (\path{success}) en la computadora anfitriona y devuelve el reporte final al cliente.
+\end{enumerate}
+
+\section{Protocolo ante la Ausencia de Infraestructura}
+
+Si el usuario solicita realizar una tarea completamente novedosa para la cual el espacio de trabajo no tiene ninguna directiva ni código preexistente, el agente actúa bajo el principio de \textbf{Mantenimiento y Evolución de Capacidades} siguiendo estos pasos de forma autónoma:
+
+\begin{enumerate}
+    \item \textbf{Diseño de Solución:} Analiza los requerimientos, diagnostica el sistema en búsqueda de librerías faltantes y le presenta al usuario un plan estructurado bajo la arquitectura de 3 capas.
+    \item \textbf{Capa 1 (Manual):} Crea un archivo YAML en \path{directives/} detallando la nueva rutina lógica estándar.
+    \item \textbf{Capa 3 (Ejecutores):} Escribe scripts en \path{execution/} robustos, tipados, con control riguroso de excepciones y parámetros CLI estructurados.
+    \item \textbf{Capa 2 (Director):} Programa un script orquestador \path{flujo_*.py} que coordine a los ejecutores y maneje el estado de ejecución de forma persistente.
+    \item \textbf{MCP (Interfaz):} Desarrolla un nuevo adaptador MCP \path{mcp_*_server.py} utilizando \texttt{FastMCP} para exponer la nueva herramienta al exterior.
+    \item \textbf{Bucle de Prueba y Ajuste (Self-annealing):} Ejecuta de forma integrada el flujo completo, capturando y resolviendo cualquier fallo sintáctico o de lógica en el proceso de forma automática.
+\end{enumerate}
+
+Al completar este flujo, no solo se resuelve la instrucción inmediata del usuario, sino que se deja el espacio de trabajo permanentemente expandido y preparado para automatizaciones futuras.
+
+\section{Integración con Canales Externos (ej: Telegram)}
+
+La infraestructura basada en la arquitectura de 3 capas y servidores MCP permite una integración nativa y sumamente robusta con canales externos como plataformas de mensajería (Telegram, Slack, Discord, etc.).
+
+\subsection{Estructura de la Integración}
+Un bot de Telegram desarrollado en Python (usando \texttt{python-telegram-bot}) puede actuar como un cliente MCP altamente eficaz:
+\begin{enumerate}
+    \item El usuario envía un mensaje de texto o un archivo PDF desde su teléfono celular al chat del bot de Telegram.
+    \item El bot recibe la petición en la nube o en el servidor.
+    \item El bot actúa como cliente e invoca la herramienta MCP del espacio de trabajo.
+\end{enumerate}
+
+\subsection{Esquema de Conectividad (stdio vs SSE)}
+* \textbf{Canal Local (stdio):} Si el bot de Telegram se ejecuta directamente en la misma máquina o servidor local donde reside el espacio de trabajo de Electrónica, interactúa directamente con el servidor MCP a través del transporte de entrada/salida estándar (\texttt{stdio}) lanzando el proceso local de Python.
+* \textbf{Canal Remoto (SSE - Server-Sent Events):} Si el bot está alojado de forma remota o en la nube, se puede activar el servidor MCP en modo HTTP/SSE. Para proteger la máquina local, se establece un túnel seguro y cifrado (como \textbf{Cloudflare Tunnel} o *ngrok* con cifrado TLS/SSL de extremo a extremo). El bot de Telegram remoto realiza peticiones HTTP seguras a través de este túnel para invocar el pipeline de compilación de LaTeX o de análisis de imágenes de forma segura sin exponer puertos locales al internet público.
+
+\subsection{Flujo de Retorno}
+Una vez que el orquestador local de la Capa 2 finaliza su ejecución, el servidor MCP retorna el reporte JSON/Markdown y la ubicación del PDF compilado. El bot de Telegram lee este archivo local, lo sube de forma automatizada mediante el API de Telegram y lo deposita en tu chat, completando una interacción remota transparente y sumamente potente.
+
+\end{document}

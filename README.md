@@ -42,6 +42,9 @@ Orquestador que ejecuta el flujo completo de evaluación:
 Soporta exámenes escritos y prácticas de laboratorio mediante rúbricas
 YAML personalizadas en `directives/rubricas/`.
 
+### Gateway de Telegram (Orquestador Remoto)
+Orquestador seguro basado en Long Polling (`flujo_telegram.py`) que actúa como puerta de enlace (Gateway) para interactuar con todos los servidores MCP locales de forma remota, sin requerir puertos abiertos ni túneles externos. Integrado mediante un servicio systemd (`telegram_gateway.service`).
+
 ### Scripts de Ejecución (`execution/`)
 - `env_diagnostic.py` — Diagnóstico del entorno (SO, paquetes, HW, red)
 - `scrape_single_site.py` — Extrae contenido principal de una URL
@@ -57,6 +60,7 @@ YAML personalizadas en `directives/rubricas/`.
 - `merge_pdfs.py` — Une múltiples PDFs
 - `ren_archivos.py` — Renombra archivos por lotes
 - `test_generator.py` — Tests del generador JSON EasyEDA
+- `manage_bot.sh` — Script interactivo para gestionar (Start/Stop/Status) el orquestador de Telegram.
 
 ### Control de Versiones
 - `git-update.sh` — Commit WIP + pull + push automatizado

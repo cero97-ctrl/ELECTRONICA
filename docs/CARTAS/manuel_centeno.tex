@@ -1,0 +1,97 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+
+\geometry{left=3cm,right=3cm,top=2.5cm,bottom=2.5cm}
+
+\title{
+    \vspace{-2cm}
+    \begin{center}
+        \Large \textbf{Universidad de Oriente}\\
+        \large \textbf{Integración de Inteligencia Artificial en el Flujo de Trabajo Académico y de Diseño Electrónico}
+    \end{center}
+    \vspace{1cm}
+}
+\author{Informe}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1cm}
+\begin{flushright}
+\textbf{Para:} Prof. Manuel Centeno\\
+\textit{Director del Equipo de Inteligencia Artificial}\\
+\textit{Departamento de Matemáticas, Universidad de Oriente}
+\end{flushright}
+\vspace{0.5cm}
+
+\section*{Estimado Profesor Centeno,}
+
+Es un placer saludarle. Conociendo el excelente trabajo que lidera en el área de Inteligencia Artificial dentro del Departamento de Matemáticas de nuestra alma máter, me permito compartir con usted los avances y la arquitectura del sistema que hemos desarrollado e implementado recientemente en el espacio de trabajo multidisciplinario de \textbf{Electrónica}. 
+
+El objetivo de este proyecto ha sido potenciar la eficiencia en la docencia, la redacción académica y el Diseño de Circuitos Integrados (EDA), apalancando Modelos de Lenguaje Grande (LLMs) de código abierto y APIs multimodales bajo una arquitectura rigurosamente estructurada.
+
+\section{Arquitectura del Sistema: Diseño de 3 Capas}
+
+Para evitar la fragilidad común en los agentes IA que mezclan lógica probabilística con ejecución determinista, hemos implementado un marco estricto de \textbf{3 capas} inspirado en las mejores prácticas de ingeniería de software para IA:
+
+\begin{enumerate}
+    \item \textbf{Capa 1 (Directives):} Archivos YAML que contienen los Procedimientos Operativos Estándar (SOPs). Definen las reglas del negocio, rúbricas de evaluación y configuraciones estáticas sin incluir lógica de programación.
+    \item \textbf{Capa 2 (Orchestration):} Scripts en Python (Orquestadores) y el Agente IA en sí. Se encargan del enrutamiento, la toma de decisiones basada en el contexto y la interacción con los LLMs.
+    \item \textbf{Capa 3 (Execution):} Scripts deterministas, con una única responsabilidad, que ejecutan acciones como compilar código, consumir APIs, gestionar archivos, etc.
+\end{enumerate}
+
+\section{Componentes Tecnológicos Destacados}
+
+El ecosistema está construido principalmente en \textbf{Python 3} y \textbf{\LaTeX}, utilizando el framework \textbf{LangChain} para la orquestación semántica. Entre los módulos más relevantes destacan:
+
+\subsection{Sistema RAG Académico (Retrieval-Augmented Generation)}
+Hemos construido una base de datos vectorial local utilizando \textbf{ChromaDB} y modelos de embeddings multilingües (\texttt{paraphrase-multilingual-MiniLM}). Esto permite a nuestro Agente (alimentado por Llama 3 vía la API de Groq) consultar instantáneamente miles de páginas de documentos \texttt{.tex}, \texttt{.md} y \texttt{.pdf} de nuestros cursos de Electrónica, Física y planes de estudio.
+
+\subsection{Agente EDA (Diseño Electrónico Automatizado)}
+Desarrollamos un agente capaz de analizar diagramas de circuitos escritos nativamente en \LaTeX\ (usando el paquete \texttt{circuitikz}), extraer las listas de conexiones (netlists) y la lista de materiales (BOM), para luego generar automáticamente los archivos JSON compatibles con herramientas estándar de la industria como \textbf{EasyEDA}.
+
+\subsection{Evaluación Multimodal de Exámenes y Prácticas}
+Mediante el uso de modelos multimodales (Gemini / OpenRouter), el sistema puede leer escaneos en PDF de los exámenes de los estudiantes o de sus prácticas de laboratorio, evaluar su desempeño comparándolo contra rúbricas estrictas definidas en YAML (Capa 1), y generar de forma autónoma un informe de retroalimentación detallado, compilado directamente en un archivo PDF mediante \LaTeX.
+
+\subsection{Protocolo de Contexto de Modelos (MCP) y Telegram Gateway}
+Una de las implementaciones más recientes y robustas ha sido la estandarización de nuestras herramientas a través de servidores \textbf{MCP (Model Context Protocol)}. Para interactuar con estos servidores de forma remota (desde un teléfono móvil, por ejemplo), construimos un \textbf{Gateway mediante un Bot de Telegram}.
+
+Lo destacable de este Gateway es su enfoque de seguridad:
+\begin{itemize}
+    \item Utiliza el mecanismo de \textbf{Long Polling} (conexiones salientes), lo que significa que el sistema opera de forma segura detrás del firewall de la red local sin requerir redirección de puertos ni túneles expuestos a internet (como ngrok).
+    \item Mantiene una lista blanca estricta de usuarios autorizados.
+    \item El bot actúa como un cliente MCP local, tomando los comandos del usuario y enrutándolos hacia servidores especializados aislados (compilador LaTeX, diagnóstico de hardware, evaluadores).
+\end{itemize}
+
+\section{Perspectivas a Futuro}
+
+El cruce entre la Inteligencia Artificial y nuestras disciplinas técnicas abre un abanico de posibilidades inmenso. El uso de \LaTeX\ como lenguaje puente entre la matemática/electrónica y el LLM ha demostrado ser sumamente eficaz, reduciendo las alucinaciones del modelo en formulaciones complejas.
+
+Como siguiente fase evolutiva de este ecosistema, y sujeto a la disponibilidad de recursos, hemos estructurado el diseño formal de un \textbf{Clúster Beowulf para Cómputo en Paralelo}. Esta infraestructura aprovechará hardware preexistente (como un servidor Dell PowerEdge R610 y estaciones de trabajo) interconectado mediante una topología en estrella Gigabit. Su propósito será acelerar las cargas de trabajo más demandantes de nuestro orquestador, como el entrenamiento local e inferencia de Modelos de Lenguaje (LLMs) y la simulación física de alta fidelidad, democratizando así el acceso a la Computación de Alto Rendimiento (HPC) dentro de nuestro departamento y \textbf{eliminando por completo la necesidad de adquirir costosas tarjetas gráficas (GPUs)} gracias a la distribución del cómputo directamente sobre los procesadores (CPUs) del clúster.
+
+Me encantaría tener la oportunidad de mostrarle este sistema en funcionamiento, intercambiar ideas y, si lo considera pertinente, explorar posibles sinergias o líneas de investigación conjuntas con el equipo de Inteligencia Artificial que usted dirige.
+
+Quedo a su entera disposición.
+
+\vspace{1cm}
+Atentamente,
+
+\vspace{1.5cm}
+\noindent\rule{6cm}{0.4pt}\\
+\textbf{Prof. César Rodríguez}\\
+Dpto. Física, Universidad de Oriente-NS\\
+Espacio de Trabajo: ELECTRONICA
+
+\end{document}
