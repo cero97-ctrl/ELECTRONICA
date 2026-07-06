@@ -1,0 +1,12 @@
+name: System Control MCP Server
+description: SOP for the System Control MCP Server that handles power operations (shutdown)
+version: 1.0.0
+
+configuration:
+  server_name: System Control Server
+  tools:
+    - apagar_sistema
+
+guidelines:
+  - "SECURITY: Power operations affect the entire system and should only be exposed to authenticated/trusted sources."
+  - "EXECUTION: Use systemctl poweroff for graceful shutdown. Ensure execution layer handles exceptions properly."

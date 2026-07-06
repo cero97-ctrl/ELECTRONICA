@@ -21,6 +21,7 @@ configuration:
     elaborar: mcp_elaborar_server.py
     analizar: mcp_analizar_server.py
     diagnostico: mcp_diagnostico_server.py
+    sistema: mcp_sistema_server.py
 
 guidelines:
   - "SECURITY FIRST: Only process commands from chat_ids present in the allowed_chat_ids list. Log rejected attempts but do not reply to them."
