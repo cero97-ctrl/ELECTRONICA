@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{parskip}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{Informe de Análisis} --- Imágenes}
+\fancyhead[R]{\small 2026-07-08}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces y URLs ──────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+\usepackage{url}
+\def\path#1{\url{#1}}
+
+% ── Permitir saltos de línea más flexibles ───────────────────────────────────
+\sloppy
+\emergencystretch 3em
+
+% ── Colores personalizados ────────────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+
+% ── Estilos de cajas ─────────────────────────────────────────────────────────
+\tcbset{
+  cajaTitulo/.style={
+    enhanced, breakable,
+    colback=azulTitulo!8, colframe=azulTitulo,
+    fonttitle=\bfseries\large, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulTitulo},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    colback=grisFondo, colframe=gray!50,
+    fonttitle=\bfseries, coltitle=black,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA ══════════════════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Análisis de Imágenes}\\[4pt]
+  {\large Informe de Análisis}\\[12pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  \rule{\linewidth}{0.6pt}
+\end{center}
+
+% ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{tcolorbox}[cajaTitulo, title=Datos del análisis]
+\begin{tabular}{@{}llll@{}}
+  \textbf{Fecha:}       & 2026-07-08  &
+  \textbf{Modelo usado:} & gemini-2.5-flash \\[4pt]
+  \textbf{Archivos:}    & \multicolumn{3}{l}{\texttt{kee.jpeg}} \\
+\end{tabular}
+\end{tcolorbox}
+
+% ══ DESCRIPCIÓN GENERAL ══════════════════════════════════════════════════════
+\section*{Descripción general}
+La imagen muestra una placa de circuito impreso (PCB) de color azul, diseñada como una plataforma de desarrollo o kit educativo. La placa integra una amplia variedad de componentes electrónicos, incluyendo un microcontrolador ESP32, diversos sensores, actuadores y módulos de interfaz de usuario. Está claramente etiquetada en español para facilitar la identificación de sus diferentes secciones y funcionalidades.
+
+% ══ ELEMENTOS DETECTADOS ═════════════════════════════════════════════════════
+\section*{Elementos detectados}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item \textbf{Módulo Microcontrolador}: Un módulo ESPRESSIF ESP32-WROOM-32, ubicado en el centro de la placa, que proporciona capacidades de procesamiento, Wi-Fi y Bluetooth.
+  \item \textbf{Conector USB}: Un conector micro-USB tipo B en la parte superior, utilizado para alimentación y programación del microcontrolador.
+  \item \textbf{Botón BOOT}: Un pequeño botón pulsador etiquetado 'BOOT' cerca del conector USB, para el modo de arranque del ESP32.
+  \item \textbf{Sección de Motores}: Incluye un conector blanco de 4 pines (H1), dos bornes de tornillo azules para motores DC (P1 MOTOR DC, P2 MOTOR DC), un cabezal de 3 pines para servomotor (H2 'SERVOMOTOR') y varios LEDs indicadores (LED1-LED4) con sus resistencias (R1-R4). También se observan circuitos integrados controladores de motores.
+  \item \textbf{Relé}: Un relé azul de la marca SONGLE, modelo SRD-03VDC-SL-C, con especificaciones de 10A a 250VAC, 125VAC, 30VDC y 28VDC, con bornes de tornillo para su conexión.
+  \item \textbf{LEDs Indicadores}: Una sección con múltiples LEDs individuales (LED5-LED11) de diferentes colores (AZUL, AMARILLO, ROJO, VERDE) y sus resistencias asociadas (R15-R22).
+  \item \textbf{Pantalla OLED}: Una pequeña pantalla OLED rectangular, con pines etiquetados 'GND VCC SCL SDA'.
+  \item \textbf{Display de 7 Segmentos}: Un display de 4 dígitos de 7 segmentos, etiquetado 'DISPLAY', para mostrar información numérica.
+  \item \textbf{Matriz de Botones}: Una matriz de 4x4 botones pulsadores (SW1-SW16), etiquetada 'MATRIZ LED', para entrada de usuario.
+  \item \textbf{Sensor Ultrasónico}: Un módulo de sensor ultrasónico HC-SR04, con pines 'Trig', 'Echo' y 'Gnd.', para medición de distancia.
+  \item \textbf{Bocina/Buzzer}: Un pequeño zumbador o bocina, para salida de audio o alertas.
+  \item \textbf{Sensor de Temperatura}: Un componente sensor de temperatura, etiquetado 'TEMPERATURA'.
+  \item \textbf{Sensor de Luz}: Un fotorresistor o fototransistor, etiquetado 'LUZ', para detección de intensidad lumínica.
+  \item \textbf{Potenciómetro}: Un potenciómetro (VR1) para ajuste de valores analógicos.
+  \item \textbf{Receptor Infrarrojo}: Un módulo receptor de infrarrojos, etiquetado 'RECEPTOR INFRARROJO'.
+  \item \textbf{Emisor Infrarrojo}: Un LED emisor de infrarrojos, etiquetado 'EMISOR INFRARROJO'.
+  \item \textbf{Pines de Alimentación/Salida}: Pines etiquetados '3.3V GND 5V' y una sección general 'SALIDAS'.
+  \item \textbf{Pines de Sensores}: Una sección general etiquetada 'SENSORES'.
+  \item \textbf{Botones Adicionales}: Varios botones pulsadores individuales (SW2-SW8) distribuidos en la placa.
+  \item \textbf{Marcas de PCB}: Etiquetas de la placa 'BMX-01' y '94V-0 E226252 25.19'.
+\end{itemize}
+
+% ══ TEXTO EXTRAÍDO ═══════════════════════════════════════════════════════════
+\section*{Texto extraído}
+H1, LED1, LED2, LED3, LED4, R1, R2, R3, R4, PWM VCC GND, SERVOMOTOR, H2, P1 MOTOR DC, P2 MOTOR DC, MOTORES, 3.3V GND 5V, SALIDAS, SENSORES, TEMPERATURA, LUZ, VR1, BOCINA, H4, SW1, HC-SR04, Trig, Echo, Gnd., SENSOR ULTRASONICO, DISPLAY, MATRIZ LED, R01, R02, R03, R04, R05, R06, R07, R08, R09, R10, R11, R12, R13, R14, R15, R16, SW1, SW2, SW3, SW4, SW5, SW6, SW7, SW8, SW9, SW10, SW11, SW12, SW13, SW14, SW15, SW16, RECEPTOR INFRARROJO, EMISOR INFRARROJO, BMX-01, 94V-0 E226252 25.19, I2C, SCL, SDA, OLED, GND VCC SCL SDA, LED5, LED6, LED7, LED8, LED9, LED10, LED11, R15, R16, R17, R18, R19, R20, R21, R22, AZUL, AMARILLO, ROJO, VERDE, LEDS, RELAY, SONGLE, SRD-03VDC-SL-C, 10A 250VAC 10A 125VAC 10A 30VDC 10A 28VDC, BOOT, ESPRESSIF, ESP32-WROOM-32, CE, FCC ID, IC, U5, U6, U7, U8, U9, U10, U11, U12, U13, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, R23, R24, R25, R26, R27, R28, R29, R30, R31, D1, D2.
+
+% ══ OBSERVACIONES ════════════════════════════════════════════════════════════
+\section*{Observaciones}
+La placa es una solución integral para proyectos de electrónica y robótica, ideal para aprendizaje y prototipado rápido. La inclusión de un ESP32 le confiere capacidades avanzadas de conectividad inalámbrica. La disposición de los componentes y las claras etiquetas en español facilitan su uso y comprensión. La variedad de sensores y actuadores permite explorar múltiples funcionalidades en un solo dispositivo, desde control de motores hasta interacción con el usuario y detección ambiental. La presencia de un relé y controladores de motor sugiere la capacidad de manejar cargas de potencia moderada.
+
+% ══ SUGERENCIAS ═════════════════════════════════════════════════════════════
+
+
+% ══ PIE DE INFORME ════════════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \footnotesize\color{gray}
+  Informe generado automáticamente por el sistema de análisis con IA (gemini-2.5-flash) y soporte LaTeX. \\
+  Generado el 2026-07-08 \textbullet\ ELECTRÓNICA --- Sistema de Análisis de Imágenes.
+\end{center}
+
+\end{document}

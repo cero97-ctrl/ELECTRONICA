@@ -1,70 +1,18 @@
 {
-  "run_id": "flujo-diagnostico-2026-07-05T15-27-41",
-  "directive": "diagnostico_mcp.yaml",
-  "started_at": "2026-07-05T15:27:41.491789+00:00",
-  "last_updated": "2026-07-05T15:27:45.235195+00:00",
-  "current_step": 4,
-  "steps_completed": [
+  "run_id": "flujo-imagen-2026-07-08T10-46-26",
+  "directive": "analizar_imagen.yaml",
+  "imagenes": "docs/IMAGENES/kee.jpeg",
+  "started_at": "2026-07-08T10:46:26.660984+00:00",
+  "last_updated": "2026-07-08T10:47:20.107210+00:00",
+  "current_step": 0,
+  "steps_completed": [],
+  "steps_failed": [
     {
       "step": 1,
-      "script": "env_diagnostic.py",
-      "status": "ok"
-    },
-    {
-      "step": 2,
-      "script": "generar_latex_reporte",
-      "status": "ok",
-      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.tex"
-    },
-    {
-      "step": 3,
-      "script": "compile_latex.py",
-      "status": "ok",
-      "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.pdf"
-    },
-    {
-      "step": 4,
-      "script": "alert_user.py",
-      "status": "ok",
-      "tipo": "success"
+      "script": "analizar_imagen.py",
+      "code": 2,
+      "message": "Error de API (APIStatusError): Error code: 402 - {'error': {'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\", 'code': 402, 'metadata': {'provider_name': None, 'previous_errors': [{'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}]}}, 'user_id': 'user_33YfQJkj4MPfKZGNV015FHjOwsY'}"
     }
   ],
-  "steps_failed": [],
-  "context": {
-    "telemetria": {
-      "core": {
-        "os": "Linux",
-        "release": "6.8.0-134-generic",
-        "architecture": "x86_64",
-        "hostname": "ZETA",
-        "python_version": "3.12.3",
-        "conda_env": "N/A",
-        "encoding": "utf-8",
-        "uptime": "4.1 horas"
-      },
-      "hardware": {
-        "cpu_model": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
-        "cpu_cores": 2,
-        "ram": {
-          "total_gb": 3.63,
-          "available_gb": 0.15,
-          "percent_used": 95.9
-        },
-        "disk": {
-          "total_gb": 233.18,
-          "used_gb": 208.62,
-          "free_gb": 12.64,
-          "percent_used": 89.5
-        },
-        "gpus": []
-      },
-      "network": {
-        "git_installed": true,
-        "curl_installed": true,
-        "pdflatex_installed": true
-      }
-    },
-    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.tex",
-    "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.pdf"
-  }
+  "context": {}
 }

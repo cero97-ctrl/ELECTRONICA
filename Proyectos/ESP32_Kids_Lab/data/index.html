@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Kids Lab</title>
+    <link rel="stylesheet" href="style.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="glass-header">
+        <h1>🚀 ESP32 Kids Lab 🧪</h1>
+        <p>¡Explora, controla y crea tus propios experimentos!</p>
+        <div class="status-indicator">
+            <span id="conn-status" class="dot disconnected"></span>
+            <span id="conn-text">Desconectado</span>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        
+        <!-- Panel de Sensores -->
+        <section class="panel sensors-panel">
+            <h2>📊 Mis Sensores</h2>
+            <div class="cards-grid">
+                <div class="card sensor-card">
+                    <div class="icon">📏</div>
+                    <h3>Distancia</h3>
+                    <div class="value" id="val-distance">-- cm</div>
+                    <div class="progress-bar"><div class="fill" id="bar-distance" style="width: 0%"></div></div>
+                </div>
+                <div class="card sensor-card">
+                    <div class="icon">☀️</div>
+                    <h3>Luz</h3>
+                    <div class="value" id="val-light">--</div>
+                    <div class="progress-bar"><div class="fill" id="bar-light" style="width: 0%"></div></div>
+                </div>
+                <div class="card sensor-card">
+                    <div class="icon">🌡️</div>
+                    <h3>Temperatura</h3>
+                    <div class="value" id="val-temp">-- °C</div>
+                    <div class="progress-bar"><div class="fill temp" id="bar-temp" style="width: 0%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel de Actuadores -->
+        <section class="panel actuators-panel">
+            <h2>🕹️ Control Maestro</h2>
+            <div class="cards-grid">
+                
+                <div class="card actuator-card">
+                    <h3>🔴 LED Rojo</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-red" onchange="toggleDevice('red', this.checked)">
+                        <span class="slider red"></span>
+                    </label>
+                </div>
+                
+                <div class="card actuator-card">
+                    <h3>🟢 LED Verde</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-green" onchange="toggleDevice('green', this.checked)">
+                        <span class="slider green"></span>
+                    </label>
+                </div>
+
+                <div class="card actuator-card">
+                    <h3>🔵 LED Azul</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-blue" onchange="toggleDevice('blue', this.checked)">
+                        <span class="slider blue"></span>
+                    </label>
+                </div>
+
+                <div class="card actuator-card">
+                    <h3>🟡 LED Amarillo</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-yellow" onchange="toggleDevice('yellow', this.checked)">
+                        <span class="slider yellow"></span>
+                    </label>
+                </div>
+
+                <div class="card actuator-card relay">
+                    <h3>⚡ Relé (Poder)</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-relay" onchange="toggleDevice('relay', this.checked)">
+                        <span class="slider" style="background-color: #ff5722;"></span>
+                    </label>
+                </div>
+
+                <div class="card actuator-card buzzer">
+                    <h3>🔊 Bocina</h3>
+                    <button class="action-btn buzzer-btn" onmousedown="toggleDevice('buzzer', true)" onmouseup="toggleDevice('buzzer', false)" ontouchstart="toggleDevice('buzzer', true)" ontouchend="toggleDevice('buzzer', false)">Tocar</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Taller Mágico -->
+        <section class="panel magic-panel">
+            <h2>✨ Taller Mágico</h2>
+            <div class="experiments-grid">
+                <div class="exp-card">
+                    <h3>🔢 Display Mágico</h3>
+                    <p>Envía un número a la pantalla de la tarjeta.</p>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <input type="number" id="display-input" placeholder="1234" max="9999" style="width:70px; padding:5px; border-radius:5px; border:none; outline:none; font-family: 'Outfit', sans-serif;">
+                        <button class="action-btn" onclick="sendDisplay()">Enviar</button>
+                        <button class="action-btn" onclick="clearDisplay()" style="background:var(--card-bg);">Borrar</button>
+                    </div>
+                </div>
+                
+                <div class="exp-card" style="grid-column: 1 / -1;">
+                    <h3>🎨 Estudio Pixel Art</h3>
+                    <p>¡Dibuja en la cuadrícula y mira cómo aparece en la Matriz LED en vivo!</p>
+                    
+                    <div class="pixel-art-container">
+                        <div class="color-palette">
+                            <button class="color-btn active" style="background-color: #ff0000;" onclick="selectColor([255, 0, 0], this)"></button>
+                            <button class="color-btn" style="background-color: #00ff00;" onclick="selectColor([0, 255, 0], this)"></button>
+                            <button class="color-btn" style="background-color: #0000ff;" onclick="selectColor([0, 0, 255], this)"></button>
+                            <button class="color-btn" style="background-color: #ffff00;" onclick="selectColor([255, 255, 0], this)"></button>
+                            <button class="color-btn" style="background-color: #ff00ff;" onclick="selectColor([255, 0, 255], this)"></button>
+                            <button class="color-btn" style="background-color: #ffffff;" onclick="selectColor([255, 255, 255], this)"></button>
+                            <button class="color-btn eraser" style="background-color: #222;" onclick="selectColor([0, 0, 0], this)">Borrar</button>
+                        </div>
+                        
+                        <div class="pixel-grid" id="pixel-grid">
+                            <!-- JS will generate 16 div.pixel-cell here -->
+                        </div>
+                        
+                        <button class="action-btn" onclick="clearPixelArt()" style="background:var(--card-bg); margin-top: 15px;">Limpiar Lienzo</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Laboratorio de Experimentos -->
+        <section class="panel experiments-panel">
+            <h2>🧪 Mis Experimentos</h2>
+            <div class="experiments-grid">
+                <div class="exp-card">
+                    <h3>🚨 Radar Anti-Intrusos</h3>
+                    <p>Si alguien se acerca a menos de 15cm, sonará la alarma y se encenderá el LED rojo.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-radar" onchange="toggleExperiment('radar')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+                
+                <div class="exp-card">
+                    <h3>🌃 Lámpara Automática</h3>
+                    <p>Cuando se haga de noche (Poca luz), se encenderá el Relé y el LED Amarillo automáticamente.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-lamp" onchange="toggleExperiment('lamp')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <script src="app.js?v=5"></script>
+</body>
+</html>

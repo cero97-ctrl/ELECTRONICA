@@ -194,7 +194,7 @@ def extract_json_from_response(text: str) -> dict:
         except json.JSONDecodeError:
             pass
 
-    raise ValueError("No se pudo extraer un JSON válido de la respuesta del modelo.")
+    raise ValueError(f"No se pudo extraer un JSON válido de la respuesta del modelo. Respuesta cruda: {text}")
 
 
 # ── System Instruction ─────────────────────────────────────────────────────────
