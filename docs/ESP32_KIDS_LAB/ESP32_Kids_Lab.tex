@@ -1,0 +1,110 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{titling}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={Documentación ESP32 Kids Lab},
+}
+
+\title{\textbf{Documentación Técnica: ESP32 Kids Lab}}
+\author{Proyecto: Laboratorio ESP32}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Descripción General}
+\textbf{ESP32 Kids Lab} es una plataforma educativa interactiva diseñada para que los niños exploren conceptos básicos de electrónica, sensores y actuadores. El proyecto convierte un ESP32 en un laboratorio de bolsillo autónomo, exponiendo una red Wi-Fi propia (SoftAP) y un servidor web interactivo con un diseño moderno y amigable.
+
+\section{Características Principales}
+\begin{itemize}
+    \item \textbf{Conexión Directa:} El ESP32 crea su propia red Wi-Fi (\texttt{Laboratorio ESP32}) por lo que no requiere internet ni un router externo.
+    \item \textbf{Interfaz Web Moderna:} Creada con HTML5, CSS3 y JavaScript puro. Se sirve directamente desde la memoria flash del ESP32 usando \textbf{LittleFS}.
+    \item \textbf{Sensores en Vivo:} Lectura en tiempo real de Distancia, Luz y Temperatura.
+    \item \textbf{Control de Actuadores:} Interruptores en la web para encender y apagar LEDs de colores, un Relé y un Buzzer.
+    \item \textbf{Taller Mágico (Display 7 Segmentos):} Resuelve sumas matemáticas desde la web y el resultado aparece mágicamente en el display físico TM1637.
+    \item \textbf{Estudio Pixel Art (Matriz NeoPixel):} Una cuadrícula interactiva de 4x4 en la web que permite pintar y dibujar en tiempo real sobre una matriz física de LEDs WS2812.
+\end{itemize}
+
+\section{Mapa de Pines (Hardware Pinout)}
+
+A continuación se detalla la asignación de pines (GPIO) del ESP32 utilizados en el proyecto:
+
+\vspace{0.5cm}
+\noindent
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{llcX}
+\toprule
+\textbf{Componente} & \textbf{Tipo} & \textbf{Pin (GPIO)} & \textbf{Notas} \\
+\midrule
+\textbf{LED Rojo} & Actuador / Salida & \texttt{1} (TX) & Su uso desactiva la salida del Monitor Serial. \\
+\textbf{LED Verde} & Actuador / Salida & \texttt{23} & \\
+\textbf{LED Azul} & Actuador / Salida & \texttt{19} & \\
+\textbf{LED Amarillo} & Actuador / Salida & \texttt{3} (RX) & \\
+\textbf{Relé} & Actuador / Salida & \texttt{0} & Control de cargas (escuchar el ``clic''). \\
+\textbf{Buzzer} & Actuador / Salida & \texttt{12} & Requiere activar el Switch 1 en la placa. \\
+\textbf{Trigger} & Sensor / Salida & \texttt{5} & Pin de disparo ultrasónico (HC-SR04). \\
+\textbf{Echo} & Sensor / Entrada & \texttt{18} & Pin de eco ultrasónico (HC-SR04). \\
+\textbf{LDR} & Sensor / Entrada Analógica & \texttt{34} & Fotorresistencia (medición de Luz). \\
+\textbf{LM35} & Sensor / Entrada Analógica & \texttt{35} & Sensor de temperatura. \\
+\textbf{CLK} & Actuador / Reloj & \texttt{27} & Reloj para el display TM1637. \\
+\textbf{DIO} & Actuador / Datos & \texttt{14} & Datos para el display TM1637. \\
+\textbf{Matriz NeoPixel} & Actuador / Datos & \texttt{13} & Control para la Matriz WS2812 de 16 LEDs. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Arquitectura de Software}
+
+El proyecto se divide claramente en Backend (C++ en ESP32) y Frontend (Web en LittleFS):
+
+\subsection{Backend (ESP32 - PlatformIO)}
+\begin{itemize}
+    \item \textbf{Framework:} Arduino Core para ESP32.
+    \item \textbf{ESPAsyncWebServer:} Maneja las peticiones HTTP de forma asíncrona, permitiendo servir la interfaz web y responder a las APIs REST sin bloquear el ciclo principal del procesador.
+    \item \textbf{API REST (\texttt{main.cpp}):}
+    \begin{itemize}
+        \item \texttt{GET /api/sensors}: Devuelve un objeto JSON con los valores actuales de distancia, luz y temperatura.
+        \item \texttt{POST /api/actuators}: Recibe un JSON booleano para encender/apagar de forma independiente los LEDs, el Relé y el Buzzer.
+        \item \texttt{POST /api/display}: Recibe un número para mostrarlo directamente en el módulo TM1637.
+        \item \texttt{POST /api/matrix}: Interfaz avanzada para la matriz NeoPixel. Recibe comandos para limpiar, pintar todo de un color, o un array complejo. Usa un \texttt{DynamicJsonDocument} de 2048 bytes para soportar payloads grandes.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Frontend (LittleFS)}
+\begin{itemize}
+    \item \textbf{\texttt{index.html}:} Estructura semántica dividida en tarjetas: Paneles de Sensores, Actuadores, Taller Mágico, y Pixel Art.
+    \item \textbf{\texttt{style.css}:} Sistema de diseño basado en variables CSS. Utiliza flexbox, grillas y animaciones suaves para generar una experiencia moderna inspirada en el \textit{Glassmorphism}.
+    \item \textbf{\texttt{app.js}:} 
+    \begin{itemize}
+        \item Ciclo de \textit{polling} automático (cada 2 segundos) consultando a \texttt{GET /api/sensors}.
+        \item Funciones de envío asíncrono (\textit{Fetch API}) para controlar cada dispositivo interactivo.
+        \item Lógica de dibujo Pixel Art, manejo de array de colores en tiempo real y técnica de \textit{debounce}.
+    \end{itemize}
+\end{itemize}
+
+\section{Dependencias (Libraries)}
+Las bibliotecas instaladas en el entorno (\texttt{platformio.ini}) son:
+\begin{itemize}
+    \item \texttt{me-no-dev/ESP Async WebServer}: Para el servidor web asíncrono y los Endpoints REST.
+    \item \texttt{bblanchon/ArduinoJson} (v6): Para serialización y deserialización rápida de datos JSON.
+    \item \texttt{smougenot/TM1637}: Para el manejo del display de 4 dígitos.
+    \item \texttt{adafruit/Adafruit NeoPixel}: Para el protocolo de datos de la matriz WS2812.
+\end{itemize}
+
+\end{document}
