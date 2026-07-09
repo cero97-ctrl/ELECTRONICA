@@ -1,98 +1,70 @@
 # AGENTS.md — ELECTRONICA
 
-## Descripción General
+## 3-Layer Architecture (must follow for every new workflow)
 
-Espacio de trabajo multidisciplinario de Electrónica, IoT, Diseño de Circuitos Integrados (EDA) y Redacción Académica. Opera bajo una **arquitectura de 3 capas** (Directives → Orchestration → Execution) que separa la lógica probabilística del LLM de la ejecución determinista mediante scripts Python especializados. Integra un asistente RAG, un agente EDA para EasyEDA, y material didáctico en LaTeX.
-
----
-
-## Stack Tecnológico
-
-- **Lenguaje principal:** Python 3 (pydantic, type hints)
-- **LaTeX:** circuitikz, siunitx, amsmath, babel spanish
-- **Frameworks Python:** LangChain (groq, chroma, huggingface), ChromaDB, sentence-transformers
-- **LLM:** Llama 3.3/3.1 vía API de Groq
-- **Configuración agente:** OpenCode (.agent/*.md)
-- **Plataformas de Ejecución:** Entorno local (Linux, Conda, Docker) y soporte para **Google Colab** (para desarrollo rápido, prototipado de notebooks `.ipynb`, y tareas de cómputo pesado/GPU).
-
----
-
-## Scripts Principales
-
-| Script | Propósito |
+| Layer | Where | What |
 |---|---|---|
-| `execution/env_diagnostic.py` | Diagnóstico del entorno: SO, paquetes, HW, red. |
-| `execution/scrape_single_site.py` | Extrae el contenido principal de una URL y lo guarda en texto. |
-| `execution/analizar_imagen.py` | Analiza imágenes con LLM multimodal (Gemini/OpenRouter) y obtiene descripción JSON. |
-| `execution/evaluar_examen.py` | Evalúa exámenes escritos/prácticas con LLM multimodal (Gemini/OpenRouter). |
-| `execution/generar_informe.py` | Genera informe LaTeX a partir del JSON de evaluación. |
-| `execution/generar_informe_imagen.py` | Genera informe LaTeX a partir del JSON de análisis de imágenes. |
-| `execution/alert_user.py` | Emite alertas audibles (paplay + fallback bell) al completar flujos. |
-| `flujo_evaluar_examen.py` | Orquestador Layer 2: flujo completo (evaluar → informe → alertar). |
-| `flujo_analizar_imagen.py` | Orquestador Layer 2: flujo completo (analizar imágenes → informe → alertar). |
-| `rag_system.py` | Chatbot RAG: vectoriza `.tex`, `.md`, `.pdf` en ChromaDB y responde preguntas con Llama 3 (Groq). |
-| `agent_eda.py` | Agente EDA: extrae netlist/BOM de LaTeX circuitikz y genera JSON para EasyEDA Standard. |
-| `clean_latex.py` | Elimina archivos auxiliares de compilación LaTeX. |
-| `md_to_pdf.py` | Convierte Markdown a PDF. |
-| `merge_pdfs.py` | Une múltiples PDFs en uno solo. |
-| `ren_archivos.py` | Renombra archivos eliminando cadenas específicas del nombre. |
-| `test_generator.py` | Tests del generador JSON EasyEDA (sin dependencias externas). |
-| `mcp_latex_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `compilar_latex` para clientes MCP. |
-| `mcp_evaluar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `evaluar_examen_estudiante` para evaluar exámenes en PDF. |
-| `mcp_elaborar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `elaborar_nuevo_examen` para generar y compilar de forma automática exámenes y solucionarios. |
-| `mcp_analizar_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `analizar_imagenes_circuito` para analizar imágenes y compilar informes a PDF. |
-| `mcp_diagnostico_server.py` | Servidor MCP (Orquestador Layer 2): expone la herramienta `generar_diagnostico_sistema` para telemetría de hardware/software y generación de reportes en PDF. |
-| `flujo_telegram.py` | Orquestador Layer 2 (Gateway): proxy seguro por Long Polling hacia servidores MCP locales vía Telegram. |
-| `execution/telegram_api.py` | (Capa de ejecución 3) Funciones deterministas HTTP puras para interactuar con la API de Telegram. |
-| `execution/mcp_client.py` | (Capa de ejecución 3) Cliente asíncrono para invocar herramientas en servidores MCP locales vía `stdio`. |
-| `execution/compile_latex.py` | Compilador determinista de LaTeX (Capa de ejecución 3) con soporte para referencias y limpieza. |
-| `manage_bot.sh` | Script bash interactivo para Start/Stop/Status del servicio systemd del orquestador de Telegram. |
-| `git-update.sh` | Script de actualización Git: commit WIP + pull + push vía `update_repo.sh`. |
-| `update_repo.sh` | Gestor de versiones: pull, add, commit y push con opciones (confirm, dry-run, mensaje personalizado). |
+| **Directives** | `directives/*.yaml` | SOP — *what* to do |
+| **Orchestration** | `flujo_*`, `mcp_*` (root) | Decision/validation logic; may serve MCP tools |
+| **Execution** | `execution/*.py` | Deterministic script — *how* |
 
----
+A new workflow must include all three layers; never write just an orchestrator without a directive and execution script.
 
-## Arquitectura de 3 Capas
+## Configuration
 
-El sistema sigue el marco definido en `.agent/AGENT_FRAMEWORK.md`:
+| File | Content |
+|---|---|
+| `.groq_api_key` | Groq API key (text LLMs) |
+| `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `TELEGRAM_BOT_TOKEN` |
 
-| Capa | Directorio | Propósito |
-|---|---|---|
-| **Layer 1: Directives** | `directives/` | SOPs en YAML (17 archivos) que definen _qué_ hacer: scrape, research, memoria, EDA, FreeCAD, KiCad, git, mantenimiento, análisis de imágenes, evaluación de exámenes, prácticas de laboratorio, orquestación Telegram y compilación/evaluación MCP. |
-| **Layer 2: Orchestration** | _El agente IA_ / `mcp_latex_server.py` / `mcp_evaluar_server.py` / `mcp_elaborar_server.py` / `mcp_analizar_server.py` / `mcp_diagnostico_server.py` / `flujo_telegram.py` | Toma decisiones, enruta tareas a scripts, valida entradas/salidas, gestiona errores, expone servidores MCP locales o actúa como gateway proxy seguro. |
-| **Layer 3: Execution** | `execution/` | Scripts Python deterministas (8 archivos) con una sola responsabilidad (ej. `execution/compile_latex.py`). |
+`opencode.json` loads `instructions: [".agent/*.md"]` — those are your core operating instructions.
 
----
+## Know before you act
 
-## Estructura de Directorios
+- **Before modifying any `.tex` file**, read `.agent/latex.md` (15 documented LaTeX pitfalls specific to this project)
+- **Before modifying scripts that use LangChain or parse LLM JSON**, read `.agent/python.md` (PromptTemplate jinja2 mode, raw strings, trailing commas, balanced-brace JSON extraction)
+- **`requirements.txt` contains only `psutil` and `PyYAML`** — real dependencies live in the conda environment; don't trust it as canonical
+- **No linter, type checker, formatter, or CI** is configured — don't waste time running them
+- **Run everything from repo root** — imports use relative paths; `mcp_*_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it
 
-- `docs/` — Documentación técnica y académica (20 subdirectorios: CIRC_DISP_ELECT/, SMPS/, EDA/, PROTECTOR_120VAC/, ZBAR_PRACTICAS/, EASYEDA/, IMAGENES/, RAG/, vLLM/, OPENCODE/, MEDIDOR_ENERGIA/, PC_ASUS/, PC_PARA_IA/, SERVIDOR_POWEREDGE_R610/, SISTEMA_INTERNAC/, CIRC_PARA_RESP_RAPIDAS/, PROYECTO_MECATRONICA/, Ventilador_3_Velocidades/, MANUAL/, etc.)
-- `cursos/` — Material de cursos y tesis (DISP_ELECTRONICOS/, INT_ELECTRONICA/, TESIS/, PLAN_ESTUDIOS/, LABORATORIO_I_FISICA/, LABORATORIO_II_FISICA/)
-- `.agent/` — Instrucciones del sistema para el agente IA (4 archivos: `AGENT_FRAMEWORK.md`, `AGENT_INSTRUCTIONS.md`, `latex.md`, `python.md`)
-- `directives/` — SOPs en YAML para flujos de trabajo repetibles (16 archivos)
-- `directives/rubricas/` — Rúbricas YAML para evaluación de prácticas de laboratorio
-- `execution/` — Scripts Python deterministas para la capa de ejecución (8 archivos)
-- `chroma_db/` — Base de datos vectorial (autogenerada, excluida de git)
-- `Agente_EDA/` — Recursos para el agente EDA (schemas, pruebas)
-- `.tmp/` — Archivos temporales y estado de ejecución (`run_state.json`)
+## Commands
 
----
+**Tests:** `python test_generator.py` (EDA JSON, zero external deps)
 
-## Convenciones de Código
+**RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors)
 
-- **Python:** PEP 8, type hints, docstrings, modularidad, raw strings para contenido LaTeX
-- **LaTeX:** UTF-8, `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz` para diagramas, `siunitx` para unidades
-- **EDA:** Formato EasyEDA Standard (strings `LIB~...` en `shape[]`, sub-elementos `#@$`, pines con `^^`)
-- **RAG:** Actualizaciones incrementales vía `db_state.json`, embeddings multilingüe, memoria conversacional
-- **3-Layer:** Directives en YAML → Orchestration (agente) → Execution (scripts deterministas). Cada vez que se solicite crear un orquestador, debe interpretarse que dicho orquestador debe ir acompañado de un archivo en la carpeta `directives/` y de al menos otro archivo en la carpeta `execution/` para mantener la concordancia con la arquitectura de 3 capas.
-- **Git:** `chroma_db/`, entornos virtuales, `__pycache__/` y auxiliares LaTeX excluidos vía `.gitignore`
+**LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
 
----
+### Orchestrator flows
+```
+flujo_evaluar_examen.py    --pdf <file.pdf> [--rubrica <yaml>]
+flujo_analizar_imagen.py   "glob|file1,file2" [--prompt "..."]
+flujo_elaborar_examen.py   --tema "Semana 4: Condensadores" --output examenes/
+flujo_elaborar_ejercicios.py --tema "Semana 8: BJT" --path ejercicios/BJT
+flujo_imagen_a_kicad.py    circuito.png
+flujo_diagnostico.py
+```
 
-## Configuración
+### System services
+```
+sudo ./manage_bot.sh       — Telegram gateway (telegram_gateway.service)
+sudo ./manage_waydroid.sh  — Waydroid Android container
+```
 
-- API key de Groq en `.groq_api_key` (excluido de git)
-- API key de Google (`GOOGLE_API_KEY`) y OpenRouter (`OPENROUTER_API_KEY`) en `.env`
-- Token del Bot de Telegram (`TELEGRAM_BOT_TOKEN`) en `.env` para comunicación remota.
-- Instrucciones del agente en `opencode.json`: `{"instructions": [".agent/*.md"]}`
-- Dependencias Python: langchain, langchain-groq, langchain-chroma, langchain-huggingface, pypdf, sentence-transformers, pymupdf, google-genai
+## Output conventions
+
+- Intermediate JSON lives in `.tmp/` (e.g., `.tmp/analisis_*.json`)
+- `.tmp/run_state.json` tracks multi-step flow progress (step, exit code, timestamp)
+- LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
+- LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)
+
+## Git quirks
+
+- `chroma_db/` excluded (exceeds GitHub 100 MB) — `git rm -r --cached chroma_db/` if accidentally tracked
+- `examen*` pinned in `.gitignore` — exam PDFs/`.tex` starting with `examen` are never committed
+- `db_state.json` is tracked (not auto-generated in the CI sense, but it's the RAG state file — be careful modifying)
+
+## LaTeX conventions
+
+- `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz`, `siunitx`, `amsmath`
+- EDA JSON to EasyEDA: `LIB~...` strings in `shape[]`, sub-elements split by `#@$`, pins by `^^`
