@@ -1,299 +1,85 @@
 {
-  "name": "Baltazar Rojas y María del Rosario Rojas",
+  "name": "Baltazar Rojas",
   "children": [
+    { "name": "Francisco Rojas" },
+    { "name": "Quintina Rojas" },
+    { "name": "Demetrio Rojas" },
+    { "name": "Simón Rojas" },
     {
-      "name": "Domingo Marín T.",
+      "name": "María del Rosario Rojas",
       "children": [
+        { "name": "Andrés Marín Rojas" },
         {
-          "name": "María",
-          "children": []
-        },
-        {
-          "name": "Elena",
-          "children": []
-        },
-        {
-          "name": "Ema",
-          "children": []
-        },
-        {
-          "name": "Luz Marina",
+          "name": "Margarita Marín Rojas",
+          "_nota": "Casada con Galo Bravo",
           "children": [
+            { "name": "Carmen Marín" },
             {
-              "name": "Soraya"
+              "name": "Vicente Bravo Marín",
+              "children": [
+                { "name": "Gaspar" },
+                { "name": "Lorenzo" },
+                { "name": "Silvestre" }
+              ]
             },
             {
-              "name": "Julio"
+              "name": "Hilario Bravo Marín",
+              "_nota": "Nuestro bisabuelo",
+              "children": [
+                {
+                  "name": "Con Cruz del Carmen Figueroa",
+                  "_tipo": "union",
+                  "children": [
+                    {
+                      "name": "Carmen Bravo Figueroa de Guevara",
+                      "_nota": "Tía Carmita",
+                      "children": [
+                        {
+                          "name": "Con Cruz Carmen Guevara",
+                          "_tipo": "union",
+                          "children": [
+                            { "name": "Luisa Inés Guevara Bravo" },
+                            { "name": "Olga" },
+                            { "name": "Cristóbal" },
+                            { "name": "Angélica" }
+                          ]
+                        }
+                      ]
+                    },
+                    { "name": "María Eugenia Bravo Figueroa de Gómez", "_nota": "Nuestra abuela" }
+                  ]
+                },
+                {
+                  "name": "Con Lourdes Ramos",
+                  "_tipo": "union",
+                  "children": [
+                    { "name": "Petra Bravo Ramos" },
+                    { "name": "Cándida Bravo Ramos" },
+                    { "name": "Natividad del Valle Bravo Ramos", "_nota": "El Negro" },
+                    { "name": "Petra María" },
+                    { "name": "José Tomás Bravo Ramos" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Plácida Bravo Marín",
+              "children": [
+                { "name": "Benigno" },
+                { "name": "Baltazar" },
+                { "name": "Celedonio" },
+                { "name": "Beatriz" },
+                { "name": "Jesús" },
+                { "name": "Silvestre" }
+              ]
+            },
+            {
+              "name": "Elena Bravo Marín",
+              "children": [
+                { "name": "Elías Bravo" }
+              ]
             }
           ]
-        },
-        {
-          "name": "Luis Carlos",
-          "children": [
-            {
-              "name": "Héctor"
-            },
-            {
-              "name": "Gisel"
-            },
-            {
-              "name": "Zaid"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Magdalena Marín Rojas",
-      "children": [
-        {
-          "name": "Ana",
-          "children": [
-            {
-              "name": "Elvira"
-            },
-            {
-              "name": "Paulina"
-            },
-            {
-              "name": "María"
-            }
-          ]
-        },
-        {
-          "name": "Ema",
-          "children": [
-            {
-              "name": "Manuel"
-            },
-            {
-              "name": "Rafael"
-            },
-            {
-              "name": "Fernando"
-            }
-          ]
-        },
-        {
-          "name": "Angelines",
-          "children": [
-            {
-              "name": "Julio (Sergio)"
-            }
-          ]
-        },
-        {
-          "name": "Romula",
-          "children": []
-        },
-        {
-          "name": "Dulcelina",
-          "children": []
-        },
-        {
-          "name": "Miguel Luis",
-          "children": []
-        },
-        {
-          "name": "Carlos Saúl",
-          "children": [
-            {
-              "name": "Mateo"
-            },
-            {
-              "name": "Celina"
-            },
-            {
-              "name": "María José"
-            }
-          ]
-        },
-        {
-          "name": "Carmen Julia",
-          "children": [
-            {
-              "name": "Rafael"
-            },
-            {
-              "name": "Jesús"
-            },
-            {
-              "name": "Adolfo"
-            }
-          ]
-        },
-        {
-          "name": "Eduardo",
-          "children": []
-        },
-        {
-          "name": "Bernarda",
-          "children": []
-        },
-        {
-          "name": "Concepción",
-          "children": []
-        },
-        {
-          "name": "Guillermina",
-          "children": []
-        }
-      ]
-    },
-    {
-      "name": "Andrés Marín Rojas",
-      "children": [
-        {
-          "name": "José Miguel",
-          "children": [
-            {
-              "name": "Arturo"
-            },
-            {
-              "name": "Antonio"
-            },
-            {
-              "name": "Flor María"
-            }
-          ]
-        },
-        {
-          "name": "Miguel Antonio",
-          "children": [
-            {
-              "name": "Dayana"
-            }
-          ]
-        },
-        {
-          "name": "Cruz",
-          "children": []
-        }
-      ]
-    },
-    {
-      "name": "María Teresa Marín Rojas",
-      "children": [
-        {
-          "name": "Carmen",
-          "children": [
-            {
-              "name": "Arturo"
-            },
-            {
-              "name": "Alfonso"
-            },
-            {
-              "name": "Tomás"
-            }
-          ]
-        },
-        {
-          "name": "Cristóbal",
-          "children": [
-            {
-              "name": "Isaac"
-            },
-            {
-              "name": "Cándida"
-            },
-            {
-              "name": "Petra"
-            }
-          ]
-        },
-        {
-          "name": "Angelines",
-          "children": [
-            {
-              "name": "Aurora"
-            },
-            {
-              "name": "Flora"
-            },
-            {
-              "name": "Natividad"
-            }
-          ]
-        },
-        {
-          "name": "Olga",
-          "children": []
-        },
-        {
-          "name": "Luisa",
-          "children": []
-        }
-      ]
-    },
-    {
-      "name": "Marina Marín Rojas",
-      "children": [
-        {
-          "name": "Antonio",
-          "children": [
-            {
-              "name": "Beatriz"
-            },
-            {
-              "name": "Consuelo"
-            },
-            {
-              "name": "Milagros"
-            }
-          ]
-        },
-        {
-          "name": "Blanca",
-          "children": [
-            {
-              "name": "Alejandra"
-            }
-          ]
-        },
-        {
-          "name": "Gabriel",
-          "children": []
-        }
-      ]
-    },
-    {
-      "name": "Margarita Marín Rojas",
-      "children": [
-        {
-          "name": "Carmen",
-          "children": [
-            {
-              "name": "Margarita"
-            },
-            {
-              "name": "José Luis"
-            }
-          ]
-        },
-        {
-          "name": "José Luis",
-          "children": []
-        },
-        {
-          "name": "Inés María",
-          "children": []
-        },
-        {
-          "name": "Eduardo Antonio",
-          "children": []
-        },
-        {
-          "name": "Reyner",
-          "children": []
-        },
-        {
-          "name": "Balbino",
-          "children": []
-        },
-        {
-          "name": "Fanny",
-          "children": []
         }
       ]
     }
