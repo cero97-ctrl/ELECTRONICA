@@ -1,0 +1,62 @@
+\documentclass[10pt,a4paper,landscape]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{tikz}
+\usetikzlibrary{trees, positioning}
+\usepackage[margin=1cm]{geometry}
+\usepackage{amsmath}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{Árbol Genealógico - Familia Rojas}} \\[10pt]
+    \textit{Nota: Transcripción parcial. El árbol original fluye de derecha a izquierda.}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+\noindent\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+    grow=left,
+    level distance=4.5cm,
+    level 1/.style={sibling distance=8cm},
+    level 2/.style={sibling distance=3cm},
+    level 3/.style={sibling distance=1.2cm},
+    edge from parent path={(\tikzparentnode.west) -- +( -0.5cm, 0) |- (\tikzchildnode.east)},
+    every node/.style={draw, rectangle, rounded corners, font=\small, align=center, fill=white},
+    anchor=east
+]
+
+\node {Baltazar \\ Rojas}
+    child { node {María del Rosario \\ Rojas}
+        child { node {Andrés \\ Marín Rojas} 
+            child { node {Flor María} }
+            child { node {Deyanira} }
+            child { node {Juan \\ Antonio} }
+            child { node {Miguel \\ Antonio} }
+            child { node {José Miguel} }
+            child { node {Cruz} }
+        }
+        child { node {Alejandrina \\ Marín T.} 
+            child { node {Josefina} }
+            child { node {Argentina} }
+            child { node {Ema} }
+            child { node {Rosa \\ Pastora} }
+            child { node {Sara Rosa} }
+        }
+        child { node {Domingo \\ Marín T.} 
+            child { node {Marta} }
+            child { node {Rosario} }
+            child { node {María Elena} }
+            child { node {Elisa} }
+        }
+        child { node {Margarita \\ Marín Rojas} 
+            child { node {Rafael} }
+        }
+    };
+\end{tikzpicture}%
+}
+\end{center}
+
+\end{document}
