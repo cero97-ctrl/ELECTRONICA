@@ -14,7 +14,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Árbol Genealógico — Familia Marín Rojas</title>
+<title>ARBOL GENEALOGICO: BRAVO - MARIN - ROJAS</title>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -293,7 +293,7 @@ svg {
 <body>
 
 <header>
-  <h1>Árbol Genealógico — Familia Marín Rojas</h1>
+  <h1>ARBOL GENEALOGICO: BRAVO - MARIN - ROJAS</h1>
   <div class="header-row">
     <input type="text" id="search-input" placeholder="Buscar persona..." autocomplete="off">
     <span id="search-count"></span>
@@ -366,7 +366,7 @@ const svg = d3.select('#tree-container')
 
 const g = svg.append('g').attr('transform', 'translate(80,60)');
 
-const treeLayout = d3.tree().nodeSize([140, 220]);
+const treeLayout = d3.tree().nodeSize([160, 200]);
 const root = d3.hierarchy(treeData);
 
 root.count();
@@ -505,13 +505,13 @@ function update(source) {
     .attr('class', d => 'link' + (d.target.data._tipo === 'union' ? ' dashed' : ''))
     .attr('d', d => {
       const o = { x: source.x0 || source.x, y: source.y0 || source.y };
-      return `M${o.y},${o.x}C${o.y},${(o.x + d.target.x)/2} ${d.target.y},${(o.x + d.target.x)/2} ${d.target.y},${d.target.x}`;
+      return `M${o.x},${o.y}C${o.x},${(o.y + d.target.y)/2} ${d.target.x},${(o.y + d.target.y)/2} ${d.target.x},${d.target.y}`;
     });
 
   link.merge(linkEnter)
     .transition().duration(400)
     .attr('d', d => {
-      return `M${d.source.y},${d.source.x}C${d.source.y},${(d.source.x + d.target.x)/2} ${d.target.y},${(d.source.x + d.target.x)/2} ${d.target.y},${d.target.x}`;
+      return `M${d.source.x},${d.source.y}C${d.source.x},${(d.source.y + d.target.y)/2} ${d.target.x},${(d.source.y + d.target.y)/2} ${d.target.x},${d.target.y}`;
     });
 
   // ---- NODES ----
@@ -522,24 +522,36 @@ function update(source) {
 
   const nodeEnter = node.enter().append('g')
     .attr('class', 'node')
-    .attr('transform', d => `translate(${source.y0 || source.y},${source.x0 || source.x})`)
-    .on('click', (event, d) => {
+    .attr('transform', d => `translate(${source.x0 || source.x},${source.y0 || source.y})`)
+    .on('click', function(event, d) {
       event.stopPropagation();
-      if (isUnion(d)) {
-        toggleChildren(d);
-        update(source);
-        showDetail(d);
-        g.selectAll('circle.selected, polygon.selected').classed('selected', false);
-        d3.select(this).select('polygon').classed('selected', true);
-        return;
-      }
-      if (d._children || d.children) {
-        toggleChildren(d);
-        update(source);
-      }
+      
       showDetail(d);
       g.selectAll('circle.selected, polygon.selected').classed('selected', false);
-      d3.select(this).select('circle').classed('selected', true);
+      d3.select(this).select(isUnion(d) ? 'polygon' : 'circle').classed('selected', true);
+
+      const currentTransform = d3.zoomTransform(svg.node());
+      const k = currentTransform.k;
+      const cx = (container.clientWidth || 1200) / 2;
+      const topMargin = 120;
+      
+      const tx = cx - d.x * k;
+      const ty = topMargin - d.y * k;
+      
+      svg.transition()
+        .duration(750)
+        .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(k))
+        .on('end', () => {
+          if (d._children || d.children) {
+            toggleChildren(d);
+            update(d);
+            
+            g.selectAll('circle.selected, polygon.selected').classed('selected', false);
+            g.selectAll('g.node').filter(n => n.data.name === d.data.name)
+              .select(isUnion(d) ? 'polygon' : 'circle')
+              .classed('selected', true);
+          }
+        });
     })
     .on('mouseover', (event, d) => {
       tooltip.style.opacity = 1;
@@ -576,18 +588,15 @@ function update(source) {
   });
 
   nodeEnter.append('text')
-    .attr('dy', d => {
-      if (isUnion(d)) return -16;
-      return d.children || d._children ? -18 : 4;
-    })
-    .attr('x', 0)
-    .attr('text-anchor', 'middle')
+    .attr('dy', 4)
+    .attr('x', 14)
+    .attr('text-anchor', 'start')
     .attr('class', d => d.depth === 0 ? 'highlight' : (isUnion(d) ? 'union-label' : ''));
 
   const nodeMerge = nodeEnter.merge(node);
 
   nodeMerge.transition().duration(400)
-    .attr('transform', d => `translate(${d.y},${d.x})`);
+    .attr('transform', d => `translate(${d.x},${d.y})`);
 
   nodeMerge.select('circle')
     .transition().duration(400)
@@ -605,7 +614,41 @@ function update(source) {
     .attr('points', '0,-9 9,0 0,9 -9,0');
 
   nodeMerge.select('text')
-    .text(d => d.data.name);
+    .selectAll('tspan')
+    .data(d => {
+      const name = d.data.name;
+      if (isUnion(d) && name.startsWith('Con ')) {
+        return ['Con', name.substring(4)];
+      }
+      const words = name.split(' ');
+      if (words.length <= 1) return [name];
+      let units = [];
+      for(let i=0; i<words.length; i++) {
+        const w = words[i].toLowerCase();
+        if (['de', 'del', 'la', 'las', 'los'].includes(w) && i < words.length - 1) {
+          units.push(words[i] + ' ' + words[i+1]);
+          i++;
+        } else {
+          units.push(words[i]);
+        }
+      }
+      if (units.length === 2) return [units[0], units[1]];
+      if (units.length === 3) {
+        const f = units[0].toLowerCase();
+        if (f === 'maría' || f === 'maria' || f === 'josé' || f === 'jose') {
+          return [units[0] + ' ' + units[1], units[2]];
+        }
+        return [units[0], units[1] + ' ' + units[2]];
+      }
+      if (units.length >= 4) {
+        return [units.slice(0, 2).join(' '), units.slice(2).join(' ')];
+      }
+      return [name];
+    })
+    .join('tspan')
+    .attr('x', 14)
+    .attr('dy', (line, i) => i === 0 ? 0 : 16)
+    .text(line => line);
 
   // Re-apply search filter if active
   const query = searchInput.value.trim().toLowerCase();
@@ -678,7 +721,8 @@ update(currentRoot);
 // Center root in viewport
 const cx = container.clientWidth / 2;
 const cy = container.clientHeight / 2;
-svg.call(zoomBehavior.transform, d3.zoomIdentity.translate(cx - currentRoot.y, cy - currentRoot.x));
+const initialTop = 120;
+svg.call(zoomBehavior.transform, d3.zoomIdentity.translate(cx - currentRoot.x, initialTop - currentRoot.y));
 
 // Resize handler
 window.addEventListener('resize', () => {
