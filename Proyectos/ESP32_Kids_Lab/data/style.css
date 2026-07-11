@@ -205,16 +205,39 @@ input:checked + .slider:before { transform: translateX(26px); }
 }
 
 @media (max-width: 600px) {
-    body { padding: 10px; }
-    .glass-header { padding: 15px; margin-bottom: 20px; }
-    .glass-header h1 { font-size: 1.8rem; }
-    .panel { padding: 15px; }
-    .cards-grid, .experiments-grid { 
-        grid-template-columns: 1fr; 
-        gap: 15px; 
+    body { padding: 8px; }
+    
+    .dashboard { gap: 15px; }
+    
+    .glass-header { padding: 15px; margin-bottom: 15px; }
+    .glass-header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+    .glass-header p { font-size: 0.9rem; }
+    .status-indicator { padding: 6px 12px; font-size: 0.8rem; margin-top: 5px; }
+    
+    .panel { padding: 12px; }
+    .panel h2 { font-size: 1.25rem; margin-bottom: 15px; }
+    
+    .cards-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px; 
     }
-    .sensor-card .value { font-size: 1.5rem; }
-    .card, .exp-card { padding: 15px; }
+    
+    .experiments-grid { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+    }
+    
+    .card, .exp-card { padding: 12px; }
+    
+    /* Sensors */
+    .sensor-card .icon { font-size: 1.8rem; margin-bottom: 5px; }
+    .sensor-card h3 { font-size: 0.85rem; margin-bottom: 5px; }
+    .sensor-card .value { font-size: 1.25rem; margin-bottom: 8px; }
+    
+    /* Actuators */
+    .actuator-card h3 { font-size: 0.85rem; margin-bottom: 5px; }
+    .switch { transform: scale(0.85); margin-top: 5px; }
+    .action-btn { padding: 10px 15px; font-size: 0.95rem; }
 }
 
 /* Pixel Art Studio */
