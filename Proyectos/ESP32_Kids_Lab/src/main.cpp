@@ -5,6 +5,8 @@
 #include <ArduinoJson.h>
 #include <TM1637Display.h>
 #include <Adafruit_NeoPixel.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 // Configuración del Access Point
 const char* ssid = "Laboratorio ESP32";
@@ -23,14 +25,18 @@ const char* password = "esp32123";
 #define PIN_MATRIX 13
 #define NUMPIXELS 16
 
-#define PIN_TRIG 5
-#define PIN_ECHO 18
-#define PIN_LDR 34
-#define PIN_TEMP 35
+#define PIN_TRIG 15
+#define PIN_ECHO 2
+#define PIN_LDR 35
+#define PIN_TEMP 4
+#define PIN_POT 36
+#define PIN_TILT 39
 
 AsyncWebServer server(80);
 TM1637Display display(PIN_TM_CLK, PIN_TM_DIO);
 Adafruit_NeoPixel strip(NUMPIXELS, PIN_MATRIX, NEO_GRB + NEO_KHZ800);
+OneWire oneWire(PIN_TEMP);
+DallasTemperature sensors(&oneWire);
 
 // Funciones para sensores
 float readDistance() {
@@ -49,10 +55,12 @@ int readLight() {
 }
 
 float readTemperature() {
-  // Simulación básica de LM35 o termistor
-  int raw = analogRead(PIN_TEMP);
-  float voltage = raw * (3.3 / 4095.0);
-  return voltage * 100.0; // Asumiendo LM35 (10mV / ºC)
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+  if (tempC == DEVICE_DISCONNECTED_C) {
+    return -127.0;
+  }
+  return tempC;
 }
 
 void setup() {
@@ -67,6 +75,10 @@ void setup() {
   pinMode(PIN_ECHO, INPUT);
   pinMode(PIN_RELAY, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
+  pinMode(PIN_TILT, INPUT);
+
+  // Inicializar sensor de temperatura DS18B20
+  sensors.begin();
 
   // Apagar LEDs básicos
   digitalWrite(PIN_LED_RED, LOW);
@@ -106,6 +118,8 @@ void setup() {
     doc["distance"] = readDistance();
     doc["light"] = readLight();
     doc["temperature"] = readTemperature();
+    doc["tilt"] = digitalRead(PIN_TILT);
+    doc["pot"] = analogRead(PIN_POT);
     
     String response;
     serializeJson(doc, response);

@@ -208,4 +208,7 @@
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Configuration.hpp \
  .pio/libdeps/esp32dev/TM1637/TM1637Display.h \
- .pio/libdeps/esp32dev/Adafruit\ NeoPixel/Adafruit_NeoPixel.h
+ .pio/libdeps/esp32dev/Adafruit\ NeoPixel/Adafruit_NeoPixel.h \
+ .pio/libdeps/esp32dev/OneWire/OneWire.h \
+ .pio/libdeps/esp32dev/OneWire/util/OneWire_direct_regtype.h \
+ .pio/libdeps/esp32dev/DallasTemperature/DallasTemperature.h

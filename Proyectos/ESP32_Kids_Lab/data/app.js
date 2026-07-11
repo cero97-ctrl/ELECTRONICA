@@ -1,5 +1,5 @@
 // Estado Global
-let sensors = { distance: 0, light: 0, temperature: 0 };
+let sensors = { distance: 0, light: 0, temperature: 0, pot: 0, tilt: 0 };
 let actuators = { red: false, green: false, blue: false, yellow: false, relay: false, buzzer: false };
 let activeExperiment = null;
 
@@ -44,6 +44,26 @@ function updateSensorsUI() {
     const tempPct = (sensors.temperature / 50) * 100;
     document.getElementById('val-temp').innerText = `${sensors.temperature.toFixed(1)} °C`;
     document.getElementById('bar-temp').style.width = `${Math.min(tempPct, 100)}%`;
+
+    // Potenciómetro (Asumimos max 4095)
+    const potPct = (sensors.pot / 4095) * 100;
+    const valPot = document.getElementById('val-pot');
+    if (valPot) valPot.innerText = sensors.pot;
+    const barPot = document.getElementById('bar-pot');
+    if (barPot) barPot.style.width = `${potPct}%`;
+
+    // Inclinación (0 o 1)
+    const valTilt = document.getElementById('val-tilt');
+    const barTilt = document.getElementById('bar-tilt');
+    if (valTilt) {
+        if (sensors.tilt === 1) {
+            valTilt.innerText = 'Inclinado';
+            if (barTilt) barTilt.style.width = '100%';
+        } else {
+            valTilt.innerText = 'Plano';
+            if (barTilt) barTilt.style.width = '0%';
+        }
+    }
 }
 
 // Enviar comandos al ESP32
@@ -88,11 +108,18 @@ function toggleExperiment(expName) {
     if (isChecked) {
         if (expName !== 'radar') document.getElementById('exp-radar').checked = false;
         if (expName !== 'lamp') document.getElementById('exp-lamp').checked = false;
+        if (expName !== 'thermo') document.getElementById('exp-thermo').checked = false;
+        if (expName !== 'meter') document.getElementById('exp-meter').checked = false;
+        if (expName !== 'quake') document.getElementById('exp-quake').checked = false;
+        if (expName !== 'climate') document.getElementById('exp-climate').checked = false;
         activeExperiment = expName;
     } else {
         activeExperiment = null;
         // Apagar actuadores al salir
-        sendCommand({ red: false, yellow: false, relay: false, buzzer: false });
+        sendCommand({ red: false, green: false, blue: false, yellow: false, relay: false, buzzer: false });
+        if (expName === 'thermo') {
+            fetch('/api/display', { method: 'POST', body: JSON.stringify({ clear: true }) }).catch(console.error);
+        }
     }
 }
 
@@ -115,6 +142,47 @@ function evaluateExperiments() {
             sendCommand({ yellow: true });
         } else {
             sendCommand({ yellow: false });
+        }
+    }
+
+    if (activeExperiment === 'thermo') {
+        const tempInt = Math.round(sensors.temperature);
+        if (window.lastSentTemp !== tempInt) {
+            window.lastSentTemp = tempInt;
+            fetch('/api/display', {
+                method: 'POST',
+                body: JSON.stringify({ number: tempInt })
+            }).catch(console.error);
+        }
+    }
+
+    if (activeExperiment === 'meter') {
+        const pot = sensors.pot;
+        const newState = { red: false, yellow: false, green: false, blue: false };
+        if (pot > 400) newState.blue = true;
+        if (pot > 1200) newState.green = true;
+        if (pot > 2200) newState.yellow = true;
+        if (pot > 3200) newState.red = true;
+        
+        if (JSON.stringify(window.lastMeterState) !== JSON.stringify(newState)) {
+            window.lastMeterState = newState;
+            sendCommand(newState);
+        }
+    }
+
+    if (activeExperiment === 'quake') {
+        if (sensors.tilt === 1) {
+            sendCommand({ red: true, buzzer: true });
+        } else {
+            sendCommand({ red: false, buzzer: false });
+        }
+    }
+
+    if (activeExperiment === 'climate') {
+        if (sensors.temperature > 28) {
+            sendCommand({ blue: true, relay: true });
+        } else {
+            sendCommand({ blue: false, relay: false });
         }
     }
 }

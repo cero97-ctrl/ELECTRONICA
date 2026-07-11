@@ -41,6 +41,18 @@
                     <div class="value" id="val-temp">-- °C</div>
                     <div class="progress-bar"><div class="fill temp" id="bar-temp" style="width: 0%"></div></div>
                 </div>
+                <div class="card sensor-card">
+                    <div class="icon">🎛️</div>
+                    <h3>Potenciómetro</h3>
+                    <div class="value" id="val-pot">--</div>
+                    <div class="progress-bar"><div class="fill" id="bar-pot" style="width: 0%; background: linear-gradient(90deg, #10b981, #f59e0b);"></div></div>
+                </div>
+                <div class="card sensor-card">
+                    <div class="icon">📐</div>
+                    <h3>Inclinación</h3>
+                    <div class="value" id="val-tilt">--</div>
+                    <div class="progress-bar"><div class="fill" id="bar-tilt" style="width: 0%; background: #8b5cf6;"></div></div>
+                </div>
             </div>
         </section>
 
@@ -154,6 +166,42 @@
                     <p>Cuando se haga de noche (Poca luz), se encenderá el Relé y el LED Amarillo automáticamente.</p>
                     <label class="switch">
                         <input type="checkbox" id="exp-lamp" onchange="toggleExperiment('lamp')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+                
+                <div class="exp-card">
+                    <h3>🌡️ Termómetro Visual</h3>
+                    <p>Muestra la temperatura en vivo directamente en el Display de 7 segmentos de la placa.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-thermo" onchange="toggleExperiment('thermo')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+
+                <div class="exp-card">
+                    <h3>🎛️ Medidor de Energía</h3>
+                    <p>Gira el potenciómetro para encender los LEDs en secuencia, ¡como un medidor de poder!</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-meter" onchange="toggleExperiment('meter')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+
+                <div class="exp-card">
+                    <h3>🚨 Alarma de Terremoto</h3>
+                    <p>Si la placa se inclina bruscamente, sonará la alarma de emergencia y encenderá el LED rojo.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-quake" onchange="toggleExperiment('quake')">
+                        <span class="slider exp"></span>
+                    </label>
+                </div>
+
+                <div class="exp-card">
+                    <h3>❄️ Control de Clima</h3>
+                    <p>Si la temperatura sube de 28°C, se encenderá el LED azul y el Relé simulando un ventilador.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="exp-climate" onchange="toggleExperiment('climate')">
                         <span class="slider exp"></span>
                     </label>
                 </div>
