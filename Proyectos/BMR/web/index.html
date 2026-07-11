@@ -9,7 +9,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%);
+  background-color: #d5bca4;
+  background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -205,6 +206,27 @@ svg {
   flex-direction: column;
   gap: 0.4rem;
   z-index: 40;
+  transition: right 0.35s ease;
+}
+#detail-panel.open ~ .controls {
+  right: 380px;
+}
+.contact-note {
+  font-size: 0.8rem;
+  background: rgba(45,27,14,0.85);
+  color: #f5e6d0;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  text-align: right;
+  margin-bottom: 0.2rem;
+}
+.contact-note a {
+  color: #f5e6d0;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.contact-note a:hover {
+  color: #fff;
 }
 .controls .row {
   display: flex;
@@ -274,6 +296,7 @@ svg {
   #search-input { width: 160px; }
   #detail-panel { width: 300px; right: -320px; }
   .controls { bottom: 0.8rem; right: 0.8rem; }
+  #detail-panel.open ~ .controls { right: 310px; }
   .controls button { font-size: 0.7rem; padding: 0.4rem 0.6rem; }
   .legend { display: none; }
 }
@@ -318,11 +341,15 @@ svg {
 </div>
 
 <div class="controls">
+  <div class="contact-note">
+    Para cualquier sugerencia, enviar un email a <a href="mailto:cero97@yahoo.com">cero97@yahoo.com</a> o por whatsapp al <a href="https://wa.me/584121883184" target="_blank">+58 (0412) 188.31.84</a>
+  </div>
   <div class="row">
     <button class="icon-btn" onclick="zoomIn()" title="Acercar">+</button>
     <button class="icon-btn" onclick="zoomOut()" title="Alejar">&minus;</button>
     <button onclick="expandAll()">Expandir todo</button>
     <button onclick="collapseAll()">Colapsar todo</button>
+    <button onclick="centerRoot()" title="Centrar nodo principal">Raíz</button>
     <button onclick="resetView()" title="Restablecer vista">Reset</button>
   </div>
   <div id="zoom-level">100%</div>
@@ -331,7 +358,7 @@ svg {
 <div class="legend" id="legend"></div>
 
 <script>
-const treeData = {"name": "Baltazar Rojas", "children": [{"name": "Francisco Rojas"}, {"name": "Quintina Rojas"}, {"name": "Demetrio Rojas"}, {"name": "Simón Rojas"}, {"name": "María del Rosario Rojas", "children": [{"name": "Andrés Marín Rojas"}, {"name": "Margarita Marín Rojas", "_nota": "Casada con Galo Bravo", "children": [{"name": "Carmen Marín"}, {"name": "Vicente Bravo Marín", "children": [{"name": "Gaspar"}, {"name": "Lorenzo"}, {"name": "Silvestre"}]}, {"name": "Hilario Bravo Marín", "_nota": "Nuestro bisabuelo", "children": [{"name": "Con Cruz del Carmen Figueroa", "_tipo": "union", "children": [{"name": "Carmen Bravo Figueroa de Guevara", "_nota": "Tía Carmita", "children": [{"name": "Con Cruz Carmen Guevara", "_tipo": "union", "children": [{"name": "Luisa Inés Guevara Bravo"}, {"name": "Olga"}, {"name": "Cristóbal"}, {"name": "Angélica"}]}]}, {"name": "María Eugenia Bravo Figueroa de Gómez", "_nota": "Nuestra abuela"}]}, {"name": "Con Lourdes Ramos", "_tipo": "union", "children": [{"name": "Petra Bravo Ramos"}, {"name": "Cándida Bravo Ramos"}, {"name": "Natividad del Valle Bravo Ramos", "_nota": "El Negro"}, {"name": "Petra María"}, {"name": "José Tomás Bravo Ramos"}]}]}, {"name": "Plácida Bravo Marín", "children": [{"name": "Benigno"}, {"name": "Baltazar"}, {"name": "Celedonio"}, {"name": "Beatriz"}, {"name": "Jesús"}, {"name": "Silvestre"}]}, {"name": "Elena Bravo Marín", "children": [{"name": "Elías Bravo"}]}]}]}]};
+const treeData = {"name": "Baltazar Rojas", "children": [{"name": "Francisco Rojas"}, {"name": "Quintina Rojas"}, {"name": "Demetrio Rojas"}, {"name": "Simón Rojas"}, {"name": "María del Rosario Rojas", "children": [{"name": "Andrés Marín Rojas"}, {"name": "Margarita Marín Rojas", "_nota": "Casada con Galo Bravo", "children": [{"name": "Carmen Marín"}, {"name": "Vicente Bravo Marín", "children": [{"name": "Gaspar"}, {"name": "Lorenzo"}, {"name": "Silvestre"}]}, {"name": "Hilario Bravo Marín", "_nota": "Nuestro bisabuelo", "children": [{"name": "Con Cruz del Carmen Figueroa", "_tipo": "union", "children": [{"name": "Carmen Bravo Figueroa de Guevara", "_nota": "Tía Carmita", "children": [{"name": "Con Cruz Carmen Guevara", "_tipo": "union", "children": [{"name": "Luisa Inés Guevara Bravo", "children": [{"name": "Felix Bautista Díaz", "children": [{"name": "Felix Rafael Alemán"}, {"name": "Luisa Inés Díaz Alemán"}, {"name": "Eduardo José Díaz Alemán"}, {"name": "Jean Carlos Díaz Alemán"}, {"name": "Marlene del Valle Díaz Marchán"}, {"name": "Yusbelia Josefina Díaz Marchán"}, {"name": "Gilberto Anibal Díaz Marchán"}, {"name": "Jorge Félix Díaz Marchán"}, {"name": "Oneida Díaz"}, {"name": "Jesus Alejandro Díaz"}]}, {"name": "Luisa Ignacia Díaz Guevara", "children": [{"name": "Pedro Julián Rojas Díaz"}, {"name": "José Francisco Rojas Díaz", "children": [{"name": "Michael Rojas"}, {"name": "Darwin Rojas"}]}, {"name": "Robel Ismael Rojas Díaz"}, {"name": "Nohemí del Carmen Rojas Díaz"}, {"name": "Elio Amado Rojas Díaz"}, {"name": "Lilia Josefina Rojas Díaz"}]}, {"name": "Fernanda del Carmen Díaz Guevara", "children": [{"name": "Elvis José Díaz"}, {"name": "Eliomar José Díaz"}]}, {"name": "Alejandrina Josefina Díaz Guevara", "children": [{"name": "Alexander José Rodríguez Díaz"}, {"name": "Eglis Coromoto Rodríguez Díaz"}, {"name": "Jesus Enrique Rodríguez Díaz"}, {"name": "Eunices del Carmen Rodríguez Díaz"}]}, {"name": "Rómulo Isaías Guevara", "children": [{"name": "Rómulo Guevara"}, {"name": "Migdalia Guevara"}, {"name": "Mariela Guevara"}, {"name": "Mileidis Guevara"}, {"name": "Mariana Guevara"}]}, {"name": "Raul Guevara"}, {"name": "Edicta Guevara"}, {"name": "Félida Guevara"}, {"name": "Luis Antonio Guevara"}]}, {"name": "Olga Guevara Bravo"}, {"name": "Cristóbal Guevara Bravo"}, {"name": "Angélica Guevara Bravo"}]}]}, {"name": "María Eugenia Bravo Figueroa de Gómez", "_nota": "Nuestra abuela"}]}, {"name": "Con Lourdes Ramos", "_tipo": "union", "children": [{"name": "Petra Bravo Ramos"}, {"name": "Cándida Bravo Ramos"}, {"name": "Natividad del Valle Bravo Ramos", "_nota": "El Negro"}, {"name": "Petra María"}, {"name": "José Tomás Bravo Ramos"}]}]}, {"name": "Plácida Bravo Marín", "children": [{"name": "Benigno"}, {"name": "Baltazar"}, {"name": "Celedonio"}, {"name": "Beatriz"}, {"name": "Jesús"}, {"name": "Silvestre"}]}, {"name": "Elena Bravo Marín", "children": [{"name": "Elías Bravo"}]}]}]}]};
 
 const container = document.getElementById('tree-container');
 const tooltip = document.getElementById('tooltip');
@@ -395,6 +422,15 @@ function expandAll() {
     if (n._children) { n.children = n._children; n._children = null; }
   });
   update(currentRoot);
+}
+
+function centerRoot() {
+  const cx = container.clientWidth / 2;
+  const initialTop = 120;
+  svg.transition().duration(500).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity.translate(cx - currentRoot.x, initialTop - currentRoot.y).scale(1)
+  );
 }
 
 function resetView() {

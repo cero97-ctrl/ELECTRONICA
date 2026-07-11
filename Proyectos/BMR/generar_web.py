@@ -20,7 +20,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%);
+  background-color: #d5bca4;
+  background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -216,6 +217,27 @@ svg {
   flex-direction: column;
   gap: 0.4rem;
   z-index: 40;
+  transition: right 0.35s ease;
+}
+#detail-panel.open ~ .controls {
+  right: 380px;
+}
+.contact-note {
+  font-size: 0.8rem;
+  background: rgba(45,27,14,0.85);
+  color: #f5e6d0;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  text-align: right;
+  margin-bottom: 0.2rem;
+}
+.contact-note a {
+  color: #f5e6d0;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.contact-note a:hover {
+  color: #fff;
 }
 .controls .row {
   display: flex;
@@ -285,6 +307,7 @@ svg {
   #search-input { width: 160px; }
   #detail-panel { width: 300px; right: -320px; }
   .controls { bottom: 0.8rem; right: 0.8rem; }
+  #detail-panel.open ~ .controls { right: 310px; }
   .controls button { font-size: 0.7rem; padding: 0.4rem 0.6rem; }
   .legend { display: none; }
 }
@@ -329,11 +352,15 @@ svg {
 </div>
 
 <div class="controls">
+  <div class="contact-note">
+    Para cualquier sugerencia, enviar un email a <a href="mailto:cero97@yahoo.com">cero97@yahoo.com</a> o por whatsapp al <a href="https://wa.me/584121883184" target="_blank">+58 (0412) 188.31.84</a>
+  </div>
   <div class="row">
     <button class="icon-btn" onclick="zoomIn()" title="Acercar">+</button>
     <button class="icon-btn" onclick="zoomOut()" title="Alejar">&minus;</button>
     <button onclick="expandAll()">Expandir todo</button>
     <button onclick="collapseAll()">Colapsar todo</button>
+    <button onclick="centerRoot()" title="Centrar nodo principal">Raíz</button>
     <button onclick="resetView()" title="Restablecer vista">Reset</button>
   </div>
   <div id="zoom-level">100%</div>
@@ -406,6 +433,15 @@ function expandAll() {
     if (n._children) { n.children = n._children; n._children = null; }
   });
   update(currentRoot);
+}
+
+function centerRoot() {
+  const cx = container.clientWidth / 2;
+  const initialTop = 120;
+  svg.transition().duration(500).call(
+    zoomBehavior.transform,
+    d3.zoomIdentity.translate(cx - currentRoot.x, initialTop - currentRoot.y).scale(1)
+  );
 }
 
 function resetView() {

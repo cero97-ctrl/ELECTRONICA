@@ -38,10 +38,76 @@
                           "name": "Con Cruz Carmen Guevara",
                           "_tipo": "union",
                           "children": [
-                            { "name": "Luisa Inés Guevara Bravo" },
-                            { "name": "Olga" },
-                            { "name": "Cristóbal" },
-                            { "name": "Angélica" }
+                            {
+                              "name": "Luisa Inés Guevara Bravo",
+                              "children": [
+                                {
+                                  "name": "Felix Bautista Díaz",
+                                  "children": [
+                                    { "name": "Felix Rafael Alemán" },
+                                    { "name": "Luisa Inés Díaz Alemán" },
+                                    { "name": "Eduardo José Díaz Alemán" },
+                                    { "name": "Jean Carlos Díaz Alemán" },
+                                    { "name": "Marlene del Valle Díaz Marchán" },
+                                    { "name": "Yusbelia Josefina Díaz Marchán" },
+                                    { "name": "Gilberto Anibal Díaz Marchán" },
+                                    { "name": "Jorge Félix Díaz Marchán" },
+                                    { "name": "Oneida Díaz" },
+                                    { "name": "Jesus Alejandro Díaz" }
+                                  ]
+                                },
+                                {
+                                  "name": "Luisa Ignacia Díaz Guevara",
+                                  "children": [
+                                    { "name": "Pedro Julián Rojas Díaz" },
+                                    {
+                                      "name": "José Francisco Rojas Díaz",
+                                      "children": [
+                                        { "name": "Michael Rojas" },
+                                        { "name": "Darwin Rojas" }
+                                      ]
+                                    },
+                                    { "name": "Robel Ismael Rojas Díaz" },
+                                    { "name": "Nohemí del Carmen Rojas Díaz" },
+                                    { "name": "Elio Amado Rojas Díaz" },
+                                    { "name": "Lilia Josefina Rojas Díaz" }
+                                  ]
+                                },
+                                {
+                                  "name": "Fernanda del Carmen Díaz Guevara",
+                                  "children": [
+                                    { "name": "Elvis José Díaz" },
+                                    { "name": "Eliomar José Díaz" }
+                                  ]
+                                },
+                                {
+                                  "name": "Alejandrina Josefina Díaz Guevara",
+                                  "children": [
+                                    { "name": "Alexander José Rodríguez Díaz" },
+                                    { "name": "Eglis Coromoto Rodríguez Díaz" },
+                                    { "name": "Jesus Enrique Rodríguez Díaz" },
+                                    { "name": "Eunices del Carmen Rodríguez Díaz" }
+                                  ]
+                                },
+                                {
+                                  "name": "Rómulo Isaías Guevara",
+                                  "children": [
+                                    { "name": "Rómulo Guevara" },
+                                    { "name": "Migdalia Guevara" },
+                                    { "name": "Mariela Guevara" },
+                                    { "name": "Mileidis Guevara" },
+                                    { "name": "Mariana Guevara" }
+                                  ]
+                                },
+                                { "name": "Raul Guevara" },
+                                { "name": "Edicta Guevara" },
+                                { "name": "Félida Guevara" },
+                                { "name": "Luis Antonio Guevara" }
+                              ]
+                            },
+                            { "name": "Olga Guevara Bravo" },
+                            { "name": "Cristóbal Guevara Bravo" },
+                            { "name": "Angélica Guevara Bravo" }
                           ]
                         }
                       ]
