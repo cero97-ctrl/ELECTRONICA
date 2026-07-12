@@ -1,0 +1,86 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{circuitikz}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\title{Manual del Proyecto: ESP32 Kids Lab}
+\author{Documentación de Proyecto}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introducción}
+El proyecto \textbf{ESP32 Kids Lab} es un laboratorio educativo basado en el microcontrolador ESP32. Su objetivo principal es enseñar conceptos básicos de electrónica y programación mediante la interacción interactiva con sensores y actuadores a través de una interfaz web.
+
+El sistema configura el ESP32 en modo Access Point (Punto de Acceso) y aloja un servidor web que permite a los usuarios interactuar con el hardware en tiempo real sin necesidad de una infraestructura de red externa.
+
+\section{Arquitectura del Sistema}
+El proyecto se divide en dos componentes principales:
+\begin{itemize}
+    \item \textbf{Firmware (Backend):} Escrito en C++ utilizando el framework Arduino y PlatformIO. Se encarga de leer los sensores, controlar los actuadores y servir la página web.
+    \item \textbf{Interfaz Web (Frontend):} Archivos HTML, CSS y JavaScript alojados en el sistema de archivos LittleFS del ESP32. Estos archivos proveen la interfaz gráfica para el usuario.
+\end{itemize}
+
+\section{Componentes de Hardware y Mapa de Pines}
+El ESP32 interactúa con múltiples componentes electrónicos. A continuación se detalla la asignación de pines (GPIO):
+
+\subsection{Actuadores}
+\begin{itemize}
+    \item \textbf{LED Rojo:} GPIO 1
+    \item \textbf{LED Verde:} GPIO 23
+    \item \textbf{LED Azul:} GPIO 19
+    \item \textbf{LED Amarillo:} GPIO 3
+    \item \textbf{Relé (Relay):} GPIO 0
+    \item \textbf{Bocina (Buzzer):} GPIO 12
+    \item \textbf{Matriz LED WS2812 (NeoPixel):} GPIO 13 (16 píxeles)
+    \item \textbf{Display de 7 Segmentos (TM1637):} CLK $\rightarrow$ GPIO 27, DIO $\rightarrow$ GPIO 14
+\end{itemize}
+
+\subsection{Sensores}
+\begin{itemize}
+    \item \textbf{Sensor Ultrasónico (Distancia):} Trig $\rightarrow$ GPIO 15, Echo $\rightarrow$ GPIO 2
+    \item \textbf{Sensor de Luz (LDR):} GPIO 35
+    \item \textbf{Sensor de Temperatura (DS18B20 - 1-Wire):} GPIO 4
+    \item \textbf{Potenciómetro:} GPIO 36
+    \item \textbf{Sensor de Inclinación (Tilt):} GPIO 39
+\end{itemize}
+
+\section{Descripción del Firmware}
+El código principal se encuentra en \texttt{src/main.cpp}. Utiliza las siguientes librerías principales:
+\begin{itemize}
+    \item \texttt{ESPAsyncWebServer} y \texttt{AsyncTCP}: Para el servidor web asíncrono.
+    \item \texttt{LittleFS}: Para montar el sistema de archivos y servir la interfaz web.
+    \item \texttt{ArduinoJson}: Para la serialización y deserialización de datos JSON entre el frontend y el backend.
+    \item \texttt{Adafruit NeoPixel}: Para el control de la matriz LED.
+    \item \texttt{TM1637Display}: Para controlar el display de 7 segmentos.
+    \item \texttt{DallasTemperature} y \texttt{OneWire}: Para la lectura del sensor DS18B20.
+\end{itemize}
+
+\subsection{API REST (Endpoints)}
+La comunicación entre la interfaz web y el ESP32 se realiza a través de peticiones HTTP.
+\begin{itemize}
+    \item \texttt{GET /api/sensors}: Retorna un objeto JSON con los valores actuales de los sensores (distancia, luz, temperatura, inclinación, potenciómetro).
+    \item \texttt{POST /api/actuators}: Recibe un objeto JSON para encender o apagar los LEDs básicos, el relé o el buzzer.
+    \item \texttt{POST /api/display}: Recibe un número para mostrar en el display de 7 segmentos o un comando para limpiarlo.
+    \item \texttt{POST /api/matrix}: Recibe datos de colores (RGB) para iluminar píxeles específicos o todos los píxeles de la matriz NeoPixel.
+\end{itemize}
+
+\section{Interfaz de Usuario (Frontend)}
+La interfaz gráfica está diseñada para ser amigable y accesible (archivos en la carpeta \texttt{data/}). 
+A través de la comunicación asíncrona mediante JavaScript (\texttt{app.js}), la página realiza peticiones periódicas para actualizar el estado de los sensores y enviar los comandos a los actuadores en tiempo real cuando el usuario interactúa con los controles.
+
+\section{Conclusión}
+El ESP32 Kids Lab es una plataforma versátil para la educación STEM. Demuestra cómo integrar de manera eficiente múltiples sensores analógicos y digitales, así como protocolos de comunicación como 1-Wire y señales PWM o específicas como WS2812, todo en un entorno unificado con conectividad WiFi.
+
+\end{document}
