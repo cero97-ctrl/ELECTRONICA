@@ -1,0 +1,66 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+
+\title{\textbf{Glosario de Términos Técnicos}\\Grupo de Investigación GIDEAL}
+\author{Universidad de Oriente \vspace{-0.5cm}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+El presente glosario tiene como finalidad definir los términos técnicos y tecnológicos utilizados en los documentos de inscripción y descripción de proyectos del \textbf{Grupo de Investigación en Diseño Electrónico y Aprendizaje con LLMs (GIDEAL)}. Se proporciona para facilitar la comprensión de las líneas de trabajo por parte de los miembros del Consejo de Investigación (CIUDO).
+
+\vspace{0.5cm}
+
+\begin{description}[style=nextline, leftmargin=1.5em, itemsep=0.8em]
+
+    \item[Agente IA (Agente Inteligente)] 
+    Sistema informático basado en inteligencia artificial capaz de percibir su entorno, tomar decisiones y ejecutar acciones de manera semi-autónoma para cumplir un objetivo asignado (ej. hacer una evaluación preliminar de un examen de electrónica, sujeta a revisión del profesor).
+
+    \item[Arquitectura de 3 Capas] 
+    Marco de diseño de software utilizado para estructurar el comportamiento de los Agentes IA en tres niveles: 1) \textbf{Directivas} (reglas y manuales que dictan \textit{qué} hacer), 2) \textbf{Orquestación} (la capa lógica que decide y coordina a dónde va la información) y 3) \textbf{Ejecución} (los scripts deterministas que realizan el trabajo técnico exacto o el \textit{cómo}). Esta separación garantiza que las decisiones de la IA sean seguras y predecibles.
+
+    \item[BOM (Bill of Materials)] 
+    Lista de materiales. Documento exhaustivo que detalla los componentes electrónicos exactos, las cantidades y las especificaciones necesarias para ensamblar o fabricar un circuito impreso.
+
+    \item[ChromaDB / Base de Datos Vectorial] 
+    Sistema de bases de datos diseñado para almacenar representaciones matemáticas (vectores) del texto. Permite a la inteligencia artificial realizar búsquedas semánticas y encontrar información en miles de documentos en milisegundos.
+
+    \item[EDA (Electronic Design Automation)] 
+    Automatización de Diseño Electrónico. Categoría de software (como KiCAD o EasyEDA) empleada por ingenieros para diseñar sistemas electrónicos, esquemas y placas de circuito impreso (PCB).
+
+    \item[Gateway (Pasarela)] 
+    Dispositivo o programa que actúa como puente de conexión entre redes o sistemas informáticos diferentes. En el contexto del grupo, permite interactuar de forma segura con los equipos del laboratorio utilizando aplicaciones cotidianas de mensajería (como Telegram).
+
+    \item[IoT (Internet of Things)] 
+    Internet de las Cosas. Concepto que se refiere a la interconexión a través de internet de objetos físicos y dispositivos cotidianos equipados con sensores y software para el monitoreo y control a distancia.
+
+    \item[LLM (Large Language Model)] 
+    Gran Modelo de Lenguaje. Un tipo avanzado de inteligencia artificial (como ChatGPT, Gemini o LLaMA) entrenado con inmensas cantidades de texto. Puede comprender, resumir, traducir y generar lenguaje natural de forma coherente.
+
+    \item[Long Polling] 
+    Técnica de programación web empleada para mantener una conexión abierta entre un servidor y un cliente, permitiendo la recepción de datos o mensajes en tiempo real sin saturar la red con constantes peticiones.
+
+    \item[MCP (Model Context Protocol)] 
+    Protocolo de Contexto de Modelos. Estándar abierto creado para estandarizar la forma en que los modelos de IA se conectan a fuentes de datos locales y herramientas externas de manera segura.
+
+    \item[Multimodal (IA Multimodal)] 
+    Inteligencia artificial que no solo entiende texto, sino que tiene la capacidad de procesar, interpretar y relacionar simultáneamente imágenes, audio o video. Se usa en el grupo para que la IA entienda fotografías de diagramas de circuitos.
+
+    \item[Netlist (Lista de Redes)] 
+    Archivo técnico en formato de texto plano que describe la conectividad eléctrica de un diseño electrónico, indicando exactamente qué pin de cada componente se conecta con los demás.
+
+    \item[Orquestador (Orquestación)] 
+    Software o capa lógica (Layer 2) que se encarga de coordinar automáticamente el trabajo de varios programas o agentes más pequeños para cumplir de inicio a fin con un proceso complejo (ej. recibir un PDF, enviarlo a analizar y luego generar el informe de resultados).
+
+    \item[RAG (Retrieval-Augmented Generation)] 
+    Generación Aumentada por Recuperación. Técnica que combina las respuestas de un modelo de IA con una base de datos documental propia. Permite que la IA responda basándose en libros o apuntes del profesor en lugar de información genérica de internet.
+
+\end{description}
+
+\end{document}

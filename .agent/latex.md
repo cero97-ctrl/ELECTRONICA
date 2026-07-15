@@ -755,3 +755,41 @@ Sin embargo, la opción más simple y portable es usar `|--` en lugar de los car
 - Si se usa `xelatex` o `lualatex` en lugar de `pdflatex`, este problema no existe, ya que esos motores manejan UTF-8 nativamente.
 
 > **Archivo afectado:** `docs/AGENTE_IA/manual_nuevo_proy.tex` (árbol de directorios en listing)
+
+---
+
+## 16. Error de `\noalign` (`Misplaced \noalign. \hline ->\noalign`) en tablas (`tabular`, `tabularx`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar con `pdflatex` o `latexmk`, la compilación falla al procesar una tabla, reportando el siguiente error:
+
+```text
+! Misplaced \noalign.
+\hline ->\noalign 
+                  {\ifnum 0=`}\fi \let \hskip \vskip \let \vrule \hrule \let...
+l.108 \end{tabularx}
+```
+
+### Causa
+
+Este error ocurre cuando se coloca una línea horizontal (`\hline`) en una tabla sin haber cerrado previamente la fila actual. En LaTeX, `\hline` debe colocarse inmediatamente después de un salto de fila (`\\`). Si el contenido de la celda (ya sea texto, un entorno como `itemize`, o un comando de espaciado como `\vspace`) está seguido directamente por `\hline` sin el `\\` intermedio, LaTeX se confunde e intenta procesar la línea como parte del texto de la celda, arrojando un error interno de alineación (`\noalign`).
+
+### Solución
+
+Asegurarse de terminar el contenido de la fila con el comando `\\` antes de invocar `\hline`.
+
+```latex
+% Antes (incorrecto - falta \\ antes de \hline):
+\end{itemize}
+\vspace{10cm}
+\hline
+
+% Después (correcto - fila terminada explícitamente):
+\end{itemize}
+\vspace{10cm} \\
+\hline
+```
+
+> **Regla general:** Nunca escribir `\hline` sin haber usado `\\` al final del texto/contenido que lo precede inmediatamente en una tabla.
+> **Archivo afectado:** `Grupo_de_Investigación/Planilla de actualizacion CIUDO con orcid.tex`
