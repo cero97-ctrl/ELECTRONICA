@@ -116,6 +116,18 @@ svg {
   fill: #8B5E3C;
 }
 
+.info-btn circle {
+  fill: #fff;
+  stroke: #8b7355;
+  stroke-width: 1px;
+  transition: all 0.2s ease;
+}
+.info-btn:hover circle {
+  fill: #f5e6d0;
+  stroke: #5a3a1a;
+  stroke-width: 1.5px;
+}
+
 .link {
   fill: none;
   stroke: #8b7355;
@@ -571,10 +583,6 @@ function update(source) {
     .on('click', function(event, d) {
       event.stopPropagation();
       
-      showDetail(d);
-      g.selectAll('circle.selected, polygon.selected').classed('selected', false);
-      d3.select(this).select(isUnion(d) ? 'polygon' : 'circle').classed('selected', true);
-
       const currentTransform = d3.zoomTransform(svg.node());
       const k = currentTransform.k;
       const cx = (container.clientWidth || 1200) / 2;
@@ -590,11 +598,6 @@ function update(source) {
           if (d._children || d.children) {
             toggleChildren(d);
             update(d);
-            
-            g.selectAll('circle.selected, polygon.selected').classed('selected', false);
-            g.selectAll('g.node').filter(n => n.data.name === d.data.name)
-              .select(isUnion(d) ? 'polygon' : 'circle')
-              .classed('selected', true);
           }
         });
     })
@@ -631,6 +634,24 @@ function update(source) {
         .style('stroke', d => d3.color(getColor(d.depth)).darker(0.5));
     }
   });
+
+  const infoGroup = nodeEnter.append('g')
+    .attr('class', 'info-btn')
+    .attr('transform', 'translate(0, -18)')
+    .style('cursor', 'pointer')
+    .on('click', function(event, d) {
+      event.stopPropagation();
+      if (selectedNode === d && detailPanel.classList.contains('open')) {
+        closeDetail();
+      } else {
+        showDetail(d);
+        g.selectAll('circle.selected, polygon.selected').classed('selected', false);
+        d3.select(this.parentNode).select(isUnion(d) ? 'polygon' : 'circle').classed('selected', true);
+      }
+    });
+
+  infoGroup.append('circle')
+    .attr('r', 5);
 
   nodeEnter.append('text')
     .attr('dy', 4)

@@ -13,6 +13,43 @@
 - **1.5.1.** Andrés Marín Rojas
 - **1.5.2.** Margarita Marín Rojas
 
+#### 1.5.1. Andrés Marín Rojas
+
+- 1.5.1.1. Erminia Marín
+- 1.5.1.2. Dominga Marín
+- 1.5.1.3. Andrés Marín Tenía
+- 1.5.1.4. Alenjandrina Marín
+
+##### 1.5.1.1. Erminia Marín
+- 1.5.1.1.1. Jesús R.
+- 1.5.1.1.2. Francisca
+- 1.5.1.1.3. Juana
+
+##### 1.5.1.2. Dominga Marín
+- 1.5.1.2.1. Andrés
+- 1.5.1.2.2. María
+
+##### 1.5.1.3. Andrés Marín Tenía
+- 1.5.1.3.1. Flor María
+- 1.5.1.3.2. Deyanira
+
+##### 1.5.1.4. Alenjandrina Marín
+- 1.5.1.4.1. Edita
+- 1.5.1.4.2. Carlos Jesus
+- 1.5.1.4.3. Josefina
+- 1.5.1.4.4. Angelina
+- 1.5.1.4.5. Erminia
+- 1.5.1.4.6. Rosa Pastora
+- 1.5.1.4.7. Soila Rosa
+- 1.5.1.4.8. José Miguel
+- 1.5.1.4.9. Cruz Carmen Guevara Marín
+
+###### 1.5.1.4.9. Cruz Carmen Guevara Marín
+- 1.5.1.4.9.1. Luisa Inés
+- 1.5.1.4.9.2. Cristobal
+- 1.5.1.4.9.3. Olga
+- 1.5.1.4.9.4. Ángélica
+
 #### 1.5.2. MARGARITA MARÍN ROJAS se casó con GALO BRAVO y tuvieron 5 hijos:
 
 - **1.5.2.1.** Carmen Marín (esta fue la primera hija de Margarita, antes de casarse)
