@@ -88,7 +88,7 @@ Ellos tuvieron 2 hijas:
 - **1.5.2.3.1.1.** Luisa Inés Guevara Bravo
 - **1.5.2.3.1.2.** Olga Guevara Bravo
 - **1.5.2.3.1.3.** Cristóbal Guevara Bravo
-- **1.5.2.3.1.4.** Angélica Guevara Bravo
+- **1.5.2.3.1.4.** Angelina Guevara Bravo
 
 ####### 1.5.2.3.1.1. Luisa Inés Guevara Bravo.
 
@@ -194,7 +194,7 @@ Ellos tuvieron 2 hijas:
 - **1.5.2.3.1.3.6.** Omaira Josefina Guevara Azocar
 - **1.5.2.3.1.3.7.** Carlos Eduardo Guevara Márquez
 
-####### 1.5.2.3.1.4. Angélica Guevara Bravo
+####### 1.5.2.3.1.4. Angelina Guevara Bravo
 
 - **1.5.2.3.1.4.1** César Medina Guevara
 - **1.5.2.3.1.4.2** Zuleima Medina Guevara

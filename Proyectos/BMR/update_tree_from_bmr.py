@@ -43,7 +43,7 @@ updates = [
     ("1.5.2.3.1.1", "Luisa Inés Guevara Bravo"),
     ("1.5.2.3.1.2", "Olga Guevara Bravo"),
     ("1.5.2.3.1.3", "Cristóbal Guevara Bravo"),
-    ("1.5.2.3.1.4", "Angélica Guevara Bravo"),
+    ("1.5.2.3.1.4", "Angelina Guevara Bravo"),
     ("1.5.2.3.2", "María Eugenia Bravo"),
     ("1.5.2.3.4", "Petra Bravo Ramos"),
     ("1.5.2.3.5", "Cándida Bravo Ramos"),

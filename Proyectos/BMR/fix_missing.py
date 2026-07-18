@@ -62,7 +62,7 @@ targets = {
     "1.5.2.3.7": "Petra María Bravo Ramos",
     "1.5.2.3.1.2": "Olga Guevara Bravo",
     "1.5.2.3.1.3": "Cristóbal Guevara Bravo",
-    "1.5.2.3.1.4": "Angélica Guevara Bravo",
+    "1.5.2.3.1.4": "Angelina Guevara Bravo",
     "1.5.2.3.1.4.6": "Nohelis Medina Guevara"
 }
 
