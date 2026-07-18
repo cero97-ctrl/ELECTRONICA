@@ -50,7 +50,6 @@ updates = [
     ("1.5.2.3.5", "Candida Bravo Ramos"),
     ("1.5.2.3.6", "Natividad del Valle Bravo Ramos"),
     ("1.5.2.3.7", "Petra María Bravo Ramos"),
-    ("1.5.2.3.3", "Fausto Bravo Ramos"),
     ("1.5.2.3.8", "José Tomás Bravo Ramos")
 ]
 

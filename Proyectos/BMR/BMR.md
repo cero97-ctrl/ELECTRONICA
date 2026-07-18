@@ -75,9 +75,8 @@ Ellos tuvieron 2 hijas:
 - **1.5.2.3.1.** Carmen Bravo Figueroa de Guevara (tía CARMITA)
 - **1.5.2.3.2.** María Eugenia Bravo Figueroa de Gómez (nuestra abuela)
 
-**Segunda esposa: LOURDES RAMOS** y tuvieron 6 hijos:
+**Segunda esposa: LOURDES RAMOS** y tuvieron 5 hijos:
 
-- **1.5.2.3.3.** Fausto Bravo Ramos
 - **1.5.2.3.4.** Petra Bravo Ramos
 - **1.5.2.3.5.** Candida Bravo Ramos
 - **1.5.2.3.6.** Natividad del Valle Bravo Ramos (este fue el popular NEGRO)
