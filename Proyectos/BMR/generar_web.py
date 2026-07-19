@@ -497,8 +497,14 @@ function showDetail(d) {
   document.getElementById('detail-parent').textContent = parent ? parent.data.name : '(Ra\u00edz)';
 
   const notaEl = document.getElementById('detail-nota');
-  if (d.data._nota) {
-    notaEl.textContent = d.data._nota;
+  const notas = [];
+  if (d.data._nota) notas.push(d.data._nota);
+  for (let i = 2; i <= 10; i++) {
+    if (d.data['_nota' + i]) notas.push(d.data['_nota' + i]);
+  }
+  
+  if (notas.length > 0) {
+    notaEl.innerHTML = notas.join('<br><br>');
     notaEl.style.display = 'block';
   } else {
     notaEl.style.display = 'none';
