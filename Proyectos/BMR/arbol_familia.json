@@ -1,26 +1,34 @@
 {
   "name": "Baltazar Rojas",
+  "_info_color": "red",
   "children": [
     {
-      "name": "Francisco Rojas"
+      "name": "Francisco Rojas",
+      "_info_color": "red"
     },
     {
-      "name": "Quintina Rojas"
+      "name": "Quintina Rojas",
+      "_info_color": "red"
     },
     {
-      "name": "Demetrio Rojas"
+      "name": "Demetrio Rojas",
+      "_info_color": "red"
     },
     {
-      "name": "Simón Rojas"
+      "name": "Simón Rojas",
+      "_info_color": "red"
     },
     {
       "name": "María del Rosario Rojas",
+      "_info_color": "red",
       "children": [
         {
           "name": "Andrés Marín Rojas",
+          "_info_color": "red",
           "children": [
             {
               "name": "Erminia Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Jesús R."
@@ -35,6 +43,7 @@
             },
             {
               "name": "Dominga Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Andrés"
@@ -46,6 +55,7 @@
             },
             {
               "name": "Andrés Marín Tenía",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Flor María"
@@ -57,6 +67,7 @@
             },
             {
               "name": "Alenjandrina Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Edita"
@@ -105,13 +116,16 @@
         },
         {
           "name": "Margarita Marín Rojas",
+          "_info_color": "red",
           "_nota": "Casada con Galo Bravo",
           "children": [
             {
-              "name": "Carmen Marín"
+              "name": "Carmen Marín",
+              "_info_color": "red"
             },
             {
               "name": "Vicente Bravo Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Gaspar"
@@ -126,6 +140,7 @@
             },
             {
               "name": "Hilario Bravo Marín",
+              "_info_color": "red",
               "_nota": "Nuestro bisabuelo",
               "children": [
                 {
@@ -393,44 +408,58 @@
                       "children": [
                         {
                           "name": "Juana Bautista Gómez Bravo",
+                          "_info_color": "red",
+                          "_nota": "Falleció el 4 de febrero del 2022",
                           "children": [
                             {
-                              "name": "César Augusto Rodríguez Gómez"
+                              "name": "César Augusto Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Elena del Valle Rodríguez Gómez"
+                              "name": "Elena del Valle Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Nellys Beatris Rodríguez Gómez"
+                              "name": "Nellys Beatriz Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Carmen Eugenia Rodríguez Gómez"
+                              "name": "Carmen Eugenia Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Justino Ramón Rodríguez Gómez"
+                              "name": "Justino Ramón Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Liliam Josefina Rodríguez Gómez"
+                              "name": "Liliam Josefina Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Carlos José Rodríguez Gómez"
+                              "name": "Carlos José Rodríguez Gómez",
+                              "_info_color": "blue"
                             },
                             {
-                              "name": "Aracelys María Rodríguez Gómez"
+                              "name": "Aracelys María Rodríguez Gómez",
+                              "_info_color": "blue"
                             }
                           ]
                         },
                         {
-                          "name": "Aurora Gómez Bravo"
+                          "name": "Aurora Gómez Bravo",
+                          "_info_color": "blue"
                         },
                         {
-                          "name": "Rosa Margarita Gómez Bravo"
+                          "name": "Rosa Margarita Gómez Bravo",
+                          "_info_color": "blue"
                         },
                         {
-                          "name": "Antonia Teresa Gómez Bravo"
+                          "name": "Antonia Teresa Gómez Bravo",
+                          "_info_color": "blue"
                         },
                         {
                           "name": "Arturo José Gómez Bravo",
+                          "_info_color": "red",
                           "children": [
                             {
                               "name": "Yosmar Eugenia Gómez Gutiérrez"
@@ -634,6 +663,7 @@
             },
             {
               "name": "Plácida Bravo Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Benigno"
@@ -657,6 +687,7 @@
             },
             {
               "name": "Elena Bravo Marín",
+              "_info_color": "red",
               "children": [
                 {
                   "name": "Elías Bravo"

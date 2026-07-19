@@ -117,7 +117,7 @@ svg {
 }
 
 .info-btn circle {
-  fill: #fff;
+  fill: var(--info-color, #fff);
   stroke: #8b7355;
   stroke-width: 1px;
   transition: all 0.2s ease;
@@ -651,7 +651,8 @@ function update(source) {
     });
 
   infoGroup.append('circle')
-    .attr('r', 5);
+    .attr('r', 5)
+    .style('--info-color', d => d.data._info_color ? d.data._info_color : null);
 
   nodeEnter.append('text')
     .attr('dy', 4)
