@@ -145,6 +145,7 @@
               "children": [
                 {
                   "name": "Con Cruz del Carmen Figueroa",
+                  "_info_color": "red",
                   "_tipo": "union",
                   "children": [
                     {
@@ -156,10 +157,13 @@
                           "_tipo": "union",
                           "children": [
                             {
-                              "name": "Luisa Inés Guevara Bravo",
+                              "name": "Luisa Ynés Guevara Bravo",
+                              "_nota": "C.I: 500575",
                               "children": [
                                 {
                                   "name": "Felix Bautista Díaz",
+                                  "_info_color": "red",
+                                  "_nota": "1190985",
                                   "children": [
                                     {
                                       "name": "Felix Rafael Alemán"
@@ -195,6 +199,8 @@
                                 },
                                 {
                                   "name": "Luisa Ignacia Díaz Guevara",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: 2800395",
                                   "children": [
                                     {
                                       "name": "Pedro Julián Rojas Díaz"
@@ -226,6 +232,8 @@
                                 },
                                 {
                                   "name": "Fernanda del Carmen Díaz Guevara",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: 2804788",
                                   "children": [
                                     {
                                       "name": "Elvis José Díaz"
@@ -237,6 +245,8 @@
                                 },
                                 {
                                   "name": "Alejandrina Josefina Díaz Guevara",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: 3670413",
                                   "children": [
                                     {
                                       "name": "Alexander José Rodríguez Díaz"
@@ -254,6 +264,8 @@
                                 },
                                 {
                                   "name": "Rómulo Isaías Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 3671064",
                                   "children": [
                                     {
                                       "name": "Rómulo Guevara"
@@ -276,18 +288,25 @@
                                   "name": "Raul Guevara"
                                 },
                                 {
-                                  "name": "Edicta Guevara"
+                                  "name": "Edicta Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 4008031"
                                 },
                                 {
-                                  "name": "Félida Guevara"
+                                  "name": "Félida Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 5216228"
                                 },
                                 {
-                                  "name": "Luis Antonio Guevara"
+                                  "name": "Luis Antonio Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 8318649"
                                 }
                               ]
                             },
                             {
                               "name": "Olga Guevara Bravo",
+                              "_nota": "C.I: 2294888",
                               "children": [
                                 {
                                   "name": "Rumiris",
@@ -322,6 +341,7 @@
                             },
                             {
                               "name": "Cristóbal Guevara Bravo",
+                              "_nota": "C.I: 2294276",
                               "children": [
                                 {
                                   "name": "Gladys Guevara Azocar"
@@ -348,6 +368,7 @@
                             },
                             {
                               "name": "Angelina Guevara Bravo",
+                              "_nota": "C.I: 500576",
                               "children": [
                                 {
                                   "name": "César Medina Guevara",
@@ -404,7 +425,7 @@
                     },
                     {
                       "name": "María Eugenia Bravo Figueroa de Gómez",
-                      "_nota": "Nuestra abuela",
+                      "_nota": "Abuela Mamagenia",
                       "children": [
                         {
                           "name": "Juana Bautista Gómez Bravo",
