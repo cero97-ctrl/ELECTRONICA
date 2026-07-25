@@ -364,69 +364,109 @@
                               "_nota": "C.I: 2294888",
                               "children": [
                                 {
-                                  "name": "Rumiris",
+                                  "name": "Rumildes del Carmen González Guevara",
+                                  "_info_color": "red",
                                   "children": [
                                     {
-                                      "name": "Milagros"
+                                      "name": "Milagros del Valle González González",
+                                      "_info_color": "blue",
+                                      "_nota": "C.I: 19716807"
                                     },
                                     {
-                                      "name": "Olennys"
+                                      "name": "Olennys del Valle González González",
+                                      "_info_color": "blue",
+                                      "_nota": "C.I: 16480305"
                                     },
                                     {
-                                      "name": "Onexi"
+                                      "name": "Oneyse del Valle González González",
+                                      "_info_color": "blue",
+                                      "_nota": "C.I: 16480304"
                                     }
                                   ]
                                 },
                                 {
-                                  "name": "Iraida"
+                                  "name": "Iraida Josefina Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 11910019"
                                 },
                                 {
-                                  "name": "José Luis"
+                                  "name": "José Luis Coronado Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 10951296"
                                 },
                                 {
-                                  "name": "Kelkis"
+                                  "name": "Kelkys Josefina González Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 11377731"
                                 },
                                 {
-                                  "name": "Félix José"
+                                  "name": "Félix",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: "
                                 },
                                 {
-                                  "name": "Reinaldo"
+                                  "name": "José",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: "
+                                },
+                                {
+                                  "name": "Reinaldo",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: "
                                 }
                               ]
                             },
                             {
                               "name": "Cristóbal Guevara Bravo",
                               "_nota": "C.I: 2294276",
+                              "_info_color": "red",
                               "children": [
                                 {
-                                  "name": "Gladys Guevara Azocar"
+                                  "name": "Gladys María Guevara Azocar",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 6381228"
                                 },
                                 {
-                                  "name": "Carmen Luisa Guevara Azocar"
+                                  "name": "Carmen Luisa Guevara Azocar de González",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 6381226"
                                 },
                                 {
-                                  "name": "Luis Beltrán Guevara Azocar"
+                                  "name": "Luis Beltrán Guevara Azocar",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 11600508"
                                 },
                                 {
-                                  "name": "Albanellys Guevara Azocar"
+                                  "name": "Albanellys Guevara Azocar de Vallenilla",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 12665475"
                                 },
                                 {
-                                  "name": "Luisa Elena Guevara Azocar"
+                                  "name": "Luisa Elena Guevara Azocar",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 12267863"
                                 },
                                 {
-                                  "name": "Omaira Josefina Guevara Azocar"
+                                  "name": "Omaira Josefina Guevara Marquez",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 12661315"
                                 },
                                 {
-                                  "name": "Carlos Eduardo Guevara Márquez"
+                                  "name": "Carlos Eduardo Guevara Márquez",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 14284776"
                                 }
                               ]
                             },
                             {
                               "name": "Angelina Guevara Bravo",
+                              "_info_color": "red",
                               "_nota": "C.I: 500576",
                               "children": [
                                 {
-                                  "name": "César Medina Guevara",
+                                  "name": "César Augusto Medina Guevara",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: 4495803",
                                   "children": [
                                     {
                                       "name": "Maria"
@@ -449,28 +489,44 @@
                                   ]
                                 },
                                 {
-                                  "name": "Zuleima Medina Guevara"
+                                  "name": "Zuleima Josefina Medina Guevara de Velasquez",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 4684446"
                                 },
                                 {
-                                  "name": "Alberto Medina Guevara"
+                                  "name": "Alberto José Medina Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 5084613"
                                 },
                                 {
-                                  "name": "Aydanys Medina Guevara"
+                                  "name": "Aydanys Margarita Medina Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 6698673"
                                 },
                                 {
-                                  "name": "Luis Concepción Medina Guevara"
+                                  "name": "Luis Concepción Medina Guevara",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 6380244"
                                 },
                                 {
-                                  "name": "Nohelis Medina Guevara"
+                                  "name": "Nohelis José Medina Guevara",
+                                  "_info_color": "red",
+                                  "_nota": "C.I: 9270458"
                                 },
                                 {
-                                  "name": "Mary Cruz Medina Guevara"
+                                  "name": "Mary Cruz Medina Guevara de Gordon",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 6640189"
                                 },
                                 {
-                                  "name": "Magda Del Valle Medina Guevara"
+                                  "name": "Magda Coromoto Medina Guevara de Márquez",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 8641227"
                                 },
                                 {
-                                  "name": "Maria Milagros Medina Guevara"
+                                  "name": "Maria Milagros Medina Guevara de Márquez",
+                                  "_info_color": "blue",
+                                  "_nota": "C.I: 10650443"
                                 }
                               ]
                             }
