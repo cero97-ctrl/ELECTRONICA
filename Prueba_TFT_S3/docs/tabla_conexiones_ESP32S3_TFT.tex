@@ -1,0 +1,145 @@
+% =============================================================================
+% Tabla de Conexiones: ESP32-S3 <-> Pantalla TFT 1.69" (ST7789V3)
+% Proyecto: Prueba_TFT_S3
+% Fecha: 2026-07-27
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+% --- Paquetes ---
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% --- Geometría de página ---
+\geometry{margin=2.5cm}
+
+% --- Colores personalizados ---
+\definecolor{azulESP}{HTML}{1565C0}
+\definecolor{verdeTFT}{HTML}{2E7D32}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+\definecolor{rojoVCC}{HTML}{D32F2F}
+\definecolor{negroGND}{HTML}{212121}
+
+% --- Encabezado y pie ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize Proyecto Prueba\_TFT\_S3}
+\fancyhead[R]{\footnotesize ESP32-S3 + TFT 1.69''}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Inicio del documento ---
+\begin{document}
+
+\begin{center}
+    {\LARGE\bfseries\color{azulESP} Tabla de Conexiones}\\[8pt]
+    {\large ESP32-S3-DevKitC-1 $\longleftrightarrow$ Pantalla TFT 1.69'' (ST7789V3)}\\[4pt]
+    {\normalsize\color{gray} Resolución: 240$\times$280 px (RGB) --- Interfaz: SPI}\\[12pt]
+\end{center}
+
+% =============================================================================
+% TABLA PRINCIPAL DE CONEXIONES
+% =============================================================================
+\section{Conexiones de Hardware}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{
+    >{\centering\arraybackslash}m{1.2cm}
+    >{\bfseries\centering\arraybackslash}m{1.5cm}
+    >{\centering\arraybackslash}m{1cm}
+    >{\bfseries\centering\arraybackslash}m{2cm}
+    m{5.5cm}
+}
+\toprule
+\rowcolor{azulESP!15}
+\textbf{N\textsuperscript{o}} & \textbf{Pin TFT} & \textbf{$\rightarrow$} & \textbf{Pin ESP32-S3} & \textbf{Función / Notas} \\
+\midrule
+
+1 & \textcolor{negroGND}{GND} & --- & GND & Masa o tierra común. Conectar a cualquier pin GND de la placa. \\[2pt]
+
+\rowcolor{grisFondo}
+2 & \textcolor{rojoVCC}{VCC} & --- & 5V (VBUS) & Alimentación del módulo. Conectar al pin de \SI{5}{\volt} (no a \SI{3.3}{\volt}) ya que el regulador U6 de la placa TFT requiere un voltaje de entrada superior a \SI{3.3}{\volt}. \\[2pt]
+
+3 & SCL & --- & GPIO 12 & Señal de reloj del bus SPI (SPI Clock / SCK). \\[2pt]
+
+\rowcolor{grisFondo}
+4 & SDA & --- & GPIO 11 & Datos del bus SPI (MOSI --- Master Out Slave In). \\[2pt]
+
+5 & RES & --- & GPIO 14 & Señal de reinicio (Reset) de la pantalla. Activo en nivel bajo. \\[2pt]
+
+\rowcolor{grisFondo}
+6 & DC & --- & GPIO 9 & Selección de Datos/Comandos (Data/Command). HIGH = dato, LOW = comando. \\[2pt]
+
+7 & CS & --- & GPIO 10 & Selección de chip (Chip Select). Activo en nivel bajo. \\[2pt]
+
+\rowcolor{grisFondo}
+8 & BLK & --- & GPIO 21 & Control de retroiluminación (Backlight). HIGH = encendida. Alternativa: conectar directo a \SI{3.3}{\volt} para brillo constante al máximo. \\[2pt]
+
+\bottomrule
+\end{tabular}
+\caption{Conexiones entre el ESP32-S3 y la pantalla TFT 1.69'' ST7789V3.}
+\label{tab:conexiones}
+\end{table}
+
+% =============================================================================
+% NOTAS IMPORTANTES
+% =============================================================================
+\section{Notas Importantes}
+
+\begin{enumerate}
+    \item \textbf{Alimentación (VCC):} El módulo TFT tiene un regulador de voltaje integrado (componente U6 en la placa). Este regulador necesita un voltaje de entrada mayor a \SI{3.3}{\volt} para funcionar correctamente. Por eso el pin VCC se conecta al pin de \SI{5}{\volt} del ESP32-S3. Los pines de datos operan a \SI{3.3}{\volt} de forma segura.
+    
+    \item \textbf{Puerto SPI:} El ESP32-S3 requiere la bandera \texttt{USE\_FSPI\_PORT=1} en la configuración de la librería TFT\_eSPI para utilizar el puerto SPI2 (FSPI). Sin esta configuración, el microcontrolador produce un error de tipo \textit{Guru Meditation Error (StoreProhibited)} al intentar inicializar la pantalla.
+    
+    \item \textbf{Velocidad SPI:} Se utiliza una frecuencia de reloj de \SI{27}{\mega\hertz} (\texttt{SPI\_FREQUENCY=27000000}), que ofrece un buen equilibrio entre velocidad de refresco y estabilidad de la señal.
+    
+    \item \textbf{Configuración del controlador:} Las banderas \texttt{CGRAM\_OFFSET=1}, \texttt{TFT\_INVERSION\_ON=1} y \texttt{TFT\_RGB\_ORDER=TFT\_RGB} son necesarias para que los colores y la memoria gráfica se mapeen correctamente en pantallas de 240$\times$280 píxeles.
+\end{enumerate}
+
+% =============================================================================
+% CONFIGURACIÓN DE SOFTWARE
+% =============================================================================
+\section{Configuración de Software (PlatformIO)}
+
+La siguiente configuración se define en el archivo \texttt{platformio.ini}:
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\rowcolor{azulESP!15}
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Plataforma              & \texttt{espressif32} \\
+\rowcolor{grisFondo}
+Placa                   & \texttt{esp32-s3-devkitc-1} \\
+Framework               & \texttt{Arduino} \\
+\rowcolor{grisFondo}
+Librería                & \texttt{bodmer/TFT\_eSPI} \\
+Controlador             & \texttt{ST7789\_DRIVER} \\
+\rowcolor{grisFondo}
+Resolución              & 240 $\times$ 280 px \\
+Puerto SPI              & FSPI (SPI2) \\
+\rowcolor{grisFondo}
+Frecuencia SPI          & \SI{27}{\mega\hertz} \\
+Velocidad serial        & 115200 baud \\
+\bottomrule
+\end{tabular}
+\caption{Parámetros de configuración del proyecto en PlatformIO.}
+\label{tab:config}
+\end{table}
+
+\end{document}
