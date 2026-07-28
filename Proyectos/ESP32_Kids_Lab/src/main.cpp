@@ -10,6 +10,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <esp_now.h>
+
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -19,6 +21,16 @@ Adafruit_SSD1306 displayOLED(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // Configuración del Access Point
 const char* ssid = "Laboratorio ESP32";
 const char* password = "esp32123";
+
+// Estructura para mensajes ESP-NOW
+typedef struct struct_message {
+  uint8_t cmdType; // 1:Red, 2:Green, 3:Blue, 4:Yellow, 5:Relay, 6:OLED
+  bool state;
+  char text[32];
+} struct_message;
+
+struct_message incomingReadings;
+
 
 // Definición de Pines confirmados
 #define PIN_LED_RED 1
@@ -70,6 +82,25 @@ float readTemperature() {
   }
   return tempC;
 }
+
+// Callback cuando se reciben datos vía ESP-NOW
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  if (len != sizeof(incomingReadings)) return;
+  memcpy(&incomingReadings, incomingData, sizeof(incomingReadings));
+  
+  if (incomingReadings.cmdType == 1) digitalWrite(PIN_LED_RED, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 2) digitalWrite(PIN_LED_GREEN, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 3) digitalWrite(PIN_LED_BLUE, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 4) digitalWrite(PIN_LED_YELLOW, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 5) digitalWrite(PIN_RELAY, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 6) {
+    displayOLED.clearDisplay();
+    displayOLED.setCursor(0, 0);
+    displayOLED.print(incomingReadings.text);
+    displayOLED.display();
+  }
+}
+
 
 void setup() {
   Serial.begin(115200);
@@ -124,13 +155,24 @@ void setup() {
     return;
   }
 
-  // Iniciar AP Mode
+  // Iniciar AP Mode (Fijado en Canal 1 para ESP-NOW)
   Serial.println("Iniciando Access Point...");
+  WiFi.mode(WIFI_AP);
   IPAddress local_ip(192, 168, 4, 2);
   IPAddress gateway(192, 168, 4, 2);
   IPAddress subnet(255, 255, 255, 0);
   WiFi.softAPConfig(local_ip, gateway, subnet);
-  WiFi.softAP(ssid, password);
+  WiFi.softAP(ssid, password, 1);
+  Serial.print("Dirección IP: ");
+  Serial.println(WiFi.softAPIP());
+
+  // Inicializar ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error inicializando ESP-NOW");
+  } else {
+    esp_now_register_recv_cb(OnDataRecv);
+    Serial.println("ESP-NOW Iniciado Correctamente");
+  }
   Serial.print("Dirección IP: ");
   Serial.println(WiFi.softAPIP());
 

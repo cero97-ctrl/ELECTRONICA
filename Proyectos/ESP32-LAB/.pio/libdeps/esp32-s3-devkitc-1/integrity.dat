@@ -1,0 +1,5 @@
+https://github.com/me-no-dev/AsyncTCP.git
+https://github.com/me-no-dev/ESPAsyncWebServer.git
+esp32-camera
+bblanchon/ArduinoJson@^6.21.3
+bodmer/TFT_eSPI@^2.5.31

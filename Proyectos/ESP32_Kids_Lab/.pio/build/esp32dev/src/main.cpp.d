@@ -220,4 +220,6 @@
  .pio/libdeps/esp32dev/Adafruit\ BusIO/Adafruit_SPIDevice.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
- .pio/libdeps/esp32dev/Adafruit\ SSD1306/Adafruit_SSD1306.h
+ .pio/libdeps/esp32dev/Adafruit\ SSD1306/Adafruit_SSD1306.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_now.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h
