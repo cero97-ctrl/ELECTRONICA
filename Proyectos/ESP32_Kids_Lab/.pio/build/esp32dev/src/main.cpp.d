@@ -211,4 +211,13 @@
  .pio/libdeps/esp32dev/Adafruit\ NeoPixel/Adafruit_NeoPixel.h \
  .pio/libdeps/esp32dev/OneWire/OneWire.h \
  .pio/libdeps/esp32dev/OneWire/util/OneWire_direct_regtype.h \
- .pio/libdeps/esp32dev/DallasTemperature/DallasTemperature.h
+ .pio/libdeps/esp32dev/DallasTemperature/DallasTemperature.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \
+ .pio/libdeps/esp32dev/Adafruit\ GFX\ Library/Adafruit_GFX.h \
+ .pio/libdeps/esp32dev/Adafruit\ GFX\ Library/gfxfont.h \
+ .pio/libdeps/esp32dev/Adafruit\ BusIO/Adafruit_I2CDevice.h \
+ .pio/libdeps/esp32dev/Adafruit\ BusIO/Adafruit_SPIDevice.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
+ .pio/libdeps/esp32dev/Adafruit\ SSD1306/Adafruit_SSD1306.h

@@ -1,7 +1,9 @@
-paulstoffregen/OneWire @ ^2.3.7
-adafruit/Adafruit NeoPixel @ ^1.11.0
-https://github.com/me-no-dev/AsyncTCP.git
 https://github.com/avishorp/TM1637.git
+adafruit/Adafruit NeoPixel @ ^1.11.0
 https://github.com/me-no-dev/ESPAsyncWebServer.git
-milesburton/DallasTemperature @ ^3.11.0
+paulstoffregen/OneWire @ ^2.3.7
 bblanchon/ArduinoJson@^6.21.3
+milesburton/DallasTemperature @ ^3.11.0
+adafruit/Adafruit SSD1306 @ ^2.5.9
+adafruit/Adafruit GFX Library @ ^1.11.9
+https://github.com/me-no-dev/AsyncTCP.git

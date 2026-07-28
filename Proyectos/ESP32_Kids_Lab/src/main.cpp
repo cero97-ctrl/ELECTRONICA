@@ -7,6 +7,14 @@
 #include <Adafruit_NeoPixel.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 displayOLED(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Configuración del Access Point
 const char* ssid = "Laboratorio ESP32";
@@ -80,6 +88,19 @@ void setup() {
   // Inicializar sensor de temperatura DS18B20
   sensors.begin();
 
+  // Inicializar Pantalla OLED (SDA: 21, SCL: 22)
+  Wire.begin(21, 22);
+  if(displayOLED.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    displayOLED.clearDisplay();
+    displayOLED.setTextSize(1);
+    displayOLED.setTextColor(SSD1306_WHITE);
+    displayOLED.setCursor(0, 0);
+    displayOLED.println("Iniciando...");
+    displayOLED.display();
+  } else {
+    Serial.println("Error iniciando OLED");
+  }
+
   // Apagar LEDs básicos
   digitalWrite(PIN_LED_RED, LOW);
   digitalWrite(PIN_LED_GREEN, LOW);
@@ -105,9 +126,23 @@ void setup() {
 
   // Iniciar AP Mode
   Serial.println("Iniciando Access Point...");
+  IPAddress local_ip(192, 168, 4, 2);
+  IPAddress gateway(192, 168, 4, 2);
+  IPAddress subnet(255, 255, 255, 0);
+  WiFi.softAPConfig(local_ip, gateway, subnet);
   WiFi.softAP(ssid, password);
   Serial.print("Dirección IP: ");
   Serial.println(WiFi.softAPIP());
+
+  // Mostrar info de red en OLED
+  displayOLED.clearDisplay();
+  displayOLED.setCursor(0, 0);
+  displayOLED.println("WiFi ESP32 Lab");
+  displayOLED.println("----------------");
+  displayOLED.print("Red:  "); displayOLED.println(ssid);
+  displayOLED.print("Pass: "); displayOLED.println(password);
+  displayOLED.print("IP:   "); displayOLED.println(WiFi.softAPIP());
+  displayOLED.display();
 
   // Servir archivos estáticos
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
@@ -198,6 +233,24 @@ void setup() {
         }
       }
       strip.show();
+    }
+  });
+
+  // Endpoint: Control de OLED
+  server.on("/api/oled", HTTP_POST, [](AsyncWebServerRequest *request){
+    request->send(200, "application/json", "{\"status\":\"ok\"}");
+  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
+    StaticJsonDocument<200> doc;
+    if (!deserializeJson(doc, (const char*)data, len)) {
+      if (doc.containsKey("text")) {
+        displayOLED.clearDisplay();
+        displayOLED.setCursor(0, 0);
+        displayOLED.print(doc["text"].as<String>());
+        displayOLED.display();
+      } else if (doc.containsKey("clear") && doc["clear"] == true) {
+        displayOLED.clearDisplay();
+        displayOLED.display();
+      }
     }
   });
 
