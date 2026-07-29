@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <ESPAsyncWebServer.h>
+#include <esp_wifi.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <TM1637Display.h>
@@ -17,10 +17,6 @@
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 Adafruit_SSD1306 displayOLED(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-// Configuración del Access Point
-const char* ssid = "Laboratorio ESP32";
-const char* password = "esp32123";
 
 // Estructura para mensajes ESP-NOW
 typedef struct struct_message {
@@ -52,7 +48,6 @@ struct_message incomingReadings;
 #define PIN_POT 36
 #define PIN_TILT 39
 
-AsyncWebServer server(80);
 TM1637Display display(PIN_TM_CLK, PIN_TM_DIO);
 Adafruit_NeoPixel strip(NUMPIXELS, PIN_MATRIX, NEO_GRB + NEO_KHZ800);
 OneWire oneWire(PIN_TEMP);
@@ -155,149 +150,36 @@ void setup() {
     return;
   }
 
-  // Iniciar AP Mode (Fijado en Canal 1 para ESP-NOW)
-  Serial.println("Iniciando Access Point...");
-  WiFi.mode(WIFI_AP);
-  IPAddress local_ip(192, 168, 4, 2);
-  IPAddress gateway(192, 168, 4, 2);
-  IPAddress subnet(255, 255, 255, 0);
-  WiFi.softAPConfig(local_ip, gateway, subnet);
-  WiFi.softAP(ssid, password, 1);
-  Serial.print("Dirección IP: ");
-  Serial.println(WiFi.softAPIP());
+  // Modo Estación (STA) para no crear una red WiFi y evitar interferencias,
+  // pero forzamos el canal 1 para poder recibir ESP-NOW del ESP32-S3.
+  Serial.println("Iniciando WiFi en Modo Estación...");
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  
+  // Forzar el canal WiFi al 1
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_promiscuous(false);
 
   // Inicializar ESP-NOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error inicializando ESP-NOW");
   } else {
     esp_now_register_recv_cb(OnDataRecv);
-    Serial.println("ESP-NOW Iniciado Correctamente");
+    Serial.println("ESP-NOW Iniciado Correctamente en Canal 1");
   }
-  Serial.print("Dirección IP: ");
-  Serial.println(WiFi.softAPIP());
 
-  // Mostrar info de red en OLED
+  // Mostrar info en OLED
   displayOLED.clearDisplay();
   displayOLED.setCursor(0, 0);
-  displayOLED.println("WiFi ESP32 Lab");
+  displayOLED.println("ESP32 Kids Lab");
   displayOLED.println("----------------");
-  displayOLED.print("Red:  "); displayOLED.println(ssid);
-  displayOLED.print("Pass: "); displayOLED.println(password);
-  displayOLED.print("IP:   "); displayOLED.println(WiFi.softAPIP());
+  displayOLED.println("WiFi: OFF");
+  displayOLED.println("ESP-NOW: Activado");
+  displayOLED.println("Control via ESP32-S3");
   displayOLED.display();
 
-  // Servir archivos estáticos
-  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
-  // Endpoint: Obtener estado de sensores
-  server.on("/api/sensors", HTTP_GET, [](AsyncWebServerRequest *request){
-    StaticJsonDocument<200> doc;
-    doc["distance"] = readDistance();
-    doc["light"] = readLight();
-    doc["temperature"] = readTemperature();
-    doc["tilt"] = digitalRead(PIN_TILT);
-    doc["pot"] = analogRead(PIN_POT);
-    
-    String response;
-    serializeJson(doc, response);
-    request->send(200, "application/json", response);
-  });
-
-  // Endpoint: Control de actuadores (LEDS básicos)
-  server.on("/api/actuators", HTTP_POST, [](AsyncWebServerRequest *request){
-    // Manejado en el body handler
-  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-    StaticJsonDocument<200> doc;
-    DeserializationError error = deserializeJson(doc, (const char*)data, len);
-    
-    if (error) {
-      request->send(400, "application/json", "{\"status\":\"error\"}");
-      return;
-    }
-
-    if (doc.containsKey("red")) {
-      // Como PIN_LED_RED es 1 (TX), desactivar prints no es estrictamente necesario 
-      // si usamos digitalWrite, pero detiene el Serial out.
-      digitalWrite(PIN_LED_RED, doc["red"] ? HIGH : LOW);
-    }
-    if (doc.containsKey("green")) digitalWrite(PIN_LED_GREEN, doc["green"] ? HIGH : LOW);
-    if (doc.containsKey("blue")) digitalWrite(PIN_LED_BLUE, doc["blue"] ? HIGH : LOW);
-    if (doc.containsKey("yellow")) digitalWrite(PIN_LED_YELLOW, doc["yellow"] ? HIGH : LOW);
-    if (doc.containsKey("relay")) digitalWrite(PIN_RELAY, doc["relay"] ? HIGH : LOW);
-    if (doc.containsKey("buzzer")) digitalWrite(PIN_BUZZER, doc["buzzer"] ? HIGH : LOW);
-    
-    request->send(200, "application/json", "{\"status\":\"ok\"}");
-  });
-
-  // Endpoint: Control de Display 7 Segmentos
-  server.on("/api/display", HTTP_POST, [](AsyncWebServerRequest *request){
-    request->send(200, "application/json", "{\"status\":\"ok\"}");
-  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-    StaticJsonDocument<200> doc;
-    if (!deserializeJson(doc, (const char*)data, len)) {
-      if (doc.containsKey("number")) {
-        display.showNumberDec(doc["number"].as<int>(), false);
-      } else if (doc.containsKey("clear") && doc["clear"] == true) {
-        display.clear();
-      }
-    }
-  });
-
-  // Endpoint: Control de Matriz NeoPixel
-  server.on("/api/matrix", HTTP_POST, [](AsyncWebServerRequest *request){
-    request->send(200, "application/json", "{\"status\":\"ok\"}");
-  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-    static char bodyBuf[512];
-    
-    if (index + len > sizeof(bodyBuf) - 1) return;
-    memcpy(bodyBuf + index, data, len);
-    
-    // Procesar cuando llegue el último fragmento
-    if (index + len == total) {
-      bodyBuf[total] = '\0';
-      DynamicJsonDocument doc(2048);
-      if (deserializeJson(doc, bodyBuf, total)) return;
-      
-      if (doc.containsKey("clear") && doc["clear"] == true) {
-        strip.clear();
-      } else if (doc.containsKey("pixels")) {
-        JsonArray pixels = doc["pixels"].as<JsonArray>();
-        for (int i = 0; i < NUMPIXELS && i < (int)pixels.size(); i++) {
-          JsonArray c = pixels[i].as<JsonArray>();
-          strip.setPixelColor(i, strip.Color(c[0].as<uint8_t>(), c[1].as<uint8_t>(), c[2].as<uint8_t>()));
-        }
-      } else if (doc.containsKey("r") && doc.containsKey("g") && doc.containsKey("b")) {
-        uint8_t r = doc["r"];
-        uint8_t g = doc["g"];
-        uint8_t b = doc["b"];
-        for(int i=0; i<NUMPIXELS; i++) {
-          strip.setPixelColor(i, strip.Color(r, g, b));
-        }
-      }
-      strip.show();
-    }
-  });
-
-  // Endpoint: Control de OLED
-  server.on("/api/oled", HTTP_POST, [](AsyncWebServerRequest *request){
-    request->send(200, "application/json", "{\"status\":\"ok\"}");
-  }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-    StaticJsonDocument<200> doc;
-    if (!deserializeJson(doc, (const char*)data, len)) {
-      if (doc.containsKey("text")) {
-        displayOLED.clearDisplay();
-        displayOLED.setCursor(0, 0);
-        displayOLED.print(doc["text"].as<String>());
-        displayOLED.display();
-      } else if (doc.containsKey("clear") && doc["clear"] == true) {
-        displayOLED.clearDisplay();
-        displayOLED.display();
-      }
-    }
-  });
-
-  server.begin();
-  Serial.println("Servidor Web iniciado");
+  // (Servidor Web eliminado para evitar interferencias WiFi)
 }
 
 void loop() {

@@ -53,18 +53,49 @@ static esp_err_t stream_handler(httpd_req_t *req){
   return res;
 }
 
+static esp_err_t capture_handler(httpd_req_t *req){
+  camera_fb_t * fb = NULL;
+  esp_err_t res = ESP_OK;
+
+  fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("Camera capture failed");
+    httpd_resp_send_500(req);
+    return ESP_FAIL;
+  }
+
+  res = httpd_resp_set_type(req, "image/jpeg");
+  if(res == ESP_OK){
+    res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
+  }
+  if(res == ESP_OK){
+    res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
+  }
+  
+  esp_camera_fb_return(fb);
+  return res;
+}
+
 void startCameraServer(){
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.server_port = 81;
 
-  httpd_uri_t index_uri = {
+  httpd_uri_t stream_uri = {
     .uri       = "/stream",
     .method    = HTTP_GET,
     .handler   = stream_handler,
     .user_ctx  = NULL
   };
   
+  httpd_uri_t capture_uri = {
+    .uri       = "/capture",
+    .method    = HTTP_GET,
+    .handler   = capture_handler,
+    .user_ctx  = NULL
+  };
+  
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
-    httpd_register_uri_handler(stream_httpd, &index_uri);
+    httpd_register_uri_handler(stream_httpd, &stream_uri);
+    httpd_register_uri_handler(stream_httpd, &capture_uri);
   }
 }

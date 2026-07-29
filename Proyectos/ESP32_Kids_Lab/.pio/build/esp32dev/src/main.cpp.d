@@ -193,17 +193,14 @@
  /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/ESPAsyncWebServer.h \
- /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
- .pio/libdeps/esp32dev/AsyncTCP@src-7fb2940bccb78b8d2de6915ae328b7fc/src/AsyncTCP.h \
- /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/pbuf.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/literals.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/AsyncEventSource.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/AsyncWebSocket.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/WebHandlerImpl.h \
- .pio/libdeps/esp32dev/ESPAsyncWebServer/src/WebResponseImpl.h \
- /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/StreamString.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/esp_wifi_private.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_crypto_types.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/wifi_os_adapter.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_default.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Configuration.hpp \
@@ -221,5 +218,4 @@
  /home/cero/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
  .pio/libdeps/esp32dev/Adafruit\ SSD1306/Adafruit_SSD1306.h \
- /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_now.h \
- /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_now.h

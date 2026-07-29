@@ -95,7 +95,7 @@ const char paginaHTML[] PROGMEM = R"rawliteral(
   <div class="card">
     <h2>Cámara en Vivo</h2>
     <div class="camera-container">
-      <img src="http://192.168.4.1:81/stream" alt="Stream de Cámara">
+      <img id="cam-stream" src="" alt="Stream de Cámara">
     </div>
   </div>
   
@@ -149,6 +149,21 @@ const char paginaHTML[] PROGMEM = R"rawliteral(
   </div>
 
   <script>
+    const cam = document.getElementById('cam-stream');
+    let isFetching = false;
+    
+    function updateFrame() {
+      if(isFetching) return;
+      isFetching = true;
+      cam.src = "http://192.168.4.1:81/capture?_cb=" + Date.now();
+    }
+    
+    cam.onload = () => { isFetching = false; setTimeout(updateFrame, 50); };
+    cam.onerror = () => { isFetching = false; setTimeout(updateFrame, 1000); };
+    
+    // Iniciar captura
+    updateFrame();
+
     function sendCmd(type, state) {
       fetch('/api/control', {
         method: 'POST',
@@ -188,11 +203,16 @@ void setup() {
 
   // Inicializar Wi-Fi
   WiFi.mode(WIFI_AP);
+  WiFi.setTxPower(WIFI_POWER_19_5dBm);  // Potencia máxima para mejor alcance
   IPAddress local_ip(192, 168, 4, 1);
   IPAddress gateway(192, 168, 4, 1);
   IPAddress subnet(255, 255, 255, 0);
   WiFi.softAPConfig(local_ip, gateway, subnet);
-  WiFi.softAP(ssid, password, 1);
+  WiFi.softAP(ssid, password, 1, 0, 4);  // Canal 1, no oculto, max 4 clientes
+  
+  delay(500);  // Esperar a que el AP se estabilice antes de iniciar la cámara
+  Serial.print("AP IP: ");
+  Serial.println(WiFi.softAPIP());
   
   // Inicializar Cámara
   camera_config_t config;
@@ -238,6 +258,8 @@ void setup() {
     tft.println("Camara OK");
   }
 
+  delay(300);  // Dar tiempo al stack Wi-Fi tras la cámara
+
   // Mostrar info en TFT
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(5, 10);
@@ -274,7 +296,7 @@ void setup() {
   
   memset(&peerInfo, 0, sizeof(peerInfo));
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 1;  
   peerInfo.ifidx = WIFI_IF_AP;  
   peerInfo.encrypt = false;
   
