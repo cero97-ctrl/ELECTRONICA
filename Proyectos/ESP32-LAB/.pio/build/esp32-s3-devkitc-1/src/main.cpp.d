@@ -249,6 +249,11 @@
  .pio/libdeps/esp32-s3-devkitc-1/ArduinoJson/src/ArduinoJson/Configuration.hpp \
  /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_now.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_wifi_types.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_wifi.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_private/esp_wifi_private.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_wifi_crypto_types.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_private/wifi_os_adapter.h \
+ /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp_wifi/include/esp_wifi_default.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/esp32-camera/driver/include/esp_camera.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/driver/include/driver/ledc.h \
  /home/cero/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/hal/include/hal/ledc_types.h \

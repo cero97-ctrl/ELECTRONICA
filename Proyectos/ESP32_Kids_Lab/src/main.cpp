@@ -18,7 +18,6 @@
 #define OLED_RESET -1
 Adafruit_SSD1306 displayOLED(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// Estructura para mensajes ESP-NOW
 typedef struct struct_message {
   uint8_t cmdType; // 1:Red, 2:Green, 3:Blue, 4:Yellow, 5:Relay, 6:OLED
   bool state;
@@ -26,6 +25,18 @@ typedef struct struct_message {
 } struct_message;
 
 struct_message incomingReadings;
+
+typedef struct sensor_message {
+  float temperature;
+  float distance;
+  int light;
+  int potentiometer;
+  bool tilt;
+} sensor_message;
+
+sensor_message outgoingSensors;
+uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+esp_now_peer_info_t peerInfo;
 
 
 // Definición de Pines confirmados
@@ -78,6 +89,10 @@ float readTemperature() {
   return tempC;
 }
 
+// Variables para el buzzer temporizado
+unsigned long buzzerTurnOffTime = 0;
+bool buzzerActive = false;
+
 // Callback cuando se reciben datos vía ESP-NOW
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   if (len != sizeof(incomingReadings)) return;
@@ -88,11 +103,43 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   else if (incomingReadings.cmdType == 3) digitalWrite(PIN_LED_BLUE, incomingReadings.state ? HIGH : LOW);
   else if (incomingReadings.cmdType == 4) digitalWrite(PIN_LED_YELLOW, incomingReadings.state ? HIGH : LOW);
   else if (incomingReadings.cmdType == 5) digitalWrite(PIN_RELAY, incomingReadings.state ? HIGH : LOW);
+  else if (incomingReadings.cmdType == 7) {
+    int duration = atoi(incomingReadings.text);
+    if (incomingReadings.state && duration > 0) {
+      tone(PIN_BUZZER, 2000); // Frecuencia de 2000 Hz
+      buzzerTurnOffTime = millis() + duration;
+      buzzerActive = true;
+    } else {
+      if (incomingReadings.state) {
+        tone(PIN_BUZZER, 2000); // Encendido continuo
+      } else {
+        noTone(PIN_BUZZER);
+      }
+      buzzerActive = false;
+    }
+  }
   else if (incomingReadings.cmdType == 6) {
     displayOLED.clearDisplay();
     displayOLED.setCursor(0, 0);
     displayOLED.print(incomingReadings.text);
     displayOLED.display();
+  }
+  else if (incomingReadings.cmdType == 8) {
+    if (incomingReadings.state) {
+      // Encender Matriz completa (ej. color Cyan)
+      for(int i=0; i<NUMPIXELS; i++) strip.setPixelColor(i, strip.Color(0, 255, 255));
+    } else {
+      strip.clear(); // Apagar Matriz
+    }
+    strip.show();
+  }
+  else if (incomingReadings.cmdType == 9) {
+    if (incomingReadings.state) {
+      int num = atoi(incomingReadings.text);
+      display.showNumberDec(num, false);
+    } else {
+      display.clear(); // Apagar Display 7 segmentos
+    }
   }
 }
 
@@ -166,7 +213,19 @@ void setup() {
     Serial.println("Error inicializando ESP-NOW");
   } else {
     esp_now_register_recv_cb(OnDataRecv);
-    Serial.println("ESP-NOW Iniciado Correctamente en Canal 1");
+    
+    // Registrar peer para enviar datos de sensores al S3
+    memset(&peerInfo, 0, sizeof(peerInfo));
+    memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+    peerInfo.channel = 1;  
+    peerInfo.ifidx = WIFI_IF_STA;
+    peerInfo.encrypt = false;
+    
+    if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+      Serial.println("Error agregando peer ESP-NOW (sensores)");
+    } else {
+      Serial.println("ESP-NOW Iniciado Correctamente en Canal 1");
+    }
   }
 
   // Mostrar info en OLED
@@ -182,8 +241,24 @@ void setup() {
   // (Servidor Web eliminado para evitar interferencias WiFi)
 }
 
+unsigned long lastSensorReadTime = 0;
+
 void loop() {
-  // ESPAsyncWebServer maneja las peticiones en segundo plano.
-  // Aquí podríamos añadir lógica para los "Mini-juegos" si decidimos que 
-  // la lógica corra en el ESP32, pero por ahora se controlará desde la Web (JS).
+  if (buzzerActive && millis() > buzzerTurnOffTime) {
+    noTone(PIN_BUZZER);
+    buzzerActive = false;
+  }
+
+  // Leer y enviar sensores cada 2 segundos
+  if (millis() - lastSensorReadTime > 2000) {
+    lastSensorReadTime = millis();
+    
+    outgoingSensors.temperature = readTemperature();
+    outgoingSensors.distance = readDistance();
+    outgoingSensors.light = readLight();
+    outgoingSensors.potentiometer = analogRead(PIN_POT);
+    outgoingSensors.tilt = digitalRead(PIN_TILT);
+    
+    esp_now_send(broadcastAddress, (uint8_t *) &outgoingSensors, sizeof(outgoingSensors));
+  }
 }
