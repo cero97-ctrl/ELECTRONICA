@@ -1,0 +1,154 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{circuitikz}
+\usepackage{microtype}
+
+% Definición de colores
+\definecolor{azulOscuro}{RGB}{20, 45, 85}
+\definecolor{azulClaro}{RGB}{235, 243, 250}
+\definecolor{grisBorde}{RGB}{180, 200, 220}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=azulOscuro,
+    urlcolor=azulOscuro,
+    pdftitle={Monitor de Salud IoT con ESP32 y Dashboard Web}
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{grisBorde},
+    backgroundcolor=\color{azulClaro},
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {₂}{{$_2$}}1 {µ}{{$\mu$}}1
+}
+
+\title{\textbf{\Large Monitor de Salud IoT con ESP32 y Dashboard Web}\\[4pt]
+\large Especificación y Prompt de Desarrollo Paso a Paso}
+\author{\textbf{Proyecto Electrónica \& IoT}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{tcolorbox}[colback=azulClaro, colframe=azulOscuro, title=\textbf{Descripción del Modelo / Prompt}, arc=2mm, fonttitle=\bfseries]
+Este documento contiene la especificación detallada en forma de prompt estructurado para guiar el desarrollo completo de un \textbf{Monitor de Salud del Paciente basado en ESP32 con Dashboard Web Local en tiempo real}, abarcando el ensamblaje físico, conexiones de sensores, firmware C++ e interfaz web.
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\section*{Prompt Sugerido para LLM}
+
+\begin{description}[style=nextline, leftmargin=1cm]
+    \item[\textbf{Rol:}] Actúa como un experto en sistemas embebidos, electrónica médica e IoT.
+    
+    \item[\textbf{Objetivo:}] Generar una guía de implementación paso a paso para construir un \textbf{Monitor de Salud del Paciente basado en ESP32 con Dashboard Web Local en tiempo real}.
+    
+    \item[\textbf{Restricción importante:}] Omite cualquier paso relacionado con el diseño o fabricación de placas de circuito impreso (PCB). Todo el ensamblaje físico debe explicarse utilizando una protoboard, módulos comerciales y conexiones con cables jumper.
+\end{description}
+
+\hrulefill
+
+\vspace{0.3cm}
+
+\section*{Estructura de la Guía de Implementación}
+
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=*]
+
+    \item \textbf{Lista de Componentes y Función:}
+    \begin{itemize}
+        \item \textbf{Microcontrolador:} ESP32 Dev Module.
+        \item \textbf{Módulos y Sensores:}
+        \begin{itemize}
+            \item Módulo ECG AD8232 con sus electrodos.
+            \item Oxímetro de pulso MAX30102 para medición de $\text{SpO}_2$ y ritmo cardíaco.
+            \item Sensor ambiental BME280 para temperatura y humedad ambiente.
+            \item Módulo ADC de 16 bits ADS1115 (comunicación $\text{I}^2\text{C}$).
+            \item Termistor NTC de $10\,\text{k}\Omega$ para temperatura corporal.
+            \item Capacitores de $10\,\mu\text{F}$ y $100\,\text{nF}$ para filtrado y estabilización de la alimentación.
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Esquema de Conexiones en Protoboard:}
+    \begin{itemize}
+        \item Explicar la conexión del bus $\text{I}^2\text{C}$ en los pines \textbf{GPIO 21 (SDA)} y \textbf{GPIO 22 (SCL)} del ESP32, compartido por el ADS1115, BME280 y MAX30102.
+        \item Conexión de la salida analógica del AD8232 al canal \textbf{AIN0} del ADS1115 y sus pines de control digital (\texttt{SDN}, \texttt{LO+}, \texttt{LO-}) al ESP32.
+        \item Conexión del divisor de voltaje del termistor NTC a la entrada \textbf{AIN1} del ADS1115.
+        \item Colocación de los capacitores de desacoplo cerca de las líneas de alimentación para reducir ruido en la señal de ECG.
+    \end{itemize}
+
+    \item \textbf{Firmware C++ (Arduino IDE):}
+    \begin{itemize}
+        \item Librerías necesarias a instalar (\texttt{ADS1115}, \texttt{BME280}, \texttt{MAX30105}, \texttt{WiFi}) y selección de la placa ESP32 Dev Module.
+        \item Lógica del código: muestreo continuo de la señal ECG a $\approx 125\,\text{Hz}$, procesamiento de buffers de $\text{SpO}_2$ y lecturas cada 2 segundos de temperatura y humedad.
+        \item Configuración del servidor web local y creación del endpoint \texttt{/api/vitals} para responder en formato JSON.
+        \item Inclusión del archivo de cabecera \texttt{dashboard\_page.h} con el código HTML, CSS y JavaScript de la interfaz web.
+    \end{itemize}
+
+    \item \textbf{Colocación de Sensores en el Paciente:}
+    \begin{itemize}
+        \item Posicionamiento correcto de los 3 electrodos del AD8232 en el cuerpo.
+        \item Fijación adecuada del sensor MAX30102 en el dedo y del termistor NTC sobre la piel.
+    \end{itemize}
+
+    \item \textbf{Prueba y Uso del Dashboard:}
+    \begin{itemize}
+        \item Apertura del Monitor Serie a 115200 baudios para obtener la dirección IP asignada por la red Wi-Fi.
+        \item Explicación de las secciones de la interfaz web:
+        \begin{itemize}
+            \item \textbf{Monitor de Signos Vitales:} Gráfico ECG en tiempo real, BPM, $\text{SpO}_2$ y temperaturas.
+            \item \textbf{Registro de Paciente}.
+            \item \textbf{Exportación de datos a Excel}.
+            \item \textbf{Alertas Clínicas}.
+        \end{itemize}
+    \end{itemize}
+
+\end{enumerate}
+
+\vspace{0.3cm}
+
+\section*{Estimación de Costos del Hardware}
+
+Para la construcción del prototipo, se ha recopilado la estimación aproximada de precios de mercado minorista (en USD) para los componentes requeridos:
+
+\begin{center}
+\small
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Componente} & \textbf{Función / Descripción} & \textbf{Costo Aprox. (USD)} \\ \hline
+ESP32 Dev Module & Microcontrolador Wi-Fi / Bluetooth & \$6.00 -- \$10.00 \\ \hline
+AD8232 ECG Module & Sensor ECG con electrodos y cableado & \$6.00 -- \$12.00 \\ \hline
+MAX30102 & Oxímetro de pulso ($\text{SpO}_2$ y ritmo cardíaco) & \$6.00 -- \$10.00 \\ \hline
+BME280 & Sensor ambiental (temperatura y humedad) & \$4.00 -- \$10.00 \\ \hline
+ADS1115 & ADC de 16-bits $\text{I}^2\text{C}$ (4 canales analógicos) & \$4.00 -- \$6.00 \\ \hline
+Termistor NTC 10K & Sensor analógico de temperatura corporal & \$0.50 -- \$1.50 \\ \hline
+Accesorios Prototipado & Protoboard, cables jumper y capacitores desacoplo & \$5.00 -- \$10.00 \\ \hline
+\hline
+\textbf{Costo Total Estimado} & \textbf{Prototipo completo en protoboard} & \textbf{\$31.50 -- \$59.50 USD} \\ \hline
+\end{tabular}
+\end{center}
+
+\textit{Nota: Los costos indicados son valores de referencia basados en distribuidores de componentes electrónicos comerciales. Pueden variar según el fabricante, impuestos locales y gastos de envío.}
+
+\vspace{0.3cm}
+
+\section*{Requerimiento de Salida}
+Proporciona la explicación estructurada, clara y con ejemplos de código en C++ y estructuras JSON donde sea necesario.
+
+\end{document}
