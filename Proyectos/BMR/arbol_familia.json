@@ -121,20 +121,34 @@
           "children": [
             {
               "name": "Carmen Marín",
-              "_info_color": "red"
+              "_info_color": "red",
+              "children": [
+                {
+                  "name": "Alejandrina"
+                },
+                {
+                  "name": "Gertrudis"
+                }
+              ]
             },
             {
               "name": "Vicente Bravo Marín",
               "_info_color": "red",
               "children": [
                 {
-                  "name": "Gaspar"
+                  "name": "Gaspar",
+                  "_info_color": "red",
+                  "_nota": "Fallecido"
                 },
                 {
-                  "name": "Lorenzo (papá de Delcita)"
+                  "name": "Lorenzo (papá de Delcita)",
+                  "_info_color": "red",
+                  "_nota": "Fallecido"
                 },
                 {
-                  "name": "Ramón"
+                  "name": "Ramón",
+                  "_info_color": "red",
+                  "_nota": "Fallecido"
                 }
               ]
             },
@@ -150,7 +164,6 @@
                   "children": [
                     {
                       "name": "Carmen Bravo Figueroa de Guevara",
-                      "_info_color": "red",
                       "_nota": "Tía Carmita",
                       "children": [
                         {
@@ -162,7 +175,7 @@
                               "_nota": "C.I: 500575",
                               "children": [
                                 {
-                                  "name": "Felix Bautista Díaz Guevara",
+                                  "name": "Felix Bautista Díaz",
                                   "_info_color": "red",
                                   "_nota": "C.I: 1190985",
                                   "children": [
@@ -312,35 +325,29 @@
                                   ]
                                 },
                                 {
-                                  "name": "Rómulo Isaías Díaz Guevara",
-                                  "_info_color": "red",
+                                  "name": "Rómulo Isaías Guevara",
+                                  "_info_color": "blue",
                                   "_nota": "C.I: 3671064",
                                   "children": [
                                     {
-                                      "name": "Rómulo Isaías Guevara",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 8318648"
+                                      "name": "Rómulo Guevara"
                                     },
                                     {
-                                      "name": "Migdalia del Carmen Guevara Sifontes",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 14190786"
+                                      "name": "Migdalia Guevara"
                                     },
                                     {
-                                      "name": "Mariela Josefina Guevara Sifontes",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 14190786"
+                                      "name": "Mariela Guevara"
                                     },
                                     {
-                                      "name": "Mariana Carolina Guevara Sifontes",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 21392487"
+                                      "name": "Mileidis Guevara"
+                                    },
+                                    {
+                                      "name": "Mariana Guevara"
                                     }
                                   ]
                                 },
                                 {
-                                  "name": "Raul Guevara",
-                                  "_info_color": "red"
+                                  "name": "Raul Guevara"
                                 },
                                 {
                                   "name": "Edicta Guevara",
@@ -364,109 +371,69 @@
                               "_nota": "C.I: 2294888",
                               "children": [
                                 {
-                                  "name": "Rumildes del Carmen González Guevara",
-                                  "_info_color": "red",
+                                  "name": "Rumiris",
                                   "children": [
                                     {
-                                      "name": "Milagros del Valle González González",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 19716807"
+                                      "name": "Milagros"
                                     },
                                     {
-                                      "name": "Olennys del Valle González González",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 16480305"
+                                      "name": "Olennys"
                                     },
                                     {
-                                      "name": "Oneyse del Valle González González",
-                                      "_info_color": "blue",
-                                      "_nota": "C.I: 16480304"
+                                      "name": "Onexi"
                                     }
                                   ]
                                 },
                                 {
-                                  "name": "Iraida Josefina Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 11910019"
+                                  "name": "Iraida"
                                 },
                                 {
-                                  "name": "José Luis Coronado Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 10951296"
+                                  "name": "José Luis"
                                 },
                                 {
-                                  "name": "Kelkys Josefina González Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 11377731"
+                                  "name": "Kelkis"
                                 },
                                 {
-                                  "name": "Félix",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: "
+                                  "name": "Félix José"
                                 },
                                 {
-                                  "name": "José",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: "
-                                },
-                                {
-                                  "name": "Reinaldo",
-                                  "_info_color": "red",
-                                  "_nota": "C.I: "
+                                  "name": "Reinaldo"
                                 }
                               ]
                             },
                             {
                               "name": "Cristóbal Guevara Bravo",
                               "_nota": "C.I: 2294276",
-                              "_info_color": "red",
                               "children": [
                                 {
-                                  "name": "Gladys María Guevara Azocar",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 6381228"
+                                  "name": "Gladys Guevara Azocar"
                                 },
                                 {
-                                  "name": "Carmen Luisa Guevara Azocar de González",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 6381226"
+                                  "name": "Carmen Luisa Guevara Azocar"
                                 },
                                 {
-                                  "name": "Luis Beltrán Guevara Azocar",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 11600508"
+                                  "name": "Luis Beltrán Guevara Azocar"
                                 },
                                 {
-                                  "name": "Albanellys Guevara Azocar de Vallenilla",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 12665475"
+                                  "name": "Albanellys Guevara Azocar"
                                 },
                                 {
-                                  "name": "Luisa Elena Guevara Azocar",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 12267863"
+                                  "name": "Luisa Elena Guevara Azocar"
                                 },
                                 {
-                                  "name": "Omaira Josefina Guevara Marquez",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 12661315"
+                                  "name": "Omaira Josefina Guevara Azocar"
                                 },
                                 {
-                                  "name": "Carlos Eduardo Guevara Márquez",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 14284776"
+                                  "name": "Carlos Eduardo Guevara Márquez"
                                 }
                               ]
                             },
                             {
                               "name": "Angelina Guevara Bravo",
-                              "_info_color": "red",
                               "_nota": "C.I: 500576",
                               "children": [
                                 {
-                                  "name": "César Augusto Medina Guevara",
-                                  "_info_color": "red",
-                                  "_nota": "C.I: 4495803",
+                                  "name": "César Medina Guevara",
                                   "children": [
                                     {
                                       "name": "Maria"
@@ -489,44 +456,28 @@
                                   ]
                                 },
                                 {
-                                  "name": "Zuleima Josefina Medina Guevara de Velasquez",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 4684446"
+                                  "name": "Zuleima Medina Guevara"
                                 },
                                 {
-                                  "name": "Alberto José Medina Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 5084613"
+                                  "name": "Alberto Medina Guevara"
                                 },
                                 {
-                                  "name": "Aydanys Margarita Medina Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 6698673"
+                                  "name": "Aydanys Medina Guevara"
                                 },
                                 {
-                                  "name": "Luis Concepción Medina Guevara",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 6380244"
+                                  "name": "Luis Concepción Medina Guevara"
                                 },
                                 {
-                                  "name": "Nohelis José Medina Guevara",
-                                  "_info_color": "red",
-                                  "_nota": "C.I: 9270458"
+                                  "name": "Nohelis Medina Guevara"
                                 },
                                 {
-                                  "name": "Mary Cruz Medina Guevara de Gordon",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 6640189"
+                                  "name": "Mary Cruz Medina Guevara"
                                 },
                                 {
-                                  "name": "Magda Coromoto Medina Guevara de Márquez",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 8641227"
+                                  "name": "Magda Del Valle Medina Guevara"
                                 },
                                 {
-                                  "name": "Maria Milagros Medina Guevara de Márquez",
-                                  "_info_color": "blue",
-                                  "_nota": "C.I: 10650443"
+                                  "name": "Maria Milagros Medina Guevara"
                                 }
                               ]
                             }
@@ -536,7 +487,6 @@
                     },
                     {
                       "name": "María Eugenia Bravo Figueroa de Gómez",
-                      "_info_color": "red",
                       "_nota": "C.I: 547426",
                       "children": [
                         {
@@ -553,49 +503,52 @@
                             },
                             {
                               "name": "Elena del Valle Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 5703206"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Nellys Beatriz Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 8434660"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Carmen Eugenia Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 8637202"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Justino Ramón Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 9976558"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Liliam Josefina Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 9976956"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Carlos José Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 11383387"
+                              "_info_color": "blue"
                             },
                             {
                               "name": "Aracelys María Rodríguez Gómez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 12271454"
+                              "_info_color": "blue"
                             }
                           ]
                         },
                         {
                           "name": "Aurora Gómez Bravo",
-                          "_info_color": "blue",
-                          "_nota": "C.I: 1788612"
+                          "_info_color": "blue"
                         },
                         {
                           "name": "Rosa Margarita Gómez Bravo",
-                          "_info_color": "blue"
+                          "_info_color": "blue",
+                          "children": [
+                            {
+                              "name": "Rovimar"
+                            },
+                            {
+                              "name": "Wladimir"
+                            },
+                            {
+                              "name": "José Vicente"
+                            }
+                          ]
                         },
                         {
                           "name": "Antonia Teresa Gómez Bravo",
@@ -604,35 +557,24 @@
                         {
                           "name": "Arturo José Gómez Bravo",
                           "_info_color": "red",
-                          "_nota": "C.I: 3734536",
                           "children": [
                             {
-                              "name": "Yosmar Eugenia Gómez Gutiérrez",
-                              "_info_color": "red",
-                              "_nota": "C.I: 12659154"
+                              "name": "Yosmar Eugenia Gómez Gutiérrez"
                             },
                             {
-                              "name": "Arturo José Gómez Gutiérrez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 14420678"
+                              "name": "Arturo José Gómez Gutiérrez"
                             },
                             {
-                              "name": "César Arturo Gómez Gutiérrez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 15934688"
+                              "name": "César Arturo Gómez Gutiérrez"
                             },
                             {
                               "name": "Rosana del Valle Gómez Gutiérrez"
                             },
                             {
-                              "name": "David Alexander Gómez Gutiérrez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 24513622"
+                              "name": "David Alexander Gómez Gutiérrez"
                             },
                             {
-                              "name": "Arturo Mereci Gómez Vásquez",
-                              "_info_color": "blue",
-                              "_nota": "C.I: 20763114"
+                              "name": "Arturo Mereci Gómez Vásquez"
                             }
                           ]
                         }
@@ -646,15 +588,19 @@
                   "children": [
                     {
                       "name": "Petra Bravo Ramos",
+                      "_info_color": "red",
+                      "_nota": "C.I: 2.294.700",
                       "children": [
                         {
                           "name": "Delia Varela Bravo"
                         },
                         {
-                          "name": "Dumila Mercedes Varela Bravo"
+                          "name": "Dumila Mercedes Varela Bravo",
+                          "_nota": "C.I: 4.684.509"
                         },
                         {
-                          "name": "Luis Rafael Varela Bravo"
+                          "name": "Luis Rafael Varela Bravo",
+                          "_nota": "C.I: 5.085.582"
                         },
                         {
                           "name": "María Josefina Varela Bravo"
@@ -663,19 +609,24 @@
                           "name": "María de Lourdes Varela Bravo"
                         },
                         {
-                          "name": "Rosa del Valle Varela Bravo"
+                          "name": "Rosa del Valle Varela Bravo",
+                          "_nota": "C.I: 9.977.530"
                         },
                         {
-                          "name": "Cruz José Varela Bravo"
+                          "name": "Cruz José Varela Bravo",
+                          "_nota": "C.I: 9.272.290"
                         },
                         {
-                          "name": "Gregorio José Varela Bravo"
+                          "name": "Gregorio José Varela Bravo",
+                          "_nota": "C.I: 13.318.873"
                         },
                         {
-                          "name": "Ramón José Varela Bravo"
+                          "name": "Ramón José Varela Bravo",
+                          "_nota": "C.I: 9.980.836"
                         },
                         {
-                          "name": "Carlos Javier Varela Bravo"
+                          "name": "Carlos Javier Varela Bravo",
+                          "_nota": "C.I: 12.664.139"
                         },
                         {
                           "name": "Jesús del Valle Varela Bravo"
@@ -684,27 +635,36 @@
                     },
                     {
                       "name": "Cándida Bravo Ramos",
+                      "_info_color": "red",
                       "children": [
                         {
-                          "name": "Jesus Manuel"
+                          "name": "Jesus Manuel Núñez Bravo",
+                          "_nota": "C.I: 4.684.526"
                         },
                         {
-                          "name": "Jorge",
+                          "name": "Jorge Luis Núñez Bravo",
+                          "_info_color": "red",
+                          "_nota": "C.I: 5.703.629",
                           "children": [
                             {
-                              "name": "Jorge"
+                              "name": "Jorge Luis Núñez Benales",
+                              "_nota": "C.I: 18.896.914"
                             },
                             {
-                              "name": "Edward"
+                              "name": "Edward José Núñez Benales",
+                              "_nota": "C.I: 23.684.097"
                             },
                             {
-                              "name": "Lourdes"
+                              "name": "Lourdes Vanesa Núñez Benales",
+                              "_nota": "C.I: 21.052.183"
                             },
                             {
-                              "name": "Johan"
+                              "name": "John Manuel Núñez Benales",
+                              "_nota": "C.I: 20.344.087"
                             },
                             {
-                              "name": "Jhon"
+                              "name": "Johan Alexander Núñez Benales",
+                              "_nota": "C.I: 26.135.749"
                             }
                           ]
                         },
@@ -717,41 +677,44 @@
                       ]
                     },
                     {
-                      "name": "Natividad del Valle Bravo Ramos",
+                      "name": "Natividad del Valle Bravo Ramos (El Negro)",
+                      "_info_color": "red",
                       "_nota": "El Negro",
                       "children": [
                         {
-                          "name": "Auristela Bravo"
+                          "name": "Auristela Bravo Mariany"
                         },
                         {
-                          "name": "Maritza Bravo"
+                          "name": "Maritza Bravo Mariany"
                         },
                         {
-                          "name": "Enrique Bravo"
+                          "name": "Enrique Bravo Mariany"
                         },
                         {
-                          "name": "Emilio Bravo"
+                          "name": "Emilio Bravo Mariany",
+                          "_info_color": "red"
                         },
                         {
-                          "name": "Frank Bravo"
+                          "name": "Frank Bravo Mariany"
                         },
                         {
-                          "name": "Yilda Bravo"
+                          "name": "Yilda Bravo Mariany"
                         },
                         {
-                          "name": "Edgard Bravo"
+                          "name": "Edgard Bravo Mariany"
                         },
                         {
-                          "name": "Francelys Bravo"
+                          "name": "Francelys Bravo Mariany"
                         },
                         {
-                          "name": "Argenis Bravo"
+                          "name": "Argenis Bravo Mariany"
                         },
                         {
-                          "name": "Javier Bravo"
+                          "name": "Javier Bravo Mariany"
                         },
                         {
-                          "name": "Carlos Bravo",
+                          "name": "Carlos Bravo Mariany",
+                          "_info_color": "red",
                           "children": [
                             {
                               "name": "Carlos Luís Bravo"
@@ -764,53 +727,58 @@
                       ]
                     },
                     {
-                      "name": "José Tomás Bravo Ramos"
-                    },
-                    {
-                      "name": "Petra María Bravo Ramos",
+                      "name": "Petra María Bravo Ramos (Petrica)",
                       "_nota": "petrica",
                       "children": [
                         {
-                          "name": "Pastora",
+                          "name": "Pastora del Valle Rodríguez Bravo",
+                          "_info_color": "red",
+                          "_nota": "C.I: 5.191.809",
                           "children": [
                             {
-                              "name": "Nelson Enrique"
+                              "name": "Nelson Enrique Ávila Díaz",
+                              "_info_color": "red",
+                              "_nota": "C.I: 16.598.792"
                             },
                             {
-                              "name": "Pamela"
+                              "name": "Pamela Eddy Ávila Rodríguez",
+                              "_nota": "C.I: 18.365.754"
                             },
                             {
-                              "name": "Nielsy"
-                            },
-                            {
-                              "name": "Nilson"
+                              "name": "Nielsy Dayan Ávila Rodríguez",
+                              "_nota": "C.I: 21.375.896"
                             }
                           ]
                         },
                         {
-                          "name": "Edgard",
-                          "children": [
-                            {
-                              "name": "Renata"
-                            }
-                          ]
+                          "name": "Edgard José Rodríguez Bravo",
+                          "_nota": "C.I: 8.318.128"
                         },
                         {
-                          "name": "Juan de la Cruz"
+                          "name": "Juan de la Cruz Rodríguez Bravo",
+                          "_nota": "C.I: 8.318.075"
                         },
                         {
-                          "name": "Lesbia"
+                          "name": "Lesbia Josefina Hernández Bravo",
+                          "_nota": "C.I: 11.917.956"
                         },
                         {
-                          "name": "Gregory"
+                          "name": "Gregory Rafael Hernández Bravo",
+                          "_nota": "C.I: 13.318.873"
                         },
                         {
-                          "name": "Dhison"
+                          "name": "Dhixon José Hernández Bravo",
+                          "_nota": "C.I: 14.663.979"
                         },
                         {
-                          "name": "Irvis"
+                          "name": "Irvis José Hernández Bravo",
+                          "_nota": "C.I: 16.182.721"
                         }
                       ]
+                    },
+                    {
+                      "name": "José Tomás Bravo Ramos",
+                      "_nota": "C.I: 4.499.560"
                     }
                   ]
                 }
