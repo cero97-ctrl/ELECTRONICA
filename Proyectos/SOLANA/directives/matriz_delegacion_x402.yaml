@@ -1,0 +1,188 @@
+# Directiva: Matriz de Delegación por Riesgo para Agentes x402
+# OPC: Servicio pay-per-use que cobra en USDC por consulta en la red Solana
+# Objetivo del operador: generar ingresos como desarrollador en Solana, delegando
+# tareas repetitivas a agentes de IA de forma GRADUAL y SIN descuidar la seguridad
+# de las pequeñas transacciones financieras ($1-50 por consulta).
+
+goal: |
+  Delegar de forma segura y escalonada tareas repetitivas de un servicio de agentes de
+  IA que cobra por consulta en USDC (x402 / HTTP 402) en Solana, minimizando el riesgo
+  sobre las transacciones financieras. El operador humano conserva control absoluto
+  sobre toda acción que firme o mueva fondos.
+
+required_inputs:
+  - name: tipo_tarea
+    description: Clase de riesgo de la tarea a delegar (A, B, C o D)
+  - name: nivel_actual
+    description: Nivel de delegación vigente para esa tarea (0-3)
+  - name: ejecuciones_estables
+    description: Conteo de ejecuciones limpias consecutivas registradas para la tarea
+  - name: monto_transaccion
+    description: Monto en USDC de la transacción si la tarea firma o mueve fondos
+  - name: config_solana
+    description: Hot wallet, RPC, límites diarios, whitelist de destinos, multisig
+
+# ---------------------------------------------------------------------------
+# MATRIZ DE DELEGACIÓN POR RIESGO
+#   Ejes de clasificación:
+#     - Eje dinero:      ¿firma/mueve transacciones o solo lee datos?
+#     - Eje irreversibilidad: ¿el error se deshace (código) o es permanente (TX)?
+#     - Eje verificabilidad:  ¿un script determinista valida el resultado?
+# ---------------------------------------------------------------------------
+risk_matrix:
+  clase_A:
+    descripcion: Sin dinero, reversible, verificable
+    tareas_ejemplo:
+      - Fetch de datos on-chain vía RPC
+      - Validación de X-Solana-Signature (anti-replay en Redis)
+      - Generación de reportes / documentación / linting
+      - Validación de esquemas (middleware x402)
+    nivel_recomendado: 2
+    guardarrailes_minimos:
+      - Schema estricto de entrada y salida
+      - Script validador determinista
+    delegable_desde: dia_1
+
+  clase_B:
+    descripcion: Sin dinero, reversible, verificación parcial
+    tareas_ejemplo:
+      - Inferencia LLM que produce el resultado de la consulta
+      - Análisis que informan decisiones (no las ejecutan)
+      - Redacción de respuestas al cliente
+    nivel_recomendado: 1
+    guardarrailes_minimos:
+      - Revisión humana antes de la entrega/cobro
+      - Suite de tests como condición para ascender a Nivel 2
+    delegable_desde: dia_1_supervisado
+
+  clase_C:
+    descripcion: Con dinero, irreversible parcial (monto bajo), verificable
+    tareas_ejemplo:
+      - Cobro de USDC / firma de microtransacción por consulta
+      - Pagos de gas, staking o minting de bajo monto
+    nivel_recomendado: 3
+    guardarrailes_minimos:
+      - Hot wallet dedicada con límite diario
+      - Whitelist de wallets destino
+      - Confirmación humana obligatoria si monto > umbral
+      - Multisig de referencia (Squads Protocol)
+    delegable_desde: solo_tras_clase_AB_estables
+
+  clase_D:
+    descripcion: Con dinero, irreversible en ráfaga, no delegable
+    tareas_ejemplo:
+      - Sweeping periódico de ganancias a wallet fría
+      - Arbitraje / rebalanceo de tesorería
+      - Envío de pagos que superen el umbral
+    nivel_recomendado: NO_DELEGAR
+    guardarrailes_minimos:
+      - Firma humana por transacción, siempre
+      - Circuit breaker y anti-replay presentes pero bajo control humano
+    delegable_desde: nunca_sin_aprobacion_humana_por_tx
+
+# ---------------------------------------------------------------------------
+# NIVELES DE DELEGACIÓN
+# ---------------------------------------------------------------------------
+niveles:
+  nivel_0:
+    nombre: Copiloto pasivo
+    descripcion: El LLM sugiere, el humano ejecuta. Aplica a todo, siempre.
+  nivel_1:
+    nombre: Ejecutor supervisado
+    descripcion: El agente ejecuta; el humano revisa antes de que el resultado tenga
+      efecto externo (entrega, cobro, envío).
+  nivel_2:
+    nombre: Ejecutor con verificación automática
+    descripcion: Un script determinista valida la salida; el humano solo revisa
+      excepciones. Válido para toda tarea Clase A (sin dinero).
+  nivel_3:
+    nombre: Ejecutor con firma restringida
+    descripcion: El agente firma microtransacciones (Clase C) bajo límites duros
+      programáticos. Se habilita en último lugar y solo tras estabilidad en Nivel 2.
+
+# ---------------------------------------------------------------------------
+# PARÁMETROS CALIBRADOS (umbral $1-50 / consulta)
+# ---------------------------------------------------------------------------
+parametros_seguridad:
+  monto_por_consulta_usdc: 1-50
+  limite_diario_bot_usdc: 200          # 2-4x el máximo por consulta: limita ráfagas
+  umbral_confirmacion_humana_usdc: 50  # por encima de este monto, el humano firma
+  circuito_interruptor:
+    activar: true
+    trigger_pausa: ">3 transacciones fallidas consecutivas o monto que excede umbral"
+    accion: "Pausar firma del agente y alertar al operador"
+  anti_replay:
+    almacen: redis
+    ttl_horas: 24
+  confirmacion_rpc: finalized
+
+# ---------------------------------------------------------------------------
+# PASOS / FLUJO DE DECISIÓN
+# ---------------------------------------------------------------------------
+steps:
+  - step: 1
+    action: "Clasificar la tarea en una clase (A, B, C o D) según los 3 ejes."
+    validate: "Clase identificada y justificada."
+  - step: 2
+    action: "Determinar el nivel de delegación permitido para esa clase."
+    validate: "Nivel dentro del permitido por risk_matrix."
+  - step: 3
+    action: "Verificar que se cumplen los guardarraíles mínimos de la clase."
+    validate: "Todos los guardarraíles existen en código (no en papel)."
+  - step: 4
+    action: "Si la tarea toca dinero (C/D), exigir firma/hot-wallet con límites y multisig."
+    validate: "Límite diario, whitelist y circuit breaker activos antes de continuar."
+  - step: 5
+    action: "Antes de ASCENDER de nivel, exigir ejecuciones_estables >= 20 con 0 fallos."
+    validate: "Contador de ejecuciones limpias registrado en .tmp/ / perfil de tarea."
+  - step: 6
+    action: "Registrar toda ejecución delegada (entrada, salida, validación, firma)."
+    validate: "Log completo con trazabilidad equivalente a run_state.json."
+
+# ---------------------------------------------------------------------------
+# REGLAS DE ESCALONAMIENTO (lo que faltaba en el estudio)
+# ---------------------------------------------------------------------------
+escalonamiento:
+  ascenso_por_evidencia:
+    - "Una tarea sube de nivel solo tras N ejecuciones estables (>=20) en el nivel
+       inferior con 0 fallos."
+    - "Nunca ascender por conveniencia; la evidencia de ejecuciones limpias manda."
+  monitorear_no_equivale_a_mover:
+    - "Un agente puede MONITOREAR fondos (Clase A, Nivel 2) sin poder MOVERLOS (Clase D)."
+    - "La alerta dispara una acción humana (ej. alert_user.py avisa, no decide)."
+  guardarrailes_antes_del_candado:
+    - "Ningún agente firma una sola transacción hasta que existan EN CÓDIGO: límite de
+       gasto diario, whitelist de wallets destino, circuit breaker, anti-replay y multisig."
+  trazabilidad_total:
+    - "Cada ejecución delegada registra entrada, salida, validación y firma."
+    - "Clase D está vetada a largo plazo salvo que el negocio lo exija; incluso entonces,
+       con aprobación humana por transacción."
+
+# ---------------------------------------------------------------------------
+# CASOS LÍMITE (EDGE CASES) Y PROTOCOLOS DE RECUPERACIÓN
+# ---------------------------------------------------------------------------
+edge_cases:
+  - caso: "Replay de una firma ya procesada"
+    protocolo: "Redis rechaza la firma duplicada (anti-replay, TTL 24h)."
+  - caso: "Transacción confirmada pero el agente LLM falla internamente (timeout)"
+    protocolo: "Registrar el fallo; emitir credit token interno o re-intentar la consulta
+      sin exigir un nuevo pago."
+  - caso: "Ráfaga de transacciones erróneas por bucle del agente"
+    protocolo: "Circuit breaker pausa la firma al superar >3 fallos consecutivos y alerta
+      al operador. Análisis de causa raíz antes de reanudar."
+  - caso: "Monto que excede el umbral humano ($50)"
+    protocolo: "El agente NO firma; eleva el caso al operador humano para aprobación."
+  - caso: "Fallos reiterados en Clase B (inferencia de baja calidad)"
+    protocolo: "Se mantiene en Nivel 1; no asciende a 2 hasta superar la suite de tests
+      con 20 ejecuciones limpias."
+
+expected_outputs:
+  - "Decisión documentada de qué tareas son delegables y en qué nivel."
+  - "Guardarraíles de seguridad implementados en código antes de cualquier firma."
+  - "Transacciones financieras ($1-50) protegidas por límites, whitelist, circuit
+     breaker, anti-replay y multisig."
+  - "Trazabilidad completa de cada ejecución delegada."
+
+edge_cases_global:
+  - "Realizar una consulta previa de errores conocidos en .agent/python.md y .agent/latex.md
+     antes de escribir o modificar scripts/agentes que interactúen con Solana."

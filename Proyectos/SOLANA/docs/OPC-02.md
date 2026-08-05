@@ -29,7 +29,7 @@ En este tipo de empresa, la estructura se divide claramente en tres niveles dire
 ┌─────────────────────────────────────────────────────────┐
 │            2. CAPA DE ORQUESTACIÓN (Agentes)            │
 │  - Coordinación de flujos de trabajo (LangGraph/CrewAI) │
-│  - Toma de decisiones operativas y análisis de datos   │
+│  - Toma de decisiones operativas y análisis de datos    │
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
