@@ -1,0 +1,6 @@
+# SOLANA — GitIgnore local del proyecto
+# Intermediatos regenerables por empaquetar_solana.sh
+.tmp/
+# Cachés de Python
+__pycache__/
+*.pyc
