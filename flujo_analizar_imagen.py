@@ -24,6 +24,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from execution.data_capture import data_capture
+except ImportError:
+    data_capture = None
+
 # ── Configuración ──────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent.resolve()
 PYTHON       = sys.executable
@@ -184,6 +189,20 @@ def flujo_completo(
     state["context"].update({"archivos": archivos, "descripcion": desc})
     state["last_updated"] = now_iso()
     save_state(state)
+
+    # Captura pasiva de datos de entrenamiento (dataset multimodal analisis_imagenes)
+    try:
+        if data_capture is not None:
+            data_capture.capture_imagen(
+                image_paths=archivos or [imagenes],
+                prompt=prompt,
+                analisis=analisis.get("analisis", {}),
+                api_backend=analisis.get("api_backend", api_backend),
+                model=analisis.get("modelo", modelo),
+                tokens_usados=analisis.get("tokens_usados"),
+            )
+    except Exception as e:
+        print(f"  ⚠  (captura de datos omitida: {e})")
 
     # ══ PASO 2: Generar informe LaTeX ═════════════════════════════════════════
     print_step(2, total_pasos, "Generando informe LaTeX...")
@@ -361,11 +380,15 @@ Ejemplos:
         default=None,
         help=f"Carpeta de salida del .tex. Por defecto: {DEFAULT_OUT}",
     )
+    parser.add_argument("--no-capture-data", action="store_true",
+                        help="Desactiva la captura de datos de entrenamiento (datasets/).")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.no_capture_data and data_capture is not None:
+        data_capture.enabled = False
 
     output_dir = Path(args.output_dir) if args.output_dir else DEFAULT_OUT
     output_dir.mkdir(parents=True, exist_ok=True)

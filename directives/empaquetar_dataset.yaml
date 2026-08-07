@@ -1,0 +1,59 @@
+goal: |
+  Convertir los datasets curados (datasets/curated/) en paquetes listos para
+  publicar, entrenar o comercializar en Web3: formato Hugging Face (Parquet +
+  dataset_info.json), tarjeta README.md con metadata, y archivo LICENSE con la
+  licencia seleccionada. Proceso no destructivo: solo escribe en datasets/paquetes/.
+
+layer: execution
+references:
+  script: execution/empaquetar_dataset.py
+  orchestrator: flujo_empaquetar_dataset.py
+  input: datasets/curated/*_curated.jsonl
+  output: datasets/paquetes/<dataset>/{dataset_info.json,README.md,LICENSE,train.parquet|jsonl}
+
+required_inputs:
+  - name: --format
+    description: Formato de almacenamiento de las muestras (jsonl | parquet, default parquet).
+  - name: --license
+    description: Licencia a aplicar (custom-proprietary | apache-2.0 | cc-by-4.0 | mit).
+  - name: --author
+    description: 'Autor/entidad propietaria (default: GIDEAL).'
+  - name: --version
+    description: Versión del paquete (default 1.0.0).
+
+steps:
+  - name: leer_curados
+    description: Lee datasets/curated/*_curated.jsonl por dataset.
+    script: _read_curated()
+  - name: particionar
+    description: Divide cada dataset en train/val/test de forma determinista (seed 42).
+    script: _partition()
+  - name: inferir_esquema
+    description: Infiere las features (HF dtype) desde el primer registro.
+    script: _infer_features()
+  - name: generar_paquete
+    description: Escribe dataset_info.json (HF), README.md (tarjeta), LICENSE y splits en Parquet o JSONL.
+    script: empaquetar()
+  - name: opcional_tar
+    description: Si --pack, genera un .tar.gz por dataset con todos sus archivos.
+    script: tarfile.open(...)
+
+expected_outputs:
+  - datasets/paquetes/<dataset>/dataset_info.json   (metadata HF: license, version, features, splits, citation)
+  - datasets/paquetes/<dataset>/README.md           (tarjeta de dataset en markdown)
+  - datasets/paquetes/<dataset>/LICENSE             (texto de la licencia seleccionada)
+  - datasets/paquetes/<dataset>/train|val|test.parquet|jsonl
+  - datasets/paquetes/manifest.json                 (resumen general)
+  - datasets/paquetes/<dataset>.tar.gz              (solo con --pack)
+
+edge_cases:
+  - sin_curados: 'exit_code 1: no se encontraron datasets curados.'
+  - licencia_desconocida: 'exit_code 2: se listan las licencias válidas.'
+  - formato_invalido: 'exit_code 2: jsonl|parquet.'
+  - datos_vacios: 'splits sin muestras se omiten (no se generan archivos vacíos).'
+
+conventions:
+  - 'Nunca modifica datasets/curated/ ni datasets/*.jsonl crudos.'
+  - 'La licencia por defecto es custom-proprietary (GIDEAL-1.0): prohíbe reventa sin autorización.'
+  - 'IMPORTANTE: el directorio local datasets/ sombrea la librería HF "datasets" desde la raíz; el README recomienda pyarrow para cargar los Parquet.'
+  - 'datasets/paquetes/ está excluido de git (.gitignore cubre datasets/).'

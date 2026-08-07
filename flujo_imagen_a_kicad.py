@@ -22,6 +22,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from execution.data_capture import data_capture
+except ImportError:
+    data_capture = None
+
 # ── Configuración ──────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent.resolve()
 PYTHON       = "/home/cero/anaconda3/bin/python3"
@@ -147,6 +152,21 @@ def flujo_completo(
     state["steps_completed"].append({"step": 1, "script": "extraer_netlist", "status": "ok"})
     save_state(state)
 
+    # Captura pasiva de datos de entrenamiento (dataset EDA imagen→circuito)
+    try:
+        if data_capture is not None:
+            data_capture.capture_eda(
+                image_paths=[imagenes],
+                instruction="Convierte esta imagen de circuito en un netlist estructurado JSON "
+                            "(componentes con id, tipo, valor y coordenadas; conexiones con net_name y pines).",
+                output={"components": comps, "connections": conns},
+                api_backend=analisis.get("api_backend", api_backend),
+                model=analisis.get("modelo", modelo),
+                tokens_usados=analisis.get("tokens_usados"),
+            )
+    except Exception as e:
+        print(f"  ⚠  (captura de datos omitida: {e})")
+
     # ══ PASO 2: Generar KiCAD ═════════════════════════════════════════════════
     if use_llm_gen:
         print_step(2, total_pasos, f"Generando esquemático KiCAD 8.0.9 usando LLM ({modelo})...")
@@ -207,11 +227,14 @@ def parse_args():
     parser.add_argument("--api-backend", default="gemini", choices=["gemini", "openrouter", "groq"])
     parser.add_argument("--output-dir", default=None)
     parser.add_argument("--use-llm-gen", action="store_true", help="Usa LLM para generar el esquemático (generar_kicad_llm.py) en lugar del script determinista.")
+    parser.add_argument("--no-capture-data", action="store_true", help="Desactiva la captura de datos de entrenamiento (datasets/).")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.no_capture_data and data_capture is not None:
+        data_capture.enabled = False
     output_dir = Path(args.output_dir) if args.output_dir else DEFAULT_OUT
     output_dir.mkdir(parents=True, exist_ok=True)
 

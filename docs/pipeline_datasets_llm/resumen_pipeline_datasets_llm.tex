@@ -1,0 +1,230 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage[colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black]{hyperref}
+
+\definecolor{azulTitulo}{RGB}{20,60,120}
+
+\lstset{
+  basicstyle=\footnotesize\ttfamily,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single,
+  framesep=4pt,
+  backgroundcolor=\color{gray!8},
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1
+}
+
+\title{\textbf{Pipeline de Captura y Publicación de Datasets para Entrenamiento de LLMs}\\[6pt]
+{\large GIDEAL — Workspace ELECTRONICA}}
+\author{Prof. César Rodríguez}
+\date{6 de agosto de 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{tcolorbox}[colback=blue!5, colframe=azulTitulo, title=Resumen ejecutivo]
+Se desarrolló e integró una \textbf{cadena completa de valor de datos} dentro del
+workspace ELECTRONICA: la captura pasiva de muestras de entrenamiento generadas por
+los flujos existentes (RAG, análisis de imágenes y conversión imagen a KiCad), su
+curado y particionado, su empaquetado en formato Hugging Face con metadata de
+licencia, y su publicación en el Hugging Face Hub. Todo siguiendo la arquitectura
+de tres capas del proyecto: directivas, orquestación y ejecución.
+\end{tcolorbox}
+
+\section{Arquitectura de 3 capas}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Capa} & \textbf{Dónde} & \textbf{Rol} \\
+\midrule
+Directivas & \path{directives/*.yaml} & SOP: qué hacer \\
+Orquestación & \path{flujo_*.py} (raíz) & Decisiones y validación \\
+Ejecución & \path{execution/*.py} & Scripts deterministas: cómo \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La lógica probabilística (LLMs) se mantiene en los orquestadores; todo el
+procesamiento de datos vive en scripts deterministas y reutilizables.
+
+\section{Cadena de valor: 4 eslabones}
+
+\begin{enumerate}
+    \item \textbf{Captura pasiva} — registra muestras sin interrumpir los flujos
+    \item \textbf{Curado} — filtra, valida, deduplica y particiona
+    \item \textbf{Empaquetado} — genera paquetes Hugging Face con licencia
+    \item \textbf{Publicación} — sube al Hugging Face Hub
+\end{enumerate}
+
+\subsection{1. Captura pasiva}
+
+Tres orquestadores existentes fueron instrumentados para capturar sus salidas en
+formato JSONL dentro de \path{datasets/} (excluido de git):
+
+\begin{itemize}
+    \item \path{rag_system.py} → \path{datasets/rag_conversaciones.jsonl} (ShareGPT)
+    \item \path{flujo_imagen_a_kicad.py} → \path{datasets/eda_imagen_circuito.jsonl}
+    \item \path{flujo_analizar_imagen.py} → \path{datasets/analisis_imagenes.jsonl}
+\end{itemize}
+
+La captura es 100\% pasiva: toda llamada va en \texttt{try/except}, sanitiza PII
+(emails, cédulas, teléfonos $\rightarrow$ \texttt{[REDACTADO]}), descarta duplicados
+por hash canónico y respeta la variable \texttt{DATA\_CAPTURE\_DISABLED} o el flag
+\texttt{--no-capture-data}.
+
+\subsection{2. Curado}
+
+\path{execution/curar_datasets.py} lee los JSONL crudos y produce
+\path{datasets/curated/}: valida el esquema, descarta registros con
+\texttt{quality\_score} bajo el umbral (default 0.7), deduplica y particiona en
+train/val/test (default 80-10-10, semilla fija 42). Emite \path{manifest.json} y
+\path{resumen.md}.
+
+\subsection{3. Empaquetado}
+
+\path{execution/empaquetar_dataset.py} convierte los datasets curados en paquetes
+formato Hugging Face en \path{datasets/paquetes/}: \path{dataset_info.json},
+\path{README.md} (tarjeta con metadata), \path{LICENSE} y splits en Parquet o JSONL.
+Soporta licencias \texttt{custom-proprietary} (GIDEAL-1.0), \texttt{apache-2.0},
+\texttt{cc-by-4.0} y \texttt{mit}, además de empaquetado en \texttt{.tar.gz}
+con el flag \texttt{--pack}.
+
+\subsection{4. Publicación en Hugging Face Hub}
+
+\path{execution/publicar_hf.py} lee \texttt{HF\_TOKEN} del entorno o de
+\path{.env}, crea el repositorio de datasets (con \texttt{exist\_ok=True}) y sube
+el contenido del paquete. Retorna la URL pública del repositorio. El flag
+\texttt{--private} genera repositorios privados.
+
+\section{Esquema de los datasets}
+
+\begin{itemize}
+    \item \textbf{RAG (ShareGPT):} \texttt{messages[]} (system/user/assistant) +
+    \texttt{metadata.retrieved\_context[]}, \texttt{domain}, \texttt{model},
+    \texttt{quality\_score}.
+    \item \textbf{EDA imagen→circuito:} \texttt{images[]}, \texttt{instruction},
+    \texttt{output} (components[] y connections[]) + \texttt{api\_backend},
+    \texttt{model}, \texttt{tokens\_usados}.
+    \item \textbf{Análisis multimodal:} \texttt{images[]}, \texttt{instruction},
+    \texttt{output} (descripción, elementos detectados) + metadata de modelo.
+\end{itemize}
+
+Todo registro incluye \texttt{id}, \texttt{schema\_version} y \texttt{timestamp}.
+
+\section{Comandos de uso}
+
+\begin{lstlisting}[language=bash]
+# Curado
+python3 flujo_curar_dataset.py [--min-quality 0.7] [--split 80-10-10] [--dry-run] [--no-alert]
+
+# Empaquetado
+python3 flujo_empaquetar_dataset.py [--format parquet|jsonl] [--license <lic>] [--pack] [--no-alert]
+
+# Publicación
+python3 flujo_publicar_hf.py <dataset> [--repo <id>] [--private] [--dry-run] [--no-alert]
+\end{lstlisting}
+
+\section{Archivos creados y modificados}
+
+\begin{itemize}
+    \item \textbf{Creados:} \path{execution/data_capture.py},
+    \path{execution/curar_datasets.py}, \path{execution/empaquetar_dataset.py},
+    \path{execution/publicar_hf.py}, \path{flujo_curar_dataset.py},
+    \path{flujo_empaquetar_dataset.py}, \path{flujo_publicar_hf.py} y tres
+    directivas (\path{directives/data_capture.yaml}, \path{curar_dataset.yaml},
+    \path{empaquetar_dataset.yaml}, \path{publicar_hf.yaml}).
+    \item \textbf{Modificados:} \path{rag_system.py},
+    \path{flujo_imagen_a_kicad.py}, \path{flujo_analizar_imagen.py},
+    \path{.gitignore} (se excluye \path{datasets/}) y \path{AGENTS.md}.
+\end{itemize}
+
+\section{Prueba real publicada}
+
+Se publicó el dataset de ejemplo \path{rag_conversaciones} en
+\url{https://huggingface.co/datasets/cero2k6/gideal-rag-v1} con el token
+recuperado de la caché de Hugging Face del usuario \texttt{cero2k6}. El
+repositorio contiene \path{LICENSE}, \path{README.md}, \path{dataset_info.json}
+y \path{train.parquet}, y queda como referencia de estructura. Se corrigió
+durante el desarrollo que Hugging Face exige IDs de licencia válidos en el
+frontmatter del README: las licencias propias se registran como
+\texttt{other} + \texttt{license\_name}/\texttt{license\_link}.
+
+\section{Comercialización (Web3 / Solana)}
+
+El pipeline entrega los artefactos listos para la estrategia de monetización
+definida en \path{Proyectos/SOLANA/docs/proyectos.md}. Hugging Face Hub es el
+canal de \textbf{distribución}; la venta y verificación se canalizan en la red
+Solana.
+
+\begin{enumerate}
+    \item \textbf{Dataset curado y empaquetado} — con Parquet, \path{LICENSE} y
+    \path{README.md} con metadata (origen, licencia, versión, citación).
+    \item \textbf{Almacenamiento descentralizado} — el paquete (o sus hashes) se
+    sube a \textbf{Arweave} (permanente) o \textbf{IPFS} (con pinning en
+    Pinata/Helius).
+    \item \textbf{Tokenización} — un \textbf{Data NFT} en Solana representa el
+    dataset: el contrato controla el acceso mediante \textbf{pago en USDC} (flujo
+    x402) y distribuye royalties al wallet del autor.
+    \item \textbf{Marketplaces} — Magic Eden, Tensor, Ocean Protocol o Kled AI
+    según el tipo de dataset.
+    \item \textbf{Monetización recurrente} — royalties on-chain (ej. 2--5\,\%)
+    cada vez que un modelo entrenado con los datos se usa comercialmente.
+\end{enumerate}
+
+\subsection{Reglas de oro para datos en blockchain}
+
+\begin{itemize}
+    \item \textbf{Nunca subir PII on-chain}: la cadena es inmutable. En el
+    contrato solo van hashes y metadatos; los datos crudos en almacenamiento con
+    acceso controlado. El pipeline ya sanitiza PII en la captura.
+    \item \textbf{Consentimiento}: si los datos incluyen interacciones con
+    estudiantes, anonimizarlos u obtener consentimiento explícito
+    (GDPR/CCPA).
+    \item \textbf{Licencias claras en el contrato}: entrenamiento propio (sí),
+    reventa (no), uso comercial (sí, con royalty), código abierto (negociable).
+    La licencia GIDEAL-1.0 \path{LICENSE} del paquete es la base de estos
+    términos.
+    \item La \textbf{calidad} (metadato \texttt{quality\_score}) determina el
+    precio: datasets curados valen más que crudos.
+\end{enumerate}
+
+\section{Consideraciones y convenciones}
+
+\begin{itemize}
+    \item El directorio local \path{datasets/} \textbf{sombrea la librería}
+    \texttt{datasets} de Hugging Face desde la raíz del workspace; los Parquet se
+    cargan con \texttt{pyarrow} (ver README de los paquetes).
+    \item \path{datasets/} y \path{.env} están excluidos de git
+    (\path{.gitignore}).
+    \item El token HF jamás se imprime ni registra; se lee de \path{.env} o del
+    entorno.
+    \item La licencia GIDEAL-1.0 no es de uso público libre: para datos comerciales
+    se recomienda publicar con \texttt{--private}.
+    \item Con menos de 10 muestras, todo el split va a train (val/test en 0); al
+    acumular más datos, el particionado se reparte automáticamente.
+\end{itemize}
+
+\section{Trabajo futuro}
+
+\begin{itemize}
+    \item Acumular datos reales y publicar datasets con cientos de muestras.
+    \item Automatizar el curado periódico (cron).
+    \item Integrar la cadena con la estrategia Web3 de comercialización de datos
+    (licencias on-chain, verificación).
+    \item Añadir validación de calidad por heurísticas (longitud, consistencia del
+    netlist, cobertura de imágenes).
+\end{itemize}
+
+\end{document}

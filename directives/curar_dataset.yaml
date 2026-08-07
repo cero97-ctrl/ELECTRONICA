@@ -1,0 +1,55 @@
+goal: |
+  Transformar los JSONL crudos capturados por data_capture.py en datasets curados,
+  deduplicados, validados y particionados en train/val/test, listos para entrenar
+  LLMs o empaquetar bajo licencia para comercialización Web3. El proceso es no
+  destructivo: solo escribe en datasets/curated/.
+
+layer: execution
+references:
+  script: execution/curar_datasets.py
+  input: datasets/*.jsonl                      # capturas crudas (data_capture.py)
+  output: datasets/curated/                    # muestras curadas + splits + manifest + resumen
+
+required_inputs:
+  - name: datasets/*.jsonl
+    description: Archivos crudos generados por data_capture.py (incl. desplazado del día).
+  - name: --min-quality
+    description: Cota mínima de quality_score (default 0.7). Los registros por debajo se descartan.
+  - name: --split
+    description: Proporción train-val-test en porcentaje (default 80-10-10, debe sumar 100).
+
+steps:
+  - name: cargar
+    description: Lee los JSONL crudos de datasets/.
+    script: _load_raw()
+  - name: validar_y_filtrar
+    description: Requiere id, metadata.schema_version y metadata.dataset conocidos;
+      descarta quality_score < umbral y registros de contenido < 20 caracteres.
+    script: _validate() + filtro de calidad/longitud
+  - name: deduplicar
+    description: Hash canónico (ignora id y timestamp) elimina muestras duplicadas entre lotes.
+    script: _canonical_hash()
+  - name: particionar
+    description: Divide por train/val/test con estratificación por dataset y semilla fija (default 80/10/10).
+    script: random.Random(seed) shuffle por dataset
+  - name: empaquetar_y_reportar
+    description: Escribe datasets/curated/{dataset}_curated.jsonl, splits/ y manifest.json + resumen.md.
+    script: _write_manifest() + _write_resumen()
+
+expected_outputs:
+  - datasets/curated/<dataset>_curated.jsonl   (muestras filtradas por dataset)
+  - datasets/curated/splits/{train,val,test}.jsonl
+  - datasets/curated/manifest.json             (conteos, splits, calidad promedio, rechazados)
+  - datasets/curated/resumen.md               (informe legible en markdown)
+
+edge_cases:
+  - sin_datos: 'status "no_data", exit_code 1: no se encontraron datasets crudos.'
+  - linea_corrupta: 'se ignora (no es crítica) al cargar JSONL.'
+  - pocas_muestras: 'con <10 registros, val/test quedan en 0 y todo va a train (dividir redondea).'
+  - dry_run: '--dry-run solo reporta, no escribe nada.'
+
+conventions:
+  - Nunca modifica los archivos de captura crudos (solo lee).
+  - Semilla fija (42) para reproducibilidad del split.
+  - datasets/ y datasets/curated/ están excluidos de git (.gitignore).
+  - Exit codes: 0 OK, 1 sin datos, 2 error de configuración (split inválido).

@@ -1,18 +1,38 @@
 {
-  "run_id": "flujo-imagen-2026-07-08T10-46-26",
-  "directive": "analizar_imagen.yaml",
-  "imagenes": "docs/IMAGENES/kee.jpeg",
-  "started_at": "2026-07-08T10:46:26.660984+00:00",
-  "last_updated": "2026-07-08T10:47:20.107210+00:00",
-  "current_step": 0,
-  "steps_completed": [],
-  "steps_failed": [
+  "run_id": "flujo-publicar-2026-08-06T16-51-00",
+  "directive": "publicar_hf.yaml",
+  "started_at": "2026-08-06T16:51:00.428787+00:00",
+  "last_updated": "2026-08-06T16:51:07.027227+00:00",
+  "current_step": 2,
+  "steps_completed": [
     {
       "step": 1,
-      "script": "analizar_imagen.py",
-      "code": 2,
-      "message": "Error de API (APIStatusError): Error code: 402 - {'error': {'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\", 'code': 402, 'metadata': {'provider_name': None, 'previous_errors': [{'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}]}}, 'user_id': 'user_33YfQJkj4MPfKZGNV015FHjOwsY'}"
+      "script": "publicar_hf.py",
+      "status": "ok",
+      "exit_code": 0,
+      "repo_id": "cero2k6/gideal-rag-v1",
+      "private": false,
+      "archivos": [
+        "LICENSE",
+        "README.md",
+        "dataset_info.json",
+        "train.parquet"
+      ],
+      "licencia": "GIDEAL-1.0",
+      "url": "https://huggingface.co/datasets/cero2k6/gideal-rag-v1"
+    },
+    {
+      "step": 2,
+      "script": "alert_user.py",
+      "status": "ok",
+      "tipo": "none"
     }
   ],
-  "context": {}
+  "steps_failed": [],
+  "context": {
+    "dataset": "rag_conversaciones",
+    "repo_id": "cero2k6/gideal-rag-v1",
+    "private": false,
+    "dry_run": false
+  }
 }

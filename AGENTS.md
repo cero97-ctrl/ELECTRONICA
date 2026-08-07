@@ -43,6 +43,9 @@ flujo_elaborar_examen.py   --tema "Semana 4: Condensadores" --output examenes/
 flujo_elaborar_ejercicios.py --tema "Semana 8: BJT" --path ejercicios/BJT
 flujo_imagen_a_kicad.py    circuito.png
 flujo_diagnostico.py
+flujo_curar_dataset.py     [--min-quality 0.7] [--split 80-10-10] [--dry-run] [--no-alert]
+flujo_empaquetar_dataset.py [--format parquet|jsonl] [--license <lic>] [--pack] [--no-alert]
+flujo_publicar_hf.py        <dataset> [--repo <id>] [--private] [--dry-run] [--no-alert]
 ```
 
 ### System services
@@ -55,6 +58,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 
 - Intermediate JSON lives in `.tmp/` (e.g., `.tmp/analisis_*.json`)
 - `.tmp/run_state.json` tracks multi-step flow progress (step, exit code, timestamp)
+- Datasets de entrenamiento LLM: raw capture en `datasets/*.jsonl` (`execution/data_capture.py`, pasivo, gitignored); curado/particionado en `datasets/curated/` (`execution/curar_datasets.py` o `flujo_curar_dataset.py`); paquetes HF (Parquet+LICENSE+README) en `datasets/paquetes/` (`execution/empaquetar_dataset.py` o `flujo_empaquetar_dataset.py`); publicación HF Hub (`execution/publicar_hf.py` o `flujo_publicar_hf.py`, requiere `HF_TOKEN` en `.env`)
 - LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
 - LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)
 

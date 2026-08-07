@@ -1,0 +1,282 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[margin=1.6cm]{geometry}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\DeclareSIUnit\flops{FLOPS}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Paleta GIDEAL ----------
+\definecolor{gdark}{RGB}{40,44,52}
+\definecolor{gblue}{RGB}{33,64,154}
+\definecolor{gred}{RGB}{207,42,42}
+\definecolor{gorange}{RGB}{230,120,20}
+\definecolor{ggreen}{RGB}{56,142,60}
+\definecolor{gteal}{RGB}{0,137,123}
+\definecolor{gpurple}{RGB}{106,55,144}
+\definecolor{gviolet}{RGB}{83,71,167}
+\definecolor{gcyan}{RGB}{0,131,143}
+\definecolor{golive}{RGB}{124,113,0}
+\definecolor{gmagenta}{RGB}{194,24,91}
+\definecolor{ggray}{RGB}{97,97,97}
+\definecolor{gbrown}{RGB}{121,85,72}
+\definecolor{gsky}{RGB}{0,119,182}
+
+% ---------- Estilos ----------
+\newcounter{infosec}
+\newcommand{\infosec}[2]{%
+  \stepcounter{infosec}%
+  \addcontentsline{toc}{section}{\protect\numberline{\theinfosec}#2}%
+  \vspace{0.5cm}%
+  \begin{tcolorbox}[colback=#1, colframe=#1, boxrule=0pt, arc=2pt,
+      left=9pt, right=9pt, top=5pt, bottom=5pt]
+    {\Large\bfseries\sffamily\color{white}\theinfosec.~~#2}
+  \end{tcolorbox}%
+  \vspace{0.15cm}%
+}
+
+\newenvironment{infocard}[1]
+  {\begin{tcolorbox}[enhanced, breakable, colback=#1!5!white,
+      colframe=#1!45!white, boxrule=0.8pt, arc=3pt,
+      left=8pt, right=8pt, top=6pt, bottom=6pt]}
+  {\end{tcolorbox}}
+
+\setlist[itemize,1]{label=\textcolor{gdark}{\rule[0.12ex]{1.6mm}{1.6mm}},
+  leftmargin=1.5em, itemsep=2pt, topsep=2pt}
+
+\emergencystretch=2em
+
+\begin{document}
+
+% ---------- Encabezado ----------
+\begin{center}
+\begin{tcolorbox}[colback=gblue, colframe=gblue, arc=6pt, boxrule=0pt,
+    width=\linewidth, left=12pt, right=12pt, top=12pt, bottom=12pt]
+    {\Huge\bfseries\sffamily\color{white}Tipos de Proyectos Desarrollados}\\[0.1em]
+    {\Huge\bfseries\sffamily\color{white}y en Desarrollo}\\[0.45em]
+    {\LARGE\bfseries\sffamily\color{white}Grupo de Investigación GIDEAL}\\[0.3em]
+    {\large\itshape\sffamily\color{white!85}Grupo de Investigación en Desarrollo
+      Electrónico y Aprendizaje con LLMs}
+\end{tcolorbox}
+
+\vspace{0.2cm}
+{\small\textbf{Prof. César Rodríguez}}
+\end{center}
+
+\vspace{0.3cm}
+
+% ---------- Índice ----------
+\begin{tcolorbox}[colback=gblue!4!white, colframe=gblue!45!white, boxrule=0.8pt,
+    arc=3pt, width=\linewidth, left=10pt, right=10pt, top=8pt, bottom=8pt]
+  \tableofcontents
+\end{tcolorbox}
+
+\newpage
+
+%=====================================================================
+\infosec{gdark}{Introducción}
+%=====================================================================
+\begin{infocard}{gdark}
+El espacio de trabajo \texttt{ELECTRONICA} es un entorno multidisciplinario que
+integra electrónica, Internet de las Cosas (IoT), diseño de circuitos integrados
+(EDA), desarrollo de software, infraestructura de servidores y redacción
+académica. Todo el sistema está potenciado por un \textbf{asistente IA con
+arquitectura de 3 capas} (Directives $\rightarrow$ Orchestration $\rightarrow$
+Execution) que automatiza flujos de trabajo repetibles. A continuación se resumen
+los principales tipos de proyectos que se desarrollan en este entorno.
+\end{infocard}
+
+%=====================================================================
+\infosec{gteal}{Asistentes Inteligentes y Sistemas RAG}
+%=====================================================================
+\begin{infocard}{gteal}
+Sistemas conversacionales de Generación Aumentada por Recuperación que indexan
+material instruccional (LaTeX, Markdown, PDF) en bases vectoriales
+\texttt{ChromaDB}, con embeddings multilingües y LLMs rápidos vía Groq.
+\begin{itemize}
+    \item Chatbot académico con memoria conversacional y actualizaciones incrementales (\texttt{db\_state.json}).
+    \item Consulta y almacenamiento de memoria a largo plazo (directivas \texttt{query\_memory}, \texttt{save\_memory}, \texttt{list\_memories}, \texttt{delete\_memory}).
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gpurple}{Agentes de Diseño Electrónico Automatizado (EDA)}
+%=====================================================================
+\begin{infocard}{gpurple}
+Herramientas que interpretan esquemas de circuitos elaborados en LaTeX
+(\texttt{circuitikz}) y los convierten a formatos de software profesional.
+\begin{itemize}
+    \item Extracción automática de \textit{netlists} y Listas de Materiales (BOM).
+    \item Generación de archivos JSON compatibles con EasyEDA Standard (\texttt{LIB\textasciitilde...} en \texttt{shape[]}).
+    \item Conversión de imágenes de circuitos a diseños KiCad (\texttt{flujo\_imagen\_a\_kicad.py}).
+    \item Diseño automatizado de PCB y generación de archivos de fabricación (Gerbers) mediante scripting.
+    \item Modelado 3D paramétrico (STL, STEP, OBJ, PNG) con FreeCAD en modo \textit{headless}.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gorange}{Orquestación y Automatización con IA (Arquitectura de 3 Capas)}
+%=====================================================================
+\begin{infocard}{gorange}
+Flujos de trabajo que separan la lógica probabilística del LLM de la ejecución
+determinista mediante SOPs en YAML (\texttt{directives/}), orquestadores de
+decisión y scripts Python especializados (\texttt{execution/}).
+\begin{itemize}
+    \item Elaboración de exámenes y ejercicios a demanda, alineados con las asignaturas.
+    \item Diagnóstico del sistema y mantenimiento integral (RAM, ZRAM, disco, base de datos).
+    \item Exposición de las herramientas como servidores estándar MCP (\texttt{mcp\_*\_server.py}).
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{ggreen}{Evaluación Académica Automatizada}
+%=====================================================================
+\begin{infocard}{ggreen}
+Plataformas que emplean IA multimodal (visión con Gemini/OpenRouter) para la
+evaluación preliminar de documentos académicos, generando diagnósticos
+estructurados e informes compilables en LaTeX.
+\begin{itemize}
+    \item Evaluación de exámenes escritos manuscritos mediante rúbricas YAML personalizadas.
+    \item Evaluación de informes de prácticas de laboratorio.
+    \item Análisis automatizado de diagramas y fotografías de circuitos (ingeniería inversa).
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gblue}{Microcontroladores, IoT y Sistemas Embebidos}
+%=====================================================================
+\begin{infocard}{gblue}
+Desarrollo de firmware para microcontroladores ESP32 y ESP32-S3 usando PlatformIO
+con framework Arduino/C++.
+\begin{itemize}
+    \item \texttt{ESP32\_Kids\_Lab} y \texttt{ESP32-LAB}: laboratorios educativos de electrónica.
+    \item \texttt{Prueba\_TFT\_S3}: interfaz gráfica con pantalla TFT ST7789 vía TFT\_eSPI.
+    \item \texttt{Monitor de Salud IoT}: dispositivo ESP32 con dashboard web.
+    \item \texttt{RuView Rescue}: nodos ESP32 para monitoreo espacial WiFi.
+    \item Integración con Telegram Gateway para orquestación remota sin puertos abiertos.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gred}{Diseño de Circuitos y Sistemas de Potencia}
+%=====================================================================
+\begin{infocard}{gred}
+Diseño, análisis y documentación de circuitos electrónicos, incluyendo
+esquemáticos en \texttt{circuitikz}.
+\begin{itemize}
+    \item Fuentes conmutadas (SMPS) y circuitos de entrada con rectificación.
+    \item Protectores de línea 120\,VAC, ventiladores de 3 velocidades y medidores de energía.
+    \item Circuitos de respuesta rápida y proyectos de mecatrónica.
+    \item Documentación técnica de circuitos y dispositivos electrónicos.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gbrown}{Servidores, Infraestructura y Cómputo}
+%=====================================================================
+\begin{infocard}{gbrown}
+Documentación y administración de infraestructura local y de laboratorio.
+\begin{itemize}
+    \item Servidores Dell PowerEdge R610 (configuración y análisis con IA).
+    \item Especificación de estaciones de trabajo (PC ASUS, PC para IA).
+    \item Diseño de clústeres de cómputo paralelo y despliegue de LLMs (vLLM).
+    \item Diagnósticos de entorno (SO, paquetes, hardware, red) y mantenimiento.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gcyan}{Clúster de Cómputo en Paralelo (Beowulf)}
+%=====================================================================
+\begin{infocard}{gcyan}
+Propuesta técnica formal para construir un clúster HPC aprovechando hardware
+preexistente del laboratorio (\texttt{docs/COMPUTO\_PARALELO}), diseñada para
+cómputo científico, simulación física e IA.
+\begin{itemize}
+    \item Arquitectura con 4 nodos: Laptop Maestro (orquestación), Nodo A AMD Ryzen 5 5500 (worker IA con AVX2/FMA3), Nodo B Dell PowerEdge R610 (storage/vector DB headless) y Nodo C PC ASUS i7-3770 (worker secundario).
+    \item Topología en estrella con switch Gigabit Ethernet, cableado Cat~6, IPs estáticas (subred \texttt{192.168.1.0/24}), autenticación SSH por llaves ED25519 y almacenamiento compartido vía NFS.
+    \item Capacidad teórica de \SI{613.12}{\giga\flops} en precisión simple (FP32) con los 18 núcleos totales.
+    \item Inferencia distribuida de LLMs (llama.cpp RPC) superando la RAM de un solo equipo (ej. modelos de 70B parámetros), y didáctica de MPI, MapReduce y sincronización distribuida.
+    \item Presupuesto costo-eficiente de \$540.74\,USD con mantenimiento preventivo incluido.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gsky}{Desarrollo Web y Cloud}
+%=====================================================================
+\begin{infocard}{gsky}
+Implementación de servicios en la nube y aplicaciones web.
+\begin{itemize}
+    \item Workers de Cloudflare (agente en la nube, despliegue automatizado vía directiva \texttt{deploy\_cloudflare\_worker.yaml}).
+    \item Aplicaciones web y \textit{dashboards} para proyectos IoT.
+    \item Integración con servicios de mensajería (Telegram Gateway) como interfaz de orquestación.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gviolet}{Blockchain y Web3}
+%=====================================================================
+\begin{infocard}{gviolet}
+Investigación y desarrollo de soluciones descentralizadas en la red Solana,
+orientadas a generar ingresos como desarrollador y a delegar tareas a agentes de
+IA de forma segura (\texttt{Proyectos/SOLANA}). Web3 no es un internet paralelo,
+sino una \textit{capa} de conceptos y tecnologías construida sobre el internet
+existente, donde la blockchain actúa como infraestructura de confianza
+descentralizada.
+\begin{itemize}
+    \item \textbf{Estudio estratégico OPC + Agentes IA} (documentos OPC-01 a OPC-08 y análisis en \texttt{docs/analisis.pdf}): evaluación del modelo de \textit{One Person Company} impulsada por agentes de IA en la red Solana.
+    \item \textbf{Servicio x402 (pay-per-use en USDC)} (\texttt{x402\_service/}): API FastAPI que implementa el flujo HTTP~402 --- checkout sin pago devuelve \texttt{402} con cabeceras \texttt{X-Solana-*}; el cliente paga USDC en Solana y reintenta con la firma Ed25519 base58; el servicio verifica vigencia, \textbf{anti-replay} (misma firma no se cobra 2 veces, TTL 24\,h), firma criptográfica, pago \textit{on-chain finalized} vía RPC (comparando \texttt{pre/postTokenBalances}) y un \textbf{circuit breaker} que pausa los cobros tras más de 3 fallos.
+    \item \textbf{Matriz de delegación por riesgo} (\texttt{directives/matriz\_delegacion\_x402.yaml}): clasifica tareas en clases A (sin dinero) a D (dinero irreversible) con niveles de delegación 0--3, límite diario de \$200\,USDC, umbral de confirmación humana de \$50 y multisig (Squads Protocol).
+    \item \textbf{Agente IA integrado}: generación del resultado con Groq/OpenRouter (fallback \texttt{[mock]} sin API key), entregado en Nivel 1 supervisado (\texttt{reviewed=False}) hasta revisión humana.
+    \item \textbf{Entorno de desarrollo}: toolchain Solana (CLI Agave, Rust/Cargo, Node, spl-token), wallet Devnet, airdrop y registro en \textit{Superteam Earn} para selección de \textit{bounties} Development/AI (US\$200--800).
+    \item \textbf{Web3 + IoT}: visión de los sensores (ESP32) como \textit{agentes económicos autónomos} que firman criptográficamente sus lecturas, las registran mediante \textit{smart contracts} y monetizan los datos con micropagos --- aprovechando la velocidad de bloques de Solana ($\sim$400\,ms) y sus comisiones mínimas ($\approx\$0.00025$ por transacción), que hacen viable el modelo de micropagos.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{golive}{Material Académico, Docencia y Tesis}
+%=====================================================================
+\begin{infocard}{golive}
+Generación de material didáctico y soporte académico.
+\begin{itemize}
+    \item \texttt{cursos/}: Electrónica industrial, dispositivos electrónicos, laboratorios de física y plan de estudios.
+    \item Problemarios y ejercicios resueltos con diagramas \texttt{circuitikz}.
+    \item Exámenes y solucionarios (\texttt{examenes/}, carpeta de exámenes pinneada en \texttt{.gitignore}).
+    \item Asesoría de tesis (Internet de las Cosas) y grupos de investigación.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{gmagenta}{Documentación Técnica y Manuales}
+%=====================================================================
+\begin{infocard}{gmagenta}
+Elaboración de documentación profesional en LaTeX siguiendo estándares internos
+(UTF-8, \texttt{spanish,es-noshorthands}, \texttt{circuitikz}, \texttt{siunitx}).
+\begin{itemize}
+    \item Manuales de usuario y de arquitectura (agente IA, RAG, EasyEDA, Colab, proyectos).
+    \item Informes técnicos, cartas, presentaciones y glosarios.
+    \item Documentación de dispositivos, ESP32, TFT, medidores y servidores.
+\end{itemize}
+\end{infocard}
+
+%=====================================================================
+\infosec{ggray}{Utilidades y Herramientas de Productividad}
+%=====================================================================
+\begin{infocard}{ggray}
+Scripts y herramientas auxiliares de apoyo al flujo de trabajo.
+\begin{itemize}
+    \item Limpieza de auxiliares de compilación LaTeX (\texttt{clean\_latex.py}), reparación de comandos matemáticos (\texttt{fix\_latex.py}).
+    \item Conversión Markdown a PDF, fusión de PDFs y renombrado masivo de archivos.
+    \item Gestión de control de versiones con versionado semántico (\texttt{git-update.sh}, \texttt{update\_repo.sh}).
+    \item Alertas auditivas de notificación al usuario (\texttt{execution/alert\_user.py}).
+\end{itemize}
+\end{infocard}
+
+\end{document}

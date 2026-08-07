@@ -792,4 +792,4 @@ Asegurarse de terminar el contenido de la fila con el comando `\\` antes de invo
 ```
 
 > **Regla general:** Nunca escribir `\hline` sin haber usado `\\` al final del texto/contenido que lo precede inmediatamente en una tabla.
-> **Archivo afectado:** `Grupo_de_Investigación/Planilla de actualizacion CIUDO con orcid.tex`
+> **Archivo afectado:** `GIDEAL/Planilla de actualizacion CIUDO con orcid.tex`

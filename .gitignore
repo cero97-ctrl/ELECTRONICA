@@ -27,3 +27,6 @@ __pycache__/
 
 # Ignorar archivos y carpetas que empiecen con "examen"
 examen*
+
+# Datasets de entrenamiento LLM (datos crudos capturados — no se versionan)
+datasets/

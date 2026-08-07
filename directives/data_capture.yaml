@@ -1,0 +1,50 @@
+goal: |
+  Capturar, sanitizar y versionar muestras de datos generadas por los flujos
+  (RAG y EDA) en datasets JSONL listos para curar y comercializar para
+  entrenamiento de LLMs. La captura es 100% pasiva: jamás rompe el flujo que la invoca.
+
+layer: execution
+references:
+  script: execution/data_capture.py
+  orchestrators_integrados:
+    - rag_system.py            # dataset: rag_conversaciones (ShareGPT)
+    - flujo_imagen_a_kicad.py  # dataset: eda_imagen_circuito (instrucción multimodal)
+
+required_inputs:
+  - name: user_query
+    description: Consulta del usuario en un turno RAG (dataset conversaciones).
+  - name: assistant_response
+    description: Respuesta final del LLM.
+  - name: retrieved_context
+    description: Documentos recuperados por el retriever (ayudan a trazar la respuesta).
+  - name: image_paths / output
+    description: Rutas de imágenes de circuito y netlist JSON extraído (dataset EDA).
+
+steps:
+  - name: capture_rag
+    description: >
+      Registra un turno [system, user, assistant] en datasets/rag_conversaciones.jsonl
+      (formato ShareGPT) con retrieved_context y calidad.
+    script: data_capture.capture_rag(...)
+  - name: capture_eda
+    description: >
+      Registra un par imagen→netlist en datasets/eda_imagen_circuito.jsonl
+      (instrucción multimodal) con api_backend, modelo y tokens_usados.
+    script: data_capture.capture_eda(...)
+
+expected_outputs:
+  - datasets/rag_conversaciones.jsonl   (una línea JSON por turno)
+  - datasets/eda_imagen_circuito.jsonl  (una línea JSON por imagen)
+  - datasets/.capture_index.json        (hashes para deduplicación)
+
+edge_cases:
+  - error_en_llamada: -> Nunca rompe el flujo. Todo dentro de try/except; el orquestador
+      captura la excepción y continúa ("captura omitida").
+  - pii_en_texto: -> sanitize_text reemplaza emails, cédulas y teléfonos por [REDACTADO].
+  - duplicados: -> _canonical_hash (sin id/timestamp) descarta re-capturas idénticas.
+  - desactivar: -> export DATA_CAPTURE_DISABLED=1 o --no-capture-data en orquestador.
+
+conventions:
+  - datasets/ está excluido de git (.gitignore) por contener datos crudos sensibles.
+  - Los ids llevan prefijo rag-/eda- para separar datasets.
+  - schema_version se versiona para backward-compat al curar/comercializar.

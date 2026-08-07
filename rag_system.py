@@ -19,6 +19,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_classic.chains import create_history_aware_retriever
 
+from execution.data_capture import data_capture
+
 # 1. Configurar API Key de Groq (Leer de archivo oculto)
 key_path = os.path.join(os.path.dirname(__file__), ".groq_api_key")
 try:
@@ -62,7 +64,11 @@ parser = argparse.ArgumentParser(
     epilog="Para terminar la sesión interactiva, escribe 'salir', 'exit' o 'quit' en el chat."
 )
 parser.add_argument("--update", action="store_true", help="Fuerza el borrado y la reconstrucción total de la base de datos vectorial ChromaDB.")
+parser.add_argument("--no-capture-data", action="store_true", help="Desactiva la captura de datos de entrenamiento (datasets/).")
 args = parser.parse_args()
+
+if args.no_capture_data:
+    data_capture.enabled = False
 
 update_db = args.update
 if update_db and os.path.exists(persist_dir):
@@ -173,7 +179,20 @@ try:
 
         print("\n--- RESPUESTA ---")
         print(response["answer"])
-        
+
+        # Captura pasiva de datos de entrenamiento (dataset RAG, ShareGPT)
+        try:
+            data_capture.capture_rag(
+                user_query=pregunta,
+                assistant_response=response["answer"],
+                system_prompt=system_prompt,
+                retrieved_context=response["context"],
+                domain="electronica",
+                model="llama-3.1-8b-instant",
+            )
+        except Exception as e:
+            print(f"  ⚠  (captura de datos omitida: {e})")
+
         # Actualizar el historial de chat
         chat_history.append(HumanMessage(content=pregunta))
         chat_history.append(AIMessage(content=response["answer"]))

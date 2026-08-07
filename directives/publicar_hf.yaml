@@ -1,0 +1,49 @@
+goal: |
+  Subir un dataset empaquetado (datasets/paquetes/<dataset>) a un repositorio de
+  datasets en Hugging Face Hub, acompañado de su dataset_info.json, README.md y
+  LICENSE. El paso final de la cadena captura → curado → empaquetado → publicación.
+
+layer: execution
+references:
+  script: execution/publicar_hf.py
+  orchestrator: flujo_publicar_hf.py
+  input: datasets/paquetes/<dataset>/   (salida de empaquetar_dataset.py)
+  output: repositorio <repo_id> en huggingface.co/datasets/<repo_id>
+
+required_inputs:
+  - name: dataset
+    description: Nombre del paquete existente en datasets/paquetes/.
+  - name: --repo (repo_id)
+    description: 'Identificador del repositorio en el Hub (opcional, default: <usuario>/gideal-<dataset>).'
+  - name: HF_TOKEN
+    description: Token de acceso de Hugging Face en .env (HF_TOKEN=...) o exportado en el entorno.
+
+steps:
+  - name: cargar_token
+    description: Lee HF_TOKEN de variables de entorno o del archivo .env.
+    script: _cargar_env()
+  - name: validar_paquete
+    description: Comprueba que datasets/paquetes/<dataset> exista y contenga archivos.
+    script: pathlib checks en publicar()
+  - name: crear_repositorio
+    description: Crea el repositorio de datasets (exist_ok=True) con visibilidad pública/privada.
+    script: huggingface_hub.create_repo(...)
+  - name: subir_contenido
+    description: Sube todo el contenido del paquete con un commit descriptivo (dataset y licencia).
+    script: huggingface_hub.upload_folder(...)
+
+expected_outputs:
+  - Repositorio <repo_id> en huggingface.co con dataset_info.json, README.md, LICENSE y splits (Parquet/JSONL).
+  - URL pública: https://huggingface.co/datasets/<repo_id> (retornada en el JSON resultado).
+
+edge_cases:
+  - sin_token: 'exit_code 3: HF_TOKEN no configurado (se omite la carga de .env).'
+  - paquete_inexistente: 'exit_code 4: datasets/paquetes/<dataset> no existe o está vacío.'
+  - error_red_api: 'exit_code 5: fallo al crear el repositorio o al subir (ver mensaje).'
+  - dry_run: 'no requiere token; simula y reporta repo_id, archivos, licencia y registros.'
+
+conventions:
+  - 'El token HF jamás se registra ni se imprime; solo se lee de entorno o .env.'
+  - 'La licencia por defecto custom-proprietary (GIDEAL-1.0) NO es pública libre: valorar publicar como repositorios privados (--private) si se comercializa.'
+  - 'El repositorio se crea con exist_ok=True (no falla si ya existe).'
+  - 'datasets/paquetes/ y .env están excluidos de git (.gitignore).'
