@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-evaluar_examen.py — Orquestador del flujo de evaluación de exámenes (Layer 2)
+flujo_evaluar_examen.py — Orquestador del flujo de evaluación de exámenes (Layer 2)
 
 Ejecuta el flujo completo definido en la directiva evaluar_examen_estudiante.yaml:
-  1. evaluar_examen.py  → Lee el PDF y obtiene evaluación de Gemini (JSON)
-  2. generar_informe.py → Convierte el JSON en informe LaTeX (.tex)
-  3. alert_user.py      → Notifica al usuario con alerta audible
+  1. execution/evaluar_examen.py → Lee el PDF y obtiene evaluación de Gemini (JSON)
+  2. execution/generar_informe.py  → Convierte el JSON en informe LaTeX (.tex)
+  3. execution/compile_latex.py    → Compila el .tex a PDF
+  4. execution/alert_user.py       → Notifica al usuario con alerta audible
 
 Uso:
-    python3 evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
-    python3 evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250]
-    python3 evaluar_examen.py --pdf <ruta> [--output-dir <carpeta>] [--rubrica <yaml>]
+    python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+    python3 flujo_evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250]
+    python3 flujo_evaluar_examen.py --pdf <ruta> [--output-dir <carpeta>] [--rubrica <yaml>]
 
-El informe .tex se guarda en ../informe_examen/ por defecto.
+El informe .tex se guarda por defecto en <carpeta_del_examen>/informe_examen/.
 """
 
 import argparse
@@ -73,10 +74,75 @@ def run_script(cmd: list[str], capture_json: bool = False) -> tuple[int, dict | 
     if capture_json:
         try:
             data = json.loads(result.stdout)
+            if not isinstance(data, dict):
+                return result.returncode, {
+                    "status": "error",
+                    "raw_output": result.stdout,
+                    "stderr": result.stderr,
+                }
             return result.returncode, data
         except json.JSONDecodeError:
-            return result.returncode, {"raw_output": result.stdout, "stderr": result.stderr}
+            return result.returncode, {
+                "status": "error",
+                "raw_output": result.stdout,
+                "stderr": result.stderr,
+            }
     return result.returncode, result.stdout
+
+
+def evaluacion_ok(code: int, resultado: dict | str) -> bool:
+    """True si el subproceso terminó en 0 y su stdout fue un JSON con status 'ok'."""
+    if code != 0:
+        return False
+    if not isinstance(resultado, dict):
+        return False
+    return resultado.get("status") == "ok"
+
+
+# Modelo por defecto según backend. Se usa en el fallback cuando el modelo
+# original no es compatible con el backend de respaldo.
+DEFAULT_MODELO = {
+    "gemini":     "gemini-2.5-flash",
+    "openrouter": "google/gemini-2.5-flash",
+}
+
+
+def _modelo_para_backend(backend: str, modelo: str | None) -> str:
+    """Id de modelo adecuado para 'backend'. Conserva 'modelo' si aplica; si no, el default."""
+    if not modelo:
+        return DEFAULT_MODELO.get(backend, modelo or "gemini-2.5-flash")
+    if backend == "gemini":
+        if modelo.startswith("gemini") or modelo.startswith("models/"):
+            return modelo
+        return DEFAULT_MODELO["gemini"]
+    if backend == "openrouter":
+        if "/" in modelo and not modelo.startswith("models/"):
+            return modelo
+        if modelo.startswith("gemini"):
+            return "google/" + modelo
+        return DEFAULT_MODELO["openrouter"]
+    return modelo
+
+
+def _cambiar_backend(cmd: list[str], backend: str) -> list[str]:
+    """Reconstruye cmd para usar otro backend, ajustando el modelo si no aplica."""
+    out = list(cmd)
+    if "--api-backend" in out:
+        out[out.index("--api-backend") + 1] = backend
+    else:
+        out += ["--api-backend", backend]
+
+    modelo, idx = None, None
+    if "--modelo" in out:
+        idx = out.index("--modelo")
+        modelo = out[idx + 1]
+
+    nuevo = _modelo_para_backend(backend, modelo)
+    if idx is not None:
+        out[idx + 1] = nuevo
+    else:
+        out += ["--modelo", nuevo]
+    return out
 
 
 # ── Orquestador ────────────────────────────────────────────────────────────────
@@ -126,27 +192,20 @@ def flujo_completo(
 
     code, evaluacion = run_script(cmd_evaluar, capture_json=True)
 
-    if code != 0 or evaluacion.get("status") != "ok":
+    if not evaluacion_ok(code, evaluacion):
         if api_backend == "groq":
             print_err("Falló Groq. Intentando como respaldo automático con Gemini...")
-            cmd_fallback = list(cmd_evaluar)
-            if "--api-backend" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "gemini"
-            if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "gemini-2.5-flash"
-            code, evaluacion = run_script(cmd_fallback, capture_json=True)
-            
-        if code != 0 or evaluacion.get("status") != "ok":
-            print_err("Falló el respaldo. Intentando como último recurso con OpenRouter...")
-            cmd_fallback = list(cmd_evaluar)
-            if "--api-backend" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "openrouter"
-            if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "google/gemini-2.5-flash"
+            cmd_fallback = _cambiar_backend(cmd_evaluar, "gemini")
             code, evaluacion = run_script(cmd_fallback, capture_json=True)
 
-        if code != 0 or evaluacion.get("status") != "ok":
-            msg = evaluacion.get("message", evaluacion.get("raw_output", "Error desconocido"))
+        if not evaluacion_ok(code, evaluacion):
+            print_err("Falló el respaldo. Intentando como último recurso con OpenRouter...")
+            cmd_fallback = _cambiar_backend(cmd_evaluar, "openrouter")
+            code, evaluacion = run_script(cmd_fallback, capture_json=True)
+
+        if not evaluacion_ok(code, evaluacion):
+            msg = (evaluacion.get("message", evaluacion.get("raw_output", "Error desconocido"))
+                   if isinstance(evaluacion, dict) else str(evaluacion))
             print_err(f"Falló evaluar_examen.py (código {code}): {msg}")
             state["steps_failed"].append({"step": 1, "script": "evaluar_examen.py",
                                       "code": code, "message": msg})
@@ -285,9 +344,9 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python3 evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
-  python3 evaluar_examen.py --pdf examenes/02/examen_estudiantes/Juan_Perez.pdf --modelo gemini-1.5-pro
-  python3 evaluar_examen.py --pdf <ruta> --dpi 300 --output-dir informes/
+  python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+  python3 flujo_evaluar_examen.py --pdf examenes/02/examen_estudiantes/Juan_Perez.pdf --modelo gemini-1.5-pro
+  python3 flujo_evaluar_examen.py --pdf <ruta> --dpi 300 --output-dir informes/
         """,
     )
     parser.add_argument("--pdf", required=True,
@@ -302,7 +361,7 @@ Ejemplos:
     parser.add_argument("--rubrica", default=None,
                         help="(Opcional) Ruta a la rúbrica YAML del examen.")
     parser.add_argument("--output-dir", default=None,
-                        help="Carpeta de salida del .tex. Por defecto: misma carpeta del PDF.")
+                        help="Carpeta de salida del .tex. Por defecto: <carpeta_del_examen>/informe_examen/.")
     return parser.parse_args()
 
 

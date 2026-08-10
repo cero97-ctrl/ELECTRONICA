@@ -42,7 +42,7 @@ steps:
 
   - step: 2
     description: >
-      Guardar el resultado JSON en .tmp/run_state.json para auditoría y luego presentar
+      Guardar el resultado JSON en .tmp/ para auditoría y luego presentar
       el resumen de la evaluación al profesor de forma legible.
     script: "interno (orquestación del agente)"
     inputs:
@@ -53,7 +53,29 @@ steps:
 
   - step: 3
     description: >
-      Emitir alerta audible de completado al usuario.
+      Convertir el JSON de evaluación en un informe LaTeX formateado (.tex)
+      con la estructura académica completa.
+    script: "execution/generar_informe.py"
+    inputs:
+      --json: "evaluacion_<archivo>.json (en .tmp/)"
+      --output: "informe_<archivo>.tex"
+    expected_output: >
+      Archivo .tex con el informe del examen y status ok en stdout.
+
+  - step: 4
+    description: >
+      Compilar el informe .tex a PDF usando execution/compile_latex.py.
+      Los artefactos de compilación se guardan en .tmp/latex_build/ y se limpian solos.
+    script: "execution/compile_latex.py"
+    inputs:
+      archivo_tex: "informe_<archivo>.tex"
+    expected_output: >
+      PDF con el informe de evaluación del estudiante.
+
+  - step: 5
+    description: >
+      Ejecutar el generador PDF e inventario de artefactos temporales y emitir
+      la alerta de completado al usuario.
     script: "execution/alert_user.py"
     inputs:
       tipo: "success"
@@ -69,6 +91,13 @@ expected_outputs:
     description: >
       Resumen en texto plano con los puntos más relevantes de la evaluación para
       la revisión rápida del profesor.
+  - name: informe_latex
+    description: >
+      Informe LaTeX (.tex) con la evaluación estructurada del estudiante.
+      El archivo se guarda en la carpeta informe_examen de la estructura del examen.
+  - name: informe_pdf
+    description: >
+      PDF compilado del informe LaTeX, listo para revisión o entrega.
 
 edge_cases:
   - case: "El PDF no existe o la ruta es incorrecta"
@@ -108,8 +137,9 @@ edge_cases:
       nota_para_el_profesor que los diagramas deben verificarse manualmente.
 
 metadata:
-  version: "1.0"
+  version: "1.1"
   created: "2026-06-24"
+  updated: "2026-08-08"
   author: "agente"
   script_principal: "execution/evaluar_examen.py"
   dependencias:
@@ -121,3 +151,12 @@ metadata:
   notas: >
     Esta directiva evalúa UN examen a la vez. Para procesar todos los exámenes
     de una carpeta en lote, crear la directiva 'evaluar_carpeta_examenes.yaml'.
+  historial:
+    - version: "1.0"
+      fecha: "2026-06-24"
+      descripcion: "Versión original: 3 pasos (evaluar, resumir, alertar)."
+    - version: "1.1"
+      fecha: "2026-08-08"
+      descripcion: >
+        Alineada con el orquestador flujo_evaluar_examen.py: se añaden los pasos 3 y 4
+        (generar_informe.py y compile_latex.py) y se reenumera la alerta a paso 5.

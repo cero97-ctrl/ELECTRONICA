@@ -1,0 +1,113 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue
+}
+
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{promptbox}[1]{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    fonttitle=\bfseries,
+    title=#1,
+    breakable,
+    arc=2mm
+}
+
+\newtcolorbox{autobox}{
+    colback=green!5!white,
+    colframe=green!50!black,
+    fonttitle=\bfseries,
+    title={Lo que el Agente hará automáticamente tras recibir tu prompt},
+    breakable,
+    arc=2mm
+}
+
+\title{\textbf{Guía de Prompts y Orquestación para Evaluación de Exámenes}\\[0.3em]
+\large Introducción a la Electrónica --- Departamento de Electrónica}
+\author{Universidad de Oriente --- Núcleo de Sucre}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+Este documento contiene la guía estandarizada de \textit{prompts} e instrucciones para la evaluación preliminar automática (individual o en lote) de exámenes manuscritos de la asignatura \textbf{Introducción a la Electrónica} mediante agentes multimodales y la arquitectura de 3 capas del proyecto (\texttt{Directivas} $\rightarrow$ \texttt{Orquestación} $\rightarrow$ \texttt{Ejecución}).
+
+\section{Plantillas de Prompts para la Evaluación de Exámenes}
+
+\begin{promptbox}{Opción 1: Prompt General para Evaluación por Lote (Recomendado)}
+Por favor evalúa en lote todos los exámenes contenidos en la carpeta \path{cursos/INT_ELECTRONICA/examenes/03/examen_estudiante}. Consta de 5 problemas con un valor de 3.33 pts cada uno, donde el estudiante debe elegir y resolver 3 problemas (escala total base 10.0). Utiliza la rúbrica específica de \path{cursos/INT_ELECTRONICA/examenes/03/rubrica_E2.yaml}. Al finalizar la evaluación, genera los informes en LaTeX, compila los archivos a PDF, elimina todos los archivos auxiliares de compilación y muéstrame la tabla consolidada de resultados.
+\end{promptbox}
+
+\vspace{0.5em}
+
+\begin{promptbox}{Opción 2: Prompt para Evaluación Individual de un Estudiante}
+Evalúa el examen contenido en \path{cursos/INT_ELECTRONICA/examenes/03/examen_estudiante/Sebastian_Pulido.pdf} aplicando la rúbrica \path{cursos/INT_ELECTRONICA/examenes/03/rubrica_E2.yaml}. Al culminar la evaluación del examen, recuerda generar el informe LaTeX, compilarlo a PDF y eliminar los archivos auxiliares que se generaron al compilar.
+\end{promptbox}
+
+\vspace{0.5em}
+
+\begin{promptbox}{Opción 3: Prompt con Criterios de Evaluación Específicos}
+Vamos a evaluar los exámenes de \path{cursos/INT_ELECTRONICA/examenes/03/examen_estudiante/}. Este examen evalúa la comprensión profunda de redes reactivas en frecuencia, análisis fasorial en AC, transitorios RC/RL de primer orden con condiciones iniciales, fuentes dependientes mediante equivalente de Thévenin y acoplamiento magnético con transformador ideal. Sigue estrictamente la rúbrica \path{rubrica_E2.yaml}, genera los informes PDF correspondientes y realiza la limpieza de archivos auxiliares.
+\end{promptbox}
+
+\section{Flujo Automático del Agente}
+
+\begin{autobox}
+Al recibir cualquiera de los \textit{prompts} anteriores, el agente ejecutará de forma autónoma el siguiente flujo de trabajo estructurado en 3 capas:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Carga de la Rúbrica y Configuración:}
+    Lee la rúbrica YAML del examen (\path{rubrica_E2.yaml} u otra especificada) para extraer las consignas clave: número de problemas a elegir (ej. 3 de 5), ponderación por problema (3.33 pts), escala total (10.0) y criterios de evaluación (corrección conceptual, procedimental, claridad y unidades).
+
+    \item \textbf{Ejecución Multimodal y Conmutación de Respaldos:}
+    Ejecuta el script de orquestación \path{flujo_evaluar_examen.py}, el cual renderiza las páginas manuscritas del PDF a PNG de alta resolución (250 DPI) e invoca la API multimodal. Si un proveedor o modelo agota su cuota de peticiones (\texttt{429 RESOURCE\_EXHAUSTED}), conmuta automáticamente entre backends (\texttt{gemini-2.5-flash} $\rightarrow$ \texttt{openrouter}) para garantizar la continuidad del proceso.
+
+    \item \textbf{Evaluación Rigurosa y Ponderación:}
+    Identifica los problemas desarrollados por el estudiante, evalúa individualmente la exactitud matemática y conceptual, detecta errores conceptuales/procedimentales y redacta observaciones pedagógicas tanto para el estudiante como para el profesor.
+
+    \item \textbf{Persistencia de Datos en JSON:}
+    Guarda la estructura completa de la evaluación en un archivo JSON intermedio en la carpeta temporal (\path{.tmp/evaluacion_[Estudiante].json}).
+
+    \item \textbf{Generación del Informe LaTeX:}
+    Invoca \path{execution/generar_informe.py} para convertir el JSON en un documento LaTeX formal (\path{informe_[Estudiante].tex}) dentro de la carpeta \path{informe_examen/}.
+
+    \item \textbf{Compilación y Limpieza de Archivos Auxiliares:}
+    Compila el informe a PDF utilizando la herramienta determinista \path{execution/compile_latex.py} y elimina automáticamente los archivos auxiliares generados durante la compilación (\texttt{.aux}, \texttt{.log}, \texttt{.out}).
+
+    \item \textbf{Notificación y Cuadro Resumen:}
+    Ejecuta \path{execution/alert_user.py} para emitir una alerta sonora de finalización y presenta en el chat una tabla resumen con los puntajes obtenidos, niveles de desempeño y enlaces directos a cada informe PDF generado.
+\end{enumerate}
+\end{autobox}
+
+\section{Estructura Recomendada de Archivos para los Exámenes}
+
+\begin{verbatim}
+cursos/INT_ELECTRONICA/examenes/
++-- 03/                              # Número de Examen o Unidad
+    |-- examen.tex                   # Enunciado máster en LaTeX
+    |-- rubrica_E2.yaml              # Rúbrica formal de corrección
+    |-- examen_estudiante/           # PDFs entregados por los estudiantes
+    |   |-- Saul_Astudillo.pdf
+    |   |-- Sebastian_Pulido.pdf
+    |   +-- Tirzo_Mata.pdf
+    +-- informe_examen/              # Informes generados en .tex y .pdf
+        |-- informe_Saul_Astudillo.pdf
+        |-- informe_Sebastian_Pulido.pdf
+        +-- informe_Tirzo_Mata.pdf
+\end{verbatim}
+
+\end{document}

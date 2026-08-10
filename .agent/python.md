@@ -352,3 +352,53 @@ Y usarlo como base en la función extractora principal, buscando primero dentro 
 > - `execution/elaborar_examen.py`
 > - `execution/evaluar_examen.py`
 > - `execution/analizar_imagen.py`
+
+---
+
+## 17. JSON Truncado en gemini-3.x por `thoughts` Internos (`FinishReason` STOP pero JSON cortado)
+
+### Síntoma / Mensaje de Error
+
+Al evaluar exámenes con `gemini-3.5-flash` vía el SDK nuevo `google-genai`, el script `execution/evaluar_examen.py` falla repetidamente con:
+
+```text
+{"status": "error", "code": 4, "message": "No se pudo extraer un JSON válido de la respuesta del modelo."}
+```
+
+Al inspeccionar la respuesta cruda se observa que el JSON termina **a mitad de estructura** (ej. cortado justo en `"errores_conceptuales": [`), sin llaves de cierre y sin `finish_reason` en el nivel superior de la respuesta.
+
+### Causa
+
+Desde gemini-3.x en adelante, el modelo consume una porción grande del presupuesto de tokens de salida en **pensamiento interno** (`usage_metadata.thoughts_token_count`, típicamente 5000-6500 tokens de los 8192 `max_output_tokens`). Al sumar el `thoughts` + el JSON final, el JSON queda truncado y `json.loads()` (y a veces hasta `_find_balanced_json`) fallan porque el texto nunca se cierra balanceado.
+
+Evidencia: `tokens p/r/t: 9788 1090 17965` y `thoughts_token_count: 6411`.
+
+### Solución
+
+Desactivar el pensamiento interno con `ThinkingConfig` en el **SDK nuevo** (`google.genai`, el único que soporta la clave):
+
+```python
+config=genai_types.GenerateContentConfig(
+    system_instruction=system_instruction,
+    temperature=0.2,
+    max_output_tokens=8192,
+    response_mime_type="application/json",
+    # Imprescindible en gemini-3.x: sin budget 0 el JSON final se trunca.
+    thinking_config=genai_types.ThinkingConfig(
+        thinking_budget=0,
+        include_thoughts=False,
+    ),
+)
+```
+
+Con `thinking_budget=0` el modelo solo produce el JSON final (sin thoughts), el finish pasa a `FinishReason.STOP` y el JSON es estable.
+
+### Puntos Clave
+
+- El SDK **legacy** (`google.generativeai`, deprecated) NO tiene `ThinkingConfig`; no aplicarlo ahí (se reventaría). Solo afectar la rama `_GENAI_SDK == "new"`.
+- Aun con budget 0, gemini-3.x puede fallar intermitentemente (a veces duplica llaves de cierre o corta). Por eso `evaluar_examen.py` ahora llama al modelo dentro de un **bucle de reintentos (máx 3)** que relanza `extract_json_from_response` — si falla `ValueError`, reintenta hasta agotar el budget de la directiva.
+- Al inspeccionar respuestas crudas, revisar el objeto completo `response.model_dump()`: el `finish_reason` correcto vive en `candidates[0].finish_reason` (no en el nivel superior de la respuesta, que suele ser `None`).
+- Cuota gratuita: la API free tier de Gemini tiene límite diario **20 requests por modelo por proyecto**. El mayor consumo de llamadas de debug puede agotarla y devolver `429 RESOURCE_EXHAUSTED` incluso en peticiones mínimas; no intentar reintentar sin verificar el límite.
+
+> **Archivos afectados:**
+> - `execution/evaluar_examen.py` (función `evaluar_con_nuevo_sdk` y bucle de reintentos en `evaluar_examen`)

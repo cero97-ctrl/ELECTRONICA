@@ -1,0 +1,191 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Paquetes Esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{siunitx}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{a4paper, margin=2.5cm}
+\setcounter{secnumdepth}{0}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Large UDO -- N\'UCLEO DE SUCRE}\\
+    \vspace{0.2cm}
+    \textbf{\large ESCUELA DE CIENCIAS -- DPTO. DE F\'ISICA}\\
+    \vspace{0.2cm}
+    \textbf{\large LABORATORIO I DE F\'ISICA}\\
+    \vspace{0.4cm}
+    \textbf{\Large PR\'ACTICA N. 5: P\'ENDULO SIMPLE}\\
+    \vspace{0.2cm}
+    \textbf{\large An\'alisis de datos y post-laboratorio}
+\end{center}
+
+\vspace{0.4cm}
+\hrule
+\vspace{0.4cm}
+
+\section{Objetivos}
+\begin{itemize}
+    \item Determinar la aceleraci\'on de la gravedad $g$ mediante el p\'endulo simple.
+    \item Estudiar la relaci\'on entre el periodo y la longitud del p\'endulo mediante la representaci\'on gr\'afica.
+    \item Aplicar el m\'etodo de los m\'inimos cuadrados para determinar los par\'ametros de ajuste.
+\end{itemize}
+
+\section{Fundamento te\'orico}
+Para \'angulos peque\~nos ($\theta \leq 10^\circ$), el periodo de un p\'endulo simple est\'a dado por:
+\begin{equation}
+    T = 2\pi\sqrt{\frac{L}{g}},
+\end{equation}
+donde $L = L_H + L_C$ es la longitud total del p\'endulo, $L_H$ la longitud del hilo y $L_C$ la distancia entre el punto donde el hilo se fija a la masa y el centro de masa del cuerpo.
+
+Elevando al cuadrado:
+\begin{equation}
+    T^2 = \frac{4\pi^2}{g}(L_H + L_C)
+        = \frac{4\pi^2}{g}\, L_H + \frac{4\pi^2}{g}\, L_C.
+\end{equation}
+Al graficar $T^2$ vs.\ $L_H$ se obtiene una recta de pendiente $m = 4\pi^2/g$ y punto de corte $b = m\,L_C$, de donde:
+\begin{equation}
+    g = \frac{4\pi^2}{m}, \qquad L_C = \frac{b}{m}.
+\end{equation}
+
+\section{Tabla de datos experimentales}
+Se midi\'o el tiempo $t$ de $N = 5$ oscilaciones completas para 21 longitudes $L_H$ del hilo. El periodo se calcul\'o como $T = t/N$.
+
+\begin{table}[h!]
+    \centering
+    \caption{Datos experimentales y valores calculados ($N = 5$ oscilaciones).}
+    \begin{tabular}{ccccc}
+        \toprule
+        N. & $L_H$ (cm) & $t$ (s) & $T = t/N$ (s) & $T^2$ (s$^2$) \\
+        \midrule
+        1  & 67,0 & 8,89 & 1,778 & 3,1613 \\
+        2  & 65,0 & 8,52 & 1,704 & 2,9036 \\
+        3  & 62,5 & 8,03 & 1,606 & 2,5792 \\
+        4  & 60,0 & 7,66 & 1,532 & 2,3470 \\
+        5  & 57,5 & 7,61 & 1,522 & 2,3165 \\
+        6  & 54,5 & 7,43 & 1,486 & 2,2082 \\
+        7  & 52,0 & 7,15 & 1,430 & 2,0449 \\
+        8  & 49,0 & 6,43 & 1,286 & 1,6538 \\
+        9  & 45,5 & 6,77 & 1,354 & 1,8333 \\
+        10 & 42,0 & 6,77 & 1,354 & 1,8333 \\
+        11 & 39,0 & 6,33 & 1,266 & 1,6028 \\
+        12 & 36,0 & 6,12 & 1,224 & 1,4982 \\
+        13 & 33,0 & 5,93 & 1,186 & 1,4066 \\
+        14 & 30,5 & 5,77 & 1,154 & 1,3317 \\
+        15 & 28,0 & 5,68 & 1,136 & 1,2905 \\
+        16 & 25,0 & 5,47 & 1,094 & 1,1968 \\
+        17 & 22,5 & 5,30 & 1,060 & 1,1236 \\
+        18 & 20,0 & 4,85 & 0,970 & 0,9409 \\
+        19 & 17,5 & 4,74 & 0,948 & 0,8987 \\
+        20 & 15,5 & 4,34 & 0,868 & 0,7534 \\
+        21 & 12,5 & 4,28 & 0,856 & 0,7327 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{M\'etodo de m\'inimos cuadrados}
+Tomando $x = L_H$ (cm) y $y = T^2$ (s$^2$), la recta de ajuste es $y = mx + b$ con:
+\begin{equation}
+    m = \frac{n\sum xy - \sum x \sum y}{n\sum x^2 - (\sum x)^2}, \qquad
+    b = \frac{\sum y - m\sum x}{n}, \qquad
+    r = \frac{n\sum xy - \sum x \sum y}{\sqrt{\left[n\sum x^2 - (\sum x)^2\right]\left[n\sum y^2 - (\sum y)^2\right]}}.
+\end{equation}
+
+\textbf{Sumatorias ($n = 21$):}
+\begin{align*}
+    \sum x &= 834,50\ \text{cm}, & \sum y &= 35,657108\ \text{s}^2, \\
+    \sum x^2 &= 39290,25\ \text{cm}^2, & \sum y^2 &= 70,189785\ \text{s}^4, & \sum xy &= 1654,090430\ \text{cm}\cdot\text{s}^2.
+\end{align*}
+
+\textbf{Resultados del ajuste:}
+\begin{align*}
+    m &= 0,038693\ \text{s}^2/\text{cm}, & b &= 0,160353\ \text{s}^2, & r &= 0,9754.
+\end{align*}
+
+\section{Gr\'afica de $T^2$ vs.\ $L_H$}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=13cm, height=8.5cm,
+    xlabel={$L_H$ (cm)}, ylabel={$T^2$ (s$^2$)},
+    grid=major,
+    legend pos=north west,
+    legend style={font=\small},
+]
+\addplot[only marks, mark=*, blue] coordinates {
+(67,3.1613)(65,2.9036)(62.5,2.5792)(60,2.3470)(57.5,2.3165)(54.5,2.2082)
+(52,2.0449)(49,1.6538)(45.5,1.8333)(42,1.8333)(39,1.6028)(36,1.4982)
+(33,1.4066)(30.5,1.3317)(28,1.2905)(25,1.1968)(22.5,1.1236)(20,0.9409)
+(17.5,0.8987)(15.5,0.7534)(12.5,0.7327)};
+\addlegendentry{datos experimentales}
+\addplot[thick, red, domain=10:70] {0.038693*x + 0.160353};
+\addlegendentry{$y = 0{,}038693\,x + 0{,}160353$}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\section{Determinaci\'on de $g$ y $L_C$}
+De la pendiente:
+\begin{equation}
+    g = \frac{4\pi^2}{m} = \frac{4\pi^2}{0,038693\ \text{s}^2/\text{cm}} = 1020,29\ \text{cm/s}^2 = 10,20\ \text{m/s}^2.
+\end{equation}
+
+Comparaci\'on con el valor tabulado $g = 9,8$ m/s$^2$ (ecuaci\'on 4):
+\begin{equation}
+    \% = \frac{|g_{\exp} - g_{teo}|}{g_{teo}} \times 100 = \frac{|10,20 - 9,8|}{9,8} \times 100 = 4,11\%.
+\end{equation}
+
+Del punto de corte:
+\begin{equation}
+    L_C = \frac{b}{m} = \frac{0,160353\ \text{s}^2}{0,038693\ \text{s}^2/\text{cm}} = 4,14\ \text{cm}.
+\end{equation}
+
+\section{Post-laboratorio}
+
+\subsection{Valor de $g$ vs.\ valor esperado}
+El valor obtenido $g_{\exp} = 10,20$ m/s$^2$ se aparta $4,11\%$ del valor tabulado $g = 9,8$ m/s$^2$, diferencia razonable para un laboratorio docente. Las posibles causas de la no correspondencia son:
+\begin{itemize}
+    \item \'Angulos de desplazamiento mayores que los $10^\circ$ recomendados, que invalidan la aproximaci\'on $\sin\theta \approx \theta$ y aumentan el periodo.
+    \item Error de paralaje y de apreciaci\'on en la medici\'on del tiempo con el cron\'ometro (reacci\'on humana al iniciar y detener).
+    \item Error sistem\'atico en la medici\'on de $L_H$ con la cinta m\'etrica (no medir hasta el centro de masa).
+    \item Oscilaciones no coplanares (movimientos el\'ipticos) que incrementan el periodo.
+    \item Datos puntuales con errores gruesos (por ejemplo, filas 9 y 10 de la Tabla~1, donde $t$ no decrece al reducir $L_H$).
+\end{itemize}
+
+\subsection{Diferencia porcentual de $g$}
+Aplicando la ecuaci\'on (4), el valor experimental difiere del tabulado en un $4,11\%$. Este porcentaje es bajo y confirma que la relaci\'on $T^2 \propto L$ se cumple dentro de los errores de medici\'on; el m\'etodo del p\'endulo simple resulta confiable para estimar la aceleraci\'on de la gravedad.
+
+\subsection{Aceptabilidad de $L_C$}
+El valor $L_C = 4,14$ cm debe compararse con la distancia medida directamente con una regla sobre el cuerpo s\'olido (distancia entre el punto de sujeci\'on del hilo y el centro de masa). Valores de $L_C$ de pocos cent\'imetros son f\'isicamente plausibles y el orden de magnitud es aceptable; la diferencia respecto de la medida directa estar\'ia dentro del error de ajuste y de las aproximaciones de la pr\'actica.
+
+\subsection{Diferencia porcentual de $L_C$}
+Para calcular el porcentaje se necesita la medida directa de $L_C$ con una regla sobre el cuerpo. Si, por ejemplo, la medida directa fuera $L_{C,med}$ (no incluida en los datos proporcionados), la ecuaci\'on (4) dar\'ia:
+\begin{equation}
+    \% = \frac{|L_C - L_{C,med}|}{L_{C,med}} \times 100.
+\end{equation}
+
+\subsection{Influencia de la masa $m$}
+El periodo del p\'endulo simple, $T = 2\pi\sqrt{L/g}$, \textbf{no depende de la masa}. Para una longitud $L_H$ fija, cambiar la masa $m$ no altera el periodo, siempre que la masa de la cuerda siga siendo despreciable y el \'angulo peque\~no.
+
+\subsection{Influencia de la forma geom\'etrica del cuerpo}
+S\'i variar\'ia el periodo si cambia la forma del cuerpo, porque cambiar\'ia la posici\'on del centro de masa y, con ella, la longitud efectiva $L = L_H + L_C$ del p\'endulo. El periodo depende de la distancia entre el punto de suspensi\'on y el centro de masa; si dicha distancia cambia, el periodo cambiar\'a.
+
+\subsection{Conclusiones}
+\begin{itemize}
+    \item La gr\'afica de $T^2$ vs.\ $L_H$ confirma una dependencia lineal propia del p\'endulo simple ($r = 0,9754$).
+    \item Se obtuvo $g = 10,20$ m/s$^2$, con una discrepancia del $4,11\%$ respecto del valor tabulado.
+    \item Los errores dominantes son las aproximaciones angulares, la reacci\'on humana en la cronometraci\'on y la medici\'on de longitudes.
+\end{itemize}
+
+\end{document}
