@@ -21,11 +21,11 @@ A new workflow must include all three layers; never write just an orchestrator w
 
 ## Know before you act
 
-- **Before modifying any `.tex` file**, read `.agent/latex.md` (15 documented LaTeX pitfalls specific to this project)
+- **Before modifying any `.tex` file**, read `.agent/latex.md` (16 documented LaTeX pitfalls specific to this project)
 - **Before modifying scripts that use LangChain or parse LLM JSON**, read `.agent/python.md` (PromptTemplate jinja2 mode, raw strings, trailing commas, balanced-brace JSON extraction)
 - **`requirements.txt` contains only `psutil` and `PyYAML`** — real dependencies live in the conda environment; don't trust it as canonical
 - **No linter, type checker, formatter, or CI** is configured — don't waste time running them
-- **Run everything from repo root** — imports use relative paths; `mcp_*_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it
+- **Run everything from repo root** — imports use relative paths; `mcp_latex_server.py`, `mcp_sistema_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it
 
 ## Commands
 
@@ -46,6 +46,8 @@ flujo_diagnostico.py
 flujo_curar_dataset.py     [--min-quality 0.7] [--split 80-10-10] [--dry-run] [--no-alert]
 flujo_empaquetar_dataset.py [--format parquet|jsonl] [--license <lic>] [--pack] [--no-alert]
 flujo_publicar_hf.py        <dataset> [--repo <id>] [--private] [--dry-run] [--no-alert]
+flujo_ruview_rescue.py      (UDP listener :5005 — datos CSI/acelerómetro; config en directives/ruview_rescue.yaml)
+flujo_telegram.py           (Telegram gateway polling — config en directives/telegram_gateway.yaml)
 ```
 
 ### System services
