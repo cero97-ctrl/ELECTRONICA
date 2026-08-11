@@ -1,0 +1,215 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación y fuentes ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{parskip}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+
+% ── Colores y cajas ───────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textbf{Informe de Evaluación} --- Electrónica}
+\fancyhead[R]{\small Saul Astudillo}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
+
+% ── Paleta de colores personalizados ─────────────────────────────────────────
+\definecolor{desempeno_excelente}{HTML}{1A6B2F}
+\definecolor{desempeno_bueno}{HTML}{2E5A9C}
+\definecolor{desempeno_suficiente}{HTML}{8B6914}
+\definecolor{desempeno_deficiente}{HTML}{C0392B}
+\definecolor{desempeno_insuficiente}{HTML}{7B241C}
+\definecolor{grisFondo}{HTML}{F5F5F5}
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{verdeFortaleza}{HTML}{1A6B2F}
+\definecolor{naranjaMejora}{HTML}{A04000}
+
+% ── Estilos de cajas ─────────────────────────────────────────────────────────
+\tcbset{
+  cajaTitulo/.style={
+    enhanced, breakable,
+    colback=azulTitulo!8, colframe=azulTitulo,
+    fonttitle=\bfseries\large, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulTitulo},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    colback=verdeFortaleza!6, colframe=verdeFortaleza!60,
+    fonttitle=\bfseries, coltitle=verdeFortaleza,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    colback=naranjaMejora!6, colframe=naranjaMejora!60,
+    fonttitle=\bfseries, coltitle=naranjaMejora,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    colback=grisFondo, colframe=gray!50,
+    fonttitle=\bfseries, coltitle=black,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA ══════════════════════════════════════════════════════════════════
+\begin{center}
+  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Evaluación de Exámenes}\\[4pt]
+  {\large Informe de Evaluación Preliminar}\\[12pt]
+  \rule{\linewidth}{1.2pt}\\[6pt]
+  {\LARGE\bfseries Saul Astudillo}\\[4pt]
+  \rule{\linewidth}{0.6pt}
+\end{center}
+
+% ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
+\vspace{4pt}
+\begin{tcolorbox}[cajaTitulo, title=Datos del informe]
+\begin{tabular}{@{}llll@{}}
+  \textbf{Estudiante:}  & Saul Astudillo  &
+  \textbf{Fecha:}       & 2026-06-26 \\[4pt]
+  \textbf{Archivo PDF:} & \texttt{examen\_Saul\_Astudillo.pdf}  &
+  \textbf{Páginas:}     & 4 \\
+\end{tabular}
+\end{tcolorbox}
+
+% ══ RESULTADO GLOBAL ═════════════════════════════════════════════════════════
+\vspace{6pt}
+\begin{center}
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white, colframe=desempeno_bueno,
+    width=0.62\linewidth,
+    boxrule=2pt,
+    halign=center, valign=center,
+    top=8pt, bottom=8pt,
+  ]
+    \centering
+    {\large\bfseries Puntaje sugerido}\\[6pt]
+    {\Huge\bfseries\color{desempeno_bueno} 7.0/10}\\[6pt]
+    {\large Nivel de desempeño: \textbf{\color{desempeno_bueno} Bueno}}
+  \end{tcolorbox}
+\end{center}
+
+% ══ RESUMEN GENERAL ══════════════════════════════════════════════════════════
+\section*{Resumen general}
+El estudiante demuestra una comprensión sólida de los principios fundamentales de análisis de circuitos, como el teorema de superposición y la transferencia máxima de potencia. Sin embargo, presenta dificultades significativas en la formulación de ecuaciones para el análisis nodal y de mallas, especialmente cuando se involucran fuentes dependientes y su correcta interpretación de polaridad o dirección.
+
+% ══ FORTALEZAS Y ÁREAS DE MEJORA ════════════════════════════════════════════
+\vspace{4pt}
+\begin{minipage}[t]{0.48\linewidth}
+  \begin{tcolorbox}[cajaFortaleza, title={Fortalezas}]
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item Aplicación correcta del principio de superposición.
+  \item Cálculo preciso de la potencia máxima transferida y la resistencia de carga asociada.
+  \item Identificación correcta de la resistencia de Thevenin.
+  \item Presentación generalmente clara y organizada de los pasos en las soluciones.
+\end{itemize}
+  \end{tcolorbox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+  \begin{tcolorbox}[cajaMejora, title={Areas de mejora}]
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item Formulación de ecuaciones de análisis nodal y de mallas, prestando especial atención a las fuentes dependientes.
+  \item Interpretación precisa de las descripciones de las fuentes dependientes (ej. 'favorece en sentido horario').
+  \item Precisión algebraica en la manipulación de ecuaciones.
+\end{itemize}
+  \end{tcolorbox}
+\end{minipage}
+
+% ══ OBSERVACIONES POR PREGUNTA ═══════════════════════════════════════════════
+\section*{Observaciones por pregunta}
+
+\begin{longtable}{>{\bfseries}p{2.8cm} p{1.6cm} p{7.0cm} p{2.8cm}}
+  \toprule
+  \textbf{Pregunta} & \textbf{Puntaje} & \textbf{Evaluación} & \textbf{Errores detectados} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+    \textbf{Pregunta 1: Teorema de Superposición} & 2.0/2.0 & El estudiante aplicó correctamente el principio de superposición, sumando las contribuciones individuales de cada fuente para obtener el voltaje total en el nodo A. Los valores parciales dados fueron utilizados de forma adecuada. & \textit{---} \\
+    \midrule
+    \textbf{Pregunta 2: Equivalente de Thevenin} & 1.5/2.0 & El estudiante determinó correctamente el voltaje de Thevenin (Vth = 10V) y la resistencia de Thevenin (Rth = 2$\Omega$). Sin embargo, la derivación del Vth a través de la ecuación '10V - 2$\Omega$(I1) = Vth' es confusa, ya que para calcular Vth, la corriente I1 debería ser cero (circuito abierto). Aunque el resultado final es correcto, el paso intermedio no es formalmente claro. & \textit{Derivación poco clara para Vth.} \\
+    \midrule
+    \textbf{Pregunta 3: Máxima Transferencia de Potencia} & 2.0/2.0 & La solución es completamente correcta. El estudiante identificó correctamente la condición para la máxima transferencia de potencia (RL = Rth) y calculó la potencia máxima (Pmax) utilizando la fórmula adecuada y los valores correctos. La conversión a milivatios también es correcta. & \textit{---} \\
+    \midrule
+    \textbf{Pregunta 4: Análisis Nodal} & 0.5/2.0 & El estudiante identificó correctamente las ecuaciones de restricción para la fuente dependiente (Vx = 4Ic y Ic = Vb/2) y la relación entre los voltajes nodales y la fuente dependiente (Vb - Va = Vx). Sin embargo, cometió un error algebraico al simplificar la ecuación (Vb - Va = 2Vb debería llevar a Va = -Vb, no a 3Vb = Va). Además, la ecuación nodal para el segundo nodo (Vb) en su forma estándar (suma de corrientes saliendo del nodo) no fue formulada explícitamente. & \textit{Error algebraico en la simplificación de la ecuación de restricción (Vb - Va = 2Vb -\textgreater{} 3Vb = Va).; No se formuló explícitamente la ecuación nodal para el segundo nodo (Vb).} \\
+    \midrule
+    \textbf{Pregunta 5: Análisis de Mallas} & 1.0/2.0 & El estudiante formuló las ecuaciones de KVL para ambas mallas y la ecuación de restricción para la fuente dependiente. Sin embargo, se detecta un error conceptual significativo en la interpretación de la dirección de la fuente de voltaje dependiente. La frase 'favorece en sentido horario de I2' indica que la fuente Vd debe ser una subida de voltaje en la dirección de I2. El estudiante la trató como una caída de voltaje en su ecuación de KVL para la malla 2. Además, se asumió un valor de 4$\Omega$ para la resistencia R3, que no fue proporcionado en el enunciado del problema. & \textit{Error conceptual en la interpretación de la dirección/polaridad de la fuente de voltaje dependiente Vd ('favorece en sentido horario de I2').; Asunción de un valor para la resistencia R3 (4$\Omega$) no especificado en el problema.} \\
+    \midrule
+\end{longtable}
+
+% ══ ERRORES DETECTADOS ═══════════════════════════════════════════════════════
+\section*{Análisis de errores}
+
+\subsection*{Errores conceptuales}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item Malinterpretación de la dirección o polaridad de una fuente de voltaje dependiente en el análisis de mallas, lo que lleva a un signo incorrecto en la ecuación KVL.
+  \item Comprensión incompleta de cómo formular sistemáticamente las ecuaciones nodales (suma de corrientes) para un nodo dado, especialmente en presencia de fuentes dependientes.
+\end{itemize}
+
+\subsection*{Errores procedimentales}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item Error algebraico en la simplificación de una ecuación de restricción en el análisis nodal (Pregunta 4).
+  \item Derivación poco clara para el voltaje de Thevenin (Pregunta 2).
+  \item Asunción de un valor numérico para una resistencia (R3=4$\Omega$) que no fue proporcionado en el enunciado del problema (Pregunta 5).
+\end{itemize}
+
+% ══ RECOMENDACIONES AL ESTUDIANTE ════════════════════════════════════════════
+\section*{Retroalimentación para el estudiante}
+\begin{tcolorbox}[cajaRecomendacion, title={Dirigido a: Saul Astudillo}]
+Para mejorar, es crucial que refuerces la formulación sistemática de las ecuaciones de análisis nodal y de mallas. Presta especial atención a la interpretación de las fuentes dependientes: cómo su descripción afecta su polaridad o dirección en las ecuaciones KVL/KCL. Practica la asignación de signos para caídas y subidas de voltaje, y para corrientes entrantes y salientes. Revisa tus manipulaciones algebraicas para evitar errores de cálculo. Un enfoque metódico en estos temas te ayudará a resolver problemas más complejos con mayor precisión.
+\end{tcolorbox}
+
+% ══ NOTA PARA EL PROFESOR ════════════════════════════════════════════════════
+\section*{Nota para el profesor}
+\begin{tcolorbox}[
+  enhanced, breakable,
+  colback=yellow!8, colframe=yellow!60!black,
+  fonttitle=\bfseries, coltitle=black,
+  title={Observaciones para revisión manual},
+  top=4pt, bottom=4pt, left=8pt, right=8pt,
+]
+El estudiante tiene una base sólida en teoremas fundamentales (superposición, máxima transferencia de potencia) pero muestra debilidades en la aplicación rigurosa de análisis nodal y de mallas, particularmente con fuentes dependientes. El error en la interpretación de la dirección de la fuente dependiente en la Pregunta 5 es un punto clave de confusión conceptual que merece atención. La asunción de R3=4$\Omega$ en la misma pregunta también es relevante.
+\end{tcolorbox}
+
+% ══ PIE DE INFORME ════════════════════════════════════════════════════════════
+\vspace{12pt}
+\begin{center}
+  \footnotesize\color{gray}
+  Informe generado automáticamente por el sistema de evaluación con IA (gemini-2.5-flash) y soporte LaTex. \\
+  Este documento es una evaluación \textbf{preliminar} para ser revisado por el profesor antes de ser entregado al 
+  estudiante. \\
+  Generado el 2026-06-26 \textbullet\ ELECTRÓNICA --- Sistema de Evaluación Académica.
+  \end{center}
+
+\end{document}

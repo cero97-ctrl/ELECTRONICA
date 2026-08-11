@@ -1,0 +1,112 @@
+goal: >
+  Calcular la nota definitiva del curso de Electrónica promediando las calificaciones
+  de las unidades U1, U2 y U3 extraídas de los informes de evaluación de cada estudiante
+  (informe_examen_*.pdf en {01..03}/informe_examen/), aplicando la regla de examen no
+  presentado = 0 y regenerando la tabla de definitivas en un documento LaTeX compilado a PDF.
+
+required_inputs:
+  - name: curso
+    description: >
+      Ruta base de los exámenes del curso. Por defecto: cursos/INT_ELECTRONICA/examenes
+      (curso "Introducción a la Electrónica").
+    default: cursos/INT_ELECTRONICA/examenes
+  - name: unidades
+    description: >
+      Unidades evaluadas como carpetas numeradas de 2 dígitos dentro de la ruta base.
+      Cada unidad contiene una subcarpeta informe_examen/ con los informes finalees.
+    default: ["01", "02", "03"]
+  - name: roster
+    description: >
+      Nómina oficial del curso (C.I. -> "Apellidos y Nombres"). Debe editarse en la sección
+      CONFIG del script de ejecución cuando cambie la matrícula.
+    ejemplo:
+      "33384958": "ASTUDILLO SAÚL"
+      "31435422": "MATA TIRZO"
+      "89552210": "PULIDO SEBASTIÁN"
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar el script de cálculo de definitivas. Lee con pdftotext los informes
+      informe_examen_*.pdf de cada unidad ({01..03}/informe_examen/), extrae la nota con
+      los patrones "Calificación Final: X / 10" o "X/10" en texto plano, aplica la nómina
+      y la regla de no presentado = 0, y calcula el promedio con Decimal + HALF_UP.
+    script: "cursos/INT_ELECTRONICA/examenes/nota_definitva/calcular_definitivas.py"
+    inputs:
+      modo: "por defecto (regenera el bloque en definitivas.tex) o --stdout (solo imprime filas)"
+    expected_output: >
+      Salida en consola con una fila por estudiante (N., apellidos y nombres, C.I., notas
+      U1/U2/U3 y nota definitiva) y el bloque TABLA_DEFINITIVAS_START/END regenerado en
+      definitivas.tex.
+
+  - step: 2
+    description: >
+      Compilar definitivas.tex a PDF con pdflatex (dos pasadas para resolución de
+      referencias longtable/lastpage) en la carpeta nota_definitva y limpiar los
+      artefactos auxiliares (.aux, .log, .out).
+    script: "pdflatex"
+    inputs:
+      archivo_tex: "cursos/INT_ELECTRONICA/examenes/nota_definitva/definitivas.tex"
+    expected_output: >
+      PDF definitivas.pdf de 1 página con la tabla coloreada y el encabezado institucional.
+
+expected_outputs:
+  - name: tabla_definitivas
+    description: >
+      Tabla LaTeX dentro de definitivas.tex con columnas N., Apellidos y Nombres, C.I.,
+      Grupo (Física/Química), U. I, U. II, U. III y Nota, delimitada por los marcadores
+      % TABLA_DEFINITIVAS_START / % TABLA_DEFINITIVAS_END.
+  - name: definitivas_pdf
+    description: >
+      PDF compilado listo para revisión o entrega, ubicado en la carpeta nota_definitva
+      junto al script y al .tex.
+
+edge_cases:
+  - case: "El estudiante no tiene informe en alguna unidad (examen no presentado)"
+    recovery: >
+      La unidad sin PDF se computa como 0 automáticamente (FUERA = 0.0), igual que en
+      el flujo de BIOANALISIS. Registrar visualmente en la nota al pie de la tabla.
+
+  - case: "Un informe cambia de nombre o no empieza con informe_examen_"
+    recovery: >
+      El script busca informe_examen_*.pdf como fuente canónica. Si el PDF existe pero el
+      .tex compañero tiene otro prefijo (ej. *_corregido) el fallback lo localiza por el
+      token del nombre del estudiante. Si el archivo se renombra, actualizar NOMBRE_MAP.
+
+  - case: "pdftotext no está instalado"
+    recovery: >
+      El script cae automáticamente a leer el .tex compañero del PDF. Instalar poppler-utils
+      para recuperar la fuente canónica (PDF).
+
+  - case: "El informe no contiene el patrón de nota esperado"
+    recovery: >
+      nota_del_informe retorna None y la unidad se trata como no presentada (0).
+      Verificar manualmente el informe y, si aplica, usar OVERRIDES para asignar la nota
+      real en la sección CONFIG.
+
+  - case: "Un estudiante de la nómina no tiene informe en ninguna unidad"
+    recovery: >
+      Todas sus unidades quedan en 0 y la nota definitiva será 0. Confirmar con el
+      profesor antes de publicar que el estudiante efectivamente no se presentó.
+
+metadata:
+  version: "1.0"
+  created: "2026-08-11"
+  updated: "2026-08-11"
+  author: "agente"
+  script_principal: "cursos/INT_ELECTRONICA/examenes/nota_definitva/calcular_definitivas.py"
+  dependencias:
+    - "poppler-utils (pdftotext, opcional)"
+    - "texlive-latex (pdflatex)"
+  env_vars_requeridas: []
+  notas: >
+    Réplica del flujo BIOANALISIS/examenes/nota_definitiva/calcular_definitivas.py.
+    Solo biblioteca estándar; la lectura es de PDFs (pdftotext) con fallback al .tex.
+    El curso se dicta a Física (código 005-3214) y a Química (código 005-2524); el grupo
+    de cada estudiante se declara en GRUPOS y se muestra en la columna "Grupo" de la tabla.
+    Para otro curso, editar CONFIG (ROSTER, NOMBRE_MAP, GRUPOS, UNITS) y el nº de columnas
+    de la plantilla de tabla si cambia el número de unidades.
+  historial:
+    - version: "1.0"
+      fecha: "2026-08-11"
+      descripcion: "Versión original: cálculo de definitivas para Introducción a la Electrónica."
