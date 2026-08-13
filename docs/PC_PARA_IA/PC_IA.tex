@@ -1,79 +1,471 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[spanish,es-noshorthands]{babel}
-\usepackage[a4paper, margin=2.5cm]{geometry}
-\usepackage{hyperref}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
 
-\title{Propuesta de Hardware: Servidor de IA Local basado en AMD}
-\author{Gemini Code Assist y Prof. CERO}
-\date{\today}
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\hypersetup{
+    pdftitle={Propuesta de Hardware: Servidor de IA Local basado en AMD},
+}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% Cabecera específica de este documento
+\fancyhead[L]{\small\color{azulNoche}\textbf{PC para IA --- Servidor de IA Local}}
+\fancyhead[R]{\small\color{grisTexto}\itshape AMD Ryzen 5 5500}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\color{cyanNeon}\hrule width\headwidth height 0.6pt}
+
+\renewcommand{\iconoBanda}{server}
 
 \begin{document}
 
-\maketitle
+% ══ PORTADA INFográfica ══════════════════════════════════════════════════════
+\bandaTitulo{Propuesta de Hardware: Servidor de IA Local}{AMD Ryzen 5 5500 --- Nodo de Inteligencia Artificial económico y eficiente}
 
-\section{Introducción}
+\begin{center}
+  \vspace{2pt}
+  {\large \textbf{Autor:} Prof. CERO \hfill \textbf{Fecha:} \today} \\[6pt]
+  \color{cyanNeon}\rule{\linewidth}{0.4pt}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% ══ 1. INTRODUCCIÓN ═══════════════════════════════════════════════════════════
+\section[Introducción]{\iconotexto{info-circle}{Introducción}}
+
 Este documento detalla la propuesta de hardware para la construcción de un servidor de Inteligencia Artificial (IA) local económico y eficiente. Tras evaluar las limitaciones de equipos anteriores (falta de instrucciones AVX2 en servidores \textit{legacy} y problemas térmicos severos en PCs antiguas), se ha seleccionado el procesador \textbf{AMD Ryzen 5 5500} como el motor principal para el nuevo ecosistema.
 
-\section{Características del Procesador (AMD Ryzen 5 5500)}
+% ══ 2. CARACTERÍSTICAS DEL PROCESADOR ═════════════════════════════════════════
+\section[Características del Procesador]{\iconotexto{microchip}{Características del Procesador (AMD Ryzen 5 5500)}}
+
 El AMD Ryzen 5 5500 es un procesador de escritorio de 6 núcleos y 12 hilos basado en la arquitectura Zen 3 que ofrece una excelente relación calidad-precio. A continuación, se detallan sus ventajas específicas para cargas de trabajo de IA local:
 
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{server}~Ficha técnica --- AMD Ryzen 5 5500}]
+\begin{tabular}{ll}
+\toprule
+\textbf{Arquitectura} & Zen 3 \\
+\textbf{Núcleos / Hilos} & 6 / 12 \\
+\textbf{Frecuencia} & \SI{3.6}{\giga\hertz} base / \SI{4.2}{\giga\hertz} turbo \\
+\textbf{Instrucciones} & AVX2, FMA3, AVX \\
+\textbf{TDP} & \SI{65}{\watt} \\
+\textbf{Socket / Plataforma} & AM4 (memoria DDR4) \\
+\textbf{Disipador incluido} & Wraith Stealth \\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
 \begin{itemize}
-    \item \textbf{Soporte de Instrucciones AVX2:} Incluye nativamente el conjunto de instrucciones AVX2 (además de FMA3 y AVX). Esto permite la ejecución directa y a máxima velocidad de binarios modernos de IA (como Ollama, PyTorch o TensorFlow) sin arrojar errores de "Instrucción Ilegal".
+    \item \textbf{Soporte de Instrucciones AVX2:} Incluye nativamente el conjunto de instrucciones AVX2 (además de FMA3 y AVX). Esto permite la ejecución directa y a máxima velocidad de binarios modernos de IA (como Ollama, PyTorch o TensorFlow) sin arrojar errores de ``Instrucción Ilegal''.
     \item \textbf{Capacidad de Memoria RAM (DDR4):} Utiliza la plataforma AM4, compatible con memoria RAM DDR4. Esto permite ensamblar el equipo con 32 GB o 64 GB de RAM a bajo costo, facilitando la carga de Modelos de Lenguaje Grandes (LLMs) cuantizados íntegramente en la memoria del sistema.
-    \item \textbf{Eficiencia Térmica:} Posee un TDP (\textit{Thermal Design Power}) de solo 65 Watts e incluye el disipador Wraith Stealth en su caja. Es altamente eficiente y mantendrá temperaturas estables incluso cuando la inferencia de IA ponga los núcleos al 100\% de su capacidad.
+    \item \textbf{Eficiencia Térmica:} Posee un TDP (\textit{Thermal Design Power}) de solo \SI{65}{\watt} e incluye el disipador Wraith Stealth en su caja. Es altamente eficiente y mantendrá temperaturas estables incluso cuando la inferencia de IA ponga los núcleos al \SI{100}{\percent} de su capacidad.
     \item \textbf{Potencia de Inferencia:} Sus 6 núcleos físicos y 12 hilos de procesamiento lógico brindan una gran capacidad para el cálculo de matrices en CPU, generando tokens de texto de manera mucho más fluida y rápida en comparación con arquitecturas antiguas.
 \end{itemize}
 
-\section{Consideraciones y Limitaciones}
-\begin{itemize}
-    \item \textbf{Estándar PCIe 3.0:} Este procesador soporta tecnología PCIe 3.0 en lugar de PCIe 4.0. Si en el futuro se decide instalar una tarjeta gráfica (GPU) de última generación, existirá una ligera reducción teórica en el ancho de banda máximo disponible para transferir datos a la VRAM. Sin embargo, para presupuestos ajustados e inferencia local directa por CPU, esta limitación es completamente imperceptible.
-\end{itemize}
+% ══ 3. CONSIDERACIONES Y LIMITACIONES ═════════════════════════════════════════
+\section[Consideraciones y Limitaciones]{\iconotexto{exclamation-triangle}{Consideraciones y Limitaciones}}
 
-\section{Recomendaciones de Componentes Complementarios}
+\begin{tcolorbox}[cajaMejora, title={\faIcon{exclamation-circle}~Limitación a tener en cuenta}]
+\textbf{Estándar PCIe 3.0:} Este procesador soporta tecnología PCIe 3.0 en lugar de PCIe 4.0. Si en el futuro se decide instalar una tarjeta gráfica (GPU) de última generación, existirá una ligera reducción teórica en el ancho de banda máximo disponible para transferir datos a la VRAM. Sin embargo, para presupuestos ajustados e inferencia local directa por CPU, esta limitación es completamente imperceptible.
+\end{tcolorbox}
+
+% ══ 4. RECOMENDACIONES DE COMPONENTES ═════════════════════════════════════════
+\section[Recomendaciones de Componentes Complementarios]{\iconotexto{tools}{Recomendaciones de Componentes Complementarios}}
+
 Para completar el ensamble del servidor de IA local manteniendo un presupuesto ajustado y asegurando la compatibilidad con el Ryzen 5 5500, se recomiendan los siguientes componentes:
 
 \subsection{Placa Base (Motherboard)}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{memory}~Placa Base}]
 \begin{itemize}
-    \item \textbf{Opción Económica (B450):} Modelos como la \textit{Gigabyte B450M DS3H V2} o la \textit{ASUS Prime B450M-A II}. Son muy económicas y cumplen perfectamente. \textbf{Nota importante:} Al comprar una placa B450, asegúrese de que en la caja indique "AMD Ryzen 5000 Desktop Ready"; de lo contrario, podría requerir una actualización de BIOS previa para reconocer el procesador.
+    \item \textbf{Opción Económica (B450):} Modelos como la \textit{Gigabyte B450M DS3H V2} o la \textit{ASUS Prime B450M-A II}. Son muy económicas y cumplen perfectamente. \textbf{Nota importante:} Al comprar una placa B450, asegúrese de que en la caja indique ``AMD Ryzen 5000 Desktop Ready''; de lo contrario, podría requerir una actualización de BIOS previa para reconocer el procesador.
     \item \textbf{Opción Actualizada (B550):} Modelos como la \textit{MSI B550M PRO-VDH} o la \textit{Gigabyte B550M K}. Suelen soportar la serie 5000 de fábrica de manera nativa y ofrecen un mejor diseño de entrega de energía (VRM).
 \end{itemize}
+\end{tcolorbox}
 
 \subsection{Memoria RAM}
+
 En el contexto de IA por CPU, la capacidad y la configuración son más importantes que la velocidad extrema:
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{memory}~Memoria RAM}]
 \begin{itemize}
     \item \textbf{Recomendación:} 32 GB (2x16 GB) o 64 GB (2x32 GB) de memoria \textbf{DDR4 a 3200 MHz}. Marcas confiables y económicas incluyen \textit{Corsair Vengeance LPX} o \textit{Kingston FURY Beast}.
     \item \textbf{Arquitectura Dual-Channel:} Es de vital importancia instalar siempre las memorias en pares idénticos para aprovechar el Dual-Channel. Esto duplica el ancho de banda de comunicación entre la RAM y el procesador, acelerando drásticamente la velocidad de generación de tokens (palabras) en la IA.
 \end{itemize}
+\end{tcolorbox}
 
 \subsection{Fuente de Poder (PSU)}
-Dado que el Ryzen 5 5500 es altamente eficiente (TDP de 65W) y el servidor dependerá inicialmente de la CPU para inferencia:
-\begin{itemize}
-    \item \textbf{Recomendación:} Una fuente de \textbf{500W a 600W con certificación 80 Plus Bronze}. Modelos como la \textit{ARESGAME AGV 500W}, \textit{EVGA 500 BR} o \textit{Corsair CV550} son excelentes opciones. Proveen energía estable y dejan el margen eléctrico exacto por si en el futuro decides añadir una GPU aceleradora de gama media de 75W a 150W.
-\end{itemize}
+
+Dado que el Ryzen 5 5500 es altamente eficiente (TDP de \SI{65}{\watt}) y el servidor dependerá inicialmente de la CPU para inferencia:
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{bolt}~Fuente de Poder (PSU)}]
+\textbf{Recomendación:} Una fuente de \textbf{500W a 600W con certificación 80 Plus Bronze}. Modelos como la \textit{ARESGAME AGV 500W}, \textit{EVGA 500 BR} o \textit{Corsair CV550} son excelentes opciones. Proveen energía estable y dejan el margen eléctrico exacto por si en el futuro decides añadir una GPU aceleradora de gama media de 75W a 150W.
+\end{tcolorbox}
 
 \subsection{Unidad de Almacenamiento (SSD)}
-Para un servidor de IA, la velocidad del disco afecta directamente el tiempo que tarda en cargar un modelo pesado (ej. un archivo GGUF de 10 GB a 40 GB) desde el almacenamiento hacia la memoria RAM.
+
+Para un servidor de IA, la velocidad del disco afecta directamente el tiempo que tarda en cargar un modelo pesado (ej. un archivo GGUF de \SI{10}{\giga\byte} a \SI{40}{\giga\byte}) desde el almacenamiento hacia la memoria RAM.
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{hdd}~Almacenamiento (SSD)}]
 \begin{itemize}
     \item \textbf{Recomendación Principal (NVMe M.2 PCIe Gen3):} Se recomienda estrictamente utilizar un \textbf{SSD NVMe M.2 (PCIe Gen 3.0, formato 2280)}. Unidades con velocidades de hasta 3500 MB/s son ideales para cargar modelos enormes a la RAM en pocos segundos. Se instalan directamente en la placa base (B450/B550) sin cables, mejorando el flujo de aire.
     \item \textbf{Capacidad Recomendada:} Aunque una unidad de \textbf{256 GB} es perfectamente compatible y funcional en velocidad, el espacio se llenará rápidamente al almacenar múltiples modelos GGUF o bases de datos vectoriales. Se recomienda usarla solo si el presupuesto es estricto; de lo contrario, apuntar a \textbf{500 GB o 1 TB} (ej. \textit{Crucial P3}, \textit{Kingston NV2} o \textit{WD Blue SN570}) es la mejor inversión.
     \item \textbf{SSD SATA (Alternativa secundaria):} Aunque son funcionales, están limitados a $\approx$ 550 MB/s. Cargar un modelo grande tomará notablemente más tiempo. Dado que hoy en día los precios entre NVMe y SATA son casi idénticos, el formato M.2 NVMe es la elección definitiva.
 \end{itemize}
+\end{tcolorbox}
 
 \subsection{Gabinete (Case)}
+
 El chasis no solo alberga los componentes, sino que es el principal responsable de disipar el calor generado durante la inferencia de IA. Para garantizar temperaturas óptimas y prolongar la vida útil del hardware, se debe evitar el aislamiento térmico.
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{box-open}~Gabinete (Case)}]
 \begin{itemize}
     \item \textbf{Regla de Oro (Frontal Mesh):} Es estrictamente necesario adquirir un gabinete con panel frontal de malla perforada (\textit{Mesh}). Los frontales de cristal o plástico sólido bloquean la entrada de aire frío.
-    \item \textbf{Recomendaciones Económicas:} Modelos como el \textit{Thermaltake Versa H18}, \textit{Zalman S2}, o el \textit{DeepCool MATREXX 40 3FS} son opciones extraordinarias de bajo costo. 
+    \item \textbf{Recomendaciones Económicas:} Modelos como el \textit{Thermaltake Versa H18}, \textit{Zalman S2}, o el \textit{DeepCool MATREXX 40 3FS} son opciones extraordinarias de bajo costo.
     \item \textbf{Ventajas Adicionales:} Estos modelos soportan placas base Micro-ATX/ATX, incluyen ventiladores preinstalados de fábrica (lo que ahorra costos adicionales) y cuentan con un compartimento inferior aislado para la fuente de poder (PSU Shroud), mejorando el orden de los cables y el flujo de aire interno.
 \end{itemize}
+\end{tcolorbox}
 
-\section{Estimación de Costos}
-Tras una investigación de mercado reciente (consultando los precios actuales en la plataforma Amazon), se ha determinado que el costo total estimado para adquirir todos los componentes recomendados para este ensamble asciende a aproximadamente \textbf{\$808.74 USD}. Esta cifra confirma que el equipo representa una inversión muy accesible, logrando un excelente equilibrio entre precio y rendimiento para la implementación de un nodo de Inteligencia Artificial local.
+% ══ 5. ESTIMACIÓN DE COSTOS ═══════════════════════════════════════════════════
+\section[Estimación de Costos]{\iconotexto{dollar-sign}{Estimación de Costos}}
 
-\section{Veredicto Final}
+Tras una investigación de mercado reciente (consultando los precios actuales en la plataforma Amazon), se ha determinado que el costo total estimado para adquirir todos los componentes recomendados para este ensamble asciende a aproximadamente:
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{coins}~Costo total estimado}]
+\centering
+{\fontsize{28}{34}\selectfont\bfseries\color{azulNoche}\$808.74 USD}\par\vspace{4pt}
+{\color{grisTexto}\small Inversión total del ensamble (mercado actual)}
+\end{tcolorbox}
+
+Esta cifra confirma que el equipo representa una inversión muy accesible, logrando un excelente equilibrio entre precio y rendimiento para la implementación de un nodo de Inteligencia Artificial local.
+
+% ══ 6. VEREDICTO FINAL ════════════════════════════════════════════════════════
+\section[Veredicto Final]{\iconotexto{flag-checkered}{Veredicto Final}}
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{thumbs-up}~Conclusión}]
 Si se acompaña de una placa base económica (ej. chipset B450 o B550) y una cantidad generosa de memoria DDR4, el Ryzen 5 5500 se posiciona como el procesador perfecto para construir un nodo de Inteligencia Artificial local moderno, silencioso y muy económico.
+\end{tcolorbox}
 
 \end{document}

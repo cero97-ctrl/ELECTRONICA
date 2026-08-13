@@ -13,6 +13,10 @@ Elementos provistos:
   - PREAMBULO_INFOGRAFIA : preámbulo completo listo para \begin{document}
   - banda_titulo()       : Apertura con banda de color y subtítulo (portada infográfica)
   - seccion_con_icono()  : Sección con rótulo/icono (usa \section + icono FontAwesome)
+  - \bandaTitulo[color]  : banda parametrizable (esquinas redondeadas, icono redefinible)
+  - \cajaRecuerda/\cajaConcepto/\cajaEjemplo/\cajaEjercicio/\cajaReto : cajas temáticas
+  - \facil/\intermedio/\dificil : indicadores de dificultad coloreados
+  - estiloCodigo/estiloPython : listados de código dark-mode (listings + auto-wrap)
 """
 
 # ── Preámbulo LaTeX compartido ─────────────────────────────────────────────────
@@ -24,7 +28,7 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[default,scale=0.95]{sourcesanspro}
 \renewcommand{\familydefault}{\sfdefault}
-\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
 
 % ── Geometría y espaciado ─────────────────────────────────────────────────────
 \usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
@@ -55,6 +59,11 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 \usepackage{fontawesome5}
 \usepackage{graphicx}
 
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
 % ── Secciones con barra de color (infografía) ────────────────────────────────
 \usepackage{titlesec}
 \titleformat{\section}
@@ -67,6 +76,10 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
   {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
   [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
 \titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
 
 % ── Cabeceras y pies de página ────────────────────────────────────────────────
 \usepackage{fancyhdr}
@@ -91,6 +104,7 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 
 % ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
 \definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
 \definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
 \definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
 \definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
@@ -102,25 +116,35 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 \definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
 \definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
 
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
 % ── Banda de título: portada infográfica ──────────────────────────────────────
-%   Diseño en 2 capas: fondo oscuro + franja de acento cyan abajo
-\newcommand{\bandaTitulo}[2]{%
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
   \begin{tcolorbox}[
-    enhanced, sharp corners,
-    colback=fondoOscuro, colframe=fondoOscuro,
-    boxrule=0pt, arc=0pt, outer arc=0pt,
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
     width=\linewidth,
     top=18pt, bottom=6pt, left=14pt, right=14pt,
     borderline south={3.5pt}{0pt}{cyanNeon},
   ]
     \begin{minipage}[c]{0.07\linewidth}
       \centering
-      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{microchip}}
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
     \end{minipage}%
     \hspace{8pt}%
     \begin{minipage}[c]{0.88\linewidth}
-      {\fontsize{20}{24}\selectfont\bfseries\color{white}#1}\par\vspace{5pt}%
-      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#2}%
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
     \end{minipage}
     \vspace{4pt}
   \end{tcolorbox}%
@@ -209,13 +233,136 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 % ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
 \newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
 
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
 % ─────────────────────────────────────────────────────────────────────────────
 """
 
 
-def banda_titulo(titulo: str, subtitulo: str) -> str:
-    """Apertura infográfica con banda de color, título y subtítulo."""
-    return r"\bandaTitulo{" + titulo + "}{" + subtitulo + "}"
+def banda_titulo(titulo: str, subtitulo: str, color: str = "fondoOscuro") -> str:
+    """Apertura infográfica con banda de color, título y subtítulo.
+
+    color: nombre de color xcolor que pinta el fondo de la banda
+           (por defecto 'fondoOscuro'; ej. 'verdeTurquesa').
+    """
+    return rf"\bandaTitulo[{color}]{{{titulo}}}{{{subtitulo}}}"
 
 
 def seccion_con_icono(icono: str, texto: str) -> str:

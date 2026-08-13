@@ -1,41 +1,373 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
 \usepackage{amsmath}
-\usepackage{geometry}
-\geometry{a4paper, margin=2.5cm}
-\usepackage[hidelinks]{hyperref}
-\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
 \usepackage{listings}
-\lstset{
-    basicstyle=\ttfamily\small,
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
     breaklines=true,
-    backgroundcolor=\color{gray!10},
-    frame=single,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
     literate=
       {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
       {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
-      {ñ}{{\~n}}1 {Ñ}{{\~N}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
-\title{Manual para Iniciar un Nuevo Proyecto\\basado en la Arquitectura de 3 Capas}
-\author{Agente IA (Orquestador)}
-\date{\today}
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
 
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ── Cabecera específica del manual ────────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{Manual --- Nuevo Proyecto}}
+\fancyhead[R]{\small\color{grisTexto}\itshape Arquitectura de 3 Capas}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\color{cyanNeon}\hrule width\headwidth height 0.6pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
 \begin{document}
-\maketitle
+
+% ══ PORTADA INFográfica ══════════════════════════════════════════════════════
+\bandaTitulo{Manual para Iniciar un Nuevo Proyecto}{Arquitectura de 3 Capas: Directives $\to$ Orchestration $\to$ Execution}
+
+\begin{center}
+  \vspace{2pt}
+  {\large \textbf{Autor:} Agente IA (Orquestador) \hfill \textbf{Tipo:} Guía de inicio} \\[4pt]
+  {\large \textbf{Fecha:} \today} \\[6pt]
+  \color{cyanNeon}\rule{\linewidth}{0.4pt}
+\end{center}
+
 \tableofcontents
 \newpage
 
-\section{Introducción}
+% ══ 1. INTRODUCCIÓN ═══════════════════════════════════════════════════════════
+\section[Introducción]{\iconotexto{info-circle}{Introducción}}
 
 Este manual describe los pasos para iniciar un nuevo espacio de trabajo bajo la arquitectura de 3 capas (Directives $\to$ Orchestration $\to$ Execution). El objetivo es proporcionar una estructura reutilizable que maximice la fiabilidad, separando la lógica probabilística del LLM de la ejecución determinista mediante scripts especializados.
 
-\section{Estructura de Directorios}
+\begin{tcolorbox}[tarjetaDato, title={Arquitectura en 3 capas}]
+  \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l>{\raggedright\arraybackslash}X}
+    \rowcolor{azulNoche!12}\faIcon{book}~Directives & \textit{Qué hacer} --- SOPs en YAML (Layer 1).\\
+    \rowcolor{white}\faIcon{brain}~Orquestación & \textit{Decide cuándo y cuál} --- validación y enrutamiento (Layer 2).\\
+    \rowcolor{white}\faIcon{terminal}~Ejecución & \textit{Cómo} --- scripts deterministas (Layer 3).\\
+  \end{tabularx}
+\end{tcolorbox}
+
+% ══ 2. ESTRUCTURA DE DIRECTORIOS ══════════════════════════════════════════════
+\section[Estructura de Directorios]{\iconotexto{folder-open}{Estructura de Directorios}}
 
 Crear la siguiente estructura en la raíz del nuevo proyecto:
 
+\begin{tcolorbox}[cajaContenido, title={Árbol de directorios}]
 \begin{lstlisting}
 proyecto/
 |-- .agent/           # Instrucciones del sistema para el agente IA
@@ -47,41 +379,48 @@ proyecto/
 |-- .gitignore        # Exclusiones de seguimiento
 |-- requirements.txt  # Dependencias (se completa al definir el proyecto)
 \end{lstlisting}
+\end{tcolorbox}
 
-\section{Paso 1: Archivos del Agente (.agent/)}
+% ══ 3. PASO 1 ═════════════════════════════════════════════════════════════════
+\section[Paso 1 --- Archivos del Agente]{\iconotexto{cogs}{Paso 1: Archivos del Agente (\texttt{.agent/})}}
 
 Copiar los archivos \texttt{FRAMEWORK.md} e \texttt{INSTRUCTIONS.md} desde la plantilla ubicada en \texttt{docs/AGENTE\_IA/} a la carpeta \texttt{.agent/} del nuevo proyecto. Estos archivos definen el marco operativo y las instrucciones del agente.
 
-Personalizar los siguientes puntos en \texttt{INSTRUCTIONS.md}:
-
-\begin{itemize}
+\begin{tcolorbox}[cajaContenido, title={Personalizar en \texttt{INSTRUCTIONS.md}}]
+\begin{itemize}[leftmargin=*]
     \item \textbf{Sección 1:} Ajustar el tono, las restricciones de entorno y el stack tecnológico (SO, gestor de paquetes, lenguajes).
     \item \textbf{Sección 8:} Definir el formato de documentación del proyecto (Markdown, LaTeX, etc.).
     \item \textbf{Sección 10:} Completar las directrices de dominio técnico: lenguaje principal, frameworks, infraestructura, seguridad y flujo de trabajo.
 \end{itemize}
+\end{tcolorbox}
 
-En \texttt{FRAMEWORK.md}:
-
-\begin{itemize}
+\begin{tcolorbox}[cajaContenido, title={Actualizar en \texttt{FRAMEWORK.md}}]
+\begin{itemize}[leftmargin=*]
     \item \textbf{Available Directives:} Listar los flujos de trabajo repetibles propios del proyecto.
     \item \textbf{Setup:} Documentar los pasos de instalación específicos del proyecto.
 \end{itemize}
+\end{tcolorbox}
 
-\section{Paso 2: Configuración del Agente (opencode.json)}
+% ══ 4. PASO 2 ═════════════════════════════════════════════════════════════════
+\section[Paso 2 --- Configuración del Agente]{\iconotexto{file-code}{Paso 2: Configuración del Agente (\texttt{opencode.json})}}
 
 Crear \texttt{opencode.json} en la raíz del proyecto para que el agente cargue las instrucciones desde \texttt{.agent/}:
 
+\begin{tcolorbox}[cajaContenido, title={\texttt{opencode.json}}]
 \begin{lstlisting}
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": [".agent/*.md"]
 }
 \end{lstlisting}
+\end{tcolorbox}
 
-\section{Paso 3: Crear las Primeras Directivas (directives/)}
+% ══ 5. PASO 3 ═════════════════════════════════════════════════════════════════
+\section[Paso 3 --- Primeras Directivas]{\iconotexto{clipboard-list}{Paso 3: Crear las Primeras Directivas (\texttt{directives/})}}
 
 Cada directiva es un archivo YAML que describe un flujo de trabajo repetible. Estructura recomendada:
 
+\begin{tcolorbox}[cajaContenido, title={\texttt{directives/mi\_flujo.yaml}}]
 \begin{lstlisting}
 # directives/mi_flujo.yaml
 goal: "Descripcion del objetivo"
@@ -96,14 +435,17 @@ expected_outputs: "Descripcion del resultado esperado"
 edge_cases:
   - "Que hacer si algo falla"
 \end{lstlisting}
+\end{tcolorbox}
 
 Crear al menos una directiva inicial para validar que el flujo funciona. Ejemplos comunes: \texttt{scrape\_website.yaml}, \texttt{research\_topic.yaml}, \texttt{git\_update.yaml}.
 
-\section{Paso 4: Crear los Scripts de Ejecución (execution/)}
+% ══ 6. PASO 4 ═════════════════════════════════════════════════════════════════
+\section[Paso 4 --- Scripts de Ejecución]{\iconotexto{terminal}{Paso 4: Crear los Scripts de Ejecución (\texttt{execution/})}}
 
 Cada script debe cumplir:
 
-\begin{itemize}
+\begin{tcolorbox}[tarjetaIcono, title={Requisitos de un script}]
+\begin{itemize}[leftmargin=*]
     \item Una sola responsabilidad.
     \item Entradas por argumentos CLI.
     \item Secretos en \texttt{.env}.
@@ -111,9 +453,11 @@ Cada script debe cumplir:
     \item Códigos de salida: 0 (éxito), 1+ (fallos categorizados).
     \item Validar sus propias salidas y fallar ruidosamente si algo está mal.
 \end{itemize}
+\end{tcolorbox}
 
 Ejemplo mínimo en Python:
 
+\begin{tcolorbox}[cajaContenido, title={Plantilla de script}]
 \begin{lstlisting}[language=Python]
 #!/usr/bin/env python3
 """Descripcion breve de la funcion del script."""
@@ -129,12 +473,15 @@ def main():
 if __name__ == "__main__":
     sys.exit(main())
 \end{lstlisting}
+\end{tcolorbox}
 
-\section{Paso 5: Archivos de Configuración}
+% ══ 7. PASO 5 ═════════════════════════════════════════════════════════════════
+\section[Paso 5 --- Archivos de Configuración]{\iconotexto{wrench}{Paso 5: Archivos de Configuración}}
 
 \subsection{.gitignore}
 Crear un \texttt{.gitignore} genérico:
 
+\begin{tcolorbox}[cajaContenido, title={\texttt{.gitignore}}]
 \begin{lstlisting}
 __pycache__/
 *.pyc
@@ -148,20 +495,25 @@ chroma_db/
 venv/
 .venv/
 \end{lstlisting}
+\end{tcolorbox}
 
 \subsection{.env}
 Plantilla para credenciales:
 
+\begin{tcolorbox}[cajaContenido, title={\texttt{.env}}]
 \begin{lstlisting}
 # API Keys
 # API_KEY=tu_clave_aqui
 \end{lstlisting}
+\end{tcolorbox}
 
-\section{Flujo de Trabajo del Agente}
+% ══ 8. FLUJO DE TRABAJO DEL AGENTE ════════════════════════════════════════════
+\section[Flujo de Trabajo del Agente]{\iconotexto{sync-alt}{Flujo de Trabajo del Agente}}
 
 Una vez configurada la estructura, el agente opera siguiendo este ciclo:
 
-\begin{enumerate}
+\begin{tcolorbox}[tarjetaDato, title={Ciclo de operación}]
+\begin{enumerate}[leftmargin=*]
     \item \textbf{Validación de Entorno:} Verificar que el sistema cumple los requisitos.
     \item \textbf{Búsqueda:} Revisar \texttt{directives/} para ver si existe un SOP para la tarea solicitada.
     \item \textbf{Planificación:} Seleccionar la directiva y el script de ejecución correspondiente.
@@ -171,10 +523,13 @@ Una vez configurada la estructura, el agente opera siguiendo este ciclo:
     \item \textbf{Notificación:} Informar al usuario del resultado.
     \item \textbf{Aprendizaje:} Si surge un error, documentarlo y actualizar la directiva.
 \end{enumerate}
+\end{tcolorbox}
 
-\section{Buenas Prácticas}
+% ══ 9. BUENAS PRÁCTICAS ═══════════════════════════════════════════════════════
+\section[Buenas Prácticas]{\iconotexto{check-circle}{Buenas Prácticas}}
 
-\begin{itemize}
+\begin{tcolorbox}[cajaRecomendacion, title={Recomendaciones}]
+\begin{itemize}[leftmargin=*]
     \item \textbf{Reutilizar antes de construir:} Revisar \texttt{execution/} antes de crear un nuevo script.
     \item \textbf{Directivas atómicas:} Cada directiva debe describir un solo flujo de trabajo.
     \item \textbf{Versionado de directivas:} Si cambia la lógica, conservar versiones antiguas (v1, v2).
@@ -182,9 +537,13 @@ Una vez configurada la estructura, el agente opera siguiendo este ciclo:
     \item \textbf{Validar siempre:} Después de cada paso, confirmar esquema, cantidades y archivos generados.
     \item \textbf{Documentar errores:} Mantener un registro de errores comunes y sus soluciones (ej. \texttt{errores.md}) para evitar regresiones.
 \end{itemize}
+\end{tcolorbox}
 
-\section{Conclusión}
+% ══ 10. CONCLUSIÓN ════════════════════════════════════════════════════════════
+\section[Conclusión]{\iconotexto{flag-checkered}{Conclusión}}
 
+\begin{tcolorbox}[cajaFortaleza, title={Resultado}]
 Con esta estructura, el nuevo proyecto queda listo para operar bajo la arquitectura de 3 capas. El esqueleto inicial es mínimo pero escalable: las directivas, scripts y configuraciones se agregan según el proyecto va tomando forma.
+\end{tcolorbox}
 
 \end{document}

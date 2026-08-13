@@ -3,7 +3,7 @@ import os
 import argparse
 
 # Extensiones que deseamos CONSERVAR
-KEEP_EXTENSIONS = [".tex", ".pdf", ".py", ".md", ".json", ".sh", ".png", ".jpg", ".jpeg", ".zip", ".ipynb", ".kicad_sch", ".txt"]
+KEEP_EXTENSIONS = [".tex", ".pdf", ".py", ".md", ".json", ".sh", ".png", ".jpg", ".jpeg", ".zip", ".ipynb", ".kicad_sch", ".txt", ".mp4"]
 
 def clean_latex_aux_files(directory):
     if not os.path.exists(directory):
