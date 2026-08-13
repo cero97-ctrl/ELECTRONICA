@@ -1,0 +1,1270 @@
+\documentclass[12pt,a4paper]{article}
+
+%================= PAQUETES =================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage{tabularx}
+
+%================= CONFIGURACIÓN =================
+\geometry{a4paper, margin=2.5cm}
+
+\definecolor{azulTitulo}{RGB}{30,60,120}
+\definecolor{verdePython}{RGB}{53,114,53}
+\definecolor{codigoFondo}{RGB}{245,247,250}
+\definecolor{codigoComentario}{RGB}{140,140,140}
+\definecolor{codigoCadena}{RGB}{170,60,30}
+\definecolor{codigoKeyword}{RGB}{0,80,160}
+\definecolor{codigoNumero}{RGB}{150,30,150}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=azulTitulo,
+    urlcolor=cyan,
+    pdftitle={Solucionario - Curso de Programación en Python para Secundaria},
+}
+
+% Configuración de listings para bloques de código Python
+\lstdefinestyle{pythonStyle}{
+    language=Python,
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{black!20},
+    captionpos=b,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+
+\newtcolorbox{cajaSolucion}{
+    colback=green!5!white,
+    colframe=verdePython,
+    boxrule=0.8pt,
+    arc=2mm,
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{cajaNota}{
+    colback=orange!5!white,
+    colframe=orange!70!black,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Nota pedagógica}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\title{\textbf{Solucionario}\\[6pt]
+\large Curso de Programación en Python para Secundaria}
+\author{Prof. César Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent Este documento contiene las soluciones de todos los ejercicios y retos propuestos en el curso. Está dirigido al docente. Se recomienda que el estudiante intente resolver cada ejercicio \textbf{antes} de revisar la solución. Las soluciones están organizadas por módulo y numeradas igual que en el documento principal.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+% MÓDULO 1
+% ============================================================
+\section{Soluciones del Módulo 1}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 1}
+\begin{lstlisting}[style=pythonStyle]
+print("Mi nombre es Ana López")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 2}
+\begin{lstlisting}[style=pythonStyle]
+print("Mi nombre es Ana López")
+print("Soy de La Paz, Bolivia")
+print("Mi hobby es la programación")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 3}
+\begin{lstlisting}[style=pythonStyle]
+print("*****")
+print("*****")
+print("*****")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 4}
+
+Una posible respuesta:
+\begin{lstlisting}[style=pythonStyle]
+# Programa: hola mundo
+# Autor: Ana López
+# Fecha: 2026
+
+# La funcion print muestra un mensaje en pantalla
+print("Hola, mundo!")  # Este es el mensaje que se mostrara
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 1}
+
+Cuando \texttt{print()} recibe dos argumentos separados por coma, los muestra en la misma línea separados por un espacio:
+\begin{lstlisting}[style=pythonStyle]
+# print con varios argumentos los separa automaticamente con un espacio
+print("Hola", "mundo")  # salida: Hola mundo
+
+# Programa con mi nombre y mi edad
+print("Mi nombre es", "Ana López")
+print("Tengo", 15, "años")
+\end{lstlisting}
+\textbf{Salida:}
+\begin{lstlisting}[style=pythonStyle]
+Hola mundo
+Mi nombre es Ana López
+Tengo 15 años
+\end{lstlisting}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 2
+% ============================================================
+\section{Soluciones del Módulo 2}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 5}
+\begin{lstlisting}[style=pythonStyle]
+edad = 15
+nombre = "Ana"
+estatura = 1.62
+
+print(nombre)
+print(edad)
+print(estatura)
+
+print(type(nombre))       # <class 'str'>
+print(type(edad))         # <class 'int'>
+print(type(estatura))     # <class 'float'>
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 6}
+\begin{lstlisting}[style=pythonStyle]
+base = 8
+altura = 5
+area = base * altura
+
+print("El area del rectangulo es:", area)   # 40
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 7}
+
+El error es que se intenta sumar texto (``\texttt{y tengo}'') con un entero (\texttt{edad}), y Python no permite sumar \texttt{str} con \texttt{int}. Hay que convertir \texttt{edad} a texto con \texttt{str()}:
+\begin{lstlisting}[style=pythonStyle]
+nombre = "Carlos"
+edad = 14
+# Corregido: convertimos edad a texto con str()
+print("Hola, me llamo " + nombre + " y tengo " + str(edad) + " anios")
+\end{lstlisting}
+
+\begin{cajaNota}
+También se puede resolver con \texttt{print("Hola, me llamo", nombre, "y tengo", edad, "anios")}, donde \texttt{print()} convierte automáticamente cada valor a texto. Esta es la alternativa más didáctica.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 8}
+\begin{lstlisting}[style=pythonStyle]
+a = 5
+b = 3
+
+print("Antes de intercambiar: a =", a, "b =", b)
+
+# Usamos una variable auxiliar (una tercera caja)
+temporal = a
+a = b
+b = temporal
+
+print("Despues de intercambiar: a =", a, "b =", b)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 2}
+\begin{lstlisting}[style=pythonStyle]
+radio = 7
+pi = 3.14159
+perimetro = 2 * pi * radio
+
+print("El perimetro es", perimetro)    # El perimetro es 43.98226
+\end{lstlisting}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 3
+% ============================================================
+\section{Soluciones del Módulo 3}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 9}
+\begin{lstlisting}[style=pythonStyle]
+nombre = input("Escribe tu nombre: ")
+edad = int(input("Escribe tu edad: "))
+
+print("Hola,", nombre + ". El proximo anio tendras", edad + 1, "anios.")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 10}
+\begin{lstlisting}[style=pythonStyle]
+a = int(input("Escribe el primer numero: "))
+b = int(input("Escribe el segundo numero: "))
+
+print(a, "+", b, "=", a + b)
+print(a, "-", b, "=", a - b)
+print(a, "*", b, "=", a * b)
+print(a, "/", b, "=", a / b)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 11}
+\begin{lstlisting}[style=pythonStyle]
+base = float(input("Escribe la base del triangulo: "))
+altura = float(input("Escribe la altura del triangulo: "))
+
+area = (base * altura) / 2
+
+print("El area del triangulo es:", area)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 12}
+\begin{lstlisting}[style=pythonStyle]
+precio = float(input("Escribe el precio del producto: "))
+
+iva = precio * 0.12
+precio_final = precio + iva
+
+print("Precio original:", precio)
+print("Monto del IVA (12%):", iva)
+print("Precio final:", precio_final)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 3}
+\begin{lstlisting}[style=pythonStyle]
+segundos = int(input("Escribe una cantidad de segundos: "))
+
+horas = segundos // 3600
+resto = segundos % 3600
+minutos = resto // 60
+seg = resto % 60
+
+print(segundos, "segundos son", horas, "hora(s),",
+      minutos, "minuto(s) y", seg, "segundo(s)")
+\end{lstlisting}
+\textbf{Prueba con 10000:} 10000 segundos son 2 horas, 46 minutos y 40 segundos.
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 4
+% ============================================================
+\section{Soluciones del Módulo 4}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 13}
+
+Resultados esperados:
+\begin{lstlisting}[style=pythonStyle]
+print(15 // 4)      # 3
+print(15 % 4)       # 3
+print(2 ** 10)      # 1024
+print(10 - 2 * 3)   # 4
+print((10 - 2) * 3) # 24
+print(9 % 2)        # 1
+\end{lstlisting}
+
+\begin{cajaNota}
+Este ejercicio practica la \textbf{precedencia de operadores}: la multiplicación se evalúa antes que la suma, pero los paréntesis tienen prioridad total.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 14}
+\begin{lstlisting}[style=pythonStyle]
+numero = int(input("Escribe un numero: "))
+
+if numero % 2 == 0:
+    print("El numero es par")
+else:
+    print("El numero es impar")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 15}
+\begin{lstlisting}[style=pythonStyle]
+nota1 = float(input("Escribe la primera nota: "))
+nota2 = float(input("Escribe la segunda nota: "))
+nota3 = float(input("Escribe la tercera nota: "))
+
+promedio = (nota1 + nota2 + nota3) / 3
+
+print("El promedio es:", round(promedio, 2))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 16}
+\begin{lstlisting}[style=pythonStyle]
+numero = int(input("Escribe un numero de 4 cifras: "))
+
+miles = numero // 1000
+centenas = (numero % 1000) // 100
+decenas = (numero % 100) // 10
+unidades = numero % 10
+
+print("Digitos:", miles, centenas, decenas, unidades)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 4}
+\begin{lstlisting}[style=pythonStyle]
+numero = int(input("Escribe un numero de 3 cifras: "))
+
+centenas = numero // 100
+unidades = numero % 10
+
+if centenas == unidades:
+    print(numero, "es un numero capicua")
+else:
+    print(numero, "no es un numero capicua")
+\end{lstlisting}
+
+\begin{cajaNota}
+Basta comparar centenas con unidades. Si coinciden, el número se lee igual al derecho y al revés (la cifra del medio no afecta). Ejemplos: 121 sí es capicúa, 123 no lo es.
+\end{cajaNota}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 5
+% ============================================================
+\section{Soluciones del Módulo 5}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 17}
+\begin{lstlisting}[style=pythonStyle]
+numero = int(input("Escribe un numero: "))
+
+if numero > 0:
+    print("El numero es positivo")
+elif numero < 0:
+    print("El numero es negativo")
+else:
+    print("El numero es cero")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 18}
+\begin{lstlisting}[style=pythonStyle]
+numero = int(input("Escribe un numero entero: "))
+
+if numero % 2 == 0:
+    print("El numero es par")
+else:
+    print("El numero es impar")
+
+# Condiciones anidadas para el segundo dato
+if numero > 100:
+    print("El numero es mayor que 100")
+else:
+    print("El numero es menor o igual que 100")
+\end{lstlisting}
+
+\begin{cajaNota}
+Las dos comprobaciones son \textbf{independientes}, por eso se resuelve cómodo con dos bloques \texttt{if} secuenciales. También es válido anidarlas dentro de un solo \texttt{if}, como pide el enunciado; ambas formas son correctas.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 19}
+\begin{lstlisting}[style=pythonStyle]
+a = int(input("Escribe el primer numero: "))
+b = int(input("Escribe el segundo numero: "))
+
+if a > b:
+    print("El mayor es:", a)
+elif b > a:
+    print("El mayor es:", b)
+else:
+    print("Los numeros son iguales")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 20}
+\begin{lstlisting}[style=pythonStyle]
+a = int(input("Escribe el primer numero: "))
+b = int(input("Escribe el segundo numero: "))
+c = int(input("Escribe el tercer numero: "))
+
+if a <= b and a <= c:
+    menor = a
+    if b <= c:
+        medio, mayor = b, c
+    else:
+        medio, mayor = c, b
+elif b <= a and b <= c:
+    menor = b
+    if a <= c:
+        medio, mayor = a, c
+    else:
+        medio, mayor = c, a
+else:
+    menor = c
+    if a <= b:
+        medio, mayor = a, b
+    else:
+        medio, mayor = b, a
+
+print("Orden ascendente:", menor, medio, mayor)
+\end{lstlisting}
+
+\begin{cajaSolucion}
+\textbf{Alternativa con función \texttt{sorted}:}
+\begin{lstlisting}[style=pythonStyle]
+a = int(input("Escribe el primer numero: "))
+b = int(input("Escribe el segundo numero: "))
+c = int(input("Escribe el tercer numero: "))
+
+ordenados = sorted([a, b, c])
+print("Orden ascendente:", ordenados[0], ordenados[1], ordenados[2])
+\end{lstlisting}
+\end{cajaSolucion}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 5}
+\begin{lstlisting}[style=pythonStyle]
+edad = int(input("Escribe tu edad: "))
+
+if edad < 0:
+    print("Edad invalida")
+elif edad <= 2:
+    print("Bebe")
+elif edad <= 11:
+    print("Nino(a)")
+elif edad <= 17:
+    print("Adolescente")
+elif edad <= 59:
+    print("Adulto")
+else:
+    print("Adulto mayor")
+\end{lstlisting}
+
+\begin{cajaNota}
+Como las condiciones se evalúan en orden, \texttt{elif edad <= 2} ya implica que la edad es $\geq 0$ y $\leq 2$. No hace falta escribir \texttt{edad >= 3 and edad <= 11}, aunque también sería correcto hacerlo explícito.
+\end{cajaNota}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 6
+% ============================================================
+\section{Soluciones del Módulo 6}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 21}
+\begin{lstlisting}[style=pythonStyle]
+for numero in range(2, 21, 2):
+    print(numero)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 22}
+\begin{lstlisting}[style=pythonStyle]
+n = int(input("Escribe un numero: "))
+
+for i in range(1, 11):
+    print(n, "x", i, "=", n * i)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 23}
+\begin{lstlisting}[style=pythonStyle]
+suma = 0
+
+for i in range(5):
+    nota = float(input("Escribe la calificacion " + str(i + 1) + ": "))
+    suma = suma + nota
+
+promedio = suma / 5
+print("El promedio es:", round(promedio, 2))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 24}
+\begin{lstlisting}[style=pythonStyle]
+for numero in range(10, 0, -1):
+    print(numero)
+
+print("Despegue!")
+\end{lstlisting}
+
+\begin{cajaNota}
+En \texttt{range(10, 0, -1)} el paso negativo hace la cuenta regresiva: 10, 9, ..., 1. El 0 no se incluye porque el final es exclusivo.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 25}
+\begin{lstlisting}[style=pythonStyle]
+suma = 0
+numero = int(input("Escribe un numero (0 para terminar): "))
+
+while numero != 0:
+    suma = suma + numero
+    numero = int(input("Escribe otro numero (0 para terminar): "))
+
+print("La suma de los numeros es:", suma)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 6}
+\begin{lstlisting}[style=pythonStyle]
+n = int(input("Escribe un numero para calcular su factorial: "))
+
+factorial = 1
+for i in range(1, n + 1):
+    factorial = factorial * i
+
+print("El factorial de", n, "es:", factorial)
+\end{lstlisting}
+
+\textbf{Verificaciones:} $5! = 120$ y $7! = 5040$.
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 7
+% ============================================================
+\section{Soluciones del Módulo 7}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 26}
+\begin{lstlisting}[style=pythonStyle]
+palabra = input("Escribe una palabra: ")
+
+print("En mayusculas:", palabra.upper())
+print("En minusculas:", palabra.lower())
+print("Cantidad de letras:", len(palabra))
+print("Primera letra:", palabra[0])
+print("Ultima letra:", palabra[-1])
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 27}
+\begin{lstlisting}[style=pythonStyle]
+nombre = input("Escribe tu nombre completo: ")
+
+print(nombre.title())
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 28}
+\begin{lstlisting}[style=pythonStyle]
+frase = input("Escribe una frase: ")
+
+# Convertimos a minusculas para que A y a cuenten igual
+frase_minuscula = frase.lower()
+cantidad = frase_minuscula.count("a")
+
+print("La letra 'a' aparece", cantidad, "veces")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 29}
+\begin{lstlisting}[style=pythonStyle]
+palabra = input("Escribe una palabra: ")
+
+invertida = palabra[::-1]
+
+if palabra == invertida:
+    print(palabra, "es un palindromo")
+else:
+    print(palabra, "no es un palindromo")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 30}
+\begin{lstlisting}[style=pythonStyle]
+frase = input("Escribe una frase: ")
+
+palabras = frase.split(" ")
+palabras.reverse()
+
+resultado = " ".join(palabras)
+print("Frase invertida:", resultado)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 7}
+\begin{lstlisting}[style=pythonStyle]
+frase = input("Escribe un mensaje para cifrar: ")
+
+cifrado = ""
+
+for letra in frase.lower():
+    if letra.isalpha():        # solo ciframos letras
+        codigo = ord(letra)    # codigo ASCII de la letra
+        codigo = codigo + 3    # desplazamiento de 3
+        # Si pasamos de 'z' (122), volvemos al inicio del alfabeto
+        if codigo > ord("z"):
+            codigo = codigo - 26
+        cifrado = cifrado + chr(codigo)
+    else:
+        cifrado = cifrado + letra   # espacios y signos no cambian
+
+print("Mensaje cifrado:", cifrado)
+\end{lstlisting}
+
+\begin{cajaNota}
+Este es el clásico \textbf{cifrado César}. Con desplazamiento 3: ``hola'' se convierte en ``krod''. Para descifrar, basta restar 3 en lugar de sumar.
+\end{cajaNota}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 8
+% ============================================================
+\section{Soluciones del Módulo 8}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 31}
+\begin{lstlisting}[style=pythonStyle]
+colores = ["rojo", "verde", "azul", "amarillo", "negro"]
+
+print("Primer color:", colores[0])
+print("Ultimo color:", colores[-1])
+
+colores.append("blanco")
+colores[1] = "naranja"
+
+print("Lista final:", colores)
+print("Tamano de la lista:", len(colores))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 32}
+\begin{lstlisting}[style=pythonStyle]
+numeros = []
+
+for i in range(5):
+    n = float(input("Escribe el numero " + str(i + 1) + ": "))
+    numeros.append(n)
+
+suma = sum(numeros)
+promedio = suma / len(numeros)
+
+print("La suma es:", suma)
+print("El promedio es:", round(promedio, 2))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 33}
+\begin{lstlisting}[style=pythonStyle]
+notas = []
+
+for i in range(3):
+    n = float(input("Escribe la nota " + str(i + 1) + " (0 a 20): "))
+    notas.append(n)
+
+promedio = sum(notas) / len(notas)
+
+print("Promedio:", round(promedio, 2))
+print("Nota mas alta:", max(notas))
+print("Nota mas baja:", min(notas))
+
+notas.reverse()
+print("Notas de mayor a menor:", notas)
+\end{lstlisting}
+
+\begin{cajaNota}
+Alternativa para ordenar de mayor a menor: \texttt{sorted(notas, reverse=True)}.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 34}
+\begin{lstlisting}[style=pythonStyle]
+numeros = [4, 7, 2, 9, 10, 5]
+pares = 0
+impares = 0
+
+for n in numeros:
+    if n % 2 == 0:
+        pares = pares + 1
+    else:
+        impares = impares + 1
+
+print(pares, "pares y", impares, "impares")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 35}
+\begin{lstlisting}[style=pythonStyle]
+nombres = []
+nombre = input("Escribe un nombre (o 'fin' para terminar): ")
+
+while nombre != "fin":
+    nombres.append(nombre)
+    nombre = input("Escribe otro nombre (o 'fin' para terminar): ")
+
+print("Se ingresaron", len(nombres), "nombres")
+
+# Nombre mas largo
+nombre_largo = nombres[0]
+for n in nombres:
+    if len(n) > len(nombre_largo):
+        nombre_largo = n
+print("El nombre mas largo es:", nombre_largo)
+
+# Lista ordenada alfabeticamente
+nombres.sort()
+print("Ordenados:", nombres)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 8}
+\begin{lstlisting}[style=pythonStyle]
+limite = int(input("Hasta que numero quieres generar la serie? "))
+
+fibonacci = [0, 1]
+
+while fibonacci[-1] + fibonacci[-2] <= limite:
+    sgte = fibonacci[-1] + fibonacci[-2]
+    fibonacci.append(sgte)
+
+print("Serie de Fibonacci:", fibonacci)
+\end{lstlisting}
+
+\textbf{Ejemplo con límite 50:} \texttt{[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]}.
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 9
+% ============================================================
+\section{Soluciones del Módulo 9}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 36}
+\begin{lstlisting}[style=pythonStyle]
+libro = {
+    "titulo": "Cien anios de soledad",
+    "autor": "Gabriel Garcia Marquez",
+    "anio": 1967
+}
+
+print("Titulo:", libro["titulo"])
+
+libro["anio"] = 1967    # el anio ya es correcto
+print("Anio:", libro["anio"])
+
+libro["genero"] = "Novela"
+print("Claves:", list(libro.keys()))
+print("Valores:", list(libro.values()))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 37}
+\begin{lstlisting}[style=pythonStyle]
+estaciones = ("primavera", "verano", "otonio", "invierno")
+
+print("Primera estacion:", estaciones[0])
+print("Ultima estacion:", estaciones[-1])
+print("Cantidad de estaciones:", len(estaciones))
+
+# Las tuplas son inmutables: no se puede modificar un elemento
+# estaciones[0] = "otono"   # esto generaria un error
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 38}
+\begin{lstlisting}[style=pythonStyle]
+capitales = {}
+
+for i in range(3):
+    pais = input("Escribe el nombre de un pais: ")
+    capital = input("Escribe la capital de " + pais + ": ")
+    capitales[pais] = capital
+
+for pais, capital in capitales.items():
+    print("La capital de", pais, "es", capital)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 39}
+\begin{lstlisting}[style=pythonStyle]
+notas = {"Ana": 18, "Luis": 14, "Marta": 20, "Pedro": 11}
+
+promedio = sum(notas.values()) / len(notas)
+print("Promedio:", round(promedio, 2))
+
+nota_max = max(notas.values())
+nota_min = min(notas.values())
+
+for estudiante, nota in notas.items():
+    if nota == nota_max:
+        print("La nota mas alta es de", estudiante, "con", nota)
+    if nota == nota_min:
+        print("La nota mas baja es de", estudiante, "con", nota)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 40}
+\begin{lstlisting}[style=pythonStyle]
+palabra = input("Escribe una palabra: ")
+
+conteo = {}
+
+for letra in palabra:
+    if letra in conteo:
+        conteo[letra] = conteo[letra] + 1
+    else:
+        conteo[letra] = 1
+
+print(conteo)
+\end{lstlisting}
+
+\textbf{Con ``banana'':} \texttt{\{'b': 1, 'a': 3, 'n': 2\}}.
+
+\begin{cajaNota}
+Alternativa con el método \texttt{get}: \texttt{conteo[letra] = conteo.get(letra, 0) + 1}. Hace lo mismo en una sola línea.
+\end{cajaNota}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 9}
+\begin{lstlisting}[style=pythonStyle]
+agenda = {}
+
+while True:
+    print("\n--- AGENDA TELEFONICA ---")
+    print("1. Agregar contacto")
+    print("2. Buscar contacto")
+    print("3. Eliminar contacto")
+    print("4. Mostrar todos")
+    print("5. Salir")
+
+    opcion = input("Elige una opcion: ")
+
+    if opcion == "1":
+        nombre = input("Nombre del contacto: ")
+        numero = input("Numero de telefono: ")
+        agenda[nombre] = numero
+        print("Contacto agregado correctamente")
+
+    elif opcion == "2":
+        nombre = input("Que contacto buscas? ")
+        if nombre in agenda:
+            print("El numero de", nombre, "es", agenda[nombre])
+        else:
+            print("Ese contacto no existe")
+
+    elif opcion == "3":
+        nombre = input("Que contacto quieres eliminar? ")
+        if nombre in agenda:
+            del agenda[nombre]
+            print("Contacto eliminado")
+        else:
+            print("Ese contacto no existe")
+
+    elif opcion == "4":
+        if len(agenda) == 0:
+            print("La agenda esta vacia")
+        else:
+            for nombre, numero in agenda.items():
+                print(nombre, "->", numero)
+
+    elif opcion == "5":
+        print("Hasta luego!")
+        break
+
+    else:
+        print("Opcion no valida, intenta de nuevo")
+\end{lstlisting}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 10
+% ============================================================
+\section{Soluciones del Módulo 10}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 41}
+\begin{lstlisting}[style=pythonStyle]
+def dibujar_linea():
+    print("*" * 20)
+
+dibujar_linea()
+dibujar_linea()
+dibujar_linea()
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 42}
+\begin{lstlisting}[style=pythonStyle]
+def cuadrado(n):
+    return n ** 2
+
+numero = int(input("Escribe un numero: "))
+print("El cuadrado de", numero, "es:", cuadrado(numero))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 43}
+\begin{lstlisting}[style=pythonStyle]
+def es_par(n):
+    return n % 2 == 0
+
+contador_pares = 0
+
+for i in range(5):
+    numero = int(input("Escribe el numero " + str(i + 1) + ": "))
+    if es_par(numero):
+        contador_pares = contador_pares + 1
+
+print("Hay", contador_pares, "numeros pares")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 44}
+\begin{lstlisting}[style=pythonStyle]
+def promedio(notas):
+    return sum(notas) / len(notas)
+
+mis_notas = []
+for i in range(4):
+    n = float(input("Escribe la nota " + str(i + 1) + ": "))
+    mis_notas.append(n)
+
+print("El promedio es:", round(promedio(mis_notas), 2))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 45}
+\begin{lstlisting}[style=pythonStyle]
+def invertir_texto(texto):
+    return texto[::-1]
+
+frase = input("Escribe una frase: ")
+print("Frase invertida:", invertir_texto(frase))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 10}
+\begin{lstlisting}[style=pythonStyle]
+def sumar(a, b):
+    return a + b
+
+def restar(a, b):
+    return a - b
+
+def multiplicar(a, b):
+    return a * b
+
+def dividir(a, b):
+    if b == 0:
+        return "No se puede dividir entre cero"
+    return a / b
+
+while True:
+    print("\n--- CALCULADORA ---")
+    print("1. Sumar")
+    print("2. Restar")
+    print("3. Multiplicar")
+    print("4. Dividir")
+    print("5. Salir")
+
+    opcion = input("Elige una operacion: ")
+
+    if opcion == "5":
+        print("Hasta luego!")
+        break
+
+    a = float(input("Primer numero: "))
+    b = float(input("Segundo numero: "))
+
+    if opcion == "1":
+        print("Resultado:", sumar(a, b))
+    elif opcion == "2":
+        print("Resultado:", restar(a, b))
+    elif opcion == "3":
+        print("Resultado:", multiplicar(a, b))
+    elif opcion == "4":
+        print("Resultado:", dividir(a, b))
+    else:
+        print("Opcion no valida")
+\end{lstlisting}
+\end{cajaSolucion}
+
+% ============================================================
+% MÓDULO 11
+% ============================================================
+\section{Soluciones del Módulo 11}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 46}
+\begin{lstlisting}[style=pythonStyle]
+import math
+
+print("Raiz cuadrada de 289:", math.sqrt(289))
+print("Pi redondeado:", round(math.pi, 4))
+print("Factorial de 10:", math.factorial(10))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 47}
+\begin{lstlisting}[style=pythonStyle]
+import random
+
+for i in range(3):
+    input("Presiona Enter para lanzar el dado...")
+    resultado = random.randint(1, 6)
+    print("Lanzamiento", i + 1, ":", resultado)
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 48}
+\begin{lstlisting}[style=pythonStyle]
+import random
+
+secreto = random.randint(1, 50)
+intentos = 0
+adivinado = False
+
+while not adivinado:
+    numero = int(input("Adivina el numero (1 a 50): "))
+    intentos = intentos + 1
+
+    if numero < secreto:
+        print("El numero es mayor")
+    elif numero > secreto:
+        print("El numero es menor")
+    else:
+        print("Correcto! Lo lograste en", intentos, "intentos")
+        adivinado = True
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 49}
+\begin{lstlisting}[style=pythonStyle]
+import math
+
+a = float(input("Escribe el primer cateto: "))
+b = float(input("Escribe el segundo cateto: "))
+
+hipotenusa = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
+print("La hipotenusa es:", round(hipotenusa, 2))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Ejercicio 50}
+\begin{lstlisting}[style=pythonStyle]
+import random
+
+respuestas = ["Si", "No", "Quizas", "Sin duda", "Claro que no"]
+
+pregunta = input("Hazme una pregunta: ")
+print("Respuesta:", random.choice(respuestas))
+\end{lstlisting}
+\end{cajaSolucion}
+
+\begin{cajaSolucion}
+\textbf{Reto 11}
+\begin{lstlisting}[style=pythonStyle]
+import random
+
+marcador_usuario = 0
+marcador_maquina = 0
+opciones = ["piedra", "papel", "tijera"]
+
+for ronda in range(1, 6):
+    print("\n--- Ronda", ronda, "---")
+    usuario = input("Elige piedra, papel o tijera: ").lower()
+    maquina = random.choice(opciones)
+    print("La maquina eligio:", maquina)
+
+    if usuario == maquina:
+        print("Empate en esta ronda")
+    elif (usuario == "piedra" and maquina == "tijera") or \
+         (usuario == "papel" and maquina == "piedra") or \
+         (usuario == "tijera" and maquina == "papel"):
+        print("Ganaste esta ronda!")
+        marcador_usuario = marcador_usuario + 1
+    else:
+        print("La maquina gano esta ronda")
+        marcador_maquina = marcador_maquina + 1
+
+print("\n--- RESULTADO FINAL ---")
+print("Usuario:", marcador_usuario, "- Maquina:", marcador_maquina)
+
+if marcador_usuario > marcador_maquina:
+    print("Ganaste el juego!")
+elif marcador_maquina > marcador_usuario:
+    print("La maquina gano el juego")
+else:
+    print("Empate general")
+\end{lstlisting}
+
+\begin{cajaNota}
+En Python la barra invertida al final de una línea (\texttt{\textbackslash}) permite continuar una expresión larga en la siguiente línea, una técnica muy útil para condiciones con muchas partes.
+\end{cajaNota}
+\end{cajaSolucion}
+
+% ============================================================
+% PROYECTO FINAL
+% ============================================================
+\section{Sugerencias para el Proyecto Final}
+
+Los proyectos finales son libres; a continuación se sugieren soluciones de referencia para el docente.
+
+\begin{cajaSolucion}
+\textbf{Proyecto E (solución de referencia): Registro de notas}
+
+\begin{lstlisting}[style=pythonStyle]
+# Registro de notas: cada estudiante tiene una lista de notas
+registro = {}
+
+def registrar_estudiante(nombre):
+    if nombre not in registro:
+        registro[nombre] = []
+
+def agregar_nota(nombre, nota):
+    if nombre in registro:
+        registro[nombre].append(nota)
+
+def promedio_lista(lista):
+    return sum(lista) / len(lista)
+
+def reporte():
+    for estudiante, notas in registro.items():
+        promedio = promedio_lista(notas)
+        print(estudiante, "-> notas:", notas,
+              "-> promedio:", round(promedio, 2))
+
+while True:
+    print("\n--- REGISTRO DE NOTAS ---")
+    print("1. Registrar estudiante")
+    print("2. Agregar nota")
+    print("3. Notas de un estudiante")
+    print("4. Reporte general y promedio del curso")
+    print("5. Salir")
+
+    opcion = input("Elige una opcion: ")
+
+    if opcion == "1":
+        nombre = input("Nombre del estudiante: ")
+        registrar_estudiante(nombre)
+        print("Estudiante registrado")
+
+    elif opcion == "2":
+        nombre = input("Nombre del estudiante: ")
+        if nombre not in registro:
+            print("Ese estudiante no esta registrado")
+        else:
+            nota = float(input("Escribe la nota: "))
+            agregar_nota(nombre, nota)
+            print("Nota agregada")
+
+    elif opcion == "3":
+        nombre = input("Nombre del estudiante: ")
+        if nombre in registro:
+            print(nombre, "->", registro[nombre])
+        else:
+            print("Ese estudiante no existe")
+
+    elif opcion == "4":
+        if len(registro) == 0:
+            print("No hay estudiantes registrados")
+        else:
+            reporte()
+            todas = []
+            for notas in registro.values():
+                todas = todas + notas
+            print("Promedio del curso:",
+                  round(sum(todas) / len(todas), 2))
+
+    elif opcion == "5":
+        print("Hasta luego!")
+        break
+
+    else:
+        print("Opcion no valida")
+\end{lstlisting}
+\end{cajaSolucion}
+
+\end{document}

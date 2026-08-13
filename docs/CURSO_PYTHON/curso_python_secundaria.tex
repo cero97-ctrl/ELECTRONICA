@@ -1,0 +1,1638 @@
+\documentclass[12pt,a4paper]{article}
+
+%================= PAQUETES =================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage{tabularx}
+
+%================= CONFIGURACIÓN =================
+\geometry{a4paper, margin=2.5cm}
+
+\definecolor{azulTitulo}{RGB}{30,60,120}
+\definecolor{verdePython}{RGB}{53,114,53}
+\definecolor{codigoFondo}{RGB}{245,247,250}
+\definecolor{codigoComentario}{RGB}{140,140,140}
+\definecolor{codigoCadena}{RGB}{170,60,30}
+\definecolor{codigoKeyword}{RGB}{0,80,160}
+\definecolor{codigoNumero}{RGB}{150,30,150}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=azulTitulo,
+    urlcolor=cyan,
+    pdftitle={Curso de Programación en Python para Estudiantes de Secundaria},
+}
+
+% Configuración de listings para bloques de código Python
+\lstdefinestyle{pythonStyle}{
+    language=Python,
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{black!20},
+    captionpos=b,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+
+% Cajas de contenido
+\newtcolorbox{cajaRecuerda}{
+    colback=azulTitulo!5!white,
+    colframe=azulTitulo,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Recuerda}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{cajaConcepto}{
+    colback=green!5!white,
+    colframe=verdePython,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Concepto clave}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{cajaEjemplo}{
+    colback=orange!5!white,
+    colframe=orange!70!black,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Ejemplo}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{cajaEjercicio}{
+    colback=blue!5!white,
+    colframe=blue!60!black,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Ejercicio}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{cajaReto}{
+    colback=red!5!white,
+    colframe=red!70!black,
+    boxrule=0.8pt,
+    arc=2mm,
+    title={\textbf{Reto}},
+    fonttitle=\small,
+    left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+% Comando para indicar nivel de dificultad
+\newcommand{\facil}{[\textcolor{green!50!black}{\textbf{Fácil}}]}
+\newcommand{\intermedio}{[\textcolor{orange!80!black}{\textbf{Intermedio}}]}
+\newcommand{\dificil}{[\textcolor{red!70!black}{\textbf{Difícil}}]}
+
+\title{\textbf{Curso de Programación en Python}\\[6pt]
+\large Para Estudiantes de Secundaria}
+\author{Prof. César Rodríguez}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent Este curso introduce a los estudiantes de secundaria en el mundo de la programación utilizando el lenguaje Python. A lo largo de 12 módulos se desarrollan los fundamentos de la programación: variables, tipos de datos, estructuras de control, colecciones, funciones y un proyecto final integrador. Cada módulo combina teoría breve, ejemplos resueltos y ejercicios propuestos con distintos niveles de dificultad, de modo que el estudiante aprende haciendo. No se requiere experiencia previa en programación ni conocimientos avanzados de matemáticas.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+% MÓDULO 1
+% ============================================================
+\section{Introducción a la Programación}
+
+\subsection{¿Qué es programar?}
+
+Programar consiste en escribir \textbf{instrucciones} para que una computadora realice una tarea. Un \textbf{algoritmo} es la secuencia ordenada de pasos que se necesitan para resolver un problema.
+
+\begin{cajaEjemplo}
+Imagina que quieres darle instrucciones a un amigo para preparar un sándwich. Los pasos podrían ser:
+
+\begin{enumerate}
+    \item Conseguir pan, queso y jamón.
+    \item Cortar el pan por la mitad.
+    \item Colocar el queso y el jamón entre las dos mitades.
+    \item Servir el sándwich.
+\end{enumerate}
+
+Ese conjunto de pasos ordenados es un \textbf{algoritmo}. Una computadora necesita que le demos instrucciones mucho más detalladas, en un lenguaje que ella pueda entender: un \textbf{lenguaje de programación}.
+\end{cajaEjemplo}
+
+\subsection{¿Qué es Python?}
+
+Python es un lenguaje de programación creado por Guido van Rossum a finales de los años 80. Algunas de sus características más importantes son:
+
+\begin{itemize}
+    \item \textbf{Fácil de leer:} su sintaxis es clara y cercana al lenguaje humano.
+    \item \textbf{Fácil de escribir:} se necesitan pocas líneas para hacer mucho.
+    \item \textbf{Muy usado:} se emplea en ciencia de datos, inteligencia artificial, robótica, desarrollo web y videojuegos, entre otros campos.
+    \item \textbf{Gratis y multiplataforma:} funciona en Windows, Linux y macOS.
+\end{itemize}
+
+\begin{cajaRecuerda}
+La versión estable de Python es la \textbf{3.14} (año 2026). Todas las computadoras de esta era usan Python 3; Python 2 ya no se usa.
+\end{cajaRecuerda}
+
+\subsection{Instalación y primer programa}
+
+\subsubsection{Instalación en Windows}
+\begin{enumerate}
+    \item Ingresa a \texttt{https://www.python.org/downloads/}.
+    \item Descarga el instalador de la última versión (Python 3.14).
+    \item Ejecuta el instalador y \textbf{marca la casilla} ``Add Python to PATH''.
+    \item Haz clic en ``Install Now''.
+\end{enumerate}
+
+\subsubsection{Instalación en Linux}
+Python suele venir preinstalado. Para verificarlo, abre una terminal y escribe:
+
+\begin{lstlisting}[style=pythonStyle]
+python3 --version
+\end{lstlisting}
+
+Si no está instalado, usa el gestor de paquetes de tu distribución:
+
+\begin{lstlisting}[style=pythonStyle]
+sudo apt install python3
+\end{lstlisting}
+
+\subsubsection{Alternativa en línea}
+
+Si no puedes instalar Python en tu computadora, puedes usar \textbf{Replit} (\texttt{replit.com}), \textbf{Google Colab} (\texttt{colab.research.google.com}) o \textbf{Python Tutor} (\texttt{pythontutor.com}) para practicar sin instalar nada.
+
+\subsection{El primer programa: ``Hola mundo''}
+
+El programa más sencillo que se puede escribir en Python es:
+
+\begin{lstlisting}[style=pythonStyle, caption={Nuestro primer programa}]
+print("Hola, mundo!")
+\end{lstlisting}
+
+Cuando se ejecuta, el programa muestra en pantalla:
+
+\begin{lstlisting}[style=pythonStyle]
+Hola, mundo!
+\end{lstlisting}
+
+\subsubsection{¿Cómo se ejecuta?}
+
+\begin{enumerate}
+    \item Abre el \textbf{IDLE} (viene instalado con Python) o un editor como Thonny o VS Code.
+    \item Escribe el programa anterior en un archivo nuevo.
+    \item Guarda el archivo con extensión \texttt{.py} (por ejemplo, \texttt{hola.py}).
+    \item Ejecuta el programa con la tecla \texttt{F5} (en IDLE) o con el botón ``Run''.
+\end{enumerate}
+
+\begin{cajaConcepto}
+\texttt{print()} es una \textbf{función} que muestra texto en la pantalla. El texto va entre comillas simples \texttt{'} o dobles \texttt{"}. Casi todos los programas que escribamos comenzarán usando \texttt{print()}.
+\end{cajaConcepto}
+
+\subsubsection{Comentarios en el código}
+
+Un \textbf{comentario} es una nota que escribimos para los humanos que lean el código. La computadora lo ignora. En Python los comentarios empiezan con el símbolo \texttt{\#}:
+
+\begin{lstlisting}[style=pythonStyle, caption={Programa con comentarios}]
+# Este es mi primer programa
+# Muestra un saludo en pantalla
+print("Hola, mundo!")
+print("Bienvenidos al curso de Python")
+\end{lstlisting}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 1} \facil
+
+Escribe un programa que muestre tu nombre completo en pantalla, por ejemplo:
+\begin{lstlisting}[style=pythonStyle]
+Mi nombre es Ana López
+\end{lstlisting}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 2} \facil
+
+Escribe un programa que muestre tres líneas distintas:
+\begin{enumerate}
+    \item Tu nombre.
+    \item Tu ciudad.
+    \item Tu hobby favorito.
+\end{enumerate}
+Cada dato debe aparecer en una línea separada usando tres llamadas a \texttt{print()}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 3} \facil
+
+Escribe un programa que muestre un rectángulo dibujado con asteriscos, como este:
+\begin{lstlisting}[style=pythonStyle]
+*****
+*****
+*****
+\end{lstlisting}
+Ayuda: cada línea del rectángulo es una llamada a \texttt{print()}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 4} \intermedio
+
+Escribe un programa con al menos tres comentarios que explique, paso a paso, qué hace el programa ``Hola mundo''. No es necesario que el programa haga algo nuevo; la idea es practicar la escritura de comentarios claros.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 1} \dificil
+
+Investiga qué hace la función \texttt{print()} cuando recibe dos argumentos separados por coma, por ejemplo:
+\begin{lstlisting}[style=pythonStyle]
+print("Hola", "mundo")
+\end{lstlisting}
+Escribe un programa que use esta idea para imprimir tu nombre y tu edad en la misma línea, separados por un espacio. Explica con un comentario qué observaste.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 2
+% ============================================================
+\section{Variables y Tipos de Datos}
+
+\subsection{¿Qué es una variable?}
+
+Una \textbf{variable} es una \textbf{caja} en la memoria de la computadora donde guardamos un valor. A cada caja le ponemos una etiqueta (un \textbf{nombre}) para poder encontrarla después.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Creando variables}]
+edad = 15
+nombre = "Ana"
+estatura = 1.62
+
+print(edad)
+print(nombre)
+print(estatura)
+\end{lstlisting}
+
+Aquí guardamos:
+\begin{itemize}
+    \item el número entero 15 en la variable \texttt{edad};
+    \item el texto "Ana" en la variable \texttt{nombre};
+    \item el número decimal 1.62 en la variable \texttt{estatura}.
+\end{itemize}
+\end{cajaEjemplo}
+
+\subsection{Reglas para nombrar variables}
+
+\begin{itemize}
+    \item Los nombres no pueden empezar con un número: \texttt{2edad} es inválido.
+    \item No pueden contener espacios: usa guión bajo \texttt{\_}: \texttt{mi\_edad}.
+    \item No pueden usar palabras reservadas de Python (como \texttt{print}, \texttt{if}, \texttt{for}).
+    \item Distinguen mayúsculas y minúsculas: \texttt{Edad} y \texttt{edad} son variables diferentes.
+    \item Es buena práctica usar nombres descriptivos: \texttt{promedio\_notas} es mejor que \texttt{p}.
+\end{itemize}
+
+\begin{cajaRecuerda}
+El símbolo \texttt{=} en programación \textbf{no} significa ``igual que''. Significa ``\textbf{asignar}'' o ``guardar en''. La variable de la izquierda recibe el valor de la derecha.
+\end{cajaRecuerda}
+
+\subsection{Tipos de datos básicos}
+
+En Python, cada valor tiene un \textbf{tipo}. Los más usados son:
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{Tipo} & \textbf{Nombre} & \textbf{Ejemplo} & \textbf{Descripción} \\
+\midrule
+Entero & \texttt{int} & \texttt{42} & Números sin parte decimal \\
+Decimal & \texttt{float} & \texttt{3.14} & Números con parte decimal \\
+Texto & \texttt{str} & \texttt{"Hola"} & Cadenas de caracteres \\
+Lógico & \texttt{bool} & \texttt{True} & Solo dos valores: Verdadero o Falso \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Para saber el tipo de una variable usamos la función \texttt{type()}:
+
+\begin{lstlisting}[style=pythonStyle, caption={La función type()}]
+edad = 15
+print(type(edad))          # <class 'int'>
+
+pi = 3.14
+print(type(pi))            # <class 'float'>
+
+nombre = "Ana"
+print(type(nombre))        # <class 'str'>
+
+es_mayor = True
+print(type(es_mayor))      # <class 'bool'>
+\end{lstlisting}
+
+\subsection{Cambio de tipo de datos (casting)}
+
+Podemos convertir un valor de un tipo a otro:
+
+\begin{lstlisting}[style=pythonStyle, caption={Conversión de tipos}]
+numero_texto = "10"
+print(type(numero_texto))          # <class 'str'>
+
+numero = int(numero_texto)         # "10" se convierte en 10
+print(type(numero))                # <class 'int'>
+print(numero + 5)                  # 15
+
+# De decimal a entero (se truncan los decimales)
+precio = 9.99
+precio_entero = int(precio)
+print(precio_entero)               # 9
+
+# De número a texto
+anio = 2026
+texto = str(anio)
+print(texto + " es el año actual")  # 2026 es el año actual
+\end{lstlisting}
+
+\begin{cajaRecuerda}
+Las funciones de conversión más usadas son:
+\begin{itemize}
+    \item \texttt{int(valor)}: convierte a entero.
+    \item \texttt{float(valor)}: convierte a decimal.
+    \item \texttt{str(valor)}: convierte a texto.
+    \item \texttt{bool(valor)}: convierte a lógico.
+\end{itemize}
+\end{cajaRecuerda}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 5} \facil
+
+Crea tres variables: una con tu edad, una con tu nombre y una con tu estatura. Luego imprime cada una con \texttt{print()}, y además imprime el tipo de cada variable usando \texttt{type()}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 6} \facil
+
+Escribe un programa que calcule y muestre el área de un rectángulo de base 8 y altura 5. Usa dos variables (\texttt{base} y \texttt{altura}) y otra variable \texttt{area} para guardar el resultado. Recuerda que el área se calcula como base $\times$ altura.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 7} \intermedio
+
+Encuentra el error en el siguiente programa y corrígelo:
+\begin{lstlisting}[style=pythonStyle]
+nombre = "Carlos"
+edad = 14
+print("Hola, me llamo" + nombre + " y tengo" + edad + " años")
+\end{lstlisting}
+Ayuda: ¿qué tipo de dato espera la suma con \texttt{+}? Ejecuta el programa, observa el mensaje de error y explica la solución en un comentario.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 8} \intermedio
+
+Escribe un programa que intercambie el valor de dos variables. Por ejemplo, si \texttt{a = 5} y \texttt{b = 3}, al final debe quedar \texttt{a = 3} y \texttt{b = 5}. Imprime los valores antes y después. Ayuda: usa una variable auxiliar (una ``tercera caja'').
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 2} \dificil
+
+Escribe un programa que calcule y muestre el perímetro de una circunferencia. Usa una variable \texttt{radio = 7} y el valor de \texttt{pi = 3.14159}. La fórmula del perímetro es $P = 2 \cdot \pi \cdot radio$. Muestra el resultado con un mensaje descriptivo, por ejemplo: \texttt{El perimetro es 43.98226}.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 3
+% ============================================================
+\section{Entrada de Datos por Teclado}
+
+\subsection{La función input()}
+
+Hasta ahora los programas siempre mostraban los mismos valores. Para que el programa \textbf{interactúe} con el usuario, usamos la función \texttt{input()}, que lee lo que el usuario escribe por teclado.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Saludando al usuario}]
+nombre = input("¿Cómo te llamas? ")
+print("Mucho gusto,", nombre)
+\end{lstlisting}
+
+Cuando se ejecuta, el programa espera a que el usuario escriba algo y presione \texttt{Enter}. Luego responde:
+
+\begin{lstlisting}[style=pythonStyle]
+¿Cómo te llamas? Ana
+Mucho gusto, Ana
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\textbf{Importante:} \texttt{input()} siempre devuelve un \textbf{texto} (\texttt{str}), aunque el usuario escriba un número. Si necesitamos operar con números, debemos convertir el valor con \texttt{int()} o \texttt{float()}.
+\end{cajaRecuerda}
+
+\subsection{Programa con entrada numérica}
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Suma de dos números}]
+numero1 = int(input("Escribe el primer número: "))
+numero2 = int(input("Escribe el segundo número: "))
+
+suma = numero1 + numero2
+print("La suma es:", suma)
+\end{lstlisting}
+
+Nota que \texttt{input()} se \textbf{envuelve} en \texttt{int(...)} para convertir el texto en número. Si no lo hiciéramos, la operación \texttt{numero1 + numero2} sería una concatenación de textos (por ejemplo, \texttt{"5" + "3"} daría \texttt{"53"}).
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 9} \facil
+
+Escribe un programa que pregunte al usuario su nombre y su edad, y luego muestre:
+\begin{lstlisting}[style=pythonStyle]
+Hola, [nombre]. El próximo año tendrás [edad + 1] años.
+\end{lstlisting}
+Ayuda: la edad se lee como texto; conviértela con \texttt{int()} para poder sumarle 1.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 10} \facil
+
+Escribe un programa que pida dos números enteros y muestre su suma, su resta, su multiplicación y su división. Por cada operación imprime una línea descriptiva, por ejemplo:
+\begin{lstlisting}[style=pythonStyle]
+5 + 3 = 8
+5 - 3 = 2
+5 * 3 = 15
+5 / 3 = 1.6666666666666667
+\end{lstlisting}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 11} \intermedio
+
+Escribe un programa que pregunte la base y la altura de un triángulo y calcule su área usando la fórmula $A = \dfrac{b \cdot h}{2}$. Muestra el resultado con un mensaje claro. Ayuda: usa \texttt{float()} para aceptar números con decimales.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 12} \intermedio
+
+Escribe un programa que pregunte el precio de un producto y calcule el precio con el 12\% de IVA incluido. El programa debe mostrar el precio original, el monto del IVA y el precio final.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 3} \dificil
+
+Escribe un programa que pregunte cuántos segundos tiene una duración y la convierta en \textbf{horas, minutos y segundos}. Por ejemplo, 3661 segundos son 1 hora, 1 minuto y 1 segundo. Ayuda: usa la división entera \texttt{//} y el módulo \texttt{\%} (el residuo de la división). Prueba tu programa con 10000 segundos.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 4
+% ============================================================
+\section{Operadores y Expresiones}
+
+\subsection{Operadores aritméticos}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{Operador} & \textbf{Nombre} & \textbf{Ejemplo} & \textbf{Resultado} \\
+\midrule
+\texttt{+} & Suma & \texttt{7 + 3} & \texttt{10} \\
+\texttt{-} & Resta & \texttt{7 - 3} & \texttt{4} \\
+\texttt{*} & Multiplicación & \texttt{7 * 3} & \texttt{21} \\
+\texttt{/} & División & \texttt{7 / 3} & \texttt{2.333...} \\
+\texttt{//} & División entera & \texttt{7 // 3} & \texttt{2} \\
+\texttt{\%} & Módulo (residuo) & \texttt{7 \% 3} & \texttt{1} \\
+\texttt{**} & Potencia & \texttt{2 ** 5} & \texttt{32} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{cajaConcepto}
+El \textbf{módulo} (\texttt{\%}) devuelve el residuo de una división entera. Por ejemplo, \texttt{10 \% 3} es \texttt{1} porque 10 entre 3 es 3 y sobran 1. Es muy útil para saber si un número es par: si \texttt{numero \% 2} es \texttt{0}, el número es par.
+\end{cajaConcepto}
+
+\subsection{Operadores de comparación}
+
+Estos operadores comparan dos valores y devuelven un resultado lógico: \texttt{True} (verdadero) o \texttt{False} (falso).
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l l l}
+\toprule
+\textbf{Operador} & \textbf{Significado} & \textbf{Ejemplo} \\
+\midrule
+\texttt{==} & Igual que & \texttt{5 == 5} \textrightarrow{} \texttt{True} \\
+\texttt{!=} & Diferente de & \texttt{5 != 3} \textrightarrow{} \texttt{True} \\
+\texttt{>} & Mayor que & \texttt{5 > 8} \textrightarrow{} \texttt{False} \\
+\texttt{<} & Menor que & \texttt{5 < 8} \textrightarrow{} \texttt{True} \\
+\texttt{>=} & Mayor o igual que & \texttt{5 >= 5} \textrightarrow{} \texttt{True} \\
+\texttt{<=} & Menor o igual que & \texttt{5 <= 4} \textrightarrow{} \texttt{False} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{cajaRecuerda}
+No confundas \texttt{=} (asignar un valor a una variable) con \texttt{==} (comparar si dos valores son iguales).
+\end{cajaRecuerda}
+
+\subsection{Operadores lógicos}
+
+Permiten combinar condiciones:
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Operador} & \textbf{Significado} & \textbf{Resultado} \\
+\midrule
+\texttt{and} & Y & Verdadero solo si \textbf{ambas} condiciones son verdaderas \\
+\texttt{or} & O & Verdadero si \textbf{al menos una} condición es verdadera \\
+\texttt{not} & NO & Invierte el valor: verdadero se convierte en falso y viceversa \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Usando operadores lógicos}]
+edad = 16
+tiene_permiso = True
+
+# and: las dos deben ser verdaderas
+puede_entrar = (edad >= 18) and tiene_permiso
+print(puede_entrar)          # False, porque 16 no es >= 18
+
+# or: basta con que una sea verdadera
+puede_ver_pelicula = (edad >= 13) or tiene_permiso
+print(puede_ver_pelicula)    # True
+
+# not: invierte el valor
+no_es_mayor = not (edad >= 18)
+print(no_es_mayor)           # True
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Precedencia de operadores}
+
+Cuando una expresión tiene varios operadores, Python los evalúa en un orden establecido (como en matemáticas):
+
+\begin{enumerate}
+    \item Paréntesis \texttt{( )}
+    \item Potencias \texttt{**}
+    \item Multiplicación, división y módulo \texttt{* / // \%}
+    \item Suma y resta \texttt{+ -}
+    \item Comparaciones \texttt{== != < > <= >=}
+    \item Lógicos \texttt{and}, \texttt{or}, \texttt{not}
+\end{enumerate}
+
+\begin{cajaRecuerda}
+Cuando tengas dudas, \textbf{usa paréntesis}. El código \texttt{(2 + 3) * 4} es más claro que \texttt{2 + 3 * 4} y evita errores de interpretación.
+\end{cajaRecuerda}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 13} \facil
+
+Sin ejecutar el programa, escribe en tu cuaderno qué mostrará cada \texttt{print()}. Luego verifica con Python.
+\begin{lstlisting}[style=pythonStyle]
+print(15 // 4)
+print(15 % 4)
+print(2 ** 10)
+print(10 - 2 * 3)
+print((10 - 2) * 3)
+print(9 % 2)
+\end{lstlisting}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 14} \facil
+
+Escribe un programa que le pida al usuario un número y muestre si el número es par o impar. Ayuda: un número es par si \texttt{numero \% 2} es igual a \texttt{0}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 15} \intermedio
+
+Escribe un programa que pida tres notas de un estudiante (de 0 a 20) y calcule el promedio. Luego muestra el promedio con dos decimales. Ayuda: usa la función \texttt{round(promedio, 2)} para redondear.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 16} \intermedio
+
+Escribe un programa que pida un número de 4 cifras y muestre sus dígitos por separado. Por ejemplo, si el usuario escribe \texttt{4521}, el programa debe mostrar:
+\begin{lstlisting}[style=pythonStyle]
+Dígitos: 4 5 2 1
+\end{lstlisting}
+Ayuda: divide sucesivamente con \texttt{//} y \texttt{\%}. Por ejemplo, \texttt{4521 // 1000 = 4} y \texttt{4521 \% 1000 = 521}.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 4} \dificil
+
+Escribe un programa que pida un número entero de tres cifras e indique si es un \textbf{número capicúa} (se lee igual de izquierda a derecha que de derecha a izquierda). Por ejemplo, \texttt{121} es capicúa, pero \texttt{123} no lo es. Ayuda: descompón el número en centenas, decenas y unidades usando \texttt{//} y \texttt{\%}.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 5
+% ============================================================
+\section{Estructuras Condicionales}
+
+\subsection{La sentencia if}
+
+Un programa no siempre hace lo mismo. A veces necesita \textbf{tomar decisiones}. La estructura \texttt{if} permite ejecutar un bloque de código \textbf{solo si} una condición es verdadera.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Primer condicional}]
+edad = int(input("¿Cuántos años tienes? "))
+
+if edad >= 18:
+    print("Eres mayor de edad")
+else:
+    print("Aún eres menor de edad")
+\end{lstlisting}
+
+Si el usuario escribe 20, el programa muestra ``Eres mayor de edad''. Si escribe 14, muestra ``Aún eres menor de edad''.
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\begin{itemize}
+    \item Después de \texttt{if} (y de \texttt{else}), la línea termina con \textbf{dos puntos} \texttt{:}.
+    \item El bloque que se ejecuta debe estar \textbf{sangrado} (indentado) con espacios o tabulaciones. Python usa la sangría para saber qué instrucciones pertenecen a cada bloque.
+    \item Por convención se usan \textbf{4 espacios} de sangría.
+\end{itemize}
+\end{cajaRecuerda}
+
+\subsection{La sentencia elif}
+
+Cuando hay más de dos opciones, usamos \texttt{elif} (contracción de ``else if'').
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Varias opciones con elif}]
+nota = int(input("Escribe tu nota (0 a 20): "))
+
+if nota >= 18:
+    print("Sobresaliente")
+elif nota >= 15:
+    print("Notable")
+elif nota >= 11:
+    print("Aprobado")
+else:
+    print("Reprobado")
+\end{lstlisting}
+
+Python evalúa las condiciones \textbf{en orden}: si la primera es verdadera, ejecuta su bloque y \textbf{se salta las demás}.
+\end{cajaEjemplo}
+
+\subsection{Condiciones anidadas}
+
+Dentro de un bloque \texttt{if} podemos escribir otro \texttt{if}. Esto se llama \textbf{anidamiento}.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Condicionales anidados}]
+edad = int(input("¿Cuántos años tienes? "))
+
+if edad >= 12:
+    if edad >= 18:
+        print("Eres un adulto")
+    else:
+        print("Eres un adolescente")
+else:
+    print("Eres un niño o niña")
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 17} \facil
+
+Escribe un programa que pida un número y diga si es \textbf{positivo}, \textbf{negativo} o \textbf{cero}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 18} \facil
+
+Escribe un programa que pida un número entero y muestre si es \textbf{par} o \textbf{impar}, y además si es \textbf{mayor que 100} o \textbf{menor o igual que 100}. Usa condiciones anidadas.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 19} \intermedio
+
+Escribe un programa que pida dos números y muestre cuál es el \textbf{mayor}. Si son iguales, debe mostrar el mensaje ``Los números son iguales''.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 20} \intermedio
+
+Escribe un programa que pida tres números y los muestre \textbf{en orden ascendente} (del menor al mayor). Ayuda: compara los tres números usando \texttt{if} y \texttt{elif}, y ordena las condiciones de menor a mayor.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 5} \dificil
+
+Crea un pequeño \textbf{asistente de clasificación de edades}:
+\begin{itemize}
+    \item De 0 a 2 años: ``Bebé''.
+    \item De 3 a 11 años: ``Niño(a)''.
+    \item De 12 a 17 años: ``Adolescente''.
+    \item De 18 a 59 años: ``Adulto''.
+    \item 60 o más: ``Adulto mayor''.
+    \item Si es menor que 0, muestra ``Edad inválida''.
+\end{itemize}
+Usa \texttt{and} para combinar los límites inferiores y superiores de cada rango.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 6
+% ============================================================
+\section{Bucles: for y while}
+
+\subsection{¿Por qué necesitamos bucles?}
+
+Un \textbf{bucle} (o \textbf{laço de repetición}) permite ejecutar un bloque de código \textbf{muchas veces} sin escribirlo muchas veces. Por ejemplo, para mostrar los números del 1 al 10 no es necesario escribir diez \texttt{print()}.
+
+\subsection{El bucle for}
+
+El bucle \texttt{for} recorre una secuencia de elementos (por ejemplo, un rango de números) y ejecuta el bloque una vez por cada elemento.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Mostrar números del 1 al 5}]
+for numero in range(1, 6):
+    print(numero)
+\end{lstlisting}
+
+Salida:
+\begin{lstlisting}[style=pythonStyle]
+1
+2
+3
+4
+5
+\end{lstlisting}
+
+Nota que \texttt{range(1, 6)} genera los números del 1 al 5: el \textbf{inicio es inclusivo} y el \textbf{final es exclusivo} (no se incluye el 6).
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\begin{itemize}
+    \item \texttt{range(n)} genera números de \texttt{0} a \texttt{n-1}.
+    \item \texttt{range(inicio, fin)} genera de \texttt{inicio} a \texttt{fin-1}.
+    \item \texttt{range(inicio, fin, paso)} genera saltando de \texttt{paso} en \texttt{paso}.
+\end{itemize}
+\end{cajaRecuerda}
+
+\subsection{El bucle while}
+
+El bucle \texttt{while} repite un bloque \textbf{mientras} una condición sea verdadera. Es útil cuando no sabemos de antemano cuántas veces se repetirá.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Contar hasta 5 con while}]
+contador = 1
+
+while contador <= 5:
+    print(contador)
+    contador = contador + 1
+\end{lstlisting}
+
+El programa muestra los números del 1 al 5. La línea \texttt{contador = contador + 1} es \textbf{esencial}: sin ella, la condición nunca cambiaría y el bucle se repetiría \textbf{infinitamente}.
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\begin{itemize}
+    \item \textbf{Cuidado con los bucles infinitos:} si la condición de \texttt{while} nunca se vuelve falsa, el programa nunca termina.
+    \item Una forma abreviada de \texttt{contador = contador + 1} es \texttt{contador += 1}.
+    \item La sentencia \texttt{break} \textbf{sale} del bucle inmediatamente.
+    \item La sentencia \texttt{continue} \textbf{salta a la siguiente} iteración.
+\end{itemize}
+\end{cajaRecuerda}
+
+\subsection{Acumuladores}
+
+Un patrón muy común es usar una variable para \textbf{acumular} la suma de varios valores.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Sumar los primeros 100 números}]
+suma = 0
+
+for numero in range(1, 101):
+    suma = suma + numero
+
+print("La suma del 1 al 100 es:", suma)   # 5050
+\end{lstlisting}
+
+La variable \texttt{suma} inicia en 0 y en cada vuelta recibe su valor anterior más el número actual.
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 21} \facil
+
+Escribe un programa con \texttt{for} que muestre los números \textbf{pares} del 2 al 20. Ayuda: usa \texttt{range(2, 21, 2)}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 22} \facil
+
+Escribe un programa que muestre la \textbf{tabla de multiplicar} de un número que pide al usuario. Por ejemplo, si el usuario escribe 7, debe mostrar:
+\begin{lstlisting}[style=pythonStyle]
+7 x 1 = 7
+7 x 2 = 14
+...
+7 x 10 = 70
+\end{lstlisting}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 23} \intermedio
+
+Escribe un programa que pida al usuario \textbf{5 calificaciones} (una por una) y calcule su promedio. Usa un bucle \texttt{for} y un acumulador. Al final muestra el promedio con dos decimales.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 24} \intermedio
+
+Escribe un programa que cuente de 10 hacia atrás hasta 1 (con \texttt{for} y \texttt{range}) y que, al terminar, muestre el mensaje ``¡Despegue!''.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 25} \intermedio
+
+Escribe un programa con \texttt{while} que pida al usuario números enteros y los sume, pero que \textbf{se detenga} cuando el usuario escriba 0. Al final, muestra la suma de todos los números escritos.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 6} \dificil
+
+Escribe un programa que calcule el \textbf{factorial} de un número. El factorial de $n$ (escrito $n!$) es el producto de todos los enteros desde 1 hasta $n$. Por ejemplo:
+\begin{itemize}
+    \item $5! = 5 \cdot 4 \cdot 3 \cdot 2 \cdot 1 = 120$
+    \item $7! = 5040$
+\end{itemize}
+Pide el número al usuario y muestra el resultado. Ayuda: usa un acumulador que inicia en 1 y un bucle que vaya de 1 hasta el número.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 7
+% ============================================================
+\section{Cadenas de Texto}
+
+\subsection{¿Qué es una cadena de texto?}
+
+Una \textbf{cadena} (\texttt{str}) es una secuencia de caracteres. Podemos acceder a cada carácter mediante su \textbf{índice}. Los índices empiezan en \textbf{0}.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Acceder a caracteres}]
+palabra = "Python"
+
+print(palabra[0])    # P
+print(palabra[1])    # y
+print(palabra[5])    # n
+print(len(palabra))  # 6 (cantidad de caracteres)
+\end{lstlisting}
+
+Los índices negativos cuentan desde el final:
+\begin{lstlisting}[style=pythonStyle]
+print(palabra[-1])   # n (el último)
+print(palabra[-2])   # o (el penúltimo)
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Rebanadas (slicing)}
+
+Con los dos puntos \texttt{:} podemos extraer una \textbf{porción} de la cadena.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Rebanadas}]
+texto = "Hola mundo"
+
+print(texto[0:4])    # Hola   (del 0 al 3)
+print(texto[5:10])   # mundo  (del 5 al 9)
+print(texto[:4])     # Hola   (del inicio al 3)
+print(texto[5:])     # mundo  (del 5 al final)
+print(texto[:])      # Hola mundo (toda la cadena)
+\end{lstlisting}
+
+\texttt{cadena[inicio:fin]} toma desde \texttt{inicio} hasta \texttt{fin-1}.
+\end{cajaEjemplo}
+
+\subsection{Métodos útiles de cadenas}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Método} & \textbf{Qué hace} \\
+\midrule
+\texttt{cadena.upper()} & Convierte todo a mayúsculas \\
+\texttt{cadena.lower()} & Convierte todo a minúsculas \\
+\texttt{cadena.capitalize()} & Mayúscula inicial, resto en minúsculas \\
+\texttt{cadena.strip()} & Elimina espacios al inicio y al final \\
+\texttt{cadena.count("x")} & Cuenta cuántas veces aparece \texttt{x} \\
+\texttt{cadena.find("x")} & Devuelve el índice de la primera aparición de \texttt{x} \\
+\texttt{cadena.replace("a","b")} & Reemplaza todas las \texttt{a} por \texttt{b} \\
+\texttt{cadena.split(" ") } & Divide la cadena en una lista según el separador \\
+\texttt{"-".join(lista)} & Une los elementos de una lista con el separador \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Usando métodos}]
+mensaje = "  hola mundo  "
+
+print(mensaje.upper())        # "  HOLA MUNDO  "
+print(mensaje.strip())        # "hola mundo"
+print(mensaje.strip().upper())# "HOLA MUNDO"
+
+texto = "ana,pedro,luis"
+nombres = texto.split(",")
+print(nombres)                # ['ana', 'pedro', 'luis']
+\end{lstlisting}
+
+Los métodos se pueden \textbf{encadenar}: primero \texttt{strip()} y luego \texttt{upper()}.
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 26} \facil
+
+Escribe un programa que pida una palabra y muestre:
+\begin{itemize}
+    \item La palabra en mayúsculas.
+    \item La palabra en minúsculas.
+    \item El número de letras que tiene.
+    \item Su primera y última letra.
+\end{itemize}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 27} \facil
+
+Escribe un programa que pida el nombre completo de una persona y lo muestre con \textbf{mayúscula inicial en cada palabra}. Ayuda: investiga el método \texttt{title()}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 28} \intermedio
+
+Escribe un programa que pida una frase y cuente cuántas veces aparece la letra \texttt{a} (sin importar si es mayúscula o minúscula). Ayuda: convierte la frase a minúsculas con \texttt{lower()} antes de contar.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 29} \intermedio
+
+Escribe un programa que pida una palabra e indique si es un \textbf{palíndromo} (se lee igual al derecho y al revés). Ejemplos: \texttt{reconocer}, \texttt{radar}, \texttt{ana}. Ayuda: compara la palabra con su inversa usando \texttt{palabra[::-1]}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 30} \intermedio
+
+Escribe un programa que pida una frase y la muestre con las palabras \textbf{en orden inverso}. Por ejemplo, la frase ``me gusta programar'' debe mostrar ``programar gusta me''. Ayuda: usa \texttt{split()} y \texttt{join()}.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 7} \dificil
+
+Escribe un programa que \textbf{cifre} un mensaje con el \textbf{cifrado César}: cada letra se desplaza 3 posiciones en el alfabeto. Por ejemplo, la \texttt{a} se convierte en \texttt{d}, la \texttt{b} en \texttt{e}, y así sucesivamente (la \texttt{z} vuelve a \texttt{a}). Pide al usuario una frase y muestra la versión cifrada. Ayuda: investiga las funciones \texttt{ord()} y \texttt{chr()}, que convierten caracteres en números y viceversa.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 8
+% ============================================================
+\section{Listas}
+
+\subsection{¿Qué es una lista?}
+
+Una \textbf{lista} es una colección \textbf{ordenada} y \textbf{modificable} de valores. Se crea con corchetes \texttt{[ ]} y sus elementos se separan con comas.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Creando y usando listas}]
+frutas = ["manzana", "pera", "uva", "mango"]
+
+print(frutas)           # ['manzana', 'pera', 'uva', 'mango']
+print(frutas[0])        # manzana
+print(frutas[2])        # uva
+print(len(frutas))      # 4
+
+# Las listas son modificables
+frutas[1] = "banana"
+print(frutas)           # ['manzana', 'banana', 'uva', 'mango']
+
+# Agregar un elemento al final
+frutas.append("kiwi")
+print(frutas)           # ['manzana', 'banana', 'uva', 'mango', 'kiwi']
+
+# Quitar el último elemento
+ultimo = frutas.pop()
+print(ultimo)           # kiwi
+print(frutas)
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Métodos y funciones útiles para listas}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Operación} & \textbf{Qué hace} \\
+\midrule
+\texttt{lista.append(x)} & Agrega \texttt{x} al final \\
+\texttt{lista.insert(i, x)} & Inserta \texttt{x} en la posición \texttt{i} \\
+\texttt{lista.remove(x)} & Elimina la primera aparición de \texttt{x} \\
+\texttt{lista.pop()} & Elimina y devuelve el último elemento \\
+\texttt{lista.sort()} & Ordena la lista de menor a mayor (en su lugar) \\
+\texttt{sorted(lista)} & Devuelve una copia ordenada sin modificar la original \\
+\texttt{sum(lista)} & Suma todos los elementos (si son números) \\
+\texttt{min(lista)} & Devuelve el elemento menor \\
+\texttt{max(lista)} & Devuelve el elemento mayor \\
+\texttt{lista.count(x)} & Cuenta cuántas veces aparece \texttt{x} \\
+\texttt{x in lista} & Devuelve \texttt{True} si \texttt{x} está en la lista \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Recorrer una lista}
+
+Podemos recorrer todos los elementos de una lista con \texttt{for}:
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Recorriendo una lista}]
+nombres = ["Ana", "Luis", "Marta", "Pedro"]
+
+for nombre in nombres:
+    print("Hola,", nombre)
+
+# También podemos acceder por índice con range
+for i in range(len(nombres)):
+    print(i, "->", nombres[i])
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 31} \facil
+
+Crea una lista con 5 colores. Luego:
+\begin{enumerate}
+    \item Muestra el primer y el último color.
+    \item Agrega un sexto color con \texttt{append()}.
+    \item Reemplaza el segundo color por otro.
+    \item Muestra la lista final y su tamaño con \texttt{len()}.
+\end{enumerate}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 32} \facil
+
+Escribe un programa que pida al usuario \textbf{5 números} (uno por uno), los guarde en una lista y luego muestre la suma y el promedio. Ayuda: usa \texttt{append()} dentro de un bucle \texttt{for}.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 33} \intermedio
+
+Escribe un programa que pida al usuario \textbf{3 notas} (de 0 a 20), las guarde en una lista y muestre:
+\begin{itemize}
+    \item El promedio.
+    \item La nota más alta (\texttt{max}).
+    \item La nota más baja (\texttt{min}).
+    \item Las notas ordenadas de mayor a menor.
+\end{itemize}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 34} \intermedio
+
+Escribe un programa que, a partir de una lista de números, cuente cuántos son \textbf{pares} y cuántos son \textbf{impares}. Por ejemplo, con la lista \texttt{[4, 7, 2, 9, 10, 5]}, debe mostrar ``3 pares y 3 impares''.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 35} \intermedio
+
+Escribe un programa que pida nombres y los guarde en una lista hasta que el usuario escriba \texttt{"fin"}. Luego muestra:
+\begin{itemize}
+    \item Cuántos nombres se ingresaron.
+    \item El nombre más largo.
+    \item La lista ordenada alfabéticamente.
+\end{itemize}
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 8} \dificil
+
+Escribe un programa que genere la \textbf{secuencia de Fibonacci} hasta un límite indicado por el usuario. En la secuencia de Fibonacci cada número es la suma de los dos anteriores: 0, 1, 1, 2, 3, 5, 8, 13, 21, \ldots{} Guarda los primeros términos en una lista y muéstrala. Ayuda: comienza con \texttt{[0, 1]} y ve agregando la suma de los dos últimos.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 9
+% ============================================================
+\section{Tuplas y Diccionarios}
+
+\subsection{Tuplas}
+
+Una \textbf{tupla} es como una lista, pero \textbf{no se puede modificar} (es \textbf{inmutable}). Se crea con paréntesis \texttt{( )}.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Creando una tupla}]
+punto = (3, 5)
+print(punto[0])        # 3
+print(punto[1])        # 5
+
+# Esto da ERROR: las tuplas no se pueden modificar
+# punto[0] = 10
+
+# Una tupla con un solo elemento necesita una coma
+unico = (7,)
+print(unico)
+\end{lstlisting}
+
+\textbf{Desempaquetado:} podemos asignar cada elemento de una tupla a una variable:
+\begin{lstlisting}[style=pythonStyle]
+coordenadas = (4, 7)
+x, y = coordenadas
+print("x =", x)   # x = 4
+print("y =", y)   # y = 7
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Diccionarios}
+
+Un \textbf{diccionario} guarda pares de \textbf{clave: valor}. Se crea con llaves \texttt{\{ \}} y permite buscar un valor a partir de su clave.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Creando un diccionario}]
+estudiante = {
+    "nombre": "Ana López",
+    "edad": 15,
+    "curso": "3ro Secundaria"
+}
+
+print(estudiante["nombre"])     # Ana López
+print(estudiante["edad"])       # 15
+
+# Modificar un valor
+estudiante["edad"] = 16
+print(estudiante["edad"])       # 16
+
+# Agregar una nueva clave
+estudiante["ciudad"] = "Sucre"
+print(estudiante)
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Métodos útiles de diccionarios}
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Operación} & \textbf{Qué hace} \\
+\midrule
+\texttt{dic["clave"]} & Devuelve el valor de la clave (error si no existe) \\
+\texttt{dic.get("clave")} & Devuelve el valor o \texttt{None} si no existe \\
+\texttt{dic.get("clave", x)} & Devuelve \texttt{x} si la clave no existe \\
+\texttt{dic.keys()} & Devuelve todas las claves \\
+\texttt{dic.values()} & Devuelve todos los valores \\
+\texttt{dic.items()} & Devuelve pares (clave, valor) \\
+\texttt{"clave" in dic} & Devuelve \texttt{True} si la clave existe \\
+\texttt{dic["clave"] = v} & Agrega o modifica el valor de la clave \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Recorriendo un diccionario}]
+capitales = {
+    "Bolivia": "La Paz",
+    "Argentina": "Buenos Aires",
+    "Colombia": "Bogotá",
+    "Perú": "Lima"
+}
+
+for pais, capital in capitales.items():
+    print("La capital de", pais, "es", capital)
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 36} \facil
+
+Crea un diccionario con los datos de un libro: título, autor y año de publicación. Luego:
+\begin{enumerate}
+    \item Muestra el título.
+    \item Modifica el año.
+    \item Agrega la clave \texttt{género}.
+    \item Muestra todas las claves y todos los valores.
+\end{enumerate}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 37} \facil
+
+Crea una tupla con las 4 estaciones del año. Muestra la primera y la última estación, y luego la cantidad de elementos con \texttt{len()}. Escribe un comentario explicando por qué no podemos modificar el primer elemento.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 38} \intermedio
+
+Escribe un programa que pida al usuario 3 países y su capital (un país a la vez), los guarde en un diccionario y luego muestre las capitales de todos los países ingresados.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 39} \intermedio
+
+Dado el diccionario de calificaciones \texttt{\{"Ana": 18, "Luis": 14, "Marta": 20, "Pedro": 11\}}, escribe un programa que:
+\begin{itemize}
+    \item Muestre el promedio de las calificaciones.
+    \item Muestre quién tiene la calificación más alta.
+    \item Muestre quién tiene la más baja.
+\end{itemize}
+Ayuda: usa \texttt{dic.values()}, \texttt{max()} y \texttt{min()}. Para saber quién tiene la nota, busca el estudiante cuya calificación coincida.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 40} \intermedio
+
+Escribe un programa que \textbf{cuente las letras} de una palabra usando un diccionario. Por ejemplo, para la palabra \texttt{"banana"}, el resultado debe ser:
+\begin{lstlisting}[style=pythonStyle]
+{'b': 1, 'a': 3, 'n': 2}
+\end{lstlisting}
+Ayuda: recorre cada letra; si la letra ya está en el diccionario, suma 1 a su valor; si no, la agrega con valor 1.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 9} \dificil
+
+Escribe un programa que gestione una \textbf{agenda telefónica} con un diccionario. El programa debe:
+\begin{enumerate}
+    \item Permitir agregar contactos (nombre y número).
+    \item Permitir buscar el número de un contacto.
+    \item Permitir eliminar un contacto.
+    \item Mostrar todos los contactos.
+\end{enumerate}
+El menú se muestra en un bucle \texttt{while} y se sale con la opción ``salir''. Usa \texttt{input()} para elegir la opción.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 10
+% ============================================================
+\section{Funciones}
+
+\subsection{¿Qué es una función?}
+
+Una \textbf{función} es un bloque de código \textbf{reutilizable} que realiza una tarea concreta. Nos permite escribir el código una sola vez y usarlo muchas veces. Ya hemos usado funciones como \texttt{print()}, \texttt{input()}, \texttt{len()} y \texttt{int()}; ahora aprenderemos a crear las nuestras.
+
+\subsection{Definir y llamar funciones}
+
+Para crear una función usamos la palabra clave \texttt{def}:
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Mi primera función}]
+def saludar():
+    print("¡Hola! Bienvenido al curso")
+
+# Llamar a la función
+saludar()
+saludar()
+saludar()
+\end{lstlisting}
+
+El programa muestra el mensaje tres veces. La definición \textbf{no ejecuta} el código; solo se ejecuta cuando \textbf{llamamos} a la función.
+\end{cajaEjemplo}
+
+\subsection{Parámetros y argumentos}
+
+Una función puede recibir \textbf{parámetros} (datos de entrada) para trabajar con ellos.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Función con parámetros}]
+def saludar_persona(nombre):
+    print("Hola,", nombre)
+
+def sumar(a, b):
+    resultado = a + b
+    return resultado
+
+saludar_persona("Ana")
+saludar_persona("Luis")
+
+# La función sumar devuelve un valor con return
+total = sumar(5, 3)
+print("La suma es:", total)
+\end{lstlisting}
+
+\begin{itemize}
+    \item \texttt{nombre}, \texttt{a} y \texttt{b} son \textbf{parámetros}: variables locales de la función.
+    \item \texttt{return} devuelve un resultado para que el programa que llamó a la función pueda usarlo.
+\end{itemize}
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\textbf{Valores por defecto:} un parámetro puede tener un valor inicial que se usa si la función se llama sin ese argumento:
+\begin{lstlisting}[style=pythonStyle]
+def saludar(nombre, saludo="Hola"):
+    print(saludo + ", " + nombre)
+
+saludar("Ana")              # Hola, Ana
+saludar("Luis", "Buenos días")  # Buenos días, Luis
+\end{lstlisting}
+\end{cajaRecuerda}
+
+\subsection{Ámbito de las variables}
+
+Las variables creadas dentro de una función son \textbf{locales}: solo existen dentro de la función. Las variables creadas fuera son \textbf{globales} y son visibles en todo el programa.
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Variables locales y globales}]
+mensaje = "Hola desde fuera"   # variable global
+
+def cambiar_mensaje():
+    mensaje_local = "Hola desde dentro"  # variable local
+    print(mensaje_local)
+    print(mensaje)   # la global también es visible
+
+cambiar_mensaje()
+print(mensaje)       # funciona, es global
+# print(mensaje_local)  # ERROR: no existe fuera de la función
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 41} \facil
+
+Escribe una función llamada \texttt{dibujar\_linea()} que muestre una línea de 20 asteriscos. Luego llámala 3 veces para dibujar tres líneas.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 42} \facil
+
+Escribe una función \texttt{cuadrado(n)} que reciba un número y devuelva su cuadrado. Pide un número al usuario y muestra el resultado.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 43} \intermedio
+
+Escribe una función \texttt{es\_par(n)} que devuelva \texttt{True} si el número es par y \texttt{False} si es impar. Luego escribe un programa que pida 5 números y cuente cuántos son pares usando la función.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 44} \intermedio
+
+Escribe una función \texttt{promedio(notas)} que reciba una lista de notas y devuelva su promedio. Luego pide al usuario 4 notas, guárdalas en una lista y muestra el promedio usando la función.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 45} \intermedio
+
+Escribe una función \texttt{invertir\_texto(texto)} que devuelva el texto invertido (por ejemplo, ``hola'' se convierte en ``aloh''). Luego escribe un programa que pida una frase, la invierta con la función y muestre el resultado.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 10} \dificil
+
+Crea una \textbf{calculadora con funciones}. Define las funciones \texttt{sumar(a, b)}, \texttt{restar(a, b)}, \texttt{multiplicar(a, b)} y \texttt{dividir(a, b)}. Luego escribe un programa que muestre un menú con las 4 operaciones, pida dos números y la operación elegida, y muestre el resultado. Usa un bucle \texttt{while} para que el menú se repita hasta que el usuario elija ``salir''.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 11
+% ============================================================
+\section{Biblioteca Estándar: math y random}
+
+\subsection{¿Qué es la biblioteca estándar?}
+
+Python incluye cientos de \textbf{módulos} con funciones listas para usar. Un módulo es un archivo con funciones y herramientas relacionadas. Para usarlo, lo importamos con la instrucción \texttt{import}.
+
+\subsection{El módulo math}
+
+Proporciona funciones matemáticas avanzadas:
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Usando math}]
+import math
+
+print(math.sqrt(144))        # 12.0  (raíz cuadrada)
+print(math.pi)               # 3.141592653589793
+print(math.ceil(4.2))        # 5  (redondea hacia arriba)
+print(math.floor(4.8))       # 4  (redondea hacia abajo)
+print(math.pow(2, 10))       # 1024.0  (potencia)
+print(math.factorial(5))     # 120
+print(math.fabs(-7))         # 7.0  (valor absoluto)
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\subsection{El módulo random}
+
+Permite generar \textbf{números aleatorios}, muy útil para juegos:
+
+\begin{cajaEjemplo}
+\begin{lstlisting}[style=pythonStyle, caption={Usando random}]
+import random
+
+print(random.randint(1, 6))    # número entero entre 1 y 6 (dado)
+print(random.random())         # número decimal entre 0 y 1
+print(random.choice(["rojo", "verde", "azul"]))  # elige un elemento al azar
+print(random.shuffle)          # mezcla una lista en su lugar
+
+lista = [1, 2, 3, 4, 5]
+random.shuffle(lista)
+print(lista)                   # lista mezclada
+\end{lstlisting}
+
+\begin{cajaRecuerda}
+\texttt{random.randint(a, b)} incluye ambos extremos: \texttt{randint(1, 6)} puede devolver 1 o 6.
+\end{cajaRecuerda}
+\end{cajaEjemplo}
+
+\subsection{Ejercicios propuestos}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 46} \facil
+
+Escribe un programa que use \texttt{math} para calcular y mostrar:
+\begin{itemize}
+    \item La raíz cuadrada de 289.
+    \item El valor de $\pi$ redondeado a 4 decimales.
+    \item El factorial de 10.
+\end{itemize}
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 47} \facil
+
+Escribe un programa que simule el lanzamiento de un dado: genera un número aleatorio entre 1 y 6 y lo muestra. Pide al usuario presionar \texttt{Enter} para lanzar, y que el programa lance el dado 3 veces mostrando cada resultado.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 48} \intermedio
+
+Escribe el juego \textbf{``Adivina el número''}:
+\begin{enumerate}
+    \item El programa elige un número aleatorio entre 1 y 50.
+    \item El usuario intenta adivinarlo.
+    \item Si el número es menor o mayor, el programa da una pista.
+    \item Cuando acierta, muestra en cuántos intentos lo logró.
+\end{enumerate}
+Usa un bucle \texttt{while} que se repita hasta acertar.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 49} \intermedio
+
+Escribe un programa que use \texttt{math} para calcular la \textbf{hipotenusa} de un triángulo rectángulo. Pide los dos catetos y usa la fórmula $c = \sqrt{a^2 + b^2}$. Ayuda: usa \texttt{math.sqrt()} y \texttt{math.pow()} (o \texttt{** 2}).
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Ejercicio 50} \intermedio
+
+Escribe un programa que simule \texttt{random.choice} para elegir al azar la respuesta a una pregunta. Define una lista de respuestas como \texttt{["Sí", "No", "Quizás", "Sin duda"]} y muestra una cada vez que el usuario haga una pregunta.
+\end{cajaEjercicio}
+
+\begin{cajaReto}
+\textbf{Reto 11} \dificil
+
+Escribe el juego \textbf{``Piedra, papel o tijera''} contra la computadora:
+\begin{enumerate}
+    \item El usuario elige piedra, papel o tijera.
+    \item La computadora elige una al azar con \texttt{random.choice}.
+    \item El programa determina quién gana (piedra vence a tijera, tijera vence a papel, papel vence a piedra).
+    \item Se juegan 5 rondas y al final se muestra el marcador.
+\end{enumerate}
+Ayuda: usa \texttt{if} y \texttt{elif} para todas las combinaciones posibles.
+\end{cajaReto}
+
+% ============================================================
+% MÓDULO 12
+% ============================================================
+\section{Proyecto Final}
+
+El proyecto final integra todo lo aprendido. Cada estudiante debe entregar \textbf{un} programa completo, bien documentado, que funcione sin errores y que combine al menos tres temas del curso.
+
+\subsection{Propuesta de proyectos}
+
+\begin{cajaEjercicio}
+\textbf{Proyecto A: Agenda de contactos} \intermedio
+
+Crea un programa que gestione una agenda de contactos con un diccionario. Debe permitir:
+\begin{itemize}
+    \item Agregar contactos (nombre y número de teléfono).
+    \item Buscar contactos.
+    \item Eliminar contactos.
+    \item Mostrar todos los contactos ordenados.
+    \item Salir.
+\end{itemize}
+Temas que usa: diccionarios, listas, funciones, bucles y condicionales.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Proyecto B: Conversor de unidades} \intermedio
+
+Crea un conversor que permita elegir entre varias conversiones (por ejemplo: kilómetros a millas, grados Celsius a Fahrenheit, kilos a libras, litros a galones). El menú se repite hasta que el usuario elija salir.
+Temas que usa: funciones, condicionales, bucles, entrada de datos.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Proyecto C: Quiz de cultura general} \intermedio
+
+Crea un cuestionario de 10 preguntas con 4 opciones cada una. El programa:
+\begin{itemize}
+    \item Muestra cada pregunta y las opciones.
+    \item Lee la respuesta del usuario.
+    \item Cuenta los aciertos.
+    \item Al final muestra el puntaje y una calificación.
+\end{itemize}
+Temas que usa: listas, diccionarios, bucles, condicionales, entrada de datos.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Proyecto D: Generador de contraseñas} \dificil
+
+Crea un programa que genere contraseñas seguras. Debe:
+\begin{itemize}
+    \item Preguntar la longitud deseada (por ejemplo, 12 caracteres).
+    \item Incluir letras mayúsculas, minúsculas, dígitos y símbolos.
+    \item Mezclar los caracteres al azar con \texttt{random.shuffle}.
+    \item Mostrar la contraseña generada.
+\end{itemize}
+Temas que usa: módulo \texttt{random}, listas, cadenas, bucles, funciones.
+\end{cajaEjercicio}
+
+\begin{cajaEjercicio}
+\textbf{Proyecto E: Registro de notas} \dificil
+
+Crea un programa que lleve el registro de las notas de varios estudiantes. Debe:
+\begin{itemize}
+    \item Permitir registrar estudiantes con sus notas.
+    \item Permitir ver las notas de un estudiante.
+    \item Calcular el promedio del curso.
+    \item Mostrar un reporte con el promedio de cada estudiante.
+\end{itemize}
+Temas que usa: diccionarios, listas, funciones, bucles, condicionales.
+\end{cajaEjercicio}
+
+\subsection{Criterios de evaluación}
+
+El proyecto se evalúa con los siguientes criterios:
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Criterio} & \textbf{Descripción} \\
+\midrule
+Funcionalidad & El programa hace lo que se pide y no se cae con errores \\
+Claridad & El código es legible y usa nombres descriptivos \\
+Comentarios & El código tiene comentarios que explican las partes importantes \\
+Uso de conceptos & Combina al menos tres temas del curso correctamente \\
+Manejo de errores & El programa no falla con entradas inesperadas \\
+Creatividad & Aporta ideas o funciones adicionales a lo pedido \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Referencias}
+
+\begin{itemize}
+    \item Documentación oficial de Python: \texttt{https://docs.python.org/es/3/}
+    \item Página de descargas de Python: \texttt{https://www.python.org/downloads/}
+    \item Python Tutor (visualizador de código): \texttt{https://pythontutor.com/}
+    \item Replit (editor en línea): \texttt{https://replit.com/}
+    \item Google Colab: \texttt{https://colab.research.google.com/}
+\end{itemize}
+
+\end{document}
