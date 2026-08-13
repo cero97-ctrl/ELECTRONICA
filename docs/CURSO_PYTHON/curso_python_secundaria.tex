@@ -1,132 +1,278 @@
-\documentclass[12pt,a4paper]{article}
+% ============================================================
+%  curso_python_secundaria.tex
+%  Estilo: PREAMBULO_INFOGRAFIA (nuevo look dark-mode / tecnológico)
+%  El preámbulo base se importó desde execution/estilo_infografia.py
+% ============================================================
 
-%================= PAQUETES =================
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ─────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
 \usepackage[spanish,es-noshorthands,es-tabla]{babel}
-\usepackage{geometry}
+
+% ── Geometría y espaciado ────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ───────────────────────────────────────────────────
 \usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Tablas ───────────────────────────────────────────────────────────────────
 \usepackage{booktabs}
-\usepackage{enumitem}
-\usepackage{listings}
-\usepackage[most]{tcolorbox}
-\usepackage{hyperref}
 \usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
 
-%================= CONFIGURACIÓN =================
-\geometry{a4paper, margin=2.5cm}
+% ── Gráficos ────────────────────────────────────────────────────────────────
+\usepackage{graphicx}
 
-\definecolor{azulTitulo}{RGB}{30,60,120}
-\definecolor{verdePython}{RGB}{53,114,53}
-\definecolor{codigoFondo}{RGB}{245,247,250}
-\definecolor{codigoComentario}{RGB}{140,140,140}
-\definecolor{codigoCadena}{RGB}{170,60,30}
-\definecolor{codigoKeyword}{RGB}{0,80,160}
-\definecolor{codigoNumero}{RGB}{150,30,150}
+% ── Código Python ────────────────────────────────────────────────────────────
+\usepackage{listings}
 
-\hypersetup{
-    colorlinks=true,
-    linkcolor=azulTitulo,
-    urlcolor=cyan,
-    pdftitle={Curso de Programación en Python para Estudiantes de Secundaria},
+% ── Colores, cajas e iconos ──────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% ── Secciones con barra de color ─────────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ───────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\small\color{azulNoche}\textbf{Curso de Python} --- Prof. César Rodríguez}
+\fancyhead[R]{\small\color{grisTexto}\thepage}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
 }
 
-% Configuración de listings para bloques de código Python
+% ── Hiperenlaces ─────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon,
+            pdftitle={Curso de Programación en Python para Estudiantes de Secundaria}]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ─────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{verdeTurquesa}{HTML}{004D40}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{azulMedio}{HTML}{2A5298}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{naranjaVivo}{HTML}{FF7043}
+\definecolor{rojoAlerta}{HTML}{E53935}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{amarilloNota}{HTML}{FFB300}
+
+% Colores específicos para bloques de código Python
+\definecolor{codigoFondo}{HTML}{1E2D3D}
+\definecolor{codigoComentario}{HTML}{7A8FA6}
+\definecolor{codigoCadena}{HTML}{FF9D5C}
+\definecolor{codigoKeyword}{HTML}{00C8E0}
+\definecolor{codigoNumero}{HTML}{00E5A0}
+
+% ── Banda de título ───────────────────────────────────────────────────────────
+\newcommand{\bandaTitulo}[2]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=verdeTurquesa, colframe=verdeTurquesa,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{python}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#1}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#2}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Configuración de listings para Python ────────────────────────────────────
 \lstdefinestyle{pythonStyle}{
     language=Python,
     backgroundcolor=\color{codigoFondo},
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\small\color{white},
     keywordstyle=\color{codigoKeyword}\bfseries,
     commentstyle=\color{codigoComentario}\itshape,
     stringstyle=\color{codigoCadena},
     numberstyle=\tiny\color{codigoComentario},
     numbers=left,
-    numbersep=8pt,
+    numbersep=10pt,
     showstringspaces=false,
     breaklines=true,
     breakatwhitespace=false,
     tabsize=4,
-    frame=single,
-    rulecolor=\color{black!20},
+    frame=none,
+    rulecolor=\color{azulNoche},
     captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
     literate=
-      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
-      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
-      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {á}{{\'{a}}}1 {é}{{\'{e}}}1 {í}{{\'{i}}}1 {ó}{{\'{o}}}1 {ú}{{\'{u}}}1
+      {Á}{{\'{A}}}1 {É}{{\'{E}}}1 {Í}{{\'{I}}}1 {Ó}{{\'{O}}}1 {Ú}{{\'{U}}}1
+      {ñ}{{\~{n}}}1 {Ñ}{{\~{N}}}1 {ü}{{\"{u}}}1 {Ü}{{\"{U}}}1
       {¿}{{?`}}1 {¡}{{!`}}1
 }
 
-% Cajas de contenido
+% Envuelve el lstlisting en una caja oscura redondeada
+\lstset{style=pythonStyle}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido del curso ─────────────────────────────────────────────
 \newtcolorbox{cajaRecuerda}{
-    colback=azulTitulo!5!white,
-    colframe=azulTitulo,
-    boxrule=0.8pt,
-    arc=2mm,
-    title={\textbf{Recuerda}},
-    fonttitle=\small,
-    left=6pt, right=6pt, top=4pt, bottom=4pt
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
 \newtcolorbox{cajaConcepto}{
-    colback=green!5!white,
-    colframe=verdePython,
-    boxrule=0.8pt,
-    arc=2mm,
-    title={\textbf{Concepto clave}},
-    fonttitle=\small,
-    left=6pt, right=6pt, top=4pt, bottom=4pt
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
 \newtcolorbox{cajaEjemplo}{
-    colback=orange!5!white,
-    colframe=orange!70!black,
-    boxrule=0.8pt,
-    arc=2mm,
-    title={\textbf{Ejemplo}},
-    fonttitle=\small,
-    left=6pt, right=6pt, top=4pt, bottom=4pt
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
 \newtcolorbox{cajaEjercicio}{
-    colback=blue!5!white,
-    colframe=blue!60!black,
-    boxrule=0.8pt,
-    arc=2mm,
-    title={\textbf{Ejercicio}},
-    fonttitle=\small,
-    left=6pt, right=6pt, top=4pt, bottom=4pt
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
 \newtcolorbox{cajaReto}{
-    colback=red!5!white,
-    colframe=red!70!black,
-    boxrule=0.8pt,
-    arc=2mm,
-    title={\textbf{Reto}},
-    fonttitle=\small,
-    left=6pt, right=6pt, top=4pt, bottom=4pt
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
 }
 
-% Comando para indicar nivel de dificultad
-\newcommand{\facil}{[\textcolor{green!50!black}{\textbf{Fácil}}]}
-\newcommand{\intermedio}{[\textcolor{orange!80!black}{\textbf{Intermedio}}]}
-\newcommand{\dificil}{[\textcolor{red!70!black}{\textbf{Difícil}}]}
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
-\title{\textbf{Curso de Programación en Python}\\[6pt]
-\large Para Estudiantes de Secundaria}
-\author{Prof. César Rodríguez}
-\date{\today}
+% ─────────────────────────────────────────────────────────────────────────────
 
 \begin{document}
 
-\maketitle
+% ══ PORTADA ═══════════════════════════════════════════════════════════════════
+\bandaTitulo{Curso de Programación en Python}{Para Estudiantes de Secundaria --- Prof. César Rodríguez}
 
-\begin{abstract}
+\begin{center}
+  \vspace{2pt}
+  {\large\color{grisTexto} 12 módulos · teoría, ejemplos y ejercicios · sin requisitos previos}
+  \vspace{4pt}
+\end{center}
+
+\begin{tcolorbox}[
+  enhanced, breakable,
+  arc=6pt, outer arc=6pt,
+  colback=grisPapel, colframe=grisLinea, boxrule=0.8pt,
+  left=12pt, right=12pt, top=8pt, bottom=8pt,
+]
 \noindent Este curso introduce a los estudiantes de secundaria en el mundo de la programación utilizando el lenguaje Python. A lo largo de 12 módulos se desarrollan los fundamentos de la programación: variables, tipos de datos, estructuras de control, colecciones, funciones y un proyecto final integrador. Cada módulo combina teoría breve, ejemplos resueltos y ejercicios propuestos con distintos niveles de dificultad, de modo que el estudiante aprende haciendo. No se requiere experiencia previa en programación ni conocimientos avanzados de matemáticas.
-\end{abstract}
+\end{tcolorbox}
 
+\vspace{6pt}
 \tableofcontents
 \newpage
 

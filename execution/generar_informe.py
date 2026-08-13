@@ -199,10 +199,9 @@ def generar_latex(data: dict) -> str:
 
     doc = PREAMBULO_INFOGRAFIA + r"""
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
-\fancyhead[L]{\small\color{azulTitulo}\textbf{Informe de Evaluación} --- Electrónica}
+\fancyhead[L]{\small\color{azulNoche}\textbf{Informe de Evaluación} --- Electrónica}
 \fancyhead[R]{\small """ + tex(estudiante) + r"""}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0pt}
 
 % ── Colores de desempeño (evaluación) ─────────────────────────────────────────
 \definecolor{desempeno_excelente}{HTML}{1A6B2F}
@@ -218,7 +217,7 @@ def generar_latex(data: dict) -> str:
 \bandaTitulo{ELECTRÓNICA --- Evaluación de Exámenes}{Informe de Evaluación Preliminar}
 
 \begin{center}
-  {\LARGE\bfseries\color{azulTitulo} """ + tex(estudiante) + r"""}
+  {\LARGE\bfseries\color{azulNoche} """ + tex(estudiante) + r"""}
 \end{center}
 
 % ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════

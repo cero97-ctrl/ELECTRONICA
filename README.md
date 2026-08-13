@@ -142,6 +142,7 @@ python execution/env_diagnostic.py
 
 - **Python:** PEP 8, type hints, docstrings, modularidad, raw strings para contenido LaTeX
 - **LaTeX:** UTF-8, `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz` para diagramas, `siunitx` para unidades
+- **Rust:** Smart contracts en Solana (`cargo build-sbf`), serialización Borsh, validación estricta de cuentas y checked math
 - **EDA:** Formato EasyEDA Standard (`LIB~...` en `shape[]`, sub-elementos `#@$`, pines con `^^`)
 - **RAG:** Actualizaciones incrementales, embeddings multilingüe, memoria conversacional
 - **3-Layer:** Directives en YAML → Orchestration → Execution scripts

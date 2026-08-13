@@ -66,7 +66,7 @@ El archivo `.tex` se crea o edita directamente en el sistema utilizando las herr
 **Estándares de Documentos:**
 - **Codificación e Idioma:** Todo documento debe utilizar `\usepackage[utf8]{inputenc}`, `\usepackage[T1]{fontenc}` y `\usepackage[spanish]{babel}`.
 - **Estructura Base:** Utilizar preferiblemente las clases `article` o `report` a 12pt en formato `a4paper`.
-- **Estilo de Código:** Utilizar el paquete `listings` definiendo colores apropiados para bloques de Python, Verilog o TCL.
+- **Estilo de Código:** Utilizar el paquete `listings` definiendo colores apropiados para bloques de Python, Rust, Verilog o TCL.
 - **Convención de Nomenclatura:** Los archivos generados a partir de libros NO llevarán sufijos redundantes (ej. `-CIRC-DISP-ELECT`). En su lugar, se debe incluir un comentario en la cabecera (ej. `% Fuente: Esquema eléctrico obtenido del libro...`).
 - **Revisión Académica:** Al corregir propuestas de grado, adoptar un enfoque crítico, asegurar objetivos SMART y promover la modularización de proyectos grandes.
 - **Consulta Previa de Errores Registrados (Crítico):** Antes de crear o modificar un archivo `.tex`, consultar el registro histórico de errores en `.agent/latex.md` para evitar cometer fallos ya documentados. Las respuestas que incluyan código deben ser directamente compilables.
@@ -89,6 +89,11 @@ El archivo `.tex` se crea o edita directamente en el sistema utilizando las herr
   - **Arquitectura:** Ecosistema RISC-V (PicoRV32, Ibex) y SoC con buses AMBA (AXI, AHB, APB).
   - **Flujo de Trabajo:** "No-Human-in-the-Loop", flujo automatizado desde RTL hasta GDSII. PDKs abiertos como SkyWater 130nm (`sky130`).
   - **Rendimiento:** Priorizar Timing Closure (setup/hold), área y enrutado sin violaciones DRC/LVS.
+- **Desarrollo Blockchain (Solana):**
+  - **Lenguaje:** Rust (compilación con `cargo build-bpf` / `cargo build-sbf`, Anchor framework opcional).
+  - **Arquitectura:** Smart contracts (programs) en Solana, cuentas (accounts) y estructuras de datos serializadas con Borsh, invocaciones Cross-Program (CPI).
+  - **Seguridad (Crítico):** Validación estricta de cuentas y firmantes, manejo de overflow (checked math), protección contra reentrancy y ataques de escalamiento de privilegios.
+  - **Integración:** Interacción de dApps Rust con la infraestructura existente del workspace (Python para herramientas de análisis, Node.js/TypeScript para clientes web).
 - **Desarrollo del Asistente RAG (`rag_system.py`):**
   - **Stack Principal:** LangChain, ChromaDB, Hugging Face Embeddings, LLMs rápidos vía Groq (ej. Llama 3).
   - **Manejo de Archivos:** Procesamiento ágil de `.md`, `.tex` y `.pdf`.

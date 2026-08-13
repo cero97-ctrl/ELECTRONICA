@@ -274,19 +274,19 @@ def generar_ejercicios_latex(data: dict) -> str:
     preguntas_str = _pregunta_body(preguntas)
 
     head = f"""
-\\fancyhead[L]{{\\small\\color{{azulTitulo}}\\textbf{{ELECTRÓNICA}} --- Ejercicios}}
+\\fancyhead[L]{{\\small\\color{{azulNoche}}\\textbf{{ELECTRÓNICA}} --- Ejercicios}}
 \\fancyhead[R]{{\\small\\itshape {tex(titulo[:60])}}}
-\\fancyfoot[C]{{\\small Página \\thepage\\ de \\pageref{{LastPage}}}}
-\\renewcommand{{\\headrulewidth}}{{0.4pt}}
+\\renewcommand{{\\headrulewidth}}{{0pt}}
 
-% ── Colores y estilos específicos de ejercicios ────────────────────────────────
+% ── Colores y estilos específicos de ejercicios ────────────────────────
 \\definecolor{{verdePuntaje}}{{HTML}}{{1A6B2F}}
 
 \\tcbset{{
   cajaInstrucciones/.style={{
     enhanced, breakable,
-    colback=grisFondo, colframe=grisBorde,
-    fonttitle=\\bfseries, coltitle=azulTitulo,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\\bfseries\\small, coltitle=azulNoche,
     top=6pt, bottom=6pt, left=8pt, right=8pt,
   }},
 }}
@@ -319,7 +319,7 @@ def generar_ejercicios_latex(data: dict) -> str:
 \\begin{{center}}
   \\begin{{tcolorbox}}[
     enhanced,
-    colback=white, colframe=azulTitulo,
+    colback=white, colframe=azulNoche,
     width=0.6\\linewidth,
     boxrule=1.5pt,
     halign=center, valign=center,
@@ -369,10 +369,9 @@ def generar_solucionario_latex(data: dict) -> str:
     soluciones_str = _soluciones_body(preguntas)
 
     head = f"""
-\\fancyhead[L]{{\\small\\color{{azulTitulo}}\\textbf{{ELECTRÓNICA}} --- Solucionario}}
+\\fancyhead[L]{{\\small\\color{{azulNoche}}\\textbf{{ELECTRÓNICA}} --- Solucionario}}
 \\fancyhead[R]{{\\small\\itshape {tex(titulo[:60])}}}
-\\fancyfoot[C]{{\\small Página \\thepage\\ de \\pageref{{LastPage}}}}
-\\renewcommand{{\\headrulewidth}}{{0.4pt}}
+\\renewcommand{{\\headrulewidth}}{{0pt}}
 
 % ──────────────────────────────────────────────────────────────────────────────
 \\begin{{document}}

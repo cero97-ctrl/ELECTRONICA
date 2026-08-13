@@ -101,10 +101,9 @@ def generar_latex_reporte(telemetria: dict, fecha_str: str) -> str:
     # Formatear el contenido LaTeX del informe
     latex = PREAMBULO_INFOGRAFIA + r"""
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
-\fancyhead[L]{\small\color{azulTitulo}\textbf{Reporte de Diagnóstico} --- Sistema}
+\fancyhead[L]{\small\color{azulNoche}\textbf{Reporte de Diagnóstico} --- Sistema}
 \fancyhead[R]{\small """ + fecha_str + r"""}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0pt}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{document}

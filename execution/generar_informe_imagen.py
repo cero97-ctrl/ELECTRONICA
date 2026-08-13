@@ -151,10 +151,9 @@ def generar_latex(data: dict) -> str:
 
     doc = PREAMBULO_INFOGRAFIA + r"""
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
-\fancyhead[L]{\small\color{azulTitulo}\textbf{Informe de Análisis} --- Imágenes}
+\fancyhead[L]{\small\color{azulNoche}\textbf{Informe de Análisis} --- Imágenes}
 \fancyhead[R]{\small """ + fecha_str + r"""}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0pt}
 
 % ── URLs ──────────────────────────────────────────────────────────────────────
 \def\path#1{\url{#1}}
