@@ -48,6 +48,7 @@ flujo_empaquetar_dataset.py [--format parquet|jsonl] [--license <lic>] [--pack] 
 flujo_publicar_hf.py        <dataset> [--repo <id>] [--private] [--dry-run] [--no-alert]
 flujo_ruview_rescue.py      (UDP listener :5005 — datos CSI/acelerómetro; config en directives/ruview_rescue.yaml)
 flujo_telegram.py           (Telegram gateway polling — config en directives/telegram_gateway.yaml)
+flujo_consultar_docs.py     <tech> [--topic ...] [--url ...] [--max-chars N]
 ```
 
 ### MCP servers (`mcp_*_server.py`, FastMCP)
@@ -58,6 +59,7 @@ mcp_elaborar_server.py     Examen Elaborator      → flujo_elaborar_examen (dir
 mcp_evaluar_server.py      Examen Evaluator       → flujo_evaluar_examen  (directives/evaluar_examen_mcp.yaml)
 mcp_latex_server.py        LaTeX Compiler         → compile_latex.py      (directives/latex_mcp_server.yaml)
 mcp_sistema_server.py      System Control         → system_control.py     (directives/sistema_mcp.yaml)
+mcp_docs_server.py         Docs Reference Server  → flujo_consultar_docs  (directives/consultar_docs_mcp.yaml)
 ```
 
 ### System services
@@ -83,4 +85,10 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 ## LaTeX conventions
 
 - `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz`, `siunitx`, `amsmath`
+- **ALL generated LaTeX uses the infographic style** from `execution/estilo_infografia.py`:
+  - Generators import `PREAMBULO_INFOGRAFIA` (never duplicate preambles) and concatenate it with their document-specific `fancyhead`/colors before `\begin{document}`
+  - Already integrated: `generar_informe.py`, `generar_informe_imagen.py`, `generar_examen_latex.py`, `generar_ejercicios_latex.py`, `flujo_diagnostico.py`
+  - If you create a **new** LaTeX generator, import `PREAMBULO_INFOGRAFIA` and use `\bandaTitulo{...}{...}` for the opening banner, `tarjetaDato`/`tarjetaIcono`/`caja*` tcolorbox styles, `\section` colored rules, and FontAwesome icons (`\faIcon{...}`)
+  - Same infographic look: sourcesanspro, `bandaAzul` banner, section rules via `titlesec`
+  - `execution/estilo_infografia.py` must be imported additively and read `.agent/latex.md` before editing
 - EDA JSON to EasyEDA: `LIB~...` strings in `shape[]`, sub-elements split by `#@$`, pins by `^^`

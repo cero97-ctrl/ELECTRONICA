@@ -1,4 +1,23 @@
-\documentclass[11pt,a4paper]{article}
+#!/usr/bin/env python3
+r"""
+estilo_infografia.py — Estilo de infografía compartido para LaTeX (Layer 3: Execution)
+
+Módulo determinista que provee el preámbulo y macros de estilo infográfico
+(moderno: bandas de color, tarjetas de datos, iconos FontAwesome, secciones con
+barra de color y fuente sans-serif) para TODOS los generadores LaTeX del workspace.
+
+Los generadores importan PREAMBULO_INFOGRAFIA y lo concatenan a su cuerpo,
+evitando duplicar preámbulos en cada script.
+
+Elementos provistos:
+  - PREAMBULO_INFOGRAFIA : preámbulo completo listo para \begin{document}
+  - banda_titulo()       : Apertura con banda de color y subtítulo (portada infográfica)
+  - seccion_con_icono()  : Sección con rótulo/icono (usa \section + icono FontAwesome)
+"""
+
+# ── Preámbulo LaTeX compartido ─────────────────────────────────────────────────
+# No incluye \begin{document}: el generador lo añade tras su cabecera específica.
+PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 
 % ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
 \usepackage[utf8]{inputenc}
@@ -123,78 +142,32 @@
 \newcommand{\iconotexto}[2]{\textcolor{azulTitulo}{\faIcon{#1}}~#2}
 
 % ─────────────────────────────────────────────────────────────────────────────
-
-% ── Cabeceras específicas del informe ──────────────────────────────────────────
-\fancyhead[L]{\small\color{azulTitulo}\textbf{Reporte de Diagnóstico} --- Sistema}
-\fancyhead[R]{\small 13 de August de 2026 a las 10:44}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{document}
-
-% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
-\bandaTitulo{Reporte Técnico de Diagnóstico del Sistema}{Generado por el Agente IA (Orquestador MCP)}
-
-% Información básica del sistema
-\section{Resumen del Sistema}
-Este documento presenta el diagnóstico del hardware y software de la máquina anfitriona donde están alojados los servidores MCP locales del espacio de trabajo. El diagnóstico ha sido generado y compilado de forma automática de extremo a extremo.
-
-\section{Especificaciones del Software y Núcleo}
-A continuación se detallan las características principales del sistema operativo y del entorno virtual de desarrollo de Python.
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{ll}
-\hline
-\textbf{Parámetro} & \textbf{Valor} \\ \hline
-Sistema Operativo & Linux \\
-Versión/Release & 6.8.0-137-generic \\
-Arquitectura & x86\_64 \\
-Nombre del Host (Hostname) & ZETA \\
-Versión de Python & 3.13.5 \\
-Entorno Conda Activo & base \\
-Codificación por Defecto & utf-8 \\
-Tiempo de Actividad (Uptime) & 4.1 horas \\ \hline
-\end{tabular}
-\caption{Características del software y sistema base.}
-\end{table}
-
-\section{Especificaciones de Hardware}
-Detalles del procesador, memoria RAM disponible y almacenamiento en disco.
-
-\subsection{Procesador (CPU)}
-\begin{itemize}
-    \item \textbf{Modelo:} Intel(R) Celeron(R) N4020 CPU @ 1.10GHz
-    \item \textbf{Núcleos (Cores):} 2 núcleos lógicos
-\end{itemize}
-
-\subsection{Memoria RAM}
-\begin{itemize}
-    \item \textbf{Memoria Total:} 3.63 GB
-    \item \textbf{Memoria Disponible:} 0.44 GB
-    \item \textbf{Porcentaje en Uso:} 87.8\%
-\end{itemize}
-
-\subsection{Almacenamiento (Disco Raíz)}
-\begin{itemize}
-    \item \textbf{Capacidad Total:} 233.18 GB
-    \item \textbf{Espacio Usado:} 215.87 GB
-    \item \textbf{Espacio Libre:} 5.39 GB
-    \item \textbf{Porcentaje en Uso:} 92.6\%
-\end{itemize}
-
-\subsection{Tarjetas Gráficas (GPUs)}
-No se detectaron GPUs aceleradas de NVIDIA activas o `nvidia-smi` no está instalado.
+"""
 
 
-\section{Herramientas de Desarrollo y Compilación}
-Estado de instalación de herramientas de desarrollo esenciales en el sistema:
+def banda_titulo(titulo: str, subtitulo: str) -> str:
+    """Apertura infográfica con banda de color, título y subtítulo."""
+    return r"\bandaTitulo{" + titulo + "}{" + subtitulo + "}"
 
-\begin{itemize}
-    \item \textbf{Git:} Instalado
-    \item \textbf{Curl:} Instalado
-    \item \textbf{PdfLaTeX (Compilador LaTeX):} Instalado
-\end{itemize}
 
-\end{document}
+def seccion_con_icono(icono: str, texto: str) -> str:
+    """Sección titulada con un icono FontAwesome delante."""
+    nombre_icono = _sanitizar_icono(icono)
+    return (
+        r"\section{\iconotexto{" + nombre_icono + r"}{" + texto + r"}}"
+    )
+
+
+def _sanitizar_icono(icono: str) -> str:
+    """Normaliza el nombre del icono FontAwesome (fa-xxx / xxx → xxx)."""
+    icono = (icono or "").strip().lower()
+    if icono.startswith("fa-"):
+        icono = icono[3:]
+    if icono.startswith("fa"):
+        icono = icono[2:]
+    return icono or "file-alt"
+
+
+if __name__ == "__main__":
+    print("Módulo de estilo infográfico (importar, no ejecutar).")
+    print(f"Longitud del preámbulo: {len(PREAMBULO_INFOGRAFIA)} caracteres.")

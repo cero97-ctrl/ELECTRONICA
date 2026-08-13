@@ -1,19 +1,70 @@
 {
-  "run_id": "flujo-Tirzo_Mata-2026-08-08T17-38-22",
-  "directive": "evaluar_examen_estudiante.yaml",
-  "estudiante": "Tirzo Mata",
-  "pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/cursos/INT_ELECTRONICA/examenes/03/examen_estudiante/Tirzo_Mata.pdf",
-  "started_at": "2026-08-08T17:38:22.732460+00:00",
-  "last_updated": "2026-08-08T17:40:08.222797+00:00",
-  "current_step": 0,
-  "steps_completed": [],
-  "steps_failed": [
+  "run_id": "flujo-diagnostico-2026-08-13T14-44-06",
+  "directive": "diagnostico_mcp.yaml",
+  "started_at": "2026-08-13T14:44:06.607400+00:00",
+  "last_updated": "2026-08-13T14:44:21.503711+00:00",
+  "current_step": 4,
+  "steps_completed": [
     {
       "step": 1,
-      "script": "evaluar_examen.py",
-      "code": 2,
-      "message": "Error de API (APIStatusError): Error code: 402 - {'error': {'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\", 'code': 402, 'metadata': {'limit_source': 'openrouter_credits', 'remedy_hint': 'Add credits at https://openrouter.ai/settings/credits, or lower max_tokens / prompt size to fit your remaining balance.', 'provider_name': None, 'previous_errors': [{'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}, {'code': 402, 'message': \"This request requires more credits, or fewer max_tokens. You requested up to 8192 tokens, but can only afford 3410. To increase, visit https://openrouter.ai/workspaces/default/keys/6bfec57f66e553c7ee8c2b56499fc65f32b8118baae98cedd6fc16fdef565f8b and adjust the key's monthly limit\"}]}}, 'user_id': 'user_33YfQJkj4MPfKZGNV015FHjOwsY'}"
+      "script": "env_diagnostic.py",
+      "status": "ok"
+    },
+    {
+      "step": 2,
+      "script": "generar_latex_reporte",
+      "status": "ok",
+      "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.tex"
+    },
+    {
+      "step": 3,
+      "script": "compile_latex.py",
+      "status": "ok",
+      "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.pdf"
+    },
+    {
+      "step": 4,
+      "script": "alert_user.py",
+      "status": "ok",
+      "tipo": "success"
     }
   ],
-  "context": {}
+  "steps_failed": [],
+  "context": {
+    "telemetria": {
+      "core": {
+        "os": "Linux",
+        "release": "6.8.0-137-generic",
+        "architecture": "x86_64",
+        "hostname": "ZETA",
+        "python_version": "3.13.5",
+        "conda_env": "base",
+        "encoding": "utf-8",
+        "uptime": "4.1 horas"
+      },
+      "hardware": {
+        "cpu_model": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
+        "cpu_cores": 2,
+        "ram": {
+          "total_gb": 3.63,
+          "available_gb": 0.44,
+          "percent_used": 87.8
+        },
+        "disk": {
+          "total_gb": 233.18,
+          "used_gb": 215.87,
+          "free_gb": 5.39,
+          "percent_used": 92.6
+        },
+        "gpus": []
+      },
+      "network": {
+        "git_installed": true,
+        "curl_installed": true,
+        "pdflatex_installed": true
+      }
+    },
+    "archivo_tex": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.tex",
+    "archivo_pdf": "/home/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA/docs/DIAGNOSTICOS/informe_diagnostico.pdf"
+  }
 }

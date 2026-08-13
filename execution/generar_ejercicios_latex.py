@@ -26,6 +26,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).parent.resolve()
+if str(SCRIPT_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR.parent))
+
+from execution.estilo_infografia import PREAMBULO_INFOGRAFIA
+
 
 # ── Helpers de escape LaTeX ─────────────────────────────────────────────────────
 
@@ -248,44 +254,7 @@ def _soluciones_body(preguntas: list[dict]) -> str:
     return "\n".join(cuerpo)
 
 
-_PREAMBLE_COMMON = r"""\documentclass[11pt,a4paper]{article}
-
-% ── Codificación y fuentes ────────────────────────────────────────────────────
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[spanish,es-noshorthands]{babel}
-
-% ── Geometría y espaciado ─────────────────────────────────────────────────────
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
-\usepackage{setspace}
-\setstretch{1.10}
-\usepackage{parskip}
-
-% ── Matemáticas ───────────────────────────────────────────────────────────────
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{siunitx}
-
-% ── Circuitos ────────────────────────────────────────────────────────────────
-\usepackage[european, straightvoltages]{circuitikz}
-
-% ── Tablas ────────────────────────────────────────────────────────────────────
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{enumitem}
-
-% ── Colores y cajas ───────────────────────────────────────────────────────────
-\usepackage[dvipsnames]{xcolor}
-\usepackage{tcolorbox}
-\tcbuselibrary{skins, breakable}
-
-% ── Cabeceras y pies ──────────────────────────────────────────────────────────
-\usepackage{fancyhdr}
-\usepackage{lastpage}
-\pagestyle{fancy}
-\fancyhf{}
-"""
+_PREAMBLE_COMMON = PREAMBULO_INFOGRAFIA
 
 
 def generar_ejercicios_latex(data: dict) -> str:
@@ -305,25 +274,19 @@ def generar_ejercicios_latex(data: dict) -> str:
     preguntas_str = _pregunta_body(preguntas)
 
     head = f"""
-\\fancyhead[L]{{\\small\\textbf{{ELECTRÓNICA}} --- Ejercicios}}
+\\fancyhead[L]{{\\small\\color{{azulTitulo}}\\textbf{{ELECTRÓNICA}} --- Ejercicios}}
 \\fancyhead[R]{{\\small\\itshape {tex(titulo[:60])}}}
 \\fancyfoot[C]{{\\small Página \\thepage\\ de \\pageref{{LastPage}}}}
 \\renewcommand{{\\headrulewidth}}{{0.4pt}}
 
-% ── Hiperenlaces ──────────────────────────────────────────────────────────────
-\\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{{hyperref}}
-
-% ── Colores personalizados ────────────────────────────────────────────────────
-\\definecolor{{azulTitulo}}{{HTML}}{{1B2A6B}}
-\\definecolor{{grisFondo}}{{HTML}}{{F5F5F5}}
+% ── Colores y estilos específicos de ejercicios ────────────────────────────────
 \\definecolor{{verdePuntaje}}{{HTML}}{{1A6B2F}}
 
-% ── Estilos de cajas ─────────────────────────────────────────────────────────
 \\tcbset{{
   cajaInstrucciones/.style={{
     enhanced, breakable,
-    colback=grisFondo, colframe=gray!50,
-    fonttitle=\\bfseries, coltitle=black,
+    colback=grisFondo, colframe=grisBorde,
+    fonttitle=\\bfseries, coltitle=azulTitulo,
     top=6pt, bottom=6pt, left=8pt, right=8pt,
   }},
 }}
@@ -331,13 +294,11 @@ def generar_ejercicios_latex(data: dict) -> str:
 % ──────────────────────────────────────────────────────────────────────────────
 \\begin{{document}}
 
-% ══ PORTADA / ENCABEZADO ═══════════════════════════════════════════════════════
+% ══ PORTADA / ENCABEZADO INFográfico ════════════════════════════════════════════
+\\bandaTitulo{{ELECTRÓNICA}}{{{tex(titulo)}}}
+
 \\begin{{center}}
-  {{\\Large\\bfseries\\color{{azulTitulo}} ELECTRÓNICA}}\\\\[4pt]
-  {{\\large Hoja de Ejercicios de Razonamiento y Cálculo}}\\\\[8pt]
-  \\rule{{\\linewidth}}{{1.2pt}}\\\\[6pt]
-  {{\\LARGE\\bfseries {tex(titulo)}}}\\\\[6pt]
-  \\rule{{\\linewidth}}{{0.6pt}}\\\\[6pt]
+  \\vspace{{2pt}}
   {{\\large \\textbf{{Dificultad:}} {tex(dificultad.capitalize())} \\hfill
    \\textbf{{Duración:}} {tex(duracion)}}} \\\\[4pt]
   {{\\large \\textbf{{Fecha:}} \\rule{{4cm}}{{0.2pt}} \\hfill
@@ -408,29 +369,16 @@ def generar_solucionario_latex(data: dict) -> str:
     soluciones_str = _soluciones_body(preguntas)
 
     head = f"""
-\\fancyhead[L]{{\\small\\textbf{{ELECTRÓNICA}} --- Solucionario}}
+\\fancyhead[L]{{\\small\\color{{azulTitulo}}\\textbf{{ELECTRÓNICA}} --- Solucionario}}
 \\fancyhead[R]{{\\small\\itshape {tex(titulo[:60])}}}
 \\fancyfoot[C]{{\\small Página \\thepage\\ de \\pageref{{LastPage}}}}
 \\renewcommand{{\\headrulewidth}}{{0.4pt}}
 
-% ── Hiperenlaces ──────────────────────────────────────────────────────────────
-\\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{{hyperref}}
-
-% ── Colores personalizados ────────────────────────────────────────────────────
-\\definecolor{{azulTitulo}}{{HTML}}{{1B2A6B}}
-\\definecolor{{grisFondo}}{{HTML}}{{F5F5F5}}
-
 % ──────────────────────────────────────────────────────────────────────────────
 \\begin{{document}}
 
-% ══ PORTADA ═════════════════════════════════════════════════════════════════════
-\\begin{{center}}
-  {{\\Large\\bfseries\\color{{azulTitulo}} ELECTRÓNICA}}\\\\[4pt]
-  {{\\large Solucionario de Ejercicios}}\\\\[8pt]
-  \\rule{{\\linewidth}}{{1.2pt}}\\\\[6pt]
-  {{\\LARGE\\bfseries {tex(titulo)}}}\\\\[6pt]
-  \\rule{{\\linewidth}}{{0.6pt}}
-\\end{{center}}
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\\bandaTitulo{{ELECTRÓNICA --- Solucionario}}{{{tex(titulo)}}}
 
 \\vspace{{4pt}}
 \\noindent\\textit{{Las siguientes soluciones son una guía de referencia para el profesor.}}

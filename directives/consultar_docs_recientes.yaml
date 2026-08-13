@@ -1,0 +1,37 @@
+Goal: "Consultar la documentación oficial vigente de una tecnología y guardarla como texto Markdown limpio para referencia del agente."
+
+Required inputs:
+  - tecnologia: "Nombre de la tecnología a consultar (p.ej. nextjs, supabase, expo, react, langchain, openai, fastapi, flask, esp-idf). Se amplía consultando execution/consultar_docs.py --list."
+
+Optional inputs:
+  - url: "URL directa de documentación. Si se indica, ignora el registro por tecnología."
+  - topic: "Sub-ruta o tema opcional dentro de la documentación (se anexa a la URL base)."
+  - output_file: "Ruta del archivo Markdown de salida (default: .tmp/docs_cache/<tecnologia>.md)."
+  - max_chars: "Truncar el contenido a N caracteres (default: 200000)."
+  - fresh: "Forzar descarga ignorando la caché de 24 horas."
+
+Steps:
+  - step: 1
+    action: "Consultar la documentación vigente y guardarla en Markdown limpio"
+    script: "execution/consultar_docs.py"
+    inputs:
+      tech: "{{tecnologia}}"
+      topic: "{{topic}}"
+      url: "{{url}}"
+      output: "{{output_file}}"
+      max_chars: "{{max_chars}}"
+      fresh: "{{fresh}}"
+
+Expected outputs:
+  - "Un archivo Markdown (.tmp/docs_cache/<tecnologia>.md por defecto) con la documentación oficial reciente de la tecnología, incluyendo fuente, fecha de consulta y título."
+  - "Un JSON por stdout con status, url final, título, archivo generado y tamaño."
+
+Edge cases:
+  - error: "Tecnología no soportada o arguamentos inválidos."
+    recovery: "Listar las tecnologías disponibles (--list) y solicitar un nombre válido al operador."
+  - error: "HTTP 403 por protección anti-bot."
+    recovery: "Reintentar con User-Agent alternativo dentro del script; si persiste, reportar acceso denegado."
+  - error: "URL inalcanzable o DNS inválido."
+    recovery: "Reportar el error de conexión y abortar."
+  - error: "Página SPA sin contenido extraíble (< 200 caracteres)."
+    recovery: "Advertir que la página requiere JavaScript o bloquea bots y sugerir URL alternativa."

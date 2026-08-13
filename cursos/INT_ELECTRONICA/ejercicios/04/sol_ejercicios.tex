@@ -1,64 +1,139 @@
 \documentclass[11pt,a4paper]{article}
 
-% ── Codificación y fuentes ────────────────────────────────────────────────────
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
 \usepackage[spanish,es-noshorthands]{babel}
 
 % ── Geometría y espaciado ─────────────────────────────────────────────────────
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage[top=2.2cm, bottom=2.2cm, left=2.2cm, right=2.2cm]{geometry}
 \usepackage{setspace}
-\setstretch{1.10}
+\setstretch{1.15}
 \usepackage{parskip}
 
-% ── Matemáticas ───────────────────────────────────────────────────────────────
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{siunitx}
 
-% ── Circuitos ────────────────────────────────────────────────────────────────
+% ── Circuitos ─────────────────────────────────────────────────────────────────
 \usepackage[european, straightvoltages]{circuitikz}
 
 % ── Tablas ────────────────────────────────────────────────────────────────────
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
 \usepackage{enumitem}
 
-% ── Colores y cajas ───────────────────────────────────────────────────────────
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
 
-% ── Cabeceras y pies ──────────────────────────────────────────────────────────
+% ── Secciones con barra de color (infografía) ───────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulTitulo}}
+  {\thesection}{1em}{}
+  [\color{bandaAzul}\rule{\linewidth}{1.6pt}]
+\titlespacing*{\section}{0pt}{22pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulTitulo}}
+  {\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \pagestyle{fancy}
 \fancyhf{}
 
-\fancyhead[L]{\small\textbf{ELECTRÓNICA} --- Solucionario}
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulTitulo, urlcolor=azulTitulo]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores de la marca ─────────────────────────────────────────────
+\definecolor{azulTitulo}{HTML}{1B2A6B}
+\definecolor{bandaAzul}{HTML}{1F3A93}
+\definecolor{azulClaro}{HTML}{2E5A9C}
+\definecolor{cyanAcento}{HTML}{0E7C86}
+\definecolor{naranjaAcento}{HTML}{E07B39}
+\definecolor{verdeAcento}{HTML}{1A6B2F}
+\definecolor{rojoAcento}{HTML}{C0392B}
+\definecolor{grisFondo}{HTML}{F5F6FA}
+\definecolor{grisBorde}{HTML}{C9CFE0}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    colback=azulClaro!6, colframe=azulClaro,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulClaro, sharp corners},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable, sharp corners,
+    colback=white, colframe=azulClaro, boxrule=0.8pt,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+  cajaTitulo/.style={enhanced, breakable,
+    colback=azulTitulo!8, colframe=azulTitulo,
+    fonttitle=\bfseries\large, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulTitulo},
+    top=6pt, bottom=6pt, left=8pt, right=8pt},
+  cajaContenido/.style={enhanced, breakable,
+    colback=grisFondo, colframe=grisBorde,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaFortaleza/.style={enhanced, breakable,
+    colback=verdeAcento!8, colframe=verdeAcento,
+    fonttitle=\bfseries, coltitle=verdeAcento,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaMejora/.style={enhanced, breakable,
+    colback=naranjaAcento!8, colframe=naranjaAcento,
+    fonttitle=\bfseries, coltitle=naranjaAcento,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaRecomendacion/.style={enhanced, breakable,
+    colback=grisFondo, colframe=grisBorde,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+}
+
+% ── Banda de título: apertura de documento tipo infografía ─────────────────────
+\newcommand{\bandaTitulo}[2]{%
+  \begin{tcolorbox}[enhanced, colback=bandaAzul, colframe=bandaAzul,
+    boxrule=0pt, arc=0pt, outer arc=0pt, width=\linewidth,
+    halign=center, valign=center,
+    top=14pt, bottom=14pt, left=10pt, right=10pt]
+    {\LARGE\bfseries\color{white}#1}\par\vspace{4pt}%
+    {\small\color{white!78!black}#2}%
+  \end{tcolorbox}\vspace{8pt}}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{azulTitulo}{\faIcon{#1}}~#2}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\fancyhead[L]{\small\color{azulTitulo}\textbf{ELECTRÓNICA} --- Solucionario}
 \fancyhead[R]{\small\itshape Filtros Activos RC}
 \fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ── Hiperenlaces ──────────────────────────────────────────────────────────────
-\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
-
-% ── Colores personalizados ────────────────────────────────────────────────────
-\definecolor{azulTitulo}{HTML}{1B2A6B}
-\definecolor{grisFondo}{HTML}{F5F5F5}
-
 % ──────────────────────────────────────────────────────────────────────────────
 \begin{document}
 
-% ══ PORTADA ═════════════════════════════════════════════════════════════════════
-\begin{center}
-  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA}\\[4pt]
-  {\large Solucionario de Ejercicios}\\[8pt]
-  \rule{\linewidth}{1.2pt}\\[6pt]
-  {\LARGE\bfseries Filtros Activos RC}\\[6pt]
-  \rule{\linewidth}{0.6pt}
-\end{center}
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{ELECTRÓNICA --- Solucionario}{Filtros Activos RC}
 
 \vspace{4pt}
 \noindent\textit{Las siguientes soluciones son una guía de referencia para el profesor.}
@@ -69,7 +144,7 @@
 % ── Solución Ejercicio 1 ─────────────────────────────────────────────────
 \subsection*{Ejercicio 1 \normalfont\normalsize\textit{(2.0 puntos) --- Solución}}
 \textbf{Enunciado:}
-Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de corte $f_c = 1000 Hz$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de $R_1$, $R_2$ y $C$ necesarios para lograr las especificaciones del filtro?
+Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de corte $f_c = 1000 Hz$. La resistencia de entrada $R_i$ es $1 k\Omega$. ¿Cuáles son los valores de $R_1$, $R_2$ y $C$ necesarios para lograr las especificaciones del filtro?
 
   \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
     Un filtro pasa altos con amplificador operacional y componentes RC.
@@ -80,7 +155,7 @@ Diseñe un filtro pasa altos con una ganancia $A_v = 10$ y una frecuencia de cor
 
 \vspace{2mm}
 \textbf{Solución:}
-La ganancia del filtro pasa altos se da por $A_v = -\frac{R_2}{R_1}$. La frecuencia de corte está dada por $f_c = \frac{1}{2\pi R_2C}$. Se puede resolver el sistema de ecuaciones para encontrar $R_1 = \frac{R_2}{A_v}$ y $C = \frac{1}{2\pi R_2 f_c}$. Sustituyendo $A_v = 10$ y $f_c = 1000 Hz$, se obtiene $R_1 = \frac{R_2}{10}$ y $C = \frac{1}{2\pi R_2 \cdot 1000}$. Para $R_i = 1 kOmega$, se puede elegir $R_2 = 10 kOmega$ para simplificar, entonces $R_1 = 1 kOmega$ y $C = \frac{1}{2\pi \cdot 10^4 \cdot 1000} = 15.92 nF$.
+La ganancia del filtro pasa altos se da por $A_v = -\frac{R_2}{R_1}$. La frecuencia de corte está dada por $f_c = \frac{1}{2\pi R_2C}$. Se puede resolver el sistema de ecuaciones para encontrar $R_1 = \frac{R_2}{A_v}$ y $C = \frac{1}{2\pi R_2 f_c}$. Sustituyendo $A_v = 10$ y $f_c = 1000 Hz$, se obtiene $R_1 = \frac{R_2}{10}$ y $C = \frac{1}{2\pi R_2 \cdot 1000}$. Para $R_i = 1 k\Omega$, se puede elegir $R_2 = 10 k\Omega$ para simplificar, entonces $R_1 = 1 k\Omega$ y $C = \frac{1}{2\pi \cdot 10^4 \cdot 1000} = 15.92 nF$.
 
 \vspace{4pt}
 \rule{\linewidth}{0.2pt}
@@ -102,7 +177,7 @@ Un filtro pasa bajas tiene una frecuencia de corte $f_c = 500 Hz$ y utiliza un c
 
 \vspace{2mm}
 \textbf{Solución:}
-La frecuencia de corte del filtro pasa bajas está dada por $f_c = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_c C}$. Sustituyendo $f_c = 500 Hz$ y $C = 10 nF$, se encuentra $R = \frac{1}{2\pi \cdot 500 \cdot 10 \cdot 10^{-9}} = 31.83 kOmega$.
+La frecuencia de corte del filtro pasa bajas está dada por $f_c = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_c C}$. Sustituyendo $f_c = 500 Hz$ y $C = 10 nF$, se encuentra $R = \frac{1}{2\pi \cdot 500 \cdot 10 \cdot 10^{-9}} = 31.83 k\Omega$.
 
 \vspace{4pt}
 \rule{\linewidth}{0.2pt}
@@ -113,7 +188,7 @@ La frecuencia de corte del filtro pasa bajas está dada por $f_c = \frac{1}{2\pi
 % ── Solución Ejercicio 3 ─────────────────────────────────────────────────
 \subsection*{Ejercicio 3 \normalfont\normalsize\textit{(2.5 puntos) --- Solución}}
 \textbf{Enunciado:}
-Diseñe un filtro pasa bandas con una frecuencia central $f_0 = 2000 Hz$, una banda pasante de $100 Hz$ y una ganancia $A_v = 5$. La resistencia de entrada $R_i$ es $2 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+Diseñe un filtro pasa bandas con una frecuencia central $f_0 = 2000 Hz$, una banda pasante de $100 Hz$ y una ganancia $A_v = 5$. La resistencia de entrada $R_i$ es $2 k\Omega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
 
   \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
     Un filtro pasa bandas con amplificador operacional y componentes RC.
@@ -146,7 +221,7 @@ Un filtro notch tiene una frecuencia de resonancia $f_r = 1000 Hz$ y utiliza un 
 
 \vspace{2mm}
 \textbf{Solución:}
-La frecuencia de resonancia del filtro notch está dada por $f_r = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_r C}$. Sustituyendo $f_r = 1000 Hz$ y $C = 100 nF$, se encuentra $R = \frac{1}{2\pi \cdot 1000 \cdot 100 \cdot 10^{-9}} = 1.59 kOmega$.
+La frecuencia de resonancia del filtro notch está dada por $f_r = \frac{1}{2\pi RC}$. Reordenando para resolver $R$, se obtiene $R = \frac{1}{2\pi f_r C}$. Sustituyendo $f_r = 1000 Hz$ y $C = 100 nF$, se encuentra $R = \frac{1}{2\pi \cdot 1000 \cdot 100 \cdot 10^{-9}} = 1.59 k\Omega$.
 
 \vspace{4pt}
 \rule{\linewidth}{0.2pt}
@@ -157,7 +232,7 @@ La frecuencia de resonancia del filtro notch está dada por $f_r = \frac{1}{2\pi
 % ── Solución Ejercicio 5 ─────────────────────────────────────────────────
 \subsection*{Ejercicio 5 \normalfont\normalsize\textit{(2.5 puntos) --- Solución}}
 \textbf{Enunciado:}
-Diseñe un filtro rechaza bandas con una frecuencia central $f_0 = 1500 Hz$, una banda de rechazo de $200 Hz$ y una ganancia $A_v = 2$. La resistencia de entrada $R_i$ es $1 kOmega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
+Diseñe un filtro rechaza bandas con una frecuencia central $f_0 = 1500 Hz$, una banda de rechazo de $200 Hz$ y una ganancia $A_v = 2$. La resistencia de entrada $R_i$ es $1 k\Omega$. ¿Cuáles son los valores de los componentes necesarios para lograr las especificaciones del filtro?
 
   \begin{tcolorbox}[colback=gray!5, colframe=gray!40, fonttitle=\bfseries, title={Diagrama sugerido}]
     Un filtro rechaza bandas con amplificador operacional y componentes RC.

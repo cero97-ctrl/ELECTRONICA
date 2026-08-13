@@ -1,0 +1,35 @@
+Goal: "Levantar un servidor MCP local para consultar la documentación oficial vigente de tecnologías de desarrollo, obtenerla como Markdown limpio en .tmp/docs_cache/ y devolverla al cliente."
+
+Required inputs:
+  - tecnologia: "Nombre de la tecnología a consultar (p.ej. nextjs, supabase, expo, react, langchain, openai, fastapi, flask, esp-idf)."
+
+Optional inputs:
+  - url: "URL directa de documentación (alternativa a tecnologia)."
+  - max_chars: "Truncar el contenido a N caracteres (default: 200000)."
+
+Steps:
+  - step: 1
+    action: "Recibir petición del cliente MCP con la tecnología y parámetros de configuración."
+  - step: 2
+    action: "Invocar el orquestador flujo_consultar_docs.py pasándole los parámetros correspondientes."
+    script: "flujo_consultar_docs.py"
+  - step: 3
+    action: "Consultar la documentación vigente y guardarla en Markdown limpio."
+    script: "execution/consultar_docs.py"
+  - step: 4
+    action: "Emitir la alerta acústica de completado (o de error si falló)."
+    script: "execution/alert_user.py"
+  - step: 5
+    action: "Retornar al cliente MCP la ruta del archivo Markdown, el título, la fuente y el tamaño, o el error descriptivo."
+
+Expected outputs:
+  - "Un archivo Markdown en .tmp/docs_cache/ con la documentación oficial vigente."
+  - "Una respuesta estructurada de texto al cliente MCP con la ruta absoluta del archivo, título, fuente y tamaño."
+
+Edge cases:
+  - error: "Tecnología no soportada o argumentos inválidos."
+    recovery: "Retornar la lista de tecnologías disponibles y solicitar una válida."
+  - error: "HTTP 403 (anti-bot) o URL inalcanzable."
+    recovery: "Retornar el error descriptivo del script y abortar."
+  - error: "Página SPA sin contenido extraíble."
+    recovery: "Advertir al cliente y sugerir URL alternativa."

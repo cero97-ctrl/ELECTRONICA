@@ -30,3 +30,6 @@ examen*
 
 # Datasets de entrenamiento LLM (datos crudos capturados — no se versionan)
 datasets/
+
+# Caché de documentación consultada (regenerable)
+.tmp/docs_cache/

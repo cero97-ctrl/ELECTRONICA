@@ -1,83 +1,147 @@
 \documentclass[11pt,a4paper]{article}
 
-% ── Codificación y fuentes ────────────────────────────────────────────────────
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[spanish]{babel}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands]{babel}
 
 % ── Geometría y espaciado ─────────────────────────────────────────────────────
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage[top=2.2cm, bottom=2.2cm, left=2.2cm, right=2.2cm]{geometry}
 \usepackage{setspace}
 \setstretch{1.15}
 \usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
 
 % ── Tablas ────────────────────────────────────────────────────────────────────
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
 \usepackage{enumitem}
 
-% ── Colores y cajas ───────────────────────────────────────────────────────────
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% ── Secciones con barra de color (infografía) ───────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulTitulo}}
+  {\thesection}{1em}{}
+  [\color{bandaAzul}\rule{\linewidth}{1.6pt}]
+\titlespacing*{\section}{0pt}{22pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulTitulo}}
+  {\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
 
 % ── Cabeceras y pies de página ────────────────────────────────────────────────
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\textbf{Informe de Análisis} --- Imágenes}
-\fancyhead[R]{\small 2026-07-08}
-\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
 
-% ── Hiperenlaces y URLs ──────────────────────────────────────────────────────
-\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
-\usepackage{url}
-\def\path#1{\url{#1}}
-
-% ── Permitir saltos de línea más flexibles ───────────────────────────────────
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulTitulo, urlcolor=azulTitulo]{hyperref}
 \sloppy
 \emergencystretch 3em
 
-% ── Colores personalizados ────────────────────────────────────────────────────
+% ── Paleta de colores de la marca ─────────────────────────────────────────────
 \definecolor{azulTitulo}{HTML}{1B2A6B}
-\definecolor{grisFondo}{HTML}{F5F5F5}
+\definecolor{bandaAzul}{HTML}{1F3A93}
+\definecolor{azulClaro}{HTML}{2E5A9C}
+\definecolor{cyanAcento}{HTML}{0E7C86}
+\definecolor{naranjaAcento}{HTML}{E07B39}
+\definecolor{verdeAcento}{HTML}{1A6B2F}
+\definecolor{rojoAcento}{HTML}{C0392B}
+\definecolor{grisFondo}{HTML}{F5F6FA}
+\definecolor{grisBorde}{HTML}{C9CFE0}
 
-% ── Estilos de cajas ─────────────────────────────────────────────────────────
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
 \tcbset{
-  cajaTitulo/.style={
+  tarjetaDato/.style={
     enhanced, breakable,
+    colback=azulClaro!6, colframe=azulClaro,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=azulClaro, sharp corners},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable, sharp corners,
+    colback=white, colframe=azulClaro, boxrule=0.8pt,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt,
+  },
+  cajaTitulo/.style={enhanced, breakable,
     colback=azulTitulo!8, colframe=azulTitulo,
     fonttitle=\bfseries\large, coltitle=white,
     attach boxed title to top left={yshift=-2mm, xshift=4mm},
     boxed title style={colback=azulTitulo},
-    top=6pt, bottom=6pt, left=8pt, right=8pt,
-  },
-  cajaContenido/.style={
-    enhanced, breakable,
-    colback=grisFondo, colframe=gray!50,
-    fonttitle=\bfseries, coltitle=black,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-  },
+    top=6pt, bottom=6pt, left=8pt, right=8pt},
+  cajaContenido/.style={enhanced, breakable,
+    colback=grisFondo, colframe=grisBorde,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaFortaleza/.style={enhanced, breakable,
+    colback=verdeAcento!8, colframe=verdeAcento,
+    fonttitle=\bfseries, coltitle=verdeAcento,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaMejora/.style={enhanced, breakable,
+    colback=naranjaAcento!8, colframe=naranjaAcento,
+    fonttitle=\bfseries, coltitle=naranjaAcento,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
+  cajaRecomendacion/.style={enhanced, breakable,
+    colback=grisFondo, colframe=grisBorde,
+    fonttitle=\bfseries, coltitle=azulTitulo,
+    top=4pt, bottom=4pt, left=8pt, right=8pt},
 }
+
+% ── Banda de título: apertura de documento tipo infografía ─────────────────────
+\newcommand{\bandaTitulo}[2]{%
+  \begin{tcolorbox}[enhanced, colback=bandaAzul, colframe=bandaAzul,
+    boxrule=0pt, arc=0pt, outer arc=0pt, width=\linewidth,
+    halign=center, valign=center,
+    top=14pt, bottom=14pt, left=10pt, right=10pt]
+    {\LARGE\bfseries\color{white}#1}\par\vspace{4pt}%
+    {\small\color{white!78!black}#2}%
+  \end{tcolorbox}\vspace{8pt}}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{azulTitulo}{\faIcon{#1}}~#2}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabeceras específicas del informe ──────────────────────────────────────────
+\fancyhead[L]{\small\color{azulTitulo}\textbf{Informe de Análisis} --- Imágenes}
+\fancyhead[R]{\small 2026-07-08}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── URLs ──────────────────────────────────────────────────────────────────────
+\def\path#1{\url{#1}}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{document}
 
-% ══ PORTADA ══════════════════════════════════════════════════════════════════
-\begin{center}
-  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Análisis de Imágenes}\\[4pt]
-  {\large Informe de Análisis}\\[12pt]
-  \rule{\linewidth}{1.2pt}\\[6pt]
-  \rule{\linewidth}{0.6pt}
-\end{center}
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{ELECTRÓNICA --- Análisis de Imágenes}{Informe de Análisis de Circuitos}
 
 % ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
 \vspace{4pt}
-\begin{tcolorbox}[cajaTitulo, title=Datos del análisis]
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{image} ~Datos del análisis}]
 \begin{tabular}{@{}llll@{}}
   \textbf{Fecha:}       & 2026-07-08  &
   \textbf{Modelo usado:} & gemini-2.5-flash \\[4pt]

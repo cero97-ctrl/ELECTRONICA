@@ -647,6 +647,8 @@ El capacitor de entrada es $1\,\mu\text{F}$
 
 **Estrategia automatizada:** En flujos donde el LLM pueda generar frecuentemente errores de sintaxis como `\text{ k\Omega}`, es recomendable aplicar una limpieza (sanitización) mediante expresiones regulares antes de mandar el archivo a compilar con `pdflatex`.
 
+> **Implementada:** `execution/generar_examen_latex.py` ya aplica `_fix_text_math()` en la función `tex()` (rama matemática): extrae cualquier comando `\omega`, `\Omega`, `\mu`, etc. de dentro de `\text{}` mediante la regex `\\text\{([^}]*)\}` y lo reescribe como `\text{ k}\Omega`. Aplicar la misma sanitización a cualquier nuevo generador que inyecte texto LLM en modo matemático.
+
 > **Archivos afectados (Históricamente):**
 > - Archivos `.tex` generados automáticamente por el modelo `gemini-2.5-flash` y otros LLMs propensos a cometer descuidos con el anidamiento de `\text{}`.
 

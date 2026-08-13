@@ -17,6 +17,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).parent.resolve()
+TMP_DIR   = SCRIPT_DIR / ".tmp"
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from execution.estilo_infografia import PREAMBULO_INFOGRAFIA
+
 # ── Configuración ──────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent.resolve()
 PYTHON       = sys.executable
@@ -92,22 +99,20 @@ def generar_latex_reporte(telemetria: dict, fecha_str: str) -> str:
         gpu_section = "\\subsection{Tarjetas Gráficas (GPUs)}\nNo se detectaron GPUs aceleradas de NVIDIA activas o `nvidia-smi` no está instalado.\n"
 
     # Formatear el contenido LaTeX del informe
-    latex = r"""\documentclass[12pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[spanish,es-noshorthands]{babel}
-\usepackage{amsmath}
-\usepackage{geometry}
-\usepackage{booktabs}
-\usepackage{hyperref}
-\geometry{a4paper, margin=2.5cm}
+    latex = PREAMBULO_INFOGRAFIA + r"""
+% ── Cabeceras específicas del informe ──────────────────────────────────────────
+\fancyhead[L]{\small\color{azulTitulo}\textbf{Reporte de Diagnóstico} --- Sistema}
+\fancyhead[R]{\small """ + fecha_str + r"""}
+\fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
 
-\title{Reporte Técnico de Diagnóstico del Sistema}
-\author{Agente IA Antigravity (Orquestador MCP)}
-\date{""" + fecha_str + r"""}
-
+% ─────────────────────────────────────────────────────────────────────────────
 \begin{document}
-\maketitle
 
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{Reporte Técnico de Diagnóstico del Sistema}{Generado por el Agente IA (Orquestador MCP)}
+
+% Información básica del sistema
 \section{Resumen del Sistema}
 Este documento presenta el diagnóstico del hardware y software de la máquina anfitriona donde están alojados los servidores MCP locales del espacio de trabajo. El diagnóstico ha sido generado y compilado de forma automática de extremo a extremo.
 

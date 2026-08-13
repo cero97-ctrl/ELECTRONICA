@@ -24,6 +24,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).parent.resolve()
+if str(SCRIPT_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR.parent))
+
+from execution.estilo_infografia import PREAMBULO_INFOGRAFIA
+
 
 # ── Helpers de escape LaTeX ────────────────────────────────────────────────────
 
@@ -143,86 +149,25 @@ def generar_latex(data: dict) -> str:
         f"\\texttt{{{tex(Path(a).name)}}}" for a in archivos
     )
 
-    doc = r"""\documentclass[11pt,a4paper]{article}
-
-% ── Codificación y fuentes ────────────────────────────────────────────────────
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[spanish]{babel}
-
-% ── Geometría y espaciado ─────────────────────────────────────────────────────
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
-\usepackage{setspace}
-\setstretch{1.15}
-\usepackage{parskip}
-
-% ── Tablas ────────────────────────────────────────────────────────────────────
-\usepackage{booktabs}
-\usepackage{tabularx}
-\usepackage{array}
-\usepackage{enumitem}
-
-% ── Colores y cajas ───────────────────────────────────────────────────────────
-\usepackage[dvipsnames]{xcolor}
-\usepackage{tcolorbox}
-\tcbuselibrary{skins, breakable}
-
-% ── Cabeceras y pies de página ────────────────────────────────────────────────
-\usepackage{fancyhdr}
-\usepackage{lastpage}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small\textbf{Informe de Análisis} --- Imágenes}
+    doc = PREAMBULO_INFOGRAFIA + r"""
+% ── Cabeceras específicas del informe ──────────────────────────────────────────
+\fancyhead[L]{\small\color{azulTitulo}\textbf{Informe de Análisis} --- Imágenes}
 \fancyhead[R]{\small """ + fecha_str + r"""}
 \fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ── Hiperenlaces y URLs ──────────────────────────────────────────────────────
-\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
-\usepackage{url}
+% ── URLs ──────────────────────────────────────────────────────────────────────
 \def\path#1{\url{#1}}
-
-% ── Permitir saltos de línea más flexibles ───────────────────────────────────
-\sloppy
-\emergencystretch 3em
-
-% ── Colores personalizados ────────────────────────────────────────────────────
-\definecolor{azulTitulo}{HTML}{1B2A6B}
-\definecolor{grisFondo}{HTML}{F5F5F5}
-
-% ── Estilos de cajas ─────────────────────────────────────────────────────────
-\tcbset{
-  cajaTitulo/.style={
-    enhanced, breakable,
-    colback=azulTitulo!8, colframe=azulTitulo,
-    fonttitle=\bfseries\large, coltitle=white,
-    attach boxed title to top left={yshift=-2mm, xshift=4mm},
-    boxed title style={colback=azulTitulo},
-    top=6pt, bottom=6pt, left=8pt, right=8pt,
-  },
-  cajaContenido/.style={
-    enhanced, breakable,
-    colback=grisFondo, colframe=gray!50,
-    fonttitle=\bfseries, coltitle=black,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-  },
-}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{document}
 
-% ══ PORTADA ══════════════════════════════════════════════════════════════════
-\begin{center}
-  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Análisis de Imágenes}\\[4pt]
-  {\large Informe de Análisis}\\[12pt]
-  \rule{\linewidth}{1.2pt}\\[6pt]
-  \rule{\linewidth}{0.6pt}
-\end{center}
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{ELECTRÓNICA --- Análisis de Imágenes}{Informe de Análisis de Circuitos}
 
 % ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
 \vspace{4pt}
-\begin{tcolorbox}[cajaTitulo, title=Datos del análisis]
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{image} ~Datos del análisis}]
 \begin{tabular}{@{}llll@{}}
   \textbf{Fecha:}       & """ + tex(fecha_str) + r"""  &
   \textbf{Modelo usado:} & """ + tex(modelo) + r""" \\[4pt]

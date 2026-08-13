@@ -27,6 +27,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+SCRIPT_DIR = Path(__file__).parent.resolve()
+if str(SCRIPT_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR.parent))
+
+from execution.estilo_infografia import PREAMBULO_INFOGRAFIA
+
 
 # ── Helpers de escape LaTeX ────────────────────────────────────────────────────
 
@@ -191,96 +197,28 @@ def generar_latex(data: dict) -> str:
     if not tabla_preguntas_body:
         tabla_preguntas_body = "    \\multicolumn{4}{c}{\\textit{No hay observaciones por pregunta.}} \\\\"
 
-    doc = r"""\documentclass[11pt,a4paper]{article}
-
-% ── Codificación y fuentes ────────────────────────────────────────────────────
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[spanish]{babel}
-
-% ── Geometría y espaciado ─────────────────────────────────────────────────────
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
-\usepackage{setspace}
-\setstretch{1.15}
-\usepackage{parskip}
-
-% ── Tablas ────────────────────────────────────────────────────────────────────
-\usepackage{booktabs}
-\usepackage{tabularx}
-\usepackage{array}
-\usepackage{longtable}
-\usepackage{enumitem}
-
-% ── Colores y cajas ───────────────────────────────────────────────────────────
-\usepackage[dvipsnames]{xcolor}
-\usepackage{tcolorbox}
-\tcbuselibrary{skins, breakable}
-
-% ── Cabeceras y pies de página ────────────────────────────────────────────────
-\usepackage{fancyhdr}
-\usepackage{lastpage}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small\textbf{Informe de Evaluación} --- Electrónica}
+    doc = PREAMBULO_INFOGRAFIA + r"""
+% ── Cabeceras específicas del informe ──────────────────────────────────────────
+\fancyhead[L]{\small\color{azulTitulo}\textbf{Informe de Evaluación} --- Electrónica}
 \fancyhead[R]{\small """ + tex(estudiante) + r"""}
 \fancyfoot[C]{\small Página \thepage\ de \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ── Hiperenlaces ──────────────────────────────────────────────────────────────
-\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue]{hyperref}
-
-% ── Paleta de colores personalizados ─────────────────────────────────────────
+% ── Colores de desempeño (evaluación) ─────────────────────────────────────────
 \definecolor{desempeno_excelente}{HTML}{1A6B2F}
 \definecolor{desempeno_bueno}{HTML}{2E5A9C}
 \definecolor{desempeno_suficiente}{HTML}{8B6914}
 \definecolor{desempeno_deficiente}{HTML}{C0392B}
 \definecolor{desempeno_insuficiente}{HTML}{7B241C}
-\definecolor{grisFondo}{HTML}{F5F5F5}
-\definecolor{azulTitulo}{HTML}{1B2A6B}
-\definecolor{verdeFortaleza}{HTML}{1A6B2F}
-\definecolor{naranjaMejora}{HTML}{A04000}
-
-% ── Estilos de cajas ─────────────────────────────────────────────────────────
-\tcbset{
-  cajaTitulo/.style={
-    enhanced, breakable,
-    colback=azulTitulo!8, colframe=azulTitulo,
-    fonttitle=\bfseries\large, coltitle=white,
-    attach boxed title to top left={yshift=-2mm, xshift=4mm},
-    boxed title style={colback=azulTitulo},
-    top=6pt, bottom=6pt, left=8pt, right=8pt,
-  },
-  cajaFortaleza/.style={
-    enhanced, breakable,
-    colback=verdeFortaleza!6, colframe=verdeFortaleza!60,
-    fonttitle=\bfseries, coltitle=verdeFortaleza,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-  },
-  cajaMejora/.style={
-    enhanced, breakable,
-    colback=naranjaMejora!6, colframe=naranjaMejora!60,
-    fonttitle=\bfseries, coltitle=naranjaMejora,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-  },
-  cajaRecomendacion/.style={
-    enhanced, breakable,
-    colback=grisFondo, colframe=gray!50,
-    fonttitle=\bfseries, coltitle=black,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-  },
-}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{document}
 
-% ══ PORTADA ══════════════════════════════════════════════════════════════════
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{ELECTRÓNICA --- Evaluación de Exámenes}{Informe de Evaluación Preliminar}
+
 \begin{center}
-  {\Large\bfseries\color{azulTitulo} ELECTRÓNICA --- Evaluación de Exámenes}\\[4pt]
-  {\large Informe de Evaluación Preliminar}\\[12pt]
-  \rule{\linewidth}{1.2pt}\\[6pt]
-  {\LARGE\bfseries """ + tex(estudiante) + r"""}\\[4pt]
-  \rule{\linewidth}{0.6pt}
+  {\LARGE\bfseries\color{azulTitulo} """ + tex(estudiante) + r"""}
 \end{center}
 
 % ══ FICHA TÉCNICA ════════════════════════════════════════════════════════════
