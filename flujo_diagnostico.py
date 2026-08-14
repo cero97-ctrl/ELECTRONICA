@@ -36,6 +36,17 @@ DEFAULT_OUT  = SCRIPT_DIR / "docs" / "DIAGNOSTICOS"
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+_MESES_ES = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+]
+
+def fecha_es(now: datetime | None = None) -> str:
+    """Formatea fecha en español sin depender del locale del sistema (evita 'de August de')."""
+    now = now or datetime.now()
+    mes = _MESES_ES[now.month - 1]
+    return f"{now.day} de {mes} de {now.year} a las {now.hour:02d}:{now.minute:02d}"
+
 def print_step(num: int, total: int, desc: str) -> None:
     bar = "─" * 56
     print(f"\n{bar}")
@@ -224,7 +235,7 @@ def flujo_completo(output_dir: Path, filename: str) -> int:
     
     # ══ PASO 2: Generar LaTeX del informe ═════════════════════════════════════
     print_step(2, total_pasos, "Generando archivo LaTeX del reporte...")
-    fecha_str = datetime.now().strftime("%d de %B de %Y a las %H:%M")
+    fecha_str = fecha_es()
     
     try:
         latex_code = generar_latex_reporte(telemetria, fecha_str)

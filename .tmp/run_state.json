@@ -1,8 +1,8 @@
 {
-  "run_id": "flujo-diagnostico-2026-08-14T23-08-41",
+  "run_id": "flujo-diagnostico-2026-08-14T23-11-50",
   "directive": "diagnostico_mcp.yaml",
-  "started_at": "2026-08-14T23:08:41.991757+00:00",
-  "last_updated": "2026-08-14T23:09:07.892495+00:00",
+  "started_at": "2026-08-14T23:11:50.718596+00:00",
+  "last_updated": "2026-08-14T23:12:18.646329+00:00",
   "current_step": 4,
   "steps_completed": [
     {
@@ -47,8 +47,8 @@
         "cpu_cores": 2,
         "ram": {
           "total_gb": 3.63,
-          "available_gb": 0.61,
-          "percent_used": 83.1
+          "available_gb": 0.38,
+          "percent_used": 89.4
         },
         "disk": {
           "total_gb": 233.18,

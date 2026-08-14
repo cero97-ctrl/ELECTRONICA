@@ -13,7 +13,11 @@ Aplicar el look infográfico compartido (igual que en `docs/PC_PARA_IA/PC_IA.tex
 - Aplicar el mismo look infográfico a `docs/DIAGNOSTICOS/informe_diagnostico.tex`:
   - Detectado que el `.tex` era una versión vieja (paleta clásica `azulTitulo`/`bandaAzul`); el generador `flujo_diagnostico.py` ya usa `PREAMBULO_INFOGRAFIA` (estilo nuevo).
   - Solución: regenerar con `python flujo_diagnostico.py` (telemetría fresca + `\bandaTitulo` + compilación + limpieza automática). PDF y tex actualizados.
-  - Nota: el formato de fecha del generador usa `%B` y muestra "de August de 2026" (locale no español) — bug cosmético preexistente.
+  - Nota: el formato de fecha del generador usa `%B` y mostraba "de August de 2026" (locale no español) — bug cosmético preexistente.
+- Corregido el bug de fecha en `flujo_diagnostico.py`:
+  - Añadida `fecha_es()` con lista de meses en español (`_MESES_ES`), independiente del locale del sistema.
+  - Reemplazado `datetime.now().strftime("%d de %B de %Y a las %H:%M")` por `fecha_es()`.
+  - Verificado: `14 de agosto de 2026 a las 19:08`. Informe regenerado con fecha correcta.
 - Reescribir `docs/COLAB/manual_colab.tex` con el preámbulo infográfico:
   - Banner `\bandaTitulo` con icono (p.ej. `cloud`), autor/fecha e índice.
   - Cabecera fancyhdr específica del documento.
