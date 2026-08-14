@@ -10,7 +10,11 @@ Aplicar el look infográfico compartido (igual que en `docs/PC_PARA_IA/PC_IA.tex
 - Log previo: `2026-08-14_estilo_infografia_pc_ia_y_anti403_scraping.md` — convención del estilo infográfico ya aplicada a PC_IA.tex (banner `\bandaTitulo`, secciones con `\iconotexto`, tarjetas `tarjetaDato`/`caja*`, preámbulo de `execution/estilo_infografia.py`).
 
 ## Actividades realizadas
-- [Pendiente al inicio] Reescribir `docs/COLAB/manual_colab.tex` con el preámbulo infográfico:
+- Aplicar el mismo look infográfico a `docs/DIAGNOSTICOS/informe_diagnostico.tex`:
+  - Detectado que el `.tex` era una versión vieja (paleta clásica `azulTitulo`/`bandaAzul`); el generador `flujo_diagnostico.py` ya usa `PREAMBULO_INFOGRAFIA` (estilo nuevo).
+  - Solución: regenerar con `python flujo_diagnostico.py` (telemetría fresca + `\bandaTitulo` + compilación + limpieza automática). PDF y tex actualizados.
+  - Nota: el formato de fecha del generador usa `%B` y muestra "de August de 2026" (locale no español) — bug cosmético preexistente.
+- Reescribir `docs/COLAB/manual_colab.tex` con el preámbulo infográfico:
   - Banner `\bandaTitulo` con icono (p.ej. `cloud`), autor/fecha e índice.
   - Cabecera fancyhdr específica del documento.
   - Secciones con iconos FontAwesome.
