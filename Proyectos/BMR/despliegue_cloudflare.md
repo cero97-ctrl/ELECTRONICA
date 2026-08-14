@@ -18,8 +18,17 @@ Ejemplo: `https://1183f97d.bmr-arbol.pages.dev`
 - **Utilidad:** Es extremadamente útil para control de versiones. Si en un futuro se sube una actualización que contiene un error, los enlaces específicos anteriores seguirán funcionando intactos, permitiendo revisar versiones pasadas de la página. Para el uso diario se puede ignorar.
 
 ---
-**Nota:** Para realizar un nuevo despliegue en caso de cambios, asegúrate de tener Node.js instalado y ejecuta:
+**Nota:** Para realizar un nuevo despliegue en caso de cambios, ejecuta:
 ```bash
+python3 actualizar_arbol.py
+```
+El script valida el JSON, regenera `web/index.html` y despliega con wrangler. Opciones útiles:
+- `python3 actualizar_arbol.py --check` — solo valida el JSON.
+- `python3 actualizar_arbol.py --no-deploy` — regenera la página sin desplegar.
+
+Flujo manual equivalente (si se prefiere):
+```bash
+python3 generar_web.py
 npx wrangler pages deploy web
 ```
 

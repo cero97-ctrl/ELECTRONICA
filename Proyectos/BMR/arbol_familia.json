@@ -124,10 +124,105 @@
               "_info_color": "red",
               "children": [
                 {
-                  "name": "Alejandrina"
+                  "name": "Gertrudis Brito Marín",
+                  "_info_color": "blue",
+                  "_nota": "C.I: 2.291.767",
+                  "children": [
+                    {
+                      "name": "José Inocente Brito",
+                      "_info_color": "red",
+                      "_nota": "C.I: ",
+                      "children": [
+                        {
+                          "name": "Carlos",
+                          "_info_color": "red",
+                          "_nota": "C.I: "
+                        },
+                        {
+                          "name": "Arnoldo",
+                          "_info_color": "red",
+                          "_nota": "C.I: "
+                        },
+                        {
+                          "name": "Miriam",
+                          "_info_color": "blue",
+                          "_nota": "C.I: "
+                        },
+                        {
+                          "name": "Tibisay",
+                          "_info_color": "blue",
+                          "_nota": "C.I: "
+                        },
+                        {
+                          "name": "José Rafael",
+                          "_info_color": "blue",
+                          "_nota": "C.I: "
+                        },
+                        {
+                          "name": "Yaritza",
+                          "_info_color": "red",
+                          "_nota": "C.I: "
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Manuel Brito",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Josefina Brito",
+                      "_info_color": "blue",
+                      "_nota": "C.I: "
+                    }
+                  ]
                 },
                 {
-                  "name": "Gertrudis"
+                  "name": "Alejandrina Brito Marín",
+                  "_info_color": "blue",
+                  "_nota": "C.I: 2.290.919",
+                  "children": [
+                    {
+                      "name": "Olvides Brito",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "María Brito",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Jesús Brito",
+                      "_info_color": "blue",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Graciela Brito",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Lorenzo Brito",
+                      "_info_color": "blue",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Juan Leobaldo Brito",
+                      "_info_color": "blue",
+                      "_nota": "C.I: "
+                    }
+                  ]
+                },
+                {
+                  "name": "José Miguel Brito Marín",
+                  "_info_color": "red",
+                  "_nota": "C.I: 200.373"
+                },
+                {
+                  "name": "Baldomera Brito Marín",
+                  "_info_color": "red",
+                  "_nota": "C.I: 2.296.449"
                 }
               ]
             },
@@ -136,19 +231,130 @@
               "_info_color": "red",
               "children": [
                 {
-                  "name": "Gaspar",
+                  "name": "Gaspar Bravo",
                   "_info_color": "red",
-                  "_nota": "Fallecido"
+                  "_nota": "C.I: 581.941",
+                  "children": [
+                    {
+                      "name": "Aracelys Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Neúl Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Zurmelys Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Luis Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Diógenes Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    }
+                  ]
                 },
                 {
-                  "name": "Lorenzo (papá de Delcita)",
+                  "name": "Lorenzo Bravo",
                   "_info_color": "red",
-                  "_nota": "Fallecido"
+                  "_nota": "C.I: 546.804",
+                  "children": [
+                    {
+                      "name": "Delcita Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Iraida Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Mario Bravo",
+                      "_info_color": "blue",
+                      "_nota": "C.I: 2.290.940"
+                    },
+                    {
+                      "name": "Jesús Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Vilma Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Nairobys Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "José G. Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Eliezer Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    }
+                  ]
                 },
                 {
-                  "name": "Ramón",
+                  "name": "Ramón Bravo",
+                  "_info_color": "blue",
+                  "_nota": "C.I: 2.290.940",
+                  "children": [
+                    {
+                      "name": "Aureliano Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Pedro Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Reyes Bravo",
+                      "_info_color": "blue",
+                      "_nota": "C.I: 2.290.940"
+                    },
+                    {
+                      "name": "Luis Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Nilda Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Juan Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Ramón Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    }
+                  ]
+                },
+                {
+                  "name": "Luisa Bravo",
                   "_info_color": "red",
-                  "_nota": "Fallecido"
+                  "_nota": "no dejó descendencia"
                 }
               ]
             },
@@ -789,22 +995,51 @@
               "_info_color": "red",
               "children": [
                 {
-                  "name": "Benigno"
+                  "name": "Silvestre Bravo",
+                  "_info_color": "red",
+                  "_nota": "C.I: "
                 },
                 {
-                  "name": "Baltazar"
+                  "name": "Baltazar García Bravo",
+                  "_info_color": "red",
+                  "_nota": "C.I: 2.291.919",
+                  "children": [
+                    {
+                      "name": "Luisa Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Ramona Bravo",
+                      "_info_color": "red",
+                      "_nota": "C.I: "
+                    },
+                    {
+                      "name": "Del Valle Bravo",
+                      "_info_color": "blue",
+                      "_nota": "C.I: 2.290.940"
+                    }
+                  ]
                 },
                 {
-                  "name": "Celedonio"
+                  "name": "Jesús Antonio Bravo",
+                  "_info_color": "red",
+                  "_nota": "C.I: 542.669"
                 },
                 {
-                  "name": "Beatriz"
+                  "name": "Celedonio",
+                  "_info_color": "red",
+                  "_nota": "C.I: "
                 },
                 {
-                  "name": "Jesús"
+                  "name": "Beatriz del Carmen",
+                  "_info_color": "red",
+                  "_nota": "C.I: "
                 },
                 {
-                  "name": "Silvestre"
+                  "name": "Benigno García Bravo",
+                  "_info_color": "red",
+                  "_nota": "C.I: "
                 }
               ]
             },
@@ -813,7 +1048,9 @@
               "_info_color": "red",
               "children": [
                 {
-                  "name": "Elías Bravo"
+                  "name": "Elías Bravo",
+                  "_info_color": "blue",
+                  "_nota": "C.I: 2.297.070"
                 }
               ]
             }
