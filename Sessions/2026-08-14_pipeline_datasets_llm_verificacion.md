@@ -42,5 +42,16 @@ Confirmado:
 - `docs/pipeline_datasets_llm/resumen_pipeline_datasets_llm.pdf` regenerado (2 pasadas, 0 errores).
 - `directives/data_capture.yaml` (dataset 3 documentado).
 
+### 5. Limpieza y commits
+- **Commit `75f3c1b`** (solicitado por el usuario): informe + directiva + log de sesión + borrados de `_check_ov.{aux,log,out,pdf}` y `tmp/PC_IA.{pdf,tex}`.
+- Se detectó otro set de artefactos obsoletos en la raíz: `_ov.{aux,log,out,pdf}` — otra compilación de prueba (`-jobname=_ov`) del mismo `resumen_pipeline_datasets_llm.tex`, del 6 ago.
+- **Commit `f932e86`**: borrado de `_ov.pdf` (trackeado). `_ov.{aux,log,out}` eran untracked, eliminados directamente.
+
+## Entregables
+- `docs/pipeline_datasets_llm/resumen_pipeline_datasets_llm.tex` (3 correcciones + fix de entorno).
+- `docs/pipeline_datasets_llm/resumen_pipeline_datasets_llm.pdf` regenerado (2 pasadas, 0 errores).
+- `directives/data_capture.yaml` (dataset 3 documentado).
+- Working tree limpio tras los commits `75f3c1b` y `f932e86`.
+
 ## Pendiente
-- Commit de los cambios (no solicitado aún por el usuario).
+- Continuar después: sin tareas abiertas.
