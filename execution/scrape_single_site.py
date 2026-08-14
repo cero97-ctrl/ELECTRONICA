@@ -22,8 +22,10 @@ Códigos de salida:
 
 import argparse
 import json
+import random
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -39,20 +41,87 @@ ALT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+ALT_USER_AGENT_2 = (
+    "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
+)
 TIMEOUT = 25
 MIN_CONTENT_CHARS = 200
 
+# Política de reintento (retry budget del framework: máx 3 intentos)
+RETRY_ATTEMPTS = 3
+BACKOFF_BASE = 2.0
+RETRY_STATUSES = {403, 429, 500, 502, 503, 504}
 
-def fetch_html(url: str, user_agent: str = DEFAULT_USER_AGENT, timeout: int = TIMEOUT) -> requests.Response:
-    """Descarga el HTML de la URL siguiendo redirecciones."""
-    headers = {
+
+def _browser_headers(user_agent: str) -> dict:
+    """Encabezados que imitan una navegación directa real desde un navegador."""
+    accept_encoding = "gzip, deflate"
+    for mod in ("brotli", "brotlicffi"):
+        try:
+            __import__(mod)
+            accept_encoding += ", br"
+            break
+        except ImportError:
+            continue
+    return {
         "User-Agent": user_agent,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "es-ES,es;q=0.8,en-US;q=0.6,en;q=0.4",
+        "Accept-Encoding": accept_encoding,
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
     }
-    resp = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
-    resp.raise_for_status()
-    return resp
+
+
+def _sleep_backoff(attempt: int, max_jitter: float = 1.0) -> None:
+    """Espera exponencial con jitter antes del siguiente reintento."""
+    time.sleep(BACKOFF_BASE ** attempt + random.uniform(0, max_jitter))
+
+
+def fetch_html(url: str, user_agent: str = DEFAULT_USER_AGENT, timeout: int = TIMEOUT,
+               session: Optional[requests.Session] = None) -> requests.Response:
+    """Descarga el HTML de la URL siguiendo redirecciones.
+
+    Reintenta hasta RETRY_ATTEMPTS veces ante 403/429/5xx o fallos de red,
+    rotando el user-agent y aplicando backoff exponencial con jitter.
+    Usa requests.Session para conservar cookies entre redirecciones.
+    """
+    agents = [user_agent, ALT_USER_AGENT, ALT_USER_AGENT_2]
+    sess = session or requests.Session()
+    last_exc: Optional[Exception] = None
+    last_403: Optional[requests.Response] = None
+    for attempt in range(RETRY_ATTEMPTS):
+        try:
+            resp = sess.get(
+                url,
+                headers=_browser_headers(agents[attempt % len(agents)]),
+                timeout=timeout,
+                allow_redirects=True,
+            )
+        except requests.exceptions.RequestException as e:
+            last_exc = e
+            if attempt < RETRY_ATTEMPTS - 1:
+                _sleep_backoff(attempt)
+            continue
+        if resp.status_code == 403:
+            last_403 = resp
+        if resp.status_code in RETRY_STATUSES:
+            last_exc = requests.exceptions.HTTPError(
+                f"HTTP {resp.status_code}", response=resp
+            )
+            if attempt < RETRY_ATTEMPTS - 1:
+                _sleep_backoff(attempt)
+            continue
+        resp.raise_for_status()
+        return resp
+    if last_403 is not None:
+        raise requests.exceptions.HTTPError("HTTP 403", response=last_403)
+    assert last_exc is not None
+    raise last_exc
 
 
 def _extract_main_container(soup: BeautifulSoup) -> BeautifulSoup:
@@ -203,16 +272,10 @@ def main() -> int:
         markdown, title = html_to_markdown(resp.text, max_chars=args.max_chars)
     except requests.exceptions.HTTPError as e:
         if e.response is not None and e.response.status_code == 403:
-            # Reintento con User-Agent alternativo antes de fallar.
-            try:
-                resp = fetch_html(args.url, user_agent=ALT_USER_AGENT)
-                url_final = resp.url or args.url
-                markdown, title = html_to_markdown(resp.text, max_chars=args.max_chars)
-            except Exception:
-                out = {"status": "error", "code": 2, "url": args.url,
-                       "message": "Acceso denegado (HTTP 403) persistente por protección anti-bot."}
-                print(json.dumps(out, ensure_ascii=False))
-                return 2
+            out = {"status": "error", "code": 2, "url": args.url,
+                   "message": "Acceso denegado (HTTP 403) persistente por protección anti-bot."}
+            print(json.dumps(out, ensure_ascii=False))
+            return 2
         else:
             out = {"status": "error", "code": 1, "url": args.url,
                    "message": f"Error HTTP al descargar la URL: {e}"}

@@ -402,3 +402,41 @@ Con `thinking_budget=0` el modelo solo produce el JSON final (sin thoughts), el 
 
 > **Archivos afectados:**
 > - `execution/evaluar_examen.py` (función `evaluar_con_nuevo_sdk` y bucle de reintentos en `evaluar_examen`)
+
+---
+
+## 18. Errores HTTP 403 / Bloqueos Anti-Bot en Scraping Web (`requests`)
+
+### Síntoma / Mensaje de Error
+
+Al scrapear páginas web con `execution/scrape_single_site.py` (o cualquier script con `requests`), el servidor responde `403 Forbidden`, o el texto descargado llega corrupto/ilegible a pesar de una respuesta 200.
+
+### Causa
+
+El 403 es un bloqueo intencional: los sistemas anti-bot (Cloudflare, Akamai, Datadome) detectan que la petición no proviene de un navegador real. Las causas típicas y los errores de implementación asociados son:
+
+1. **User-Agent por defecto de la librería:** `python-requests/2.31.0` está en listas negras.
+2. **Petición "desnuda":** un navegador envía ~una docena de headers (`Accept-Language`, `Sec-Fetch-*`, `Upgrade-Insecure-Requests`, etc.). Un GET con solo 2-3 headers delata al bot.
+3. **`Accept-Encoding: ... br` sin `brotli` instalado:** `requests` solo descomprime gzip/deflate automáticamente. Si el servidor responde comprimido en Brotli (`br`) y no existe el paquete `brotli`/`brotlicffi`, `response.text` es basura ilegible.
+4. **Rate limiting:** muchas peticiones al mismo dominio en poco tiempo disparan anti-DDoS y bloquean la IP.
+5. **Headers `Sec-Fetch-*` inconsistentes:** son *forbidden headers* que el navegador genera solo. Enviarlos con valores contradictorios (ej. `Sec-Fetch-Site: cross-site` en una navegación directa) puede aumentar la detección en validadores estrictos.
+6. **Desafíos JavaScript (SPA/Cloudflare):** los headers no bastan; se necesita renderizado real o suplantación de huella TLS.
+
+### Solución (implementada en `execution/scrape_single_site.py`)
+
+1. **Paquete completo de headers de navegador** en `_browser_headers()`: `Accept`, `Accept-Language` (`es-ES,es;q=0.8,...`), `Connection: keep-alive`, `Upgrade-Insecure-Requests`, y `Sec-Fetch-*` consistentes con navegación directa (`Site: none`, `Mode: navigate`, `Dest: document`, `User: ?1`).
+2. **`Accept-Encoding` dinámico:** solo se añade `br` si `brotli`/`brotlicffi` es importable; si no, se queda en `gzip, deflate` para que `requests` descomprima bien.
+3. **Reintentos con backoff exponencial + jitter** (`RETRY_ATTEMPTS = 3`, respetando el retry budget del framework) en `fetch_html()`: ante 403/429/5xx o fallos de red rota entre 3 user-agents distintos y espera `2^intento + jitter` segundos. El 403 persistente sigue reportándose con código de salida 2.
+4. **`requests.Session`** para conservar cookies entre redirecciones y minimizar sospechas.
+
+### Puntos Clave
+
+- **Nunca declarar `br` en `Accept-Encoding` si no está instalado `brotli`/`brotlicffi`** — la respuesta llegará corrupta sin error visible.
+- Los headers `Sec-Fetch-*` deben ser **coherentes con el tipo de navegación**; para acceso directo a una URL usar `Site: none` + `Mode: navigate` + `Dest: document` + `User: ?1`.
+- Reintentar con backoff es más efectivo y más "cortés" (evita auto-causar rate limiting) que fallar al primer 403.
+- Si incluso con headers el sitio usa Cloudflare Turnstile o desafíos JS complejos, evaluar en orden de consumo de RAM: `curl_cffi` (suplantación TLS, ligero) → `cloudscraper` (desafíos JS medios) → Playwright/undetected-chromedriver (alto consumo, cerrar con `browser.quit()` inmediatamente) → API de scraping externa (ScraperAPI/ScrapingBee). **Límite estricto del workspace: 4 GB de RAM.**
+- Código de salida 2 de `scrape_single_site.py` = acceso denegado persistente; código 3 = SPA/contenido insuficiente.
+
+> **Archivos afectados:**
+> - `execution/scrape_single_site.py` (funciones `fetch_html`, `_browser_headers`, `_sleep_backoff`)
+> - `directives/scrape_website.yaml` (edge case 403)

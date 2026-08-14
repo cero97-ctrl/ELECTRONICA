@@ -17,6 +17,8 @@ Expected outputs:
 
 Edge cases:
   - error: "Acceso denegado (HTTP 403) por protección anti-bot."
-    recovery: "Usar un user-agent de navegador estándar o fallar indicando que la página bloquea bots."
+    recovery: "El script reintenta automáticamente (máx 3) rotando user-agents con headers de navegador y backoff. Si persiste, probar con curl_cffi (suplantación de huella TLS) si está disponible en el entorno, o delegar a una API de scraping (ej. ScraperAPI/ScrapingBee) para desafíos Cloudflare Turnstile; si nada funciona, fallar indicando que la página bloquea bots."
   - error: "URL inválida o inalcanzable."
     recovery: "Notificar al usuario y abortar ejecución."
+  - error: "Contenido insuficiente o no procesable (SPA que requiere JavaScript)."
+    recovery: "Indicar que la página requiere renderizado JS; evaluar Playwright/undetected-chromedriver solo si el presupuesto de RAM lo permite (límite 4GB), cerrando el navegador inmediatamente tras extraer el DOM."

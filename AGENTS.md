@@ -21,6 +21,7 @@ A new workflow must include all three layers; never write just an orchestrator w
 
 ## Know before you act
 
+- **At the start of each new session**, create a session log in `Sessions/<fecha>_<tema>.md` — a `.md` file whose name reflects the topic of the session (e.g. `Sessions/2026-08-14_estilo_infografia_pc_ia_y_anti403_scraping.md`). Record the date, topic, activities, decisions and pending items. The folder is `Sessions/` at repo root.
 - **Before modifying any `.tex` file**, read `.agent/latex.md` (16 documented LaTeX pitfalls specific to this project)
 - **Before modifying scripts that use LangChain or parse LLM JSON**, read `.agent/python.md` (PromptTemplate jinja2 mode, raw strings, trailing commas, balanced-brace JSON extraction)
 - **`requirements.txt` contains only `psutil` and `PyYAML`** — real dependencies live in the conda environment; don't trust it as canonical
