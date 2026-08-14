@@ -142,7 +142,7 @@ python3 flujo_publicar_hf.py <dataset> [--repo <id>] [--private] [--dry-run] [--
     \item \textbf{Creados:} \path{execution/data_capture.py},
     \path{execution/curar_datasets.py}, \path{execution/empaquetar_dataset.py},
     \path{execution/publicar_hf.py}, \path{flujo_curar_dataset.py},
-    \path{flujo_empaquetar_dataset.py}, \path{flujo_publicar_hf.py} y tres
+    \path{flujo_empaquetar_dataset.py}, \path{flujo_publicar_hf.py} y cuatro
     directivas (\path{directives/data_capture.yaml}, \path{curar_dataset.yaml},
     \path{empaquetar_dataset.yaml}, \path{publicar_hf.yaml}).
     \item \textbf{Modificados:} \path{rag_system.py},
@@ -198,7 +198,7 @@ Solana.
     términos.
     \item La \textbf{calidad} (metadato \texttt{quality\_score}) determina el
     precio: datasets curados valen más que crudos.
-\end{enumerate}
+\end{itemize}
 
 \section{Consideraciones y convenciones}
 
@@ -212,8 +212,9 @@ Solana.
     entorno.
     \item La licencia GIDEAL-1.0 no es de uso público libre: para datos comerciales
     se recomienda publicar con \texttt{--private}.
-    \item Con menos de 10 muestras, todo el split va a train (val/test en 0); al
-    acumular más datos, el particionado se reparte automáticamente.
+    \item Con hasta 5 muestras, todo el split va a train (val/test en 0); a partir
+    de 6 muestras el particionado asigna 1 a val y 1 a test y se reparte
+    automáticamente al acumular más datos.
 \end{itemize}
 
 \section{Trabajo futuro}

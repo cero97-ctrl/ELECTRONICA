@@ -1,7 +1,8 @@
 goal: |
   Capturar, sanitizar y versionar muestras de datos generadas por los flujos
-  (RAG y EDA) en datasets JSONL listos para curar y comercializar para
-  entrenamiento de LLMs. La captura es 100% pasiva: jamás rompe el flujo que la invoca.
+  (RAG, EDA imagen→circuito y análisis multimodal de imágenes) en datasets JSONL
+  listos para curar y comercializar para entrenamiento de LLMs. La captura es
+  100% pasiva: jamás rompe el flujo que la invoca.
 
 layer: execution
 references:
@@ -9,6 +10,7 @@ references:
   orchestrators_integrados:
     - rag_system.py            # dataset: rag_conversaciones (ShareGPT)
     - flujo_imagen_a_kicad.py  # dataset: eda_imagen_circuito (instrucción multimodal)
+    - flujo_analizar_imagen.py # dataset: analisis_imagenes (instrucción multimodal)
 
 required_inputs:
   - name: user_query
@@ -19,6 +21,8 @@ required_inputs:
     description: Documentos recuperados por el retriever (ayudan a trazar la respuesta).
   - name: image_paths / output
     description: Rutas de imágenes de circuito y netlist JSON extraído (dataset EDA).
+  - name: image_paths / prompt / analisis
+    description: Rutas de imágenes, prompt usado y análisis descriptivo (dataset analisis_imagenes).
 
 steps:
   - name: capture_rag
@@ -31,10 +35,16 @@ steps:
       Registra un par imagen→netlist en datasets/eda_imagen_circuito.jsonl
       (instrucción multimodal) con api_backend, modelo y tokens_usados.
     script: data_capture.capture_eda(...)
+  - name: capture_imagen
+    description: >
+      Registra un par imagen→análisis descriptivo en datasets/analisis_imagenes.jsonl
+      (instrucción multimodal) con api_backend, modelo y tokens_usados.
+    script: data_capture.capture_imagen(...)
 
 expected_outputs:
   - datasets/rag_conversaciones.jsonl   (una línea JSON por turno)
   - datasets/eda_imagen_circuito.jsonl  (una línea JSON por imagen)
+  - datasets/analisis_imagenes.jsonl    (una línea JSON por imagen)
   - datasets/.capture_index.json        (hashes para deduplicación)
 
 edge_cases:
@@ -46,5 +56,5 @@ edge_cases:
 
 conventions:
   - datasets/ está excluido de git (.gitignore) por contener datos crudos sensibles.
-  - Los ids llevan prefijo rag-/eda- para separar datasets.
+  - Los ids llevan prefijo rag-/eda-/img- para separar datasets.
   - schema_version se versiona para backward-compat al curar/comercializar.
