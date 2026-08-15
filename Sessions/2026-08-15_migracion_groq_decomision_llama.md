@@ -34,7 +34,15 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 ## Estado al pausar (2026-08-15)
 - Migración de código: **COMPLETA y commiteada** (`c672c27`, rama `master`).
 - Commit incluye: 4 archivos migrados + `Sessions/2026-08-15_migracion_groq_decomision_llama.md` + `docs/GROQ/GROQ.pdf` (correo original).
-- Única tarea pendiente: verificación en vivo de modelos con la API de Groq.
+- Única tarea pendiente: verificación en vivo de modelos con la API de **Groq** (bloqueada por 403).
+
+### 4. Verificación alternativa por OpenRouter — COMPLETADA ✔ (2026-08-15)
+- Con `OPENROUTER_API_KEY` se probaron los 3 modelos en `https://openrouter.ai/api/v1/chat/completions`:
+  - `openai/gpt-oss-20b` → **OK** (provider SiliconFlow)
+  - `qwen/qwen3.6-27b` → **OK** (provider Morph)
+  - `openai/gpt-oss-120b` → **OK** (provider DeepInfra)
+- **Ojo importante:** son **modelos de razonamiento** — gastan tokens de salida en "thinking" antes del `content`. Con `max_tokens=10` devuelven `content: null` (todo el presupuesto se fue a reasoning: 34-98 tokens en una respuesta trivial). Los scripts deben usar `max_output_tokens`/`max_tokens` holgados y no depender de una respuesta instantánea.
+- La `OPENAI_API_KEY` nueva se guardó en `.env`; el usuario creó la cuenta con VPN (API accesible sin VPN desde la máquina; riesgo de cuenta por región, mitigado usando OpenRouter para modelos OpenAI).
 
 ## Pendientes
-- [ ] Cuando Groq arregle el 403: verificar `openai/gpt-oss-20b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-120b` con llamada real (script: POST a `https://api.groq.com/openai/v1/chat/completions` con `messages=[{role:user, content:"Responde SOLO con: OK"}]`, `max_tokens=10`).
+- [ ] Cuando Groq arregle el 403: verificar `openai/gpt-oss-20b`, `qwen/qwen3.6-27b`, `openai/gpt-oss-120b` con llamada real (script: POST a `https://api.groq.com/openai/v1/chat/completions` con `messages=[{role:user, content:"Responde SOLO con: OK"}]`, `max_tokens` ≥ 200 por ser modelos de razonamiento).
