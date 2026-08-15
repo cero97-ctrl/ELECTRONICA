@@ -23,7 +23,7 @@ Los datos se escriben en `datasets/` en el workspace, excluidos de git.
        "source": "GIDEAL_RAG_v1",
        "dataset": "rag_conversaciones",
        "domain": "electronica",
-       "model": "llama-3.1-8b-instant",
+       "model": "openai/gpt-oss-20b",
        "retrieved_context": [{"source": "ruta/doc.tex", "content_preview": "..."}],
        "quality_score": 1.0,
        "timestamp": "2026-08-06T..."
@@ -338,7 +338,7 @@ def _self_test() -> int:
         assistant_response="Aquí está el diseño completo con esquemático en circuitikz, netlist y BOM.",
         system_prompt="Eres un experto en electrónica analógica.",
         domain="electronica_analogica",
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         extra={"test": True},
     )
     ok_eda = data_capture.capture_eda(

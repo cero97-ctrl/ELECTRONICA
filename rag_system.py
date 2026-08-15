@@ -128,7 +128,7 @@ else:
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4}) # Recupera los 4 fragmentos más relevantes para ahorrar tokens
-llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+llm = ChatGroq(model="openai/gpt-oss-20b", temperature=0)
 
 # 6. Crear memoria conversacional y el Prompt RAG
 # 6.1 Prompt para contextualizar la pregunta usando el historial
@@ -188,7 +188,7 @@ try:
                 system_prompt=system_prompt,
                 retrieved_context=response["context"],
                 domain="electronica",
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
             )
         except Exception as e:
             print(f"  ⚠  (captura de datos omitida: {e})")

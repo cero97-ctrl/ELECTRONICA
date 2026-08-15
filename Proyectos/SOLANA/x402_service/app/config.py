@@ -69,7 +69,7 @@ class Settings:
     llm_api_key: str = field(
         default_factory=lambda: os.getenv("LLM_API_KEY", "")
     )
-    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "llama-3.3-70b-versatile"))
+    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "qwen/qwen3.6-27b"))
 
     # --- Redis opcional ----------------------------------------------------
     redis_url: str = field(

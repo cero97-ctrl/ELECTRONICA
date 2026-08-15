@@ -51,10 +51,10 @@ def initialize_llm():
     except Exception as e:
         print(f"[-] Advertencia: El modelo 'qwen/qwen3.6-27b' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
-        print("[*] Intentando inicializar con el modelo de respaldo 'llama-3.1-8b-instant'...")
+        print("[*] Intentando inicializar con el modelo de respaldo 'openai/gpt-oss-20b'...")
         return ChatGroq(
             groq_api_key=api_key,
-            model_name="llama-3.1-8b-instant", # Modelo de respaldo seguro
+            model_name="openai/gpt-oss-20b", # Modelo de respaldo seguro
             temperature=0.1
         )
 
