@@ -331,9 +331,9 @@ Ejemplos:
                         help="Nivel de dificultad del examen (default: intermedia).")
     parser.add_argument("--modelo", default="qwen/qwen3.6-27b",
                         help="Modelo a usar (default: qwen/qwen3.6-27b).")
-    parser.add_argument("--api-backend", default="groq",
+    parser.add_argument("--api-backend", default="openrouter",
                         choices=["gemini", "openrouter", "groq"],
-                        help="Backend de API: gemini, openrouter o groq. (default: groq).")
+                        help="Backend de API: gemini, openrouter o groq. (default: openrouter).")
     return parser.parse_args()
 
 

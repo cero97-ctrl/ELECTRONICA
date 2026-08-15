@@ -466,9 +466,9 @@ Ejemplos:
     )
     parser.add_argument(
         "--api-backend",
-        default="groq",
+        default="openrouter",
         choices=["gemini", "openrouter", "groq"],
-        help="Backend de API: gemini, openrouter o groq. (default: groq).",
+        help="Backend de API: gemini, openrouter o groq. (default: openrouter).",
     )
     return parser.parse_args()
 

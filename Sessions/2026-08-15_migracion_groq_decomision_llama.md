@@ -32,6 +32,13 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 - El usuario confirmó que para acceder a las páginas de Groq y OpenAI necesita VPN (consistente con el geo-bloqueo).
 - **Conclusión operativa:** los backends directos `groq`/`openai` NO funcionan desde VE sin VPN en toda la máquina. El gateway accesible es **OpenRouter** (prueba 200 OK).
 
+### 4. Verificación alternativa por OpenRouter — COMPLETADA ✔ (2026-08-15)
+- Con `OPENROUTER_API_KEY` se probaron los 3 modelos en `https://openrouter.ai/api/v1/chat/completions`:
+  - `openai/gpt-oss-20b` → **OK** (provider SiliconFlow)
+  - `qwen/qwen3.6-27b` → **OK** (provider Morph)
+  - `openai/gpt-oss-120b` → **OK** (provider DeepInfra)
+- **Ojo importante:** son **modelos de razonamiento** — gastan tokens de salida en "thinking" antes del `content`. Con `max_tokens=10` devuelven `content: null` (todo el presupuesto fue a reasoning: 34-98 tokens en una respuesta trivial). Usar `max_output_tokens`/`max_tokens` holgados.
+
 ### 5. Mapa de conectividad desde VE (2026-08-15)
 | Backend | Prueba | Estado desde VE |
 |---|---|---|
@@ -43,18 +50,20 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 
 → Estrategia: Gemini y OpenRouter funcionan sin VPN. Los flujos con backend `groq`/`openai` deben ir por OpenRouter (o VPN a nivel máquina).
 
-## Estado al pausar (2026-08-15)
-- Migración de código: **COMPLETA y commiteada** (`c672c27`, rama `master`).
-- Commit incluye: 4 archivos migrados + `Sessions/2026-08-15_migracion_groq_decomision_llama.md` + `docs/GROQ/GROQ.pdf` (correo original).
-- Única tarea pendiente: verificación en vivo de modelos con la API de **Groq** (bloqueada por 403).
+### 6. OpenRouter como backend por defecto — APLICADO (2026-08-15)
+- Decisión del usuario: cambiar los flujos que default a `groq` para que default a `openrouter` (funciona sin VPN desde VE; sirve los mismos modelos GPT-OSS/Qwen3.6).
+- Archivos editados (default `groq` → `openrouter`):
+  - `flujo_elaborar_examen.py:334`
+  - `flujo_elaborar_ejercicios.py:270`
+  - `execution/elaborar_examen.py:469`
+  - `mcp_elaborar_server.py:21,35`
+- Verificado: `py_compile` OK y `--help` muestra `(default: openrouter)`.
+- Sin cambio: flujos con default `gemini` (funciona desde VE): `flujo_analizar_imagen`, `flujo_evaluar_examen`, `flujo_imagen_a_kicad`, `execution/evaluar_examen`, `execution/analizar_imagen`, `execution/extraer_netlist_imagen`, `execution/elaborar_ejercicios`, `execution/generar_kicad_llm`.
 
-### 4. Verificación alternativa por OpenRouter — COMPLETADA ✔ (2026-08-15)
-- Con `OPENROUTER_API_KEY` se probaron los 3 modelos en `https://openrouter.ai/api/v1/chat/completions`:
-  - `openai/gpt-oss-20b` → **OK** (provider SiliconFlow)
-  - `qwen/qwen3.6-27b` → **OK** (provider Morph)
-  - `openai/gpt-oss-120b` → **OK** (provider DeepInfra)
-- **Ojo importante:** son **modelos de razonamiento** — gastan tokens de salida en "thinking" antes del `content`. Con `max_tokens=10` devuelven `content: null` (todo el presupuesto se fue a reasoning: 34-98 tokens en una respuesta trivial). Los scripts deben usar `max_output_tokens`/`max_tokens` holgados y no depender de una respuesta instantánea.
-- La `OPENAI_API_KEY` nueva se guardó en `.env`; el usuario creó la cuenta con VPN. La key es válida pero **inutilizable desde VE sin VPN** (geo-bloqueo directo) — usar OpenAI solo vía OpenRouter desde esta máquina.
+## Estado (2026-08-15)
+- Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
+- OpenRouter como backend por defecto en flujos de elaboración: aplicado (este commit).
+- Verificación OpenRouter de los 3 modelos: completada.
 
 ## Pendientes
-- [ ] Decidir estrategia de backend desde VE: (a) usar `openrouter` como backend por defecto en los flujos, o (b) activar VPN a nivel de máquina para usar `groq`/`openai`/`gemini` directos. OpenRouter ya sirve los mismos modelos (GPT-OSS, Qwen3.6) y funciona sin VPN.
+- [ ] **`rag_system.py` y `agent_eda.py`** usan `ChatGroq` DIRECTO (sin `--api-backend`): seguirán fallando desde VE sin VPN. Evaluar migrarlos a OpenRouter (ChatOpenAI con `base_url=https://openrouter.ai/api/v1`) o dejarlos para uso con VPN.
