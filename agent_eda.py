@@ -45,12 +45,16 @@ def initialize_llm():
     if not api_key:
         raise ValueError("No se encontró OPENROUTER_API_KEY. Configúrala en el archivo .env o como variable de entorno.")
 
+    # Presupuesto de salida configurable (OPENROUTER_MAX_TOKENS en .env/entorno).
+    # Default 2048: compatible con el tier gratuito de OpenRouter. Subir (ej. 8192) tras recargar créditos.
+    max_tokens = int(os.environ.get("OPENROUTER_MAX_TOKENS", "2048"))
+
     try:
         return ChatOpenAI(
             api_key=api_key,
             model="openai/gpt-oss-20b", # Separa razonamiento del JSON final (fiable para extracción estructurada)
             temperature=0.1,            # Baja temperatura para resultados deterministas
-            max_tokens=2048,            # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
+            max_tokens=max_tokens,      # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
             base_url="https://openrouter.ai/api/v1",
         )
     except Exception as e:
@@ -61,7 +65,7 @@ def initialize_llm():
             api_key=api_key,
             model="qwen/qwen3.6-27b",   # Modelo de respaldo (razonamiento)
             temperature=0.1,
-            max_tokens=2048,
+            max_tokens=max_tokens,
             base_url="https://openrouter.ai/api/v1",
         )
 

@@ -68,6 +68,7 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
   - **Sin `max_tokens` explícito, ChatOpenAI pide 65536** y OpenRouter rechaza con 402 cuando el saldo es bajo → fijar `max_tokens` siempre.
   - **`qwen/qwen3.6-27b` es un modelo de razonamiento que devuelve su cadena de pensamiento como `content`** (y con presupuesto corto deja `content=""`), lo que rompe la extracción JSON. **`openai/gpt-oss-20b` separa el razonamiento del JSON final** → es el modelo fiable para extracción estructurada (por eso es el primario).
   - `meta-llama/llama-3.3-70b-instruct:free` ya no es gratis en OpenRouter (404).
+- **`max_tokens` ahora configurable** vía `OPENROUTER_MAX_TOKENS` en `.env`/entorno (default 2048, tier gratuito; subir a 4096-8192 tras recargar créditos). Aplicado en `agent_eda.py` y `rag_system.py`.
 
 ### 8. Créditos de OpenRouter — key nueva y verificación FINAL (2026-08-15)
 - El usuario generó una **nueva `OPENROUTER_API_KEY`** en `.env`. Sigue en tier limitado: con `max_tokens=4096` devuelve **402** ("can only afford ~2,000 tokens"). Con `max_tokens ≤ 2048` las peticiones pasan.
