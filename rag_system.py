@@ -11,7 +11,7 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader, Py
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
@@ -21,13 +21,16 @@ from langchain_classic.chains import create_history_aware_retriever
 
 from execution.data_capture import data_capture
 
-# 1. Configurar API Key de Groq (Leer de archivo oculto)
-key_path = os.path.join(os.path.dirname(__file__), ".groq_api_key")
+# 1. Configurar API Key de OpenRouter (desde .env o variable de entorno)
 try:
-    with open(key_path, "r") as f:
-        os.environ["GROQ_API_KEY"] = f.read().strip()
-except FileNotFoundError:
-    print(f"Error: No se encontró el archivo oculto '{key_path}' con la clave.")
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+except ImportError:
+    pass
+
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    print("Error: No se encontró OPENROUTER_API_KEY en el archivo .env o en las variables de entorno.")
     sys.exit(1)
 
 # 2. Configurar Embeddings y Directorio de la Base de Datos
@@ -128,7 +131,8 @@ else:
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4}) # Recupera los 4 fragmentos más relevantes para ahorrar tokens
-llm = ChatGroq(model="openai/gpt-oss-20b", temperature=0)
+llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=4096,
+                 api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
 # 6. Crear memoria conversacional y el Prompt RAG
 # 6.1 Prompt para contextualizar la pregunta usando el historial

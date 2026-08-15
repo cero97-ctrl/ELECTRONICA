@@ -5,7 +5,7 @@ import json
 import argparse
 from typing import List, Dict
 from pydantic import BaseModel, Field
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
@@ -33,29 +33,36 @@ class CircuitNetlist(BaseModel):
 # 2. CONFIGURACIÓN DEL AGENTE LLM
 # ==========================================
 def initialize_llm():
-    # Asume que GROQ_API_KEY está en las variables de entorno o en .groq_api_key
-    api_key = os.environ.get("GROQ_API_KEY")
+    # Asume que OPENROUTER_API_KEY está en las variables de entorno o en .env
+    api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         try:
-            with open(".groq_api_key", "r") as f:
-                api_key = f.read().strip()
-        except FileNotFoundError:
-            raise ValueError("No se encontró la API key de Groq. Configura GROQ_API_KEY o el archivo .groq_api_key")
-    
+            from dotenv import load_dotenv
+            load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+            api_key = os.environ.get("OPENROUTER_API_KEY")
+        except Exception:
+            pass
+    if not api_key:
+        raise ValueError("No se encontró OPENROUTER_API_KEY. Configúrala en el archivo .env o como variable de entorno.")
+
     try:
-        return ChatGroq(
-            groq_api_key=api_key,
-            model_name="qwen/qwen3.6-27b", # Se recomienda un modelo grande para razonamiento lógico (Qwen 3.6 27B)
-            temperature=0.1 # Baja temperatura para resultados deterministas
+        return ChatOpenAI(
+            api_key=api_key,
+            model="qwen/qwen3.6-27b", # Se recomienda un modelo grande para razonamiento lógico (Qwen 3.6 27B)
+            temperature=0.1,          # Baja temperatura para resultados deterministas
+            max_tokens=4096,          # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
+            base_url="https://openrouter.ai/api/v1",
         )
     except Exception as e:
         print(f"[-] Advertencia: El modelo 'qwen/qwen3.6-27b' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
         print("[*] Intentando inicializar con el modelo de respaldo 'openai/gpt-oss-20b'...")
-        return ChatGroq(
-            groq_api_key=api_key,
-            model_name="openai/gpt-oss-20b", # Modelo de respaldo seguro
-            temperature=0.1
+        return ChatOpenAI(
+            api_key=api_key,
+            model="openai/gpt-oss-20b", # Modelo de respaldo seguro
+            temperature=0.1,
+            max_tokens=4096,
+            base_url="https://openrouter.ai/api/v1",
         )
 
 # ==========================================
@@ -70,7 +77,7 @@ def _is_rate_limit(exception: Exception) -> bool:
     stop=stop_after_attempt(5), # Reintenta hasta 5 veces
     wait=wait_exponential(multiplier=2, min=3, max=30), # Espera 3s, luego 6s, 12s... hasta un tope de 30s
     retry=retry_if_exception(_is_rate_limit), # Solo reintenta si es error 429
-    before_sleep=lambda retry_state: print(f"[-] Rate limit de API Groq (HTTP 429). Esperando para reintentar... (Intento {retry_state.attempt_number}/5)"),
+    before_sleep=lambda retry_state: print(f"[-] Rate limit de API (HTTP 429). Esperando para reintentar... (Intento {retry_state.attempt_number}/5)"),
     reraise=True # Propaga la excepción original si se agotan los reintentos
 )
 def _invoke_chain_with_retry(chain, inputs):
@@ -135,7 +142,7 @@ Código LaTeX:
             return {}
 
     except Exception as e:
-        print(f"[x] Error al comunicarse con la API de Groq: {e}")
+        print(f"[x] Error al comunicarse con la API: {e}")
         return {}
 
 # ==========================================
