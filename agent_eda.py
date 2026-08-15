@@ -48,20 +48,20 @@ def initialize_llm():
     try:
         return ChatOpenAI(
             api_key=api_key,
-            model="qwen/qwen3.6-27b", # Se recomienda un modelo grande para razonamiento lógico (Qwen 3.6 27B)
-            temperature=0.1,          # Baja temperatura para resultados deterministas
-            max_tokens=4096,          # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
+            model="openai/gpt-oss-20b", # Separa razonamiento del JSON final (fiable para extracción estructurada)
+            temperature=0.1,            # Baja temperatura para resultados deterministas
+            max_tokens=2048,            # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
             base_url="https://openrouter.ai/api/v1",
         )
     except Exception as e:
-        print(f"[-] Advertencia: El modelo 'qwen/qwen3.6-27b' no está disponible o fue depreciado.")
+        print(f"[-] Advertencia: El modelo 'openai/gpt-oss-20b' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
-        print("[*] Intentando inicializar con el modelo de respaldo 'openai/gpt-oss-20b'...")
+        print("[*] Intentando inicializar con el modelo de respaldo 'qwen/qwen3.6-27b'...")
         return ChatOpenAI(
             api_key=api_key,
-            model="openai/gpt-oss-20b", # Modelo de respaldo seguro
+            model="qwen/qwen3.6-27b",   # Modelo de respaldo (razonamiento)
             temperature=0.1,
-            max_tokens=4096,
+            max_tokens=2048,
             base_url="https://openrouter.ai/api/v1",
         )
 

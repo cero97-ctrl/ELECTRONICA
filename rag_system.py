@@ -131,7 +131,7 @@ else:
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4}) # Recupera los 4 fragmentos más relevantes para ahorrar tokens
-llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=4096,
+llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=2048,
                  api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
 
 # 6. Crear memoria conversacional y el Prompt RAG

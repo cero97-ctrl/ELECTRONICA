@@ -61,22 +61,26 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 - Sin cambio: flujos con default `gemini` (funciona desde VE): `flujo_analizar_imagen`, `flujo_evaluar_examen`, `flujo_imagen_a_kicad`, `execution/evaluar_examen`, `execution/analizar_imagen`, `execution/extraer_netlist_imagen`, `execution/elaborar_ejercicios`, `execution/generar_kicad_llm`.
 
 ### 7. Migración de `rag_system.py` y `agent_eda.py` a OpenRouter — APLICADO (2026-08-15)
-- **`rag_system.py`**: import `ChatGroq` → `ChatOpenAI` (`langchain_openai`); carga la key desde `.env` (`OPENROUTER_API_KEY` vía `load_dotenv`) en vez de `.groq_api_key`; `llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=4096, base_url="https://openrouter.ai/api/v1")`.
-- **`agent_eda.py`**: `initialize_llm()` ahora crea `ChatOpenAI` con `qwen/qwen3.6-27b` (primario) y `openai/gpt-oss-20b` (respaldo), ambos con `max_tokens=4096` y `base_url` de OpenRouter; mensajes de retry/error genéricos.
-- **Entorno:** el código corre en conda `elect_env` (tiene `langchain_openai` + `langchain_groq`). `py_compile` OK.
-- **Verificado en vivo:** `ChatOpenAI` + `gpt-oss-20b` → "OK"; `qwen3.6-27b` con `max_tokens` explícito → "OK". **Sin `max_tokens` explícito, ChatOpenAI pide 65536 y OpenRouter rechaza con 402** cuando el saldo es bajo.
+- **`rag_system.py`**: import `ChatGroq` → `ChatOpenAI` (`langchain_openai`); carga la key desde `.env` (`OPENROUTER_API_KEY` vía `load_dotenv`) en vez de `.groq_api_key`; `llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=2048, base_url="https://openrouter.ai/api/v1")`.
+- **`agent_eda.py`**: `initialize_llm()` crea `ChatOpenAI` con **`openai/gpt-oss-20b` (primario)** y `qwen/qwen3.6-27b` (respaldo), ambos con `max_tokens=2048` y `base_url` de OpenRouter; mensajes de retry/error genéricos.
+- **Entorno:** el código corre en conda `elect_env` (tiene `langchain_openai`). `py_compile` OK.
+- **Aprendizajes clave:**
+  - **Sin `max_tokens` explícito, ChatOpenAI pide 65536** y OpenRouter rechaza con 402 cuando el saldo es bajo → fijar `max_tokens` siempre.
+  - **`qwen/qwen3.6-27b` es un modelo de razonamiento que devuelve su cadena de pensamiento como `content`** (y con presupuesto corto deja `content=""`), lo que rompe la extracción JSON. **`openai/gpt-oss-20b` separa el razonamiento del JSON final** → es el modelo fiable para extracción estructurada (por eso es el primario).
+  - `meta-llama/llama-3.3-70b-instruct:free` ya no es gratis en OpenRouter (404).
 
-### 8. BLOQUEO DE RECURSOS: créditos de OpenRouter agotados (2026-08-15)
-- La key `OPENROUTER_API_KEY` quedó con saldo mínimo (~2,000-3,300 tokens). Con `max_tokens=4096`, las peticiones con prompt grande fallan con **HTTP 402** "This request requires more credits, or fewer max_tokens".
-- La prueba funcional de `agent_eda` (extracción de netlist real) no pudo completarse por el 402; además en una llamada el modelo de razonamiento devolvió `content=""` (razonamiento sin contenido final), lo que dejó el log vacío.
-- **Acción requerida del usuario:** recargar créditos en https://openrouter.ai/settings/credits (o subir el límite mensual de la key). Tras recargar, re-verificar `agent_eda` con un circuito de prueba y `rag_system` interactivo.
+### 8. Créditos de OpenRouter — key nueva y verificación FINAL (2026-08-15)
+- El usuario generó una **nueva `OPENROUTER_API_KEY`** en `.env`. Sigue en tier limitado: con `max_tokens=4096` devuelve **402** ("can only afford ~2,000 tokens"). Con `max_tokens ≤ 2048` las peticiones pasan.
+- **`agent_eda` VERIFICADO end-to-end ✔** con `openai/gpt-oss-20b` + `max_tokens=2048`: extrajo netlist válido de un circuito RC+V (R1 10k, C1 100uF, V1 5V) con esquema correcto (id/type/value/lcspart/x/y) y conexiones, en ~7 s.
+- `rag_system`: LLM verificado (mismo patrón ChatOpenAI + gpt-oss-20b funciona). El arranque interactivo es lento por el glob `**/*.{tex,md,pdf}` sobre el workspace grande (comportamiento preexistente, no de la migración); se cortó por timeout sin llegar al chat.
+- Para producción con presupuestos mayores: recargar créditos en https://openrouter.ai/settings/credits.
 
 ## Estado (2026-08-15)
 - Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
 - OpenRouter como backend por defecto en flujos de elaboración: aplicado.
-- `rag_system.py` y `agent_eda.py` migrados a OpenRouter: aplicado (este commit).
-- Verificación OpenRouter de los 3 modelos (invocación simple): completada.
+- `rag_system.py` y `agent_eda.py` migrados a OpenRouter: aplicado (este commit) con `gpt-oss-20b`/`max_tokens=2048`.
+- Verificación funcional: `agent_eda` end-to-end OK; `rag_system` LLM OK (arranque lento preexistente).
 
 ## Pendientes
-- [ ] Recargar créditos de OpenRouter y re-verificar `agent_eda` (netlist real) y `rag_system` (chat interactivo).
+- [ ] Recargar créditos de OpenRouter si se necesitan presupuestos de salida > 2048 tokens.
 - [ ] El resto de flujos con backend `gemini` quedan OK (funciona desde VE sin VPN).
