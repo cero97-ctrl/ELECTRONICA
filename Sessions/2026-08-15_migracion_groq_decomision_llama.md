@@ -76,12 +76,30 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 - `rag_system`: LLM verificado (mismo patrón ChatOpenAI + gpt-oss-20b funciona). El arranque interactivo es lento por el glob `**/*.{tex,md,pdf}` sobre el workspace grande (comportamiento preexistente, no de la migración); se cortó por timeout sin llegar al chat.
 - Para producción con presupuestos mayores: recargar créditos en https://openrouter.ai/settings/credits.
 
+### 9. Recarga de créditos OpenRouter — decisión de pagar con cripto (2026-08-15)
+- `max_tokens` **configurable vía `OPENROUTER_MAX_TOKENS`** (default 2048; subir tras recargar) — commiteado en `b91eb5f` (`agent_eda.py` y `rag_system.py`).
+- **Tarjeta BDV Internacional:** se intentó por Stripe (método tarjeta). No se confirmó que funcione; alto riesgo de rechazo porque **Venezuela está bajo sanciones OFAC y Stripe no lista VE** como país de facturación. El usuario decidió pagar con cripto.
+- **Wallets:** el usuario creó **Rabby**. Nota clave: **Rabby es solo EVM** (no soporta Solana). Para desarrollo Solana a futuro → Phantom/Backpack + CLI de Solana. Rabby sí sirve para el pago USDC EVM.
+- **Investigación de pago cripto de OpenRouter** (docs/FAQ 2026):
+  - Procesador: **Coinbase Commerce** (checkout con QR por wallet: MetaMask, Base Pay, Phantom, Trust Wallet, Rabby, Rainbow, OKX, Other wallets). **El QR elegido define la red del pago.**
+  - **Solo USDC**; comisión del **5%** al comprar; **no reembolsable**; mínimo **$5** por transacción (máx $25k). El checkout muestra monto total = USDC + 5%.
+  - **Redes soportadas (mainnet): Ethereum, Polygon y Base** (Base recomendada por tarifas casi nulas). Cualquier otra red (Avalanche, Optimism, Solana, Stellar, Tron) → fondos perdidos.
+- **Ruta elegida por el usuario (la más larga pero viable con sus opciones):**
+  **AirTM (comprar USDC) → Binance (vía Binance Pay, envío interno sin red) → OpenRouter (retiro USDC por red Base, QR "Base Pay")**.
+  - Motivo: AirTM solo ofrece USDC (Ethereum) de las redes soportadas por OpenRouter; Binance permite salir por **Base** (barato/rápido). Alternativa más corta: AirTM→USDC(Ethereum) directo al checkout, pero el gas ETH es caro.
+  - Pasos: en OpenRouter elegir QR **"Base Pay"** → copiar dirección de depósito (red Base) → Binance retirar USDC red **Base** → pegar dirección → confirmar.
+  - Regla de oro: **la red del checkout debe coincidir exactamente con la red del envío**; verificar antes de firmar. En Binance, los USDC vía Binance Pay llegan a la wallet Pay/Funding (posible transferencia interna antes de retirar).
+
 ## Estado (2026-08-15)
 - Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
 - OpenRouter como backend por defecto en flujos de elaboración: aplicado.
 - `rag_system.py` y `agent_eda.py` migrados a OpenRouter: aplicado (este commit) con `gpt-oss-20b`/`max_tokens=2048`.
+- `max_tokens` configurable (`OPENROUTER_MAX_TOKENS`): commiteado (`b91eb5f`).
 - Verificación funcional: `agent_eda` end-to-end OK; `rag_system` LLM OK (arranque lento preexistente).
+- Recarga de créditos: **en curso** — ruta definida AirTM → Binance (Binance Pay) → OpenRouter (red Base). Pendiente de completar el pago y activar `OPENROUTER_MAX_TOKENS=8192`.
 
 ## Pendientes
-- [ ] Recargar créditos de OpenRouter si se necesitan presupuestos de salida > 2048 tokens.
+- [ ] Completar la recarga: AirTM (comprar USDC) → Binance (Binance Pay) → OpenRouter (retiro USDC red Base, QR "Base Pay").
+- [ ] Cuando el saldo aparezca en OpenRouter: verificar que la key acepta presupuestos altos y añadir `OPENROUTER_MAX_TOKENS=8192` al `.env`.
+- [ ] Revisar si los QR de Phantom (Solana) en el checkout implican que OpenRouter ya acepta USDC en Solana (si aplica, abarataría recargas futuras desde AirTM Solana).
 - [ ] El resto de flujos con backend `gemini` quedan OK (funciona desde VE sin VPN).
