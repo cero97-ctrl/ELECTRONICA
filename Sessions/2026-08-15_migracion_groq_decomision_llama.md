@@ -89,6 +89,7 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
   - Motivo: AirTM solo ofrece USDC (Ethereum) de las redes soportadas por OpenRouter; Binance permite salir por **Base** (barato/rápido). Alternativa más corta: AirTM→USDC(Ethereum) directo al checkout, pero el gas ETH es caro.
   - Pasos: en OpenRouter elegir QR **"Base Pay"** → copiar dirección de depósito (red Base) → Binance retirar USDC red **Base** → pegar dirección → confirmar.
   - Regla de oro: **la red del checkout debe coincidir exactamente con la red del envío**; verificar antes de firmar. En Binance, los USDC vía Binance Pay llegan a la wallet Pay/Funding (posible transferencia interna antes de retirar).
+- **ACTUALIZACIÓN de plan (mismo día):** el usuario **agregó como método de pago una tarjeta recargable en USD del Banco Bancamiga** (banco con sede en su ciudad) en OpenRouter. **Depositará ≥ $15 mañana en taquilla** y pagará los créditos con la tarjeta (vía Stripe). Si Stripe la rechaza por país de facturación (VE sancionado), se cae a la ruta cripto ya definida.
 
 ## Estado (2026-08-15)
 - Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
@@ -96,10 +97,10 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 - `rag_system.py` y `agent_eda.py` migrados a OpenRouter: aplicado (este commit) con `gpt-oss-20b`/`max_tokens=2048`.
 - `max_tokens` configurable (`OPENROUTER_MAX_TOKENS`): commiteado (`b91eb5f`).
 - Verificación funcional: `agent_eda` end-to-end OK; `rag_system` LLM OK (arranque lento preexistente).
-- Recarga de créditos: **en curso** — ruta definida AirTM → Binance (Binance Pay) → OpenRouter (red Base). Pendiente de completar el pago y activar `OPENROUTER_MAX_TOKENS=8192`.
+- Recarga de créditos: **en curso** — nuevo plan: tarjeta recargable USD de Bancamiga (depósito ≥ $15 mañana en taquilla) → pago directo en OpenRouter. Fallback: cripto AirTM → Binance (Binance Pay) → OpenRouter (red Base).
 
 ## Pendientes
-- [ ] Completar la recarga: AirTM (comprar USDC) → Binance (Binance Pay) → OpenRouter (retiro USDC red Base, QR "Base Pay").
+- [ ] Mañana: depositar ≥ $15 en la tarjeta Bancamiga y comprar créditos en OpenRouter (Buy credits → tarjeta Bancamiga).
 - [ ] Cuando el saldo aparezca en OpenRouter: verificar que la key acepta presupuestos altos y añadir `OPENROUTER_MAX_TOKENS=8192` al `.env`.
 - [ ] Revisar si los QR de Phantom (Solana) en el checkout implican que OpenRouter ya acepta USDC en Solana (si aplica, abarataría recargas futuras desde AirTM Solana).
 - [ ] El resto de flujos con backend `gemini` quedan OK (funciona desde VE sin VPN).
