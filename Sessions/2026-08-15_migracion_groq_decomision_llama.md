@@ -1,6 +1,6 @@
 # Sesión: Migración por decomisión de modelos Groq (Llama 3.3 70B / 3.1 8B)
 
-**Fecha:** 2026-08-15
+**Fecha:** 2026-08-15 (continuada 2026-08-16)
 **Agente:** DeepSeek (opencode)
 
 ## Tema tratado
@@ -90,17 +90,25 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
   - Pasos: en OpenRouter elegir QR **"Base Pay"** → copiar dirección de depósito (red Base) → Binance retirar USDC red **Base** → pegar dirección → confirmar.
   - Regla de oro: **la red del checkout debe coincidir exactamente con la red del envío**; verificar antes de firmar. En Binance, los USDC vía Binance Pay llegan a la wallet Pay/Funding (posible transferencia interna antes de retirar).
 - **ACTUALIZACIÓN de plan (mismo día):** el usuario **agregó como método de pago una tarjeta recargable en USD del Banco Bancamiga** (banco con sede en su ciudad) en OpenRouter. **Depositará ≥ $15 mañana en taquilla** y pagará los créditos con la tarjeta (vía Stripe). Si Stripe la rechaza por país de facturación (VE sancionado), se cae a la ruta cripto ya definida.
+- **RECARGA COMPLETADA ✔ (2026-08-16):** depósito de $15 en la tarjeta TDD recargable de Bancamiga y compra de créditos en OpenRouter (auto top-up 10/$5 activo). Saldo resultante: **$9.82** (deducido el saldo negativo previo de -$0.18). **La tarjeta de Bancamiga SÍ fue aceptada por Stripe.**
+- **Verificación de tier pago (2026-08-16):**
+  - `GET /api/v1/auth/key` → `is_free_tier: false`, `limit: null` (sin tope de presupuesto por petición), `usage_monthly: $0.017`.
+  - `chat/completions` con `openai/gpt-oss-20b` y `max_tokens=8192` → `finish_reason: stop`, `content: OK`, costo $0.000009. Sin 402.
+  - **`agent_eda` re-verificado end-to-end ✔** con el nuevo presupuesto: extrajo 5 resistencias (R1 5Ω, R2/R3 20Ω, R4 15Ω, R5 2.5Ω) con LCSC y generó JSON EasyEDA válido (shape[]: 5 LIB, 7 W, 3 N, 2 J).
+- **`OPENROUTER_MAX_TOKENS=8192` activado** en `.env` (default 2048 en el código se mantiene como mínimo seguro).
 
-## Estado (2026-08-15)
+## Estado (2026-08-16)
 - Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
 - OpenRouter como backend por defecto en flujos de elaboración: aplicado.
 - `rag_system.py` y `agent_eda.py` migrados a OpenRouter: aplicado (este commit) con `gpt-oss-20b`/`max_tokens=2048`.
 - `max_tokens` configurable (`OPENROUTER_MAX_TOKENS`): commiteado (`b91eb5f`).
 - Verificación funcional: `agent_eda` end-to-end OK; `rag_system` LLM OK (arranque lento preexistente).
-- Recarga de créditos: **en curso** — nuevo plan: tarjeta recargable USD de Bancamiga (depósito ≥ $15 mañana en taquilla) → pago directo en OpenRouter. Fallback: cripto AirTM → Binance (Binance Pay) → OpenRouter (red Base).
+- **Recarga de créditos: COMPLETADA ✔** — saldo $9.82, tier pago activo, tarjeta Bancamiga aceptada por Stripe, auto top-up 10/$5 activo.
+- **`OPENROUTER_MAX_TOKENS=8192` activado** en `.env` y verificado (petición 8192 OK, `agent_eda` end-to-end OK con JSON EasyEDA válido).
 
 ## Pendientes
-- [ ] Mañana: depositar ≥ $15 en la tarjeta Bancamiga y comprar créditos en OpenRouter (Buy credits → tarjeta Bancamiga).
-- [ ] Cuando el saldo aparezca en OpenRouter: verificar que la key acepta presupuestos altos y añadir `OPENROUTER_MAX_TOKENS=8192` al `.env`.
+- [x] Recargar créditos de OpenRouter (tarjeta Bancamiga, auto top-up 10/$5) — **completado 2026-08-16**, saldo $9.82.
+- [x] Activar `OPENROUTER_MAX_TOKENS=8192` y verificar presupuesto alto — **completado 2026-08-16**.
+- [ ] Monitorear el gasto: $9.82 alcanza para ~1000+ peticiones de netlist (costo ~$0.009 c/u); auto top-up repondrá $10 al bajar de $5.
 - [ ] Revisar si los QR de Phantom (Solana) en el checkout implican que OpenRouter ya acepta USDC en Solana (si aplica, abarataría recargas futuras desde AirTM Solana).
 - [ ] El resto de flujos con backend `gemini` quedan OK (funciona desde VE sin VPN).
