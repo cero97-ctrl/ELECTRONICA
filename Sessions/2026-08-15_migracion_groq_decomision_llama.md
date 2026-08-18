@@ -97,6 +97,16 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
   - **`agent_eda` re-verificado end-to-end ✔** con el nuevo presupuesto: extrajo 5 resistencias (R1 5Ω, R2/R3 20Ω, R4 15Ω, R5 2.5Ω) con LCSC y generó JSON EasyEDA válido (shape[]: 5 LIB, 7 W, 3 N, 2 J).
 - **`OPENROUTER_MAX_TOKENS=8192` activado** en `.env` (default 2048 en el código se mantiene como mínimo seguro).
 
+### 10. Monitor de saldo en segundo plano (2026-08-18)
+- El usuario pidió estar "pendiente" del saldo porque **los $10 del auto top-up aún no han sido cargados a la tarjeta**; hay que asegurarse de que tenga fondos cuando OpenRouter intente el cobro (saldo < $5).
+- **Limitación honesta:** el agente solo actúa cuando el usuario le escribe; no vigila en tiempo real. Solución: **script de monitoreo en segundo plano**.
+- **Creado `execution/monitor_saldo_openrouter.py`**: OpenRouter NO expone el saldo por API, así que se **estima** como `créditos_totales − usage` (`/api/v1/auth/key`). Referencia 2026-08-16: página $9.82 con usage $0.01721 → `CREDITS_TOTAL_REF = 9.83721381`.
+  - `python3 execution/monitor_saldo_openrouter.py` → chequeo puntual (JSON).
+  - `--watch --interval 300` → bucle en segundo plano (default 300 s), log en `.tmp/saldo_openrouter.log`.
+  - Umbrales: `--warn 5.50` (prepara la tarjeta) y `--alert 5.10` (top-up inminente, OpenRouter cobrará $10 cuando baje de $5). Cruzar cualquiera → alerta audible vía `execution/alert_user.py waiting` (teléfono).
+- **Arrancado en background (PID 19485, nohup, interval 300s).** Primer chequeo: saldo estimado $9.82, tier pago.
+- Nota: cuando el auto top-up cobre los $10, la referencia `CREDITS_TOTAL_REF` quedará desactualizada (el estimado puede volverse negativo) — ajustar la constante (o correr el chequeo puntual y ver la página para recalcularla).
+
 ## Estado (2026-08-16)
 - Migración de modelos Groq: **COMPLETA y commiteada** (`c672c27`).
 - OpenRouter como backend por defecto en flujos de elaboración: aplicado.
@@ -110,5 +120,6 @@ Notificación por correo de Groq: decomisión de `llama-3.3-70b-versatile` y `ll
 - [x] Recargar créditos de OpenRouter (tarjeta Bancamiga, auto top-up 10/$5) — **completado 2026-08-16**, saldo $9.82.
 - [x] Activar `OPENROUTER_MAX_TOKENS=8192` y verificar presupuesto alto — **completado 2026-08-16**.
 - [ ] Monitorear el gasto: $9.82 alcanza para ~1000+ peticiones de netlist (costo ~$0.009 c/u); auto top-up repondrá $10 al bajar de $5.
+- [ ] **Vigilar el saldo** vía `execution/monitor_saldo_openrouter.py --watch` (corriendo en background, PID 19485). Cuando suene la alerta (< $5.10): depositar fondos en la tarjeta Bancamiga para que el auto top-up ($10) tenga saldo. **Tras el top-up, actualizar `CREDITS_TOTAL_REF` en el script**.
 - [ ] Revisar si los QR de Phantom (Solana) en el checkout implican que OpenRouter ya acepta USDC en Solana (si aplica, abarataría recargas futuras desde AirTM Solana).
 - [ ] El resto de flujos con backend `gemini` quedan OK (funciona desde VE sin VPN).
