@@ -14,8 +14,8 @@ A new workflow must include all three layers; never write just an orchestrator w
 
 | File | Content |
 |---|---|
-| `.groq_api_key` | Groq API key (text LLMs) |
-| `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `TELEGRAM_BOT_TOKEN` |
+| `.groq_api_key` | Groq API key (fallback provider `groq`) |
+| `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MAX_TOKENS`, `TELEGRAM_BOT_TOKEN`, `HF_TOKEN` |
 
 `opencode.json` loads `instructions: [".agent/*.md"]` — those are your core operating instructions.
 
@@ -29,14 +29,17 @@ A new workflow must include all three layers; never write just an orchestrator w
 - **`requirements.txt` contains only `psutil` and `PyYAML`** — real dependencies live in the conda environment; don't trust it as canonical
 - **No linter, type checker, formatter, or CI** is configured — don't waste time running them
 - **Run everything from repo root** — imports use relative paths; `mcp_latex_server.py`, `mcp_sistema_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it. The newer MCP servers (`mcp_analizar_server.py`, `mcp_diagnostico_server.py`, `mcp_elaborar_server.py`, `mcp_evaluar_server.py`) resolve their own `project_root` via `os.path.dirname(os.path.abspath(__file__))` and load `.env` from there — they are path-agnostic and can run from anywhere
+- **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter (`openai/gpt-oss-20b`). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → usar `openai/gpt-oss-20b` para salida estructurada
 
 ## Commands
 
 **Tests:** `python test_generator.py` (EDA JSON, zero external deps)
 
-**RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors)
+**RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`openai/gpt-oss-20b`, `OPENROUTER_API_KEY`)
 
 **LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
+
+**Saldo OpenRouter:** `python execution/monitor_saldo_openrouter.py` (chequeo puntual), `--watch [--interval N]` (bucle en background, log en `.tmp/saldo_openrouter.log`; alerta audible cerca del auto top-up de $10)
 
 ### Orchestrator flows
 ```
