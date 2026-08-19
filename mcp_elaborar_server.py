@@ -17,7 +17,7 @@ mcp = FastMCP("Examen Elaborator Server")
 def elaborar_nuevo_examen(
     tema: str,
     nivel: str = "intermedia",
-    modelo: str = "qwen/qwen3.6-27b",
+    modelo: str = "anthropic/claude-opus-5",
     api_backend: str = "openrouter",
     output_dir: str = None
 ) -> str:
@@ -31,7 +31,7 @@ def elaborar_nuevo_examen(
     Args:
         tema: El tema específico de electrónica (ej: "Semana 2: Diodos y Rectificadores", "Transistor BJT").
         nivel: Dificultad del examen: 'basica', 'intermedia' o 'avanzada' (default: intermedia).
-        modelo: Modelo de lenguaje para la elaboración (default: qwen/qwen3.6-27b).
+        modelo: Nombre del modelo a usar (default: anthropic/claude-opus-5 para tareas complejas).
         api_backend: Backend de API a usar: 'gemini', 'groq' o 'openrouter' (default: openrouter).
         output_dir: Directorio opcional donde guardar el examen y solucionario (default: examenes/).
         

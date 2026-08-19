@@ -131,11 +131,12 @@ else:
 
 # 5. Configurar el recuperador y el modelo de lenguaje (LLM)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4}) # Recupera los 4 fragmentos más relevantes para ahorrar tokens
-# Presupuesto de salida configurable (OPENROUTER_MAX_TOKENS en .env/entorno).
-# Default 2048: compatible con el tier gratuito de OpenRouter. Subir (ej. 8192) tras recargar créditos.
-OPENROUTER_MAX_TOKENS = int(os.environ.get("OPENROUTER_MAX_TOKENS", "2048"))
-llm = ChatOpenAI(model="openai/gpt-oss-20b", temperature=0, max_tokens=OPENROUTER_MAX_TOKENS,
-                 api_key=OPENROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
+try:
+    from execution.llm_client import get_chat_openai, get_max_tokens
+except ImportError:
+    from llm_client import get_chat_openai, get_max_tokens
+OPENROUTER_MAX_TOKENS = get_max_tokens()
+llm = get_chat_openai(OPENROUTER_API_KEY, model="google/gemini-3.7-flash", temperature=0, max_tokens=OPENROUTER_MAX_TOKENS)
 
 # 6. Crear memoria conversacional y el Prompt RAG
 # 6.1 Prompt para contextualizar la pregunta usando el historial
@@ -195,7 +196,7 @@ try:
                 system_prompt=system_prompt,
                 retrieved_context=response["context"],
                 domain="electronica",
-                model="openai/gpt-oss-20b",
+                model="google/gemini-3.7-flash",
             )
         except Exception as e:
             print(f"  ⚠  (captura de datos omitida: {e})")

@@ -3,7 +3,7 @@ Goal: "Levantar un servidor MCP local para recibir peticiones de análisis de im
 Required inputs:
   - imagenes: "Ruta absoluta o relativa a la(s) imagen(es) a analizar (separadas por comas, o patrón glob)."
   - prompt: "Instrucciones de análisis o preguntas sobre el circuito (opcional, default: 'Describe detalladamente lo que ves en la(s) imagen(es)')."
-  - modelo: "Modelo de visión a usar para el análisis (opcional, default: gemini-2.5-flash)."
+  - modelo: "Modelo de visión a usar para el análisis (opcional, default: google/gemini-3.7-flash)."
   - api_backend: "Backend de API a usar: gemini o openrouter (opcional, default: gemini)."
   - output_dir: "Directorio de destino para guardar el informe LaTeX y PDF (opcional, default: docs/IMAGENES/informe_imagen/)."
 

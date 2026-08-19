@@ -82,6 +82,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from execution.llm_client import openrouter_chat
+except ImportError:
+    from llm_client import openrouter_chat
+
 
 # ── System Instruction ───────────────────────────────────────────────────────────
 
@@ -319,10 +324,6 @@ def generar_con_openrouter(
     system_instruction: str,
     api_key: str,
 ) -> tuple[str, dict]:
-    client = OpenAI(
-        api_key=api_key,
-        base_url="https://openrouter.ai/api/v1",
-    )
     prompt = (
         f"Genera un examen de Electrónica de nivel {nivel} "
         f"sobre el siguiente tema:\n\n{tema}\n\n"
@@ -333,32 +334,14 @@ def generar_con_openrouter(
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": prompt},
     ]
-    response = client.chat.completions.create(
-        model=modelo,
-        messages=messages,
+    return openrouter_chat(
+        messages,
+        modelo,
+        api_key,
         temperature=0.7,
         max_tokens=8192,
-        extra_headers={
-            "HTTP-Referer": "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA",
-            "X-Title": "ELECTRONICA - Elaboracion de Examenes",
-        },
+        title="ELECTRONICA - Elaboracion de Examenes",
     )
-    tokens = {}
-    try:
-        if hasattr(response, 'usage') and response.usage:
-            tokens = {
-                "prompt": response.usage.prompt_tokens,
-                "respuesta": response.usage.completion_tokens,
-                "total": response.usage.total_tokens,
-            }
-    except (AttributeError, TypeError):
-        pass
-    if not response or not hasattr(response, 'choices') or not response.choices:
-        raise RuntimeError("El modelo no devolvió una respuesta válida.")
-    choice = response.choices[0]
-    if not choice.message or choice.message.content is None:
-        raise RuntimeError(f"El modelo devolvió un mensaje vacío.")
-    return choice.message.content, tokens
 
 
 # ── Orquestador principal ────────────────────────────────────────────────────────
@@ -461,8 +444,8 @@ Ejemplos:
     )
     parser.add_argument(
         "--modelo",
-        default="qwen/qwen3.6-27b",
-        help="Modelo a usar (default: qwen/qwen3.6-27b).",
+        default="anthropic/claude-opus-5",
+        help="Modelo a usar (default: anthropic/claude-opus-5 para tareas complejas).",
     )
     parser.add_argument(
         "--api-backend",

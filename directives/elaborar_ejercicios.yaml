@@ -24,8 +24,8 @@ optional_inputs:
     default: intermedia
   - name: modelo
     description: >
-      Modelo LLM a utilizar. Default: gemini-3.5-flash.
-    default: gemini-3.5-flash
+      Modelo LLM a utilizar. Default: anthropic/claude-opus-5 (tareas complejas).
+    default: anthropic/claude-opus-5
   - name: api_backend
     description: >
       Backend de API: gemini (Google) u openrouter (OpenRouter).

@@ -69,7 +69,7 @@ class Settings:
     llm_api_key: str = field(
         default_factory=lambda: os.getenv("LLM_API_KEY", "")
     )
-    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "qwen/qwen3.6-27b"))
+    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "google/gemini-3.7-flash"))
 
     # --- Redis opcional ----------------------------------------------------
     redis_url: str = field(

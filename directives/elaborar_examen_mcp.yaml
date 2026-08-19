@@ -3,7 +3,7 @@ Goal: "Levantar un servidor MCP local para recibir peticiones de elaboración de
 Required inputs:
   - tema: "El tema específico de electrónica sobre el cual elaborar el examen."
   - nivel: "Nivel de dificultad del examen: basica, intermedia, avanzada (opcional, default: intermedia)."
-  - modelo: "Modelo a usar para la elaboración (opcional, default: qwen/qwen3.6-27b)."
+  - modelo: "Modelo a usar para la elaboración (opcional, default: anthropic/claude-opus-5 para tareas complejas)."
   - api_backend: "Backend de API a usar: gemini, openrouter o groq (opcional, default: groq)."
   - output_dir: "Directorio de destino para guardar examen y solucionario (opcional, default: examenes/)."
 

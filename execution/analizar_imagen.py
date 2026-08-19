@@ -84,6 +84,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from execution.llm_client import openrouter_chat, build_multimodal_content
+except ImportError:
+    from llm_client import openrouter_chat, build_multimodal_content
+
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
 
@@ -330,71 +335,23 @@ def analizar_con_openrouter(
     api_key: str,
 ) -> tuple[str, dict]:
     """Analiza usando OpenRouter (API compatible con OpenAI)."""
-    client = OpenAI(
-        api_key=api_key,
-        base_url="https://openrouter.ai/api/v1",
+    user_content = build_multimodal_content(
+        images_bytes,
+        labels=nombres,
+        trailing_text=prompt,
     )
-
-    user_content = []
-    for img_bytes, nombre in zip(images_bytes, nombres):
-        b64 = base64.b64encode(img_bytes).decode("utf-8")
-        user_content.append({
-            "type": "text",
-            "text": f"--- Imagen: {nombre} ---",
-        })
-        user_content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/png;base64,{b64}",
-                "detail": "high",
-            },
-        })
-    user_content.append({
-        "type": "text",
-        "text": prompt,
-    })
-
     messages = [
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": user_content},
     ]
-
-    response = client.chat.completions.create(
-        model=modelo,
-        messages=messages,
+    return openrouter_chat(
+        messages,
+        modelo,
+        api_key,
         temperature=0.2,
         max_tokens=8192,
-        extra_headers={
-            "HTTP-Referer": "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA",
-            "X-Title": "ELECTRONICA - Analisis de Imagenes",
-        },
+        title="ELECTRONICA - Analisis de Imagenes",
     )
-
-    tokens = {}
-    try:
-        if hasattr(response, 'usage') and response.usage:
-            tokens = {
-                "prompt": response.usage.prompt_tokens,
-                "respuesta": response.usage.completion_tokens,
-                "total": response.usage.total_tokens,
-            }
-    except (AttributeError, TypeError):
-        pass
-
-    if not response or not hasattr(response, 'choices') or not response.choices:
-        raise RuntimeError(
-            "El modelo no devolvió una respuesta válida. "
-            "Es probable que no soporte imágenes o esté caído en OpenRouter."
-        )
-
-    choice = response.choices[0]
-    if not choice.message or choice.message.content is None:
-        raise RuntimeError(
-            f"El modelo devolvió un mensaje vacío. "
-            f"Verifica si el modelo '{modelo}' soporta multimodalidad (visión) en OpenRouter."
-        )
-
-    return choice.message.content, tokens
 
 
 def analizar_con_groq(

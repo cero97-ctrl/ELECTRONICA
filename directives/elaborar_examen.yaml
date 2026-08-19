@@ -24,9 +24,9 @@ optional_inputs:
     default: intermedia
   - name: modelo
     description: >
-      Modelo LLM a utilizar. Default: gemini-2.5-flash.
-      Para OpenRouter usar IDs como qwen/qwen-2.5-72b-instruct:free.
-    default: gemini-2.5-flash
+      Modelo LLM a utilizar. Default: anthropic/claude-opus-5 (tareas complejas).
+      Para OpenRouter usar IDs como anthropic/claude-opus-5 o google/gemini-3.7-flash.
+    default: anthropic/claude-opus-5
   - name: api_backend
     description: >
       Backend de API: gemini (Google) u openrouter (OpenRouter).

@@ -11,9 +11,9 @@ required_inputs:
       Ejemplo: examenes/01/evaluacion_estudiante_01.pdf
   - name: modelo
     description: >
-      Modelo Gemini a utilizar. Opciones: gemini-2.5-flash (default, más rápido y económico),
-      gemini-1.5-pro (más potente, mayor costo). Usar gemini-1.5-pro para exámenes complejos
-      con mucho desarrollo matemático o escritura difícil de leer.
+      Modelo a utilizar. Default: gemini-2.5-flash (rápido y económico). Para mayor
+      fidelidad en exámenes con mucho desarrollo matemático, usar api_backend openrouter
+      (usa anthropic/claude-opus-5 automáticamente) o gemini-1.5-pro.
     default: gemini-2.5-flash
   - name: dpi
     description: >

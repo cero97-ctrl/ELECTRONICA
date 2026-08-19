@@ -31,7 +31,7 @@ def evaluar_examen_estudiante(
     Args:
         pdf_path: Ruta absoluta o relativa al archivo PDF del examen.
         rubrica_path: Ruta opcional al archivo YAML de la rúbrica (ej: directives/rubricas/rubrica_practica_lab.yaml).
-        modelo: Nombre del modelo a usar (default: gemini-2.5-flash).
+        modelo: Nombre del modelo a usar (default: gemini-2.5-flash; con api_backend openrouter usa anthropic/claude-opus-5 automáticamente).
         api_backend: Backend de la API a usar: 'gemini', 'openrouter' o 'groq' (default: gemini).
         dpi: Resolución en DPI para renderizar las páginas del PDF a imágenes (default: 250).
         

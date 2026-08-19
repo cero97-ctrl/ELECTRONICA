@@ -88,6 +88,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from execution.llm_client import openrouter_chat, build_multimodal_content
+except ImportError:
+    from llm_client import openrouter_chat, build_multimodal_content
+
 
 # ── System Instruction ─────────────────────────────────────────────────────────
 
@@ -362,67 +367,24 @@ def evaluar_con_openrouter(
     api_key: str,
 ) -> tuple[str, dict]:
     """Evalúa usando OpenRouter (API compatible con OpenAI)."""
-    import base64
-
-    client = OpenAI(
-        api_key=api_key,
-        base_url="https://openrouter.ai/api/v1",
+    labels = [f"Página {i} de {len(images_bytes)}" for i in range(1, len(images_bytes) + 1)]
+    user_content = build_multimodal_content(
+        images_bytes,
+        labels=labels,
+        trailing_text="Analiza el examen completo mostrado en las imágenes anteriores y responde con el JSON de evaluación.",
     )
-
-    user_content = []
-    for i, img_bytes in enumerate(images_bytes, start=1):
-        b64 = base64.b64encode(img_bytes).decode("utf-8")
-        user_content.append({
-            "type": "text",
-            "text": f"--- Página {i} de {len(images_bytes)} ---",
-        })
-        user_content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/png;base64,{b64}",
-                "detail": "high",
-            },
-        })
-    user_content.append({
-        "type": "text",
-        "text": "Analiza el examen completo mostrado en las imágenes anteriores y responde con el JSON de evaluación.",
-    })
-
     messages = [
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": user_content},
     ]
-
-    response = client.chat.completions.create(
-        model=modelo,
-        messages=messages,
+    return openrouter_chat(
+        messages,
+        modelo,
+        api_key,
         temperature=0.2,
         max_tokens=8192,
-        extra_headers={
-            "HTTP-Referer": "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA",
-            "X-Title": "ELECTRONICA - Evaluacion de Examenes",
-        },
+        title="ELECTRONICA - Evaluacion de Examenes",
     )
-
-    tokens = {}
-    try:
-        if hasattr(response, 'usage') and response.usage:
-            tokens = {
-                "prompt": response.usage.prompt_tokens,
-                "respuesta": response.usage.completion_tokens,
-                "total": response.usage.total_tokens,
-            }
-    except (AttributeError, TypeError):
-        pass
-
-    if not response or not hasattr(response, 'choices') or not response.choices:
-        raise RuntimeError(f"El modelo no devolvió una respuesta válida. Es probable que no soporte imágenes o esté caído en OpenRouter.")
-
-    choice = response.choices[0]
-    if not choice.message or choice.message.content is None:
-        raise RuntimeError(f"El modelo devolvió un mensaje vacío. Verifica si el modelo '{modelo}' soporta multimodalidad (visión) en OpenRouter.")
-
-    return choice.message.content, tokens
 
 
 def evaluar_con_groq(

@@ -134,7 +134,7 @@ def flujo_completo(
             if "--api-backend" in cmd_fallback:
                 cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "openrouter"
             if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "meta-llama/llama-3.3-70b-instruct:free"
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "google/gemini-3.7-flash"
             code, ejercicios_data = run_script(cmd_fallback, capture_json=True)
 
         if code != 0 or ejercicios_data.get("status") != "ok":
@@ -265,8 +265,8 @@ Ejemplos:
     parser.add_argument("--nivel", default="intermedia",
                         choices=["basica", "intermedia", "avanzada"],
                         help="Nivel de dificultad (default: intermedia).")
-    parser.add_argument("--modelo", default="qwen/qwen3.6-27b",
-                        help="Modelo a usar (default: qwen/qwen3.6-27b).")
+    parser.add_argument("--modelo", default="anthropic/claude-opus-5",
+                        help="Modelo a usar (default: anthropic/claude-opus-5 para tareas complejas).")
     parser.add_argument("--api-backend", default="openrouter",
                         choices=["gemini", "openrouter", "groq"],
                         help="Backend de API: gemini, openrouter o groq. (default: openrouter).")

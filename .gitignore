@@ -1,6 +1,8 @@
 # Claves de API y archivos secretos
 .groq_api_key
 .env
+.dev.vars
+*.dev.vars
 
 # Base de datos vectorial RAG
 chroma_db/

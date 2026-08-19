@@ -12,10 +12,9 @@ required_inputs:
       Ejemplo: practicas/01/informe_estudiante/practica_01_estudiante.pdf
   - name: modelo
     description: >
-      Modelo Gemini a utilizar. Opciones: gemini-2.5-flash (default, más rápido y
-      económico), gemini-1.5-pro (más potente, mayor costo). Usar gemini-1.5-pro
-      para informes extensos con muchos diagramas, fotos de protoboard y datos
-      experimentales.
+      Modelo a utilizar. Default: gemini-2.5-flash (rápido y económico). Para informes
+      extensos con muchos diagramas y datos, usar api_backend openrouter (usa
+      anthropic/claude-opus-5 automáticamente) o gemini-1.5-pro.
     default: gemini-2.5-flash
   - name: dpi
     description: >

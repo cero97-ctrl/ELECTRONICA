@@ -103,7 +103,7 @@ def evaluacion_ok(code: int, resultado: dict | str) -> bool:
 # original no es compatible con el backend de respaldo.
 DEFAULT_MODELO = {
     "gemini":     "gemini-2.5-flash",
-    "openrouter": "google/gemini-2.5-flash",
+    "openrouter": "anthropic/claude-opus-5",
 }
 
 

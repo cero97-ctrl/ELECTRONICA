@@ -33,41 +33,21 @@ class CircuitNetlist(BaseModel):
 # 2. CONFIGURACIÓN DEL AGENTE LLM
 # ==========================================
 def initialize_llm():
-    # Asume que OPENROUTER_API_KEY está en las variables de entorno o en .env
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        try:
-            from dotenv import load_dotenv
-            load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
-            api_key = os.environ.get("OPENROUTER_API_KEY")
-        except Exception:
-            pass
-    if not api_key:
-        raise ValueError("No se encontró OPENROUTER_API_KEY. Configúrala en el archivo .env o como variable de entorno.")
+    try:
+        from execution.llm_client import get_chat_openai, load_api_key, get_max_tokens
+    except ImportError:
+        from llm_client import get_chat_openai, load_api_key, get_max_tokens
 
-    # Presupuesto de salida configurable (OPENROUTER_MAX_TOKENS en .env/entorno).
-    # Default 2048: compatible con el tier gratuito de OpenRouter. Subir (ej. 8192) tras recargar créditos.
-    max_tokens = int(os.environ.get("OPENROUTER_MAX_TOKENS", "2048"))
+    api_key = load_api_key()
+    max_tokens = get_max_tokens()
 
     try:
-        return ChatOpenAI(
-            api_key=api_key,
-            model="openai/gpt-oss-20b", # Separa razonamiento del JSON final (fiable para extracción estructurada)
-            temperature=0.1,            # Baja temperatura para resultados deterministas
-            max_tokens=max_tokens,      # Presupuesto explícito (OpenRouter cobra por max_tokens solicitado)
-            base_url="https://openrouter.ai/api/v1",
-        )
+        return get_chat_openai(api_key, model="anthropic/claude-opus-5", temperature=0.1, max_tokens=max_tokens)
     except Exception as e:
-        print(f"[-] Advertencia: El modelo 'openai/gpt-oss-20b' no está disponible o fue depreciado.")
+        print(f"[-] Advertencia: El modelo 'anthropic/claude-opus-5' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
-        print("[*] Intentando inicializar con el modelo de respaldo 'qwen/qwen3.6-27b'...")
-        return ChatOpenAI(
-            api_key=api_key,
-            model="qwen/qwen3.6-27b",   # Modelo de respaldo (razonamiento)
-            temperature=0.1,
-            max_tokens=max_tokens,
-            base_url="https://openrouter.ai/api/v1",
-        )
+        print("[*] Intentando inicializar con el modelo de respaldo 'google/gemini-3.7-flash'...")
+        return get_chat_openai(api_key, model="google/gemini-3.7-flash", temperature=0.1, max_tokens=max_tokens)
 
 # ==========================================
 # 3. CADENA DE EXTRACCIÓN LATEX -> NETLIST

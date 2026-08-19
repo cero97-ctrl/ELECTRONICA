@@ -17,6 +17,11 @@ try:
 except ImportError:
     OpenAI = None
 
+try:
+    from execution.llm_client import openrouter_chat
+except ImportError:
+    from llm_client import openrouter_chat
+
 def generar_con_llm(netlist_json: str, modelo: str, api_backend: str, api_key: str) -> str:
     system_instruction = (
         "Eres un experto ingeniero en electrónica y usuario avanzado de KiCAD 8. "
@@ -28,11 +33,26 @@ def generar_con_llm(netlist_json: str, modelo: str, api_backend: str, api_key: s
     )
     prompt = f"Genera el archivo .kicad_sch completo para este netlist:\n\n{netlist_json}"
 
-    if api_backend in ["groq", "openrouter"]:
+    if api_backend == "openrouter":
         if OpenAI is None:
             raise ImportError("Paquete 'openai' no instalado.")
-        base_url = "https://api.groq.com/openai/v1" if api_backend == "groq" else "https://openrouter.ai/api/v1"
-        client = OpenAI(api_key=api_key, base_url=base_url)
+        content, _ = openrouter_chat(
+            [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": prompt},
+            ],
+            modelo,
+            api_key,
+            temperature=0.2,
+            max_tokens=8192,
+            title="ELECTRONICA - Generacion KiCAD",
+        )
+        return content
+
+    elif api_backend == "groq":
+        if OpenAI is None:
+            raise ImportError("Paquete 'openai' no instalado.")
+        client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
         response = client.chat.completions.create(
             model=modelo,
             messages=[
@@ -75,8 +95,8 @@ def main():
     parser = argparse.ArgumentParser(description="Genera archivo .kicad_sch desde Netlist JSON usando un LLM.")
     parser.add_argument("--json", required=True, help="Ruta al JSON del Netlist")
     parser.add_argument("--output", required=True, help="Ruta de salida para el .kicad_sch")
-    parser.add_argument("--modelo", default="gemini-2.5-flash", help="Modelo a utilizar")
-    parser.add_argument("--api-backend", default="gemini", choices=["gemini", "openrouter", "groq"])
+    parser.add_argument("--modelo", default="anthropic/claude-opus-5", help="Modelo a utilizar (default: anthropic/claude-opus-5 para tareas complejas)")
+    parser.add_argument("--api-backend", default="openrouter", choices=["gemini", "openrouter", "groq"])
     args = parser.parse_args()
 
     json_path = Path(args.json)

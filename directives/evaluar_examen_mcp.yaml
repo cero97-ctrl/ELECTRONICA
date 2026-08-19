@@ -2,7 +2,7 @@ Goal: "Levantar un servidor MCP local para recibir peticiones de evaluación de 
 
 Required inputs:
   - pdf_path: "Ruta al archivo PDF del examen del estudiante a evaluar."
-  - modelo: "Modelo a usar para la evaluación (opcional, default: gemini-2.5-flash)."
+  - modelo: "Modelo a usar para la evaluación (opcional, default: gemini-2.5-flash; con api_backend openrouter usa anthropic/claude-opus-5)."
   - api_backend: "Backend de API a usar: gemini, openrouter o groq (opcional, default: gemini)."
   - rubrica: "Ruta al archivo YAML de la rúbrica del examen (opcional)."
   - output_dir: "Carpeta de salida del informe LaTeX (opcional)."
