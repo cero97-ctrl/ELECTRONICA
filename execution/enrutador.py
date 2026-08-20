@@ -58,14 +58,14 @@ OPUS_TASKS = frozenset({
 })
 
 # Cadena de fallback por tier ante 429/errores repetidos. Determinista y
-# cost-aware: el último recurso de kimi/flash NO es opus salvo tareas críticas.
+# cost-aware: el último recurso de flash/deepseek NO es opus salvo tareas críticas.
+# Kimi K3 NO está en las cadenas: es propenso a 429 de capacidad y solo se usa
+# por petición explícita del usuario (--modelo-explicito).
 FALLBACK_CHAINS = {
-    "flash": ["flash", "kimi", "kimi_fallback"],
-    "kimi":  ["kimi", "kimi_fallback", "opus"],
-    "opus":  ["opus", "kimi", "kimi_fallback"],
+    "flash":    ["flash", "deepseek", "glm"],
+    "deepseek": ["deepseek", "glm", "opus"],
+    "opus":     ["opus", "deepseek", "glm"],
 }
-
-# kimi_fallback ya vive en llm_client.MODEL_TIERS (deepseek/deepseek-v4-pro).
 
 # Telemetría: log por decisión (tier, tokens, modelo) para poder tunear la política.
 ROUTING_LOG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".tmp", "routing_log.jsonl")
@@ -109,10 +109,10 @@ def decide(task: str, tokens: int, critico: bool, vision: bool, modelo_explicito
                 f"y la tarea es crítica o de razonamiento crítico -> opus."
             )
         else:
-            tier = "kimi"
+            tier = "deepseek"
             reason = (
                 f"Entrada de {tokens} tokens supera el umbral de {LONG_CONTEXT_THRESHOLD} "
-                f"y la tarea no es crítica -> kimi (contexto masivo)."
+                f"y la tarea no es crítica -> deepseek (contexto masivo)."
             )
         return {
             "tier": tier,
@@ -130,8 +130,8 @@ def decide(task: str, tokens: int, critico: bool, vision: bool, modelo_explicito
             f"Tipo de tarea '{task}' es de rutina pero marcada crítica -> opus."
         )
     elif task in KIMI_TASKS:
-        tier = "kimi"
-        reason = f"Tipo de tarea '{task}' es de contexto/síntesis -> kimi."
+        tier = "deepseek"
+        reason = f"Tipo de tarea '{task}' es de contexto/síntesis -> deepseek."
     elif task in OPUS_TASKS:
         tier = "opus"
         reason = f"Tipo de tarea '{task}' es de razonamiento crítico -> opus."

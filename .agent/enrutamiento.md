@@ -38,26 +38,31 @@ Del requerimiento del usuario identifica:
 | Nivel | ID OpenRouter | Costo (USD/M tok) | Uso típico |
 | :--- | :--- | :--- | :--- |
 | **flash** | `google/gemini-3.7-flash` | bajo | Rutina: parsing/formatting JSON-YAML, resúmenes, RAG, validación sintáctica, multimodal rápido |
-| **kimi** | `moonshotai/kimi-k3` | $3 / $15 | Contexto masivo (>50k tok), lectura multi-archivo/repositorio, síntesis de datasheets/logs, razonamiento intermedio |
-| **kimi_fallback** | `deepseek/deepseek-v4-pro` | intermedio | Sustituto de kimi ante 429/errores (razonamiento, 1M ctx) |
+| **deepseek** | `deepseek/deepseek-v4-pro` | $0.44 / $0.87 | Contexto masivo (>50k tok), lectura multi-archivo/repositorio, síntesis de datasheets/logs, razonamiento intermedio (1M ctx, JSON mode) |
+| **glm** | `z-ai/glm-5.2` | ~$1 / $3 | Respaldo del tier medio (1M ctx, razonamiento) |
 | **opus** | `anthropic/claude-opus-5` | $5 / $25 | Diseño arquitectónico, cálculo formal, debugging profundo, exámenes/evaluación compleja, netlists/EasyEDA |
+
+> **Kimi K3 (`moonshotai/kimi-k3`) NO se enruta automáticamente.** Es propenso a 429 de
+> capacidad (upstream Moonshot, sin mitigación posible) y su costo ($2.9/$14) es casi de
+> nivel premium. Está disponible SOLO por petición explícita del usuario, vía
+> `--modelo-explicito moonshotai/kimi-k3` (`MODELOS_OPCIONALES` en `llm_client.py`).
 
 ## Reglas de decisión (implementadas en `execution/enrutador.py`, NO en este chat)
 
 1. **Modelo explícito** del usuario → se respeta tal cual (sin clasificar).
-2. **Tokens medidos > 50 000** → tier de contexto masivo (`kimi`), salvo que la tarea
+2. **Tokens medidos > 50 000** → tier de contexto masivo (`deepseek`), salvo que la tarea
    sea crítica o de razonamiento crítico → `opus`. Nunca adivines el tamaño: mídilo
    o pásale los archivos al enrutador.
-3. **Tipo de tarea** → tier según el vocabulario controlado (flash/kimi/opus).
+3. **Tipo de tarea** → tier según el vocabulario controlado (flash/deepseek/opus).
 4. **`--critico`** → escala a `opus` aunque el tipo sea de rutina.
 
 ## Fallback (determinista y cost-aware, del enrutador)
 
 Ante 429 o errores repetidos, escala en cadena sin re-decidir el destino:
 
-- `flash` → `kimi` → `kimi_fallback`
-- `kimi` → `kimi_fallback` → `opus` (opus solo si el tier original era kimi/opus)
-- `opus` → `kimi` → `kimi_fallback`
+- `flash` → `deepseek` → `glm`
+- `deepseek` → `glm` → `opus`
+- `opus` → `deepseek` → `glm`
 
 Máximo 3 intentos totales; si todos fallan, detener y reportar. La escalada NO se
 hace por calidad percibida: solo por fallo de servicio.
@@ -69,7 +74,7 @@ hace por calidad percibida: solo por fallo de servicio.
 | `rag_system.py` (RAG, embeddings+chat) | flash |
 | `execution/analizar_imagen.py`, `execution/evaluar_examen.py`, `execution/extraer_netlist_imagen.py`, `execution/data_capture.py` | flash (multimodal/rutina) |
 | `execution/elaborar_examen.py`, `execution/elaborar_ejercicios.py`, `execution/generar_kicad_llm.py`, `agent_eda.py` | opus |
-| Cualquier tarea de contexto masivo (logs, repos, datasheets) | kimi |
+| Cualquier tarea de contexto masivo (logs, repos, datasheets) | deepseek |
 
 ## Restricciones
 
@@ -85,4 +90,4 @@ hace por calidad percibida: solo por fallo de servicio.
 - **Telemetría:** cada decisión se registra en `.tmp/routing_log.jsonl` (tier, tokens,
   modelo, timestamp). Usarla para afinar umbrales; no afines la política a ojo.
 - **Saldo OpenRouter:** vigilar con `python execution/monitor_saldo_openrouter.py`; cerca
-  del auto top-up de $10, priorizar tiers baratos (flash/kimi) y evitar opus para no agotar saldo.
+  del auto top-up de $10, priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.

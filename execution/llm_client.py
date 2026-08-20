@@ -43,10 +43,16 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 _APP_URL = "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
 
 MODEL_TIERS = {
-    "flash":         "google/gemini-3.7-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
-    "kimi":          "moonshotai/kimi-k3",       # Contexto masivo (>50k tok) / razonamiento intermedio
-    "kimi_fallback": "deepseek/deepseek-v4-pro", # Sustituto de kimi ante 429 (razonamiento, 1M ctx)
-    "opus":          "anthropic/claude-opus-5",  # Razonamiento crítico: diseño, cálculo formal, debugging
+    "flash":    "google/gemini-3.7-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
+    "deepseek": "deepseek/deepseek-v4-pro", # Tier medio: contexto masivo (>50k tok) / razonamiento (1M ctx, JSON mode)
+    "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio (1M ctx, razonamiento)
+    "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico: diseño, cálculo formal, debugging
+}
+
+# Modelos disponibles SOLO por petición explícita del usuario (--modelo-explicito).
+# No se enrutan automáticamente: Kimi K3 es propenso a 429 de capacidad (upstream Moonshot).
+MODELOS_OPCIONALES = {
+    "kimi_k3": "moonshotai/kimi-k3",
 }
 
 

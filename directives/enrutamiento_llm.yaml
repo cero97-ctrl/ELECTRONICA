@@ -107,8 +107,8 @@ edge_cases:
   - case: "El tier elegido devuelve 429 o errores repetidos (capacity limit)"
     recovery: >
       Escalar por la cadena 'fallback' devuelta por el router (determinista y
-      cost-aware: flash->kimi->kimi_fallback; kimi->kimi_fallback->opus;
-      opus->kimi->kimi_fallback). Máximo 3 intentos totales; si todos fallan,
+      cost-aware: flash->deepseek->glm; deepseek->glm->opus;
+      opus->deepseek->glm). Máximo 3 intentos totales; si todos fallan,
       detener y reportar.
 
   - case: "El tipo de tarea no está en el vocabulario controlado"
@@ -137,15 +137,17 @@ edge_cases:
     recovery: >
       Respetar OPENROUTER_MAX_TOKENS del .env (default 2048, activo 8192). Vigilar
       saldo con execution/monitor_saldo_openrouter.py; cerca del auto top-up de $10,
-      priorizar tiers baratos (flash/kimi) y evitar opus para no agotar saldo.
+      priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
 
   - case: "Kimi K3 no soporta el rol 'developer'"
     recovery: >
       Usar roles system/user con este modelo; pasar el límite de salida como
-      max_completion_tokens.
+      max_completion_tokens. Kimi K3 solo se usa por petición explícita del
+      usuario (--modelo-explicito); no se enruta automáticamente por su 429
+      de capacidad (MODELOS_OPCIONALES en llm_client.py).
 
 metadata:
-  version: "2.0"
+  version: "2.1"
   created: "2026-08-20"
   author: "opencode"
   referencias:

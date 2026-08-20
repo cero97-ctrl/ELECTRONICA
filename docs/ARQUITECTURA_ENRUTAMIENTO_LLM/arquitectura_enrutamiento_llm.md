@@ -1,6 +1,6 @@
 # Arquitectura de Enrutamiento Multi-LLM para Agente IA
 
-Este documento resume la estrategia de enrutamiento por niveles (Model Routing / Cascading) utilizando **OpenRouter** como pasarela de integración, integrando **opencode** como orquestador y un pool de modelos especializados (**Gemini Flash**, **Kimi K3**, **Claude Opus**).
+Este documento resume la estrategia de enrutamiento por niveles (Model Routing / Cascading) utilizando **OpenRouter** como pasarela de integración, integrando **opencode** como orquestador y un pool de modelos especializados (**Gemini Flash**, **DeepSeek V4 Pro**, **Claude Opus**).
 
 ---
 
@@ -8,7 +8,7 @@ Este documento resume la estrategia de enrutamiento por niveles (Model Routing /
 
 El agente de IA (opencode, capa de orquestación) interactúa con múltiples LLMs según la complejidad de la tarea:
 - **Tareas rutinarias:** Asignadas a **Gemini Flash** (`google/gemini-3.7-flash`).
-- **Contexto extenso / razonamiento intermedio:** Asignadas a **Kimi K3** (`moonshotai/kimi-k3`).
+- **Contexto extenso / razonamiento intermedio:** Asignadas a **DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`), con **GLM-5.2** de respaldo.
 - **Tareas complejas:** Asignadas a **Claude Opus** (`anthropic/claude-opus-5`).
 - **Pasarela de integración:** **OpenRouter**.
 - **Orquestador:** **opencode** (agente local, capa de orquestación — este asistente).
@@ -39,15 +39,15 @@ La decisión es una función pura implementada en `execution/enrutador.py`:
 ### Precedencia de las reglas (en `execution/enrutador.py`)
 
 1. **Modelo explícito** del usuario → se respeta tal cual (override total).
-2. **Tokens medidos > 50 000** → tier de contexto masivo (`kimi`); si la tarea es
+2. **Tokens medidos > 50 000** → tier de contexto masivo (`deepseek`); si la tarea es
    crítica o de razonamiento crítico → `opus`. El tamaño se mide (bytes de archivos
    o contador), nunca se estima a ojo.
-3. **Tipo de tarea** → tier según vocabulario controlado (flash/kimi/opus).
+3. **Tipo de tarea** → tier según vocabulario controlado (flash/deepseek/opus).
 4. **`--critico`** → escala a `opus` aunque el tipo sea de rutina.
 
 ### Matriz de Decisión (referencial; la autoridad es el código del enrutador)
 
-| Criterio | Nivel 1: Gemini Flash | Nivel 2: Kimi K3 | Nivel 3: Claude Opus |
+| Criterio | Nivel 1: Gemini Flash | Nivel 2: DeepSeek V4 Pro | Nivel 3: Claude Opus |
 | :--- | :--- | :--- | :--- |
 | **Estructura de la tarea** | Lineal, paso único, extracción, conversión de formato (JSON/YAML). | Ingesta/síntesis de contexto masivo, lectura multi-archivo, RAG extenso. | Multi-etapa, diseño arquitectónico, planificación abstracta. |
 | **Tolerancia a fallos** | Alta (búsqueda de sintaxis, resúmenes, logs, parsing simple). | Media (resúmenes de datasheets, destilación de logs extensos). | Baja (lógica de compilación, cálculo formal, refactorización crítica). |
@@ -56,36 +56,39 @@ La decisión es una función pura implementada en `execution/enrutador.py`:
 
 ---
 
-## 3. Integración de Kimi K3 en la Arquitectura
+## 3. Tier Medio: DeepSeek V4 Pro (+ GLM-5.2 de respaldo)
 
-Incorporar **Kimi K3** (Moonshot AI, ID OpenRouter `moonshotai/kimi-k3`) añade una capa de
-**razonamiento intermedio económico** con **1M de contexto** (2.8T params, razonamiento
-*always-on*, multimodal, $3/$15 por M tokens, cache read $0.30).
+El tier de **contexto extenso / razonamiento intermedio** lo ocupa
+**DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`, $0.44/$0.87 por M tokens, 1M de
+contexto, razonamiento, JSON mode, pesos abiertos, ~18 providers en OpenRouter con
+uptime alto). Su respaldo es **GLM-5.2** (`z-ai/glm-5.2`, 1M de contexto, ~25 providers).
 
-> **Nota de posicionamiento:** Kimi K3 es un modelo flagship de razonamiento, no un mero
-> lector de documentos. En OpenRouter compite en el mismo tier que Claude Opus pero a un
-> costo ~40-60 % menor. Su rol natural es el de **Nivel 2.5**: razonamiento y síntesis de
-> contexto masivo cuando Claude Opus sería sobredimensionado, y como **fallback económico**
-> de Opus ante límites de capacidad (429) o presupuesto.
+> **Kimi K3 (`moonshotai/kimi-k3`) quedó fuera del enrutamiento automático.**
+> Razones: propenso a `429` de capacidad (upstream Moonshot, sin mitigación desde
+> ningún gateway), costo casi premium ($2.9/$14) y solapamiento con Opus. En la web
+> el failover es invisible (K3 → K2.6); en un pipeline cada 429 es latencia y riesgo
+> de escalar a opus. Se mantiene disponible SOLO por petición explícita del usuario
+> vía `--modelo-explicito moonshotai/kimi-k3` (`MODELOS_OPCIONALES` en `llm_client.py`).
 
 ### Jerarquía de 3 Niveles
 
 | Nivel | LLM | Rol Principal y Casos de Uso |
 | :--- | :--- | :--- |
 | **Nivel 1: Rápido / Rutinario** | **Gemini Flash** (`google/gemini-3.7-flash`) | Formateo, parsing JSON/YAML, llamadas a herramientas simples, validación sintáctica rápida y bajo costo. RAG de rutina. |
-| **Nivel 2: Contexto Extenso / Razonamiento Intermedio** | **Kimi K3** (`moonshotai/kimi-k3`) | Ingesta de documentación técnica masiva, lectura completa de múltiples archivos/código fuente, RAG extenso, destilación de logs, síntesis de datasheets. Razonamiento complejo a costo intermedio. |
+| **Nivel 2: Contexto Extenso / Razonamiento Intermedio** | **DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`), respaldo **GLM-5.2** (`z-ai/glm-5.2`) | Ingesta de documentación técnica masiva, lectura completa de múltiples archivos/código fuente, RAG extenso, destilación de logs, síntesis de datasheets. Razonamiento complejo a costo intermedio. |
 | **Nivel 3: Razonamiento Crítico** | **Claude Opus** (`anthropic/claude-opus-5`) | Diseño arquitectónico, resolución de dependencias complejas, cálculos físicos/matemáticos avanzados y debugging profundo. |
 
 ### Disponibilidad y Fallback
 
-- **Geo (desde VE):** los tres modelos se consumen vía OpenRouter (accesible sin VPN).
+- **Geo (desde VE):** los tres niveles se consumen vía OpenRouter (accesible sin VPN).
   Groq/OpenAI directos siguen bloqueados (403).
-- **Kimi K3 es propenso a `429` de capacidad** (upstream Moonshot). La cadena de fallback
-  ante 429 o errores repetidos de un nivel es: `moonshotai/kimi-k3` →
-  `deepseek/deepseek-v4-pro` → `anthropic/claude-opus-5`.
+- **Cadenas de fallback deterministas y cost-aware** (ante 429 o errores de servicio):
+  - `flash` → `deepseek` → `glm`
+  - `deepseek` → `glm` → `opus`
+  - `opus` → `deepseek` → `glm`
 - **`max_tokens` obligatorio:** sin él OpenRouter pide 65536 y con saldo bajo devuelve
-  402. Kimi K3 además consume tokens de salida en razonamiento *always-on* (field
-  `max_completion_tokens`).
+  402. Kimi K3 (si se usa explícitamente) además consume tokens de salida en
+  razonamiento *always-on* (field `max_completion_tokens`).
 
 ---
 
@@ -122,11 +125,11 @@ Eres el router de ejecución. NO eliges el modelo: construyes el descriptor y ej
 
 ## 5. Flujos de Trabajo con Procesamiento de Contexto Pesado
 
-1. **Pre-procesamiento y Destilación (Kimi -> Flash / Opus):**
-   - Kimi extrae parámetros críticos o fragmentos relevantes de logs extensos o datasheets.
+1. **Pre-procesamiento y Destilación (DeepSeek -> Flash / Opus):**
+   - DeepSeek extrae parámetros críticos o fragmentos relevantes de logs extensos o datasheets.
    - La salida filtrada se entrega a Flash (para estructurarla en JSON) o a Opus (para diseñar la solución lógica), reduciendo el consumo de tokens en el modelo superior.
 2. **Inspección Multi-archivo:**
-   - Kimi evalúa repositorios completos o scripts interconectados para detectar inconsistencias de variables, interfaces o compatibilidad.
+   - DeepSeek evalúa repositorios completos o scripts interconectados para detectar inconsistencias de variables, interfaces o compatibilidad.
 3. **Auditoría de Cambios y Reglas de Diseño:**
    - Verificación de cumplimiento de restricciones contra manuales de diseño completos o librerías extensas.
 
@@ -145,25 +148,26 @@ usan el cliente centralizado `execution/llm_client.py` (ver sesión
 ```python
 # ---- Decisión (determinista) ----
 # python3 execution/enrutador.py --task contexto_masivo --archivos a.tex b.md
-# -> {"status": "ok", "tier": "kimi", "model": "moonshotai/kimi-k3",
-#     "fallback": ["kimi", "kimi_fallback", "opus"], "reason": "...", "tokens": N}
+# -> {"status": "ok", "tier": "deepseek", "model": "deepseek/deepseek-v4-pro",
+#     "fallback": ["deepseek", "glm", "opus"], "reason": "...", "tokens": N}
 
 # ---- Ejecución (cliente centralizado) ----
 from execution.llm_client import openrouter_chat, load_api_key, get_max_tokens
 
-# Fuente única de IDs por nivel (definida en execution/llm_client.py + enrutador.py)
+# Fuente única de IDs por nivel (definida en execution/llm_client.py)
 MODEL_TIERS = {
-    "flash":         "google/gemini-3.7-flash",  # Tareas rápidas y atómicas
-    "kimi":          "moonshotai/kimi-k3",        # Contexto masivo / razonamiento intermedio
-    "kimi_fallback": "deepseek/deepseek-v4-pro",  # Sustituto de kimi ante 429
-    "opus":          "anthropic/claude-opus-5",   # Razonamiento crítico
+    "flash":    "google/gemini-3.7-flash",  # Tareas rápidas y atómicas
+    "deepseek": "deepseek/deepseek-v4-pro", # Contexto masivo / razonamiento intermedio
+    "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio
+    "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico
 }
+# Kimi K3 vive en MODELOS_OPCIONALES: solo por petición explícita.
 
 # Cadenas de fallback deterministas y cost-aware (en enrutador.py)
 FALLBACK_CHAINS = {
-    "flash": ["flash", "kimi", "kimi_fallback"],
-    "kimi":  ["kimi", "kimi_fallback", "opus"],
-    "opus":  ["opus", "kimi", "kimi_fallback"],
+    "flash":    ["flash", "deepseek", "glm"],
+    "deepseek": ["deepseek", "glm", "opus"],
+    "opus":     ["opus", "deepseek", "glm"],
 }
 
 def query_tier(prompt: str, system_prompt: str, tier: str):

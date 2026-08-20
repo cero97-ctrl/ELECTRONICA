@@ -37,6 +37,21 @@ contradecir la filosofía del framework: complejidad en código, no en el contex
   en `execution/enrutador.py`; nunca elige el modelo razonando en el chat.
 - `MODEL_TIERS` ampliado con `kimi_fallback` = `deepseek/deepseek-v4-pro`.
 
+## Tercera iteración: Kimi K3 fuera del enrutamiento automático
+El usuario reportó (experiencia real con la web) que Kimi K3 está saturado la mayor
+parte del tiempo y el producto falla a K2.6 de forma invisible. Coincide con la
+investigación: el 429 es del upstream Moonshot, sin mitigación desde ningún gateway.
+
+- Decisiones: **demover Kimi K3 de los tiers** y darle el rol de modelo opcional
+  (solo `--modelo-explicito`). Tier medio = **DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`,
+  $0.44/$0.87, 1M ctx, 18 providers) con **GLM-5.2** (`z-ai/glm-5.2`, 25 providers) de respaldo.
+- `execution/llm_client.py`: `MODEL_TIERS` = {flash, deepseek, glm, opus};
+  `MODELOS_OPCIONALES` = {kimi_k3}.
+- `execution/enrutador.py`: cadenas de fallback cost-aware actualizadas
+  (flash→deepseek→glm; deepseek→glm→opus; opus→deepseek→glm). Umbral >50k → deepseek.
+- Actualizados `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml` (v2.1) y
+  `arquitectura_enrutamiento_llm.md` (§3 tier medio DeepSeek/GLM, nota Kimi K3 opcional).
+
 ## Decisiones
 - Decisión de enrutamiento: **DETERMINISTA** vía `execution/enrutador.py`; opencode solo
   hace parsing de intención y ejecución. (Elegido por el usuario sobre la opción de
@@ -45,12 +60,14 @@ contradecir la filosofía del framework: complejidad en código, no en el contex
   sobrescribe con `--modelo <model>` devuelto por el router.
 - Orquestador = opencode; DeepSeek deja de ser orquestador en la arquitectura (el modelo
   de esta sesión, `opencode/deepseek-v4-flash`, es solo el motor del asistente).
+- Kimi K3 queda como modelo opcional por petición explícita (no se enruta automáticamente).
 
 ## Verificación
 - `py_compile` OK en `execution/enrutador.py` y `execution/llm_client.py`.
 - `directives/enrutamiento_llm.yaml` parseable con PyYAML.
-- Pruebas del router: formateo→flash, contexto_masivo 80k→kimi, examen_complejo→opus,
-  parsing+critico→opus, modelo explícito→override, tarea desconocida→código 1.
+- Pruebas del router: formateo→flash, contexto_masivo (80k y 30k)→deepseek,
+  examen_complejo→opus, parsing+critico→opus, multi_archivo→deepseek,
+  override explícito `moonshotai/kimi-k3`→ok.
 - Determinismo verificado: misma entrada → idéntica salida en ejecuciones repetidas.
 
 ## Pendientes
