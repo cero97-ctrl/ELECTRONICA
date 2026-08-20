@@ -52,6 +52,29 @@ investigación: el 429 es del upstream Moonshot, sin mitigación desde ningún g
 - Actualizados `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml` (v2.1) y
   `arquitectura_enrutamiento_llm.md` (§3 tier medio DeepSeek/GLM, nota Kimi K3 opcional).
 
+## Cuarta iteración: desacople del motor del asistente
+El usuario aclaró que el motor del asistente en opencode es DeepSeek V4 Flash porque
+está en el tier Free, y que cuando opencode lo retire escogerá otro motor Free.
+
+- Añadida nota en `arquitectura_enrutamiento_llm.md` §1: el motor del asistente es SOLO
+  la interfaz del orquestador, NO forma parte del routing (la decisión se consume con
+  `OPENROUTER_API_KEY` vía `enrutador.py` + `MODEL_TIERS`). Cambiar el motor Free a
+  futuro no requiere tocar el router (commit `90e9a6e`).
+
+## Estado final de la arquitectura (2026-08-20, mañana)
+
+| Nivel | Modelo | Rol |
+| :--- | :--- | :--- |
+| flash | `google/gemini-3.7-flash` | Rutina: parsing/formatting, RAG, multimodal rápido |
+| deepseek | `deepseek/deepseek-v4-pro` | Contexto masivo (>50k tok) / razonamiento intermedio (1M ctx) |
+| glm | `z-ai/glm-5.2` | Respaldo del tier medio |
+| opus | `anthropic/claude-opus-5` | Razonamiento crítico: diseño, cálculo formal, debugging, exámenes |
+| (opcional) | `moonshotai/kimi-k3` | Solo por petición explícita (`--modelo-explicito`) |
+
+Fallback cost-aware: `flash→deepseek→glm`; `deepseek→glm→opus`; `opus→deepseek→glm`.
+Decisión de tier: determinista en `execution/enrutador.py`; opencode solo extrae el
+descriptor. Telemetría en `.tmp/routing_log.jsonl` (gitignored).
+
 ## Decisiones
 - Decisión de enrutamiento: **DETERMINISTA** vía `execution/enrutador.py`; opencode solo
   hace parsing de intención y ejecución. (Elegido por el usuario sobre la opción de
