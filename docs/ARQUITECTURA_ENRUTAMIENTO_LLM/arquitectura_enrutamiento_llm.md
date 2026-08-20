@@ -13,6 +13,15 @@ El agente de IA (opencode, capa de orquestación) interactúa con múltiples LLM
 - **Pasarela de integración:** **OpenRouter**.
 - **Orquestador:** **opencode** (agente local, capa de orquestación — este asistente).
 
+> **Desacople del motor del asistente:** El modelo que impulsa a opencode (hoy
+> `deepseek/deepseek-v4-flash`, tier Free de OpenRouter) es SOLO la interfaz del
+> orquestador, NO forma parte de la arquitectura de enrutamiento. La decisión de
+> tier y los modelos de ejecución se consumen con `OPENROUTER_API_KEY` vía
+> `execution/enrutador.py` + `MODEL_TIERS` y no dependen del motor del asistente.
+> Cuando opencode retire el modelo Free actual, basta cambiar el motor del
+> asistente sin tocar el router: misma política, mismas cadenas de fallback,
+> misma telemetría.
+
 El orquestador no es un LLM remoto dedicado: es la capa de decisión del propio agente, que
 clasifica el requerimiento contra la matriz de decisión y enruta la tarea al script de
 ejecución con el `--modelo` del nivel elegido.
