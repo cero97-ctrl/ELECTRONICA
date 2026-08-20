@@ -17,15 +17,35 @@ El orquestador no es un LLM remoto dedicado: es la capa de decisión del propio 
 clasifica el requerimiento contra la matriz de decisión y enruta la tarea al script de
 ejecución con el `--modelo` del nivel elegido.
 
+> **Principio rector: decisiones DETERMINISTAS.** El orquestador NO decide el tier
+> razonando en el chat. Extrae un descriptor estructurado de la petición (tipo de
+> tarea, tamaño de entrada medido, criticidad, visión) y delega la elección en
+> `execution/enrutador.py`, que aplica reglas puras. El mismo descriptor produce
+> siempre el mismo modelo: la matriz vive en código, no en el criterio del agente.
+
 ---
 
-## 2. Criterios de Enrutamiento para el Orquestador (opencode)
+## 2. Enrutamiento Determinista
 
-Para evitar decisiones opacas o sesgadas, el orquestador sigue reglas explícitas de
-clasificación. La política de runtime vive en `.agent/enrutamiento.md` (auto-cargada por
-opencode) y el SOP detallado en `directives/enrutamiento_llm.yaml`.
+El orquestador solo hace parsing de intención (mapear la petición a un descriptor).
+La decisión es una función pura implementada en `execution/enrutador.py`:
 
-### Matriz de Decisión
+| Paso | Quién | Naturaleza |
+| :--- | :--- | :--- |
+| Extraer descriptor `{task, tokens, critico, vision, modelo_explicito}` | opencode | Parsing (único paso no-determinista, es traducción) |
+| Elegir tier/modelo por reglas | `execution/enrutador.py` | 100% determinista |
+| Ejecutar script con `--modelo <id>` | opencode | Ejecución |
+
+### Precedencia de las reglas (en `execution/enrutador.py`)
+
+1. **Modelo explícito** del usuario → se respeta tal cual (override total).
+2. **Tokens medidos > 50 000** → tier de contexto masivo (`kimi`); si la tarea es
+   crítica o de razonamiento crítico → `opus`. El tamaño se mide (bytes de archivos
+   o contador), nunca se estima a ojo.
+3. **Tipo de tarea** → tier según vocabulario controlado (flash/kimi/opus).
+4. **`--critico`** → escala a `opus` aunque el tipo sea de rutina.
+
+### Matriz de Decisión (referencial; la autoridad es el código del enrutador)
 
 | Criterio | Nivel 1: Gemini Flash | Nivel 2: Kimi K3 | Nivel 3: Claude Opus |
 | :--- | :--- | :--- | :--- |
@@ -71,31 +91,31 @@ Incorporar **Kimi K3** (Moonshot AI, ID OpenRouter `moonshotai/kimi-k3`) añade 
 
 ## 4. Directiva para el Orquestador (opencode)
 
-El orquestador es el agente local. Clasifica el requerimiento entrante y selecciona el
-motor según estas reglas (materializadas en `.agent/enrutamiento.md` y
-`directives/enrutamiento_llm.yaml`):
+El orquestador es el agente local. **No selecciona el motor razonando**: extrae el
+descriptor estructurado y delega la elección en `execution/enrutador.py`. La política de
+runtime está materializada en `.agent/enrutamiento.md` (auto-cargada por opencode) y el
+SOP detallado en `directives/enrutamiento_llm.yaml`.
 
 ```markdown
-Eres el router de ejecución. Clasifica el requerimiento entrante y selecciona el motor según estas reglas:
+Eres el router de ejecución. NO eliges el modelo: construyes el descriptor y ejecutas el router.
 
-1. Selecciona 'gemini-flash' si la tarea implica:
-   - Formateo/validación de datos, parsing o transformación de sintaxis.
-   - Generación de scripts estándar sin lógica de control compleja.
-   - Consultas con entradas directas y sin ambigüedad.
+1. Extrae el descriptor de la petición:
+   - --task: uno del vocabulario controlado
+     * rutina: formateo, parsing, sintaxis, validacion, resumen, rag, multimodal, extraccion, conversion
+     * contexto: contexto_masivo, multi_archivo, destilacion, sintesis_logs, auditoria, razonamiento_intermedio
+     * crítico: arquitectura, calculo_formal, debug, examen, examen_complejo, netlist, kicad, refactor, diseño
+   - --tokens o --archivos: tamaño MEDIDO (nunca estimado a ojo).
+   - --critico / --vision: flags booleanos.
+   - --modelo-explicito: solo si el usuario nombró un modelo.
 
-2. Selecciona 'kimi-k3' si la tarea implica:
-   - Análisis de contexto largo (>50k tokens) o lectura multi-archivo/repositorio.
-   - Ingesta de documentación técnica, manuales o resúmenes de logs masivos.
-   - Razonamiento complejo de nivel medio donde Opus sería sobredimensionado.
+2. Ejecuta: python3 execution/enrutador.py <descriptor>
+   Usa la salida: tier, model, fallback.
 
-3. Selecciona 'claude-opus' si la tarea implica:
-   - Lógica matemática/física formal, diseño de arquitectura modular.
-   - Debugging complejo o resolución de dependencias multi-archivo.
-   - Generación de código que involucra algoritmos no estándar.
-   - Fallos reincidentes de niveles anteriores (escalado reactivo).
+3. Enruta la tarea al script de execution/ adecuado pasando
+   --api-backend openrouter y --modelo <model devuelto>.
 
-Enruta la tarea al script de execution/ adecuado pasando
---api-backend openrouter y --modelo <id del nivel elegido>.
+4. Si el script falla con 429/error de servicio, escala por la cadena 'fallback'
+   devuelta (máx 3 intentos). No escales por calidad: solo por fallo de servicio.
 ```
 
 ---
@@ -118,28 +138,38 @@ en `execution/llm_client.py`.
 
 ## 6. Implementación de Referencia en Python (OpenRouter)
 
-Los scripts usan el cliente centralizado `execution/llm_client.py` (ver sesión
+La decisión de tier/modelo vive en `execution/enrutador.py` (reglas puras); los scripts
+usan el cliente centralizado `execution/llm_client.py` (ver sesión
 `2026-08-19_centralizar_llm_client`). La tabla de niveles vive en `MODEL_TIERS`:
 
 ```python
+# ---- Decisión (determinista) ----
+# python3 execution/enrutador.py --task contexto_masivo --archivos a.tex b.md
+# -> {"status": "ok", "tier": "kimi", "model": "moonshotai/kimi-k3",
+#     "fallback": ["kimi", "kimi_fallback", "opus"], "reason": "...", "tokens": N}
+
+# ---- Ejecución (cliente centralizado) ----
 from execution.llm_client import openrouter_chat, load_api_key, get_max_tokens
 
-# Fuente única de IDs por nivel (definida en execution/llm_client.py)
+# Fuente única de IDs por nivel (definida en execution/llm_client.py + enrutador.py)
 MODEL_TIERS = {
-    "flash": "google/gemini-3.7-flash",   # Tareas rápidas y atómicas
-    "kimi":  "moonshotai/kimi-k3",         # Contexto masivo / razonamiento intermedio
-    "opus":  "anthropic/claude-opus-5",    # Razonamiento crítico
+    "flash":         "google/gemini-3.7-flash",  # Tareas rápidas y atómicas
+    "kimi":          "moonshotai/kimi-k3",        # Contexto masivo / razonamiento intermedio
+    "kimi_fallback": "deepseek/deepseek-v4-pro",  # Sustituto de kimi ante 429
+    "opus":          "anthropic/claude-opus-5",   # Razonamiento crítico
 }
 
-# Cadena de fallback ante 429 / errores repetidos (Kimi es propenso a 429)
-FALLBACK_CHAIN = ["kimi", "opus"]
+# Cadenas de fallback deterministas y cost-aware (en enrutador.py)
+FALLBACK_CHAINS = {
+    "flash": ["flash", "kimi", "kimi_fallback"],
+    "kimi":  ["kimi", "kimi_fallback", "opus"],
+    "opus":  ["opus", "kimi", "kimi_fallback"],
+}
 
-def query_tier(prompt: str, system_prompt: str, tier: str = "flash"):
-    """Envía a OpenRouter usando el tier elegido, con fallback ante fallos."""
+def query_tier(prompt: str, system_prompt: str, tier: str):
+    """Envía a OpenRouter usando el tier elegido por enrutador.py, con fallback."""
     api_key = load_api_key()
-    chain = [tier] + FALLBACK_CHAIN if tier != "opus" else [tier, "kimi", "opus"]
-
-    for i, t in enumerate(chain):
+    for t in FALLBACK_CHAINS[tier]:
         try:
             content, tokens = openrouter_chat(
                 [
@@ -154,9 +184,9 @@ def query_tier(prompt: str, system_prompt: str, tier: str = "flash"):
             )
             return content, t
         except Exception as e:
-            if i == len(chain) - 1:
+            if t == FALLBACK_CHAINS[tier][-1]:
                 raise RuntimeError(f"Todos los niveles fallaron: {e}") from e
-            print(f"[!] Nivel '{t}' falló ({e}); escalando a '{chain[i + 1]}'")
+            print(f"[!] Nivel '{t}' falló ({e}); escalando en la cadena")
 ```
 
 Notas de implementación:

@@ -21,14 +21,37 @@ Actualizar la arquitectura de enrutamiento multi-LLM (`docs/ARQUITECTURA_ENRUTAM
 - Creado `directives/enrutamiento_llm.yaml` (Layer 1, SOP): goal, inputs, steps (clasificar → elegir nivel → invocar script con `--api-backend openrouter --modelo`), expected outputs y edge cases.
 - Añadido `MODEL_TIERS` a `execution/llm_client.py` como fuente única de IDs por nivel.
 
+## Segunda iteración: decisión DETERMINISTA
+El usuario pidió que las decisiones sean deterministas, no probabilísticas (para no
+contradecir la filosofía del framework: complejidad en código, no en el contexto del LLM).
+
+- Creado `execution/enrutador.py`: decisión por REGLAS PURAS (sin criterio del LLM).
+  Precedencia: modelo explícito > umbral de tokens medidos (>50k) > tipo de tarea
+  (vocabulario controlado) > criticidad. El mismo descriptor → siempre el mismo tier.
+  Cadenas de fallback deterministas y cost-aware:
+  flash → kimi → kimi_fallback; kimi → kimi_fallback → opus; opus → kimi → kimi_fallback.
+  Telemetría de cada decisión en `.tmp/routing_log.jsonl`.
+- Actualizado `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml` (v2.0) y
+  `arquitectura_enrutamiento_llm.md` (§2 "Enrutamiento Determinista", §4 directiva):
+  el orquestador SOLO extrae el descriptor (parsing de intención) y delega la elección
+  en `execution/enrutador.py`; nunca elige el modelo razonando en el chat.
+- `MODEL_TIERS` ampliado con `kimi_fallback` = `deepseek/deepseek-v4-pro`.
+
 ## Decisiones
-- Decisión de enrutamiento: **directa del orquestador** (sin salida JSON intermedia), según lo elegido por el usuario.
-- No se refactorizan los defaults `--modelo` de los scripts existentes; el orquestador sobrescribe con `--modelo <id>` al invocar.
-- Orquestador = opencode; DeepSeek deja de ser orquestador en la arquitectura (el modelo de esta sesión, `opencode/deepseek-v4-flash`, es solo el motor del asistente).
+- Decisión de enrutamiento: **DETERMINISTA** vía `execution/enrutador.py`; opencode solo
+  hace parsing de intención y ejecución. (Elegido por el usuario sobre la opción de
+  salida JSON intermedia.)
+- No se refactorizan los defaults `--modelo` de los scripts existentes; el orquestador
+  sobrescribe con `--modelo <model>` devuelto por el router.
+- Orquestador = opencode; DeepSeek deja de ser orquestador en la arquitectura (el modelo
+  de esta sesión, `opencode/deepseek-v4-flash`, es solo el motor del asistente).
 
 ## Verificación
-- `py_compile execution/llm_client.py` OK.
+- `py_compile` OK en `execution/enrutador.py` y `execution/llm_client.py`.
 - `directives/enrutamiento_llm.yaml` parseable con PyYAML.
+- Pruebas del router: formateo→flash, contexto_masivo 80k→kimi, examen_complejo→opus,
+  parsing+critico→opus, modelo explícito→override, tarea desconocida→código 1.
+- Determinismo verificado: misma entrada → idéntica salida en ejecuciones repetidas.
 
 ## Pendientes
 - Ninguno.

@@ -35,3 +35,6 @@ datasets/
 
 # Caché de documentación consultada (regenerable)
 .tmp/docs_cache/
+
+# Telemetría del router LLM (log de decisiones en runtime, crece indefinidamente)
+.tmp/routing_log.jsonl

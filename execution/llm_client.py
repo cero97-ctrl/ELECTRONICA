@@ -43,9 +43,10 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 _APP_URL = "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
 
 MODEL_TIERS = {
-    "flash": "google/gemini-3.7-flash",   # Rutina: parsing/formatting, RAG, multimodal rápido
-    "kimi":  "moonshotai/kimi-k3",        # Contexto masivo (>50k tok) / razonamiento intermedio
-    "opus":  "anthropic/claude-opus-5",   # Razonamiento crítico: diseño, cálculo formal, debugging
+    "flash":         "google/gemini-3.7-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
+    "kimi":          "moonshotai/kimi-k3",       # Contexto masivo (>50k tok) / razonamiento intermedio
+    "kimi_fallback": "deepseek/deepseek-v4-pro", # Sustituto de kimi ante 429 (razonamiento, 1M ctx)
+    "opus":          "anthropic/claude-opus-5",  # Razonamiento crítico: diseño, cálculo formal, debugging
 }
 
 

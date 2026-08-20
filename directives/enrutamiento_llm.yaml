@@ -1,67 +1,86 @@
 goal: >
-  Clasificar cada requerimiento entrante del usuario contra una matriz de niveles
-  y enrutarlo al script de execution/ adecuado, pasando el modelo LLM correcto
-  vía --api-backend openrouter --modelo <id>. El orquestador es opencode (capa de
-  orquestación, decisión directa sin salida JSON intermedia).
+  Enrutar cada requerimiento a un modelo LLM mediante UNA DECISIÓN DETERMINISTA:
+  el orquestador (opencode) solo extrae el descriptor estructurado de la petición
+  (tipo de tarea, tamaño de entrada medido, criticidad, visión) y delega la elección
+  de tier/modelo en execution/enrutador.py, que aplica reglas puras. El mismo
+  descriptor produce siempre el mismo resultado.
 
 required_inputs:
   - name: requerimiento
     description: >
-      La solicitud del usuario tal como llega al agente. Debe clasificarse contra
-      la matriz de decisión (estructura, tolerancia a fallos, ambigüedad, dominio).
+      La solicitud del usuario tal como llega al agente. Debe traducirse a un
+      descriptor estructurado (parsing de intención, no decisión).
     example: "Genera un examen de la Semana 4 sobre condensadores"
 
 optional_inputs:
   - name: contexto
     description: >
       Contexto adicional de la sesión (archivos mencionados, logs, repositorios,
-      resultados previos en .tmp/) que ayude a la clasificación.
+      resultados previos en .tmp/) que ayude a extraer el descriptor.
     default: ""
   - name: modelo_explicito
     description: >
-      Modelo indicado explícitamente por el usuario. Sobrescribe la clasificación.
+      Modelo indicado explícitamente por el usuario. Se pasa al enrutador como
+      --modelo-explicito (override total).
     default: ""
 
 steps:
   - step: 1
     description: >
-      Clasificar el requerimiento contra la matriz de decisión y seleccionar el nivel:
-      flash (rutina), kimi (contexto masivo/razonamiento intermedio) u opus (razonamiento
-      crítico). Si el usuario indicó un modelo explícito, usarlo.
-    script: "N/A (decisión del orquestador)"
+      Extraer el descriptor estructurado del requerimiento: --task (vocabulario
+      controlado), --tokens o --archivos (tamaño MEDIDO, nunca estimado a ojo),
+      --critico, --vision. No decidir el tier en el chat: es parsing, no decisión.
+    script: "N/A (extracción del orquestador)"
     inputs:
       requerimiento: "{{requerimiento}}"
       contexto: "{{contexto}}"
     expected_output: >
-      Nivel elegido: flash | kimi | opus, y el ID OpenRouter correspondiente
-      (fuente única: MODEL_TIERS en execution/llm_client.py).
+      Descriptor: {task, tokens|archivos, critico, vision, modelo_explicito}.
 
   - step: 2
     description: >
-      Seleccionar el script de ejecución adecuado al flujo solicitado (ver tabla
-      script → nivel por defecto en .agent/enrutamiento.md) e invocarlo pasando
-      --api-backend openrouter y --modelo <id del nivel elegido>.
-    script: "execution/<script_seleccionado>.py"
+      Invocar el router determinista con el descriptor. Reglas puras en el script:
+      modelo explícito > umbral de tokens (>50k) > tipo de tarea > criticidad.
+    script: "execution/enrutador.py"
     inputs:
-      "--api-backend": "openrouter"
-      "--modelo": "<id del nivel elegido>"
+      "--task": "{{task}}"
+      "--tokens": "{{tokens}}"
+      "--archivos": "{{archivos}}"
+      "--critico": "{{critico}}"
+      "--vision": "{{vision}}"
+      "--modelo-explicito": "{{modelo_explicito}}"
     expected_output: >
-      Salida JSON con status ok (0) o código de error categorizado (1+).
+      JSON: {status, tier, model, fallback, reason, tokens}. Código 0 si ok,
+      1 si el tipo de tarea no está en el vocabulario controlado,
+      2 si falta --tokens y --archivos.
 
   - step: 3
     description: >
-      Validar la salida del script: esquema correcto, cantidades coherentes y
-      archivos donde deben estar. Si difiere de lo esperado, diagnosticar la causa
-      raíz (lógica, entorno o recursos) antes de reintentar.
-    script: "N/A (validación del orquestador)"
+      Ejecutar el script de execution/ correspondiente al flujo solicitado,
+      pasando --api-backend openrouter y --modelo <model> devuelto por el router.
+      Si el script falla con 429/error de servicio, escalar por la cadena
+      'fallback' devuelta (máx 3 intentos).
+    script: "execution/<script_seleccionado>.py"
+    inputs:
+      "--api-backend": "openrouter"
+      "--modelo": "{{model}}"
     expected_output: >
-      Confirmación de que la salida coincide con los expected_outputs de la directiva
-      del flujo ejecutado, o plan de corrección.
+      Salida JSON con status ok (0) o código de error categorizado (1+).
 
   - step: 4
     description: >
-      Notificar al usuario el resultado. Emitir alerta audible con
-      execution/alert_user.py si el flujo fue largo o terminó correctamente.
+      Validar la salida del script contra los expected_outputs de su directiva.
+      Si difiere, diagnosticar causa raíz (lógica, entorno o recursos) antes de
+      reintentar; no escalar de tier por motivos de calidad, solo por fallo de
+      servicio.
+    script: "N/A (validación del orquestador)"
+    expected_output: >
+      Confirmación de salida correcta o plan de corrección.
+
+  - step: 5
+    description: >
+      Notificar al usuario el resultado. Emitir alerta audible si el flujo fue
+      largo o terminó correctamente.
     script: "execution/alert_user.py"
     inputs:
       tipo: "success"
@@ -71,8 +90,12 @@ steps:
 expected_outputs:
   - name: tarea_enrutada
     description: >
-      El script correcto ejecutado con el modelo del nivel elegido, sin llamadas LLM
-      directas desde el chat.
+      El script correcto ejecutado con el modelo devuelto por execution/enrutador.py,
+      sin llamadas LLM directas desde el chat ni decisión subjetiva del tier.
+  - name: telemetria
+    description: >
+      Cada decisión del router queda registrada en .tmp/routing_log.jsonl
+      (tier, tokens, modelo, timestamp) para poder afinar la política.
   - name: resultado_validado
     description: >
       Salida del script verificada contra las expectativas de su directiva.
@@ -81,16 +104,29 @@ expected_outputs:
       Alerta audible emitida al completar flujos largos.
 
 edge_cases:
-  - case: "El nivel elegido devuelve 429 o errores repetidos (capacity limit)"
+  - case: "El tier elegido devuelve 429 o errores repetidos (capacity limit)"
     recovery: >
-      Escalar en cadena: kimi → deepseek/deepseek-v4-pro → opus. Máximo 3 intentos
-      totales; si todos fallan, detener y reportar.
+      Escalar por la cadena 'fallback' devuelta por el router (determinista y
+      cost-aware: flash->kimi->kimi_fallback; kimi->kimi_fallback->opus;
+      opus->kimi->kimi_fallback). Máximo 3 intentos totales; si todos fallan,
+      detener y reportar.
+
+  - case: "El tipo de tarea no está en el vocabulario controlado"
+    recovery: >
+      El router devuelve código 1 con tier 'desconocido'. Revisar el descriptor
+      extraído (posible error de parsing) o añadir el tipo nuevo al vocabulario
+      en execution/enrutador.py (nunca decidir el tier a mano).
+
+  - case: "Falta --tokens y --archivos en la invocación del router"
+    recovery: >
+      El router devuelve código 2. Medir la entrada (tamaño de archivos o tokens
+      de la sesión) antes de re-invocar; el tamaño siempre se mide, nunca se estima.
 
   - case: "El modelo no devuelve JSON válido o lo entrega truncado"
     recovery: >
       Extraer JSON con el algoritmo de llaves balanceadas (_find_balanced_json,
-      .agent/python.md), nunca regex non-greedy. Reintentar hasta agotar el retry
-      budget de la directiva (máx 3).
+      .agent/python.md), nunca regex non-greedy. Reintentar el mismo tier hasta
+      agotar el retry budget (máx 3); no escalar de tier por calidad de la salida.
 
   - case: "El backend directo (Groq/OpenAI) devuelve 403 por geo-bloqueo (VE)"
     recovery: >
@@ -101,30 +137,27 @@ edge_cases:
     recovery: >
       Respetar OPENROUTER_MAX_TOKENS del .env (default 2048, activo 8192). Vigilar
       saldo con execution/monitor_saldo_openrouter.py; cerca del auto top-up de $10,
-      priorizar tiers baratos (flash/kimi) y evitar opus.
+      priorizar tiers baratos (flash/kimi) y evitar opus para no agotar saldo.
 
   - case: "Kimi K3 no soporta el rol 'developer'"
     recovery: >
       Usar roles system/user con este modelo; pasar el límite de salida como
       max_completion_tokens.
 
-  - case: "El requerimiento es ambiguo o no hay directiva para el flujo"
-    recovery: >
-      Preguntar al usuario para acotar el alcance en lugar de asumir. Regla de oro:
-      fiabilidad > velocidad.
-
 metadata:
-  version: "1.0"
+  version: "2.0"
   created: "2026-08-20"
   author: "opencode"
   referencias:
     - "docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md"
     - ".agent/enrutamiento.md"
+    - "execution/enrutador.py"
     - "execution/llm_client.py"
   env_vars_requeridas:
     - "OPENROUTER_API_KEY"
     - "OPENROUTER_MAX_TOKENS"
   notas: >
-    Esta directiva no tiene script de ejecución propio: la decisión de enrutamiento
-    es responsabilidad exclusiva del orquestador (opencode). Los niveles se resuelven
-    contra MODEL_TIERS en execution/llm_client.py como fuente única de IDs.
+    La decisión de tier/modelo es DETERMINISTA y vive en execution/enrutador.py.
+    El orquestador (opencode) nunca elige el modelo razonando: solo extrae el
+    descriptor y ejecuta. Cambios de política (umbrales, vocabulario, cadenas de
+    fallback) se hacen editando ese script y la directiva, no en el chat.
