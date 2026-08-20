@@ -1,0 +1,130 @@
+goal: >
+  Clasificar cada requerimiento entrante del usuario contra una matriz de niveles
+  y enrutarlo al script de execution/ adecuado, pasando el modelo LLM correcto
+  vía --api-backend openrouter --modelo <id>. El orquestador es opencode (capa de
+  orquestación, decisión directa sin salida JSON intermedia).
+
+required_inputs:
+  - name: requerimiento
+    description: >
+      La solicitud del usuario tal como llega al agente. Debe clasificarse contra
+      la matriz de decisión (estructura, tolerancia a fallos, ambigüedad, dominio).
+    example: "Genera un examen de la Semana 4 sobre condensadores"
+
+optional_inputs:
+  - name: contexto
+    description: >
+      Contexto adicional de la sesión (archivos mencionados, logs, repositorios,
+      resultados previos en .tmp/) que ayude a la clasificación.
+    default: ""
+  - name: modelo_explicito
+    description: >
+      Modelo indicado explícitamente por el usuario. Sobrescribe la clasificación.
+    default: ""
+
+steps:
+  - step: 1
+    description: >
+      Clasificar el requerimiento contra la matriz de decisión y seleccionar el nivel:
+      flash (rutina), kimi (contexto masivo/razonamiento intermedio) u opus (razonamiento
+      crítico). Si el usuario indicó un modelo explícito, usarlo.
+    script: "N/A (decisión del orquestador)"
+    inputs:
+      requerimiento: "{{requerimiento}}"
+      contexto: "{{contexto}}"
+    expected_output: >
+      Nivel elegido: flash | kimi | opus, y el ID OpenRouter correspondiente
+      (fuente única: MODEL_TIERS en execution/llm_client.py).
+
+  - step: 2
+    description: >
+      Seleccionar el script de ejecución adecuado al flujo solicitado (ver tabla
+      script → nivel por defecto en .agent/enrutamiento.md) e invocarlo pasando
+      --api-backend openrouter y --modelo <id del nivel elegido>.
+    script: "execution/<script_seleccionado>.py"
+    inputs:
+      "--api-backend": "openrouter"
+      "--modelo": "<id del nivel elegido>"
+    expected_output: >
+      Salida JSON con status ok (0) o código de error categorizado (1+).
+
+  - step: 3
+    description: >
+      Validar la salida del script: esquema correcto, cantidades coherentes y
+      archivos donde deben estar. Si difiere de lo esperado, diagnosticar la causa
+      raíz (lógica, entorno o recursos) antes de reintentar.
+    script: "N/A (validación del orquestador)"
+    expected_output: >
+      Confirmación de que la salida coincide con los expected_outputs de la directiva
+      del flujo ejecutado, o plan de corrección.
+
+  - step: 4
+    description: >
+      Notificar al usuario el resultado. Emitir alerta audible con
+      execution/alert_user.py si el flujo fue largo o terminó correctamente.
+    script: "execution/alert_user.py"
+    inputs:
+      tipo: "success"
+    expected_output: >
+      JSON con status ok.
+
+expected_outputs:
+  - name: tarea_enrutada
+    description: >
+      El script correcto ejecutado con el modelo del nivel elegido, sin llamadas LLM
+      directas desde el chat.
+  - name: resultado_validado
+    description: >
+      Salida del script verificada contra las expectativas de su directiva.
+  - name: notificacion
+    description: >
+      Alerta audible emitida al completar flujos largos.
+
+edge_cases:
+  - case: "El nivel elegido devuelve 429 o errores repetidos (capacity limit)"
+    recovery: >
+      Escalar en cadena: kimi → deepseek/deepseek-v4-pro → opus. Máximo 3 intentos
+      totales; si todos fallan, detener y reportar.
+
+  - case: "El modelo no devuelve JSON válido o lo entrega truncado"
+    recovery: >
+      Extraer JSON con el algoritmo de llaves balanceadas (_find_balanced_json,
+      .agent/python.md), nunca regex non-greedy. Reintentar hasta agotar el retry
+      budget de la directiva (máx 3).
+
+  - case: "El backend directo (Groq/OpenAI) devuelve 403 por geo-bloqueo (VE)"
+    recovery: >
+      Usar siempre OpenRouter o Gemini. Los IDs del enrutamiento funcionan vía
+      OpenRouter sin VPN.
+
+  - case: "OpenRouter devuelve 402 por saldo bajo (falta max_tokens o presupuesto)"
+    recovery: >
+      Respetar OPENROUTER_MAX_TOKENS del .env (default 2048, activo 8192). Vigilar
+      saldo con execution/monitor_saldo_openrouter.py; cerca del auto top-up de $10,
+      priorizar tiers baratos (flash/kimi) y evitar opus.
+
+  - case: "Kimi K3 no soporta el rol 'developer'"
+    recovery: >
+      Usar roles system/user con este modelo; pasar el límite de salida como
+      max_completion_tokens.
+
+  - case: "El requerimiento es ambiguo o no hay directiva para el flujo"
+    recovery: >
+      Preguntar al usuario para acotar el alcance en lugar de asumir. Regla de oro:
+      fiabilidad > velocidad.
+
+metadata:
+  version: "1.0"
+  created: "2026-08-20"
+  author: "opencode"
+  referencias:
+    - "docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md"
+    - ".agent/enrutamiento.md"
+    - "execution/llm_client.py"
+  env_vars_requeridas:
+    - "OPENROUTER_API_KEY"
+    - "OPENROUTER_MAX_TOKENS"
+  notas: >
+    Esta directiva no tiene script de ejecución propio: la decisión de enrutamiento
+    es responsabilidad exclusiva del orquestador (opencode). Los niveles se resuelven
+    contra MODEL_TIERS en execution/llm_client.py como fuente única de IDs.
