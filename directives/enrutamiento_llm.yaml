@@ -146,8 +146,51 @@ edge_cases:
       usuario (--modelo-explicito); no se enruta automáticamente por su 429
       de capacidad (MODELOS_OPCIONALES en llm_client.py).
 
+refinement_protocol:
+  objetivo: >
+    Perfeccionar el flujo de enrutamiento a medida que se resuelven problemas
+    reales, SIN romper el carácter determinista. El afino se hace en código y
+    con evidencia (telemetría), nunca "a ojo" en el chat.
+  pasos:
+    - step: 1
+      description: >
+        Registrar el hallazgo. Al detectar un problema real (tier equivocado,
+        umbral mal calibrado, costo inesperado, modelo inestable), anotarlo en
+        el log de sesión correspondiente (Sessions/<fecha>_<tema>.md) y, si es
+        un error recurrente, en .agent/*.md (patrón update-directives-as-you-learn).
+    - step: 2
+      description: >
+        Recolectar evidencia objetiva de .tmp/routing_log.jsonl: tier elegido,
+        tokens medidos, modelo, timestamp, y el error real del script (si aplica).
+        No afinar sin esta evidencia.
+    - step: 3
+      description: >
+        Diagnosticar la causa raíz: ¿umbral de tokens mal calibrado?, ¿tipo de
+        tarea mal clasificado en el descriptor?, ¿vocabulario incompleto?,
+        ¿cadena de fallback inadecuada?, ¿modelo inestable (429/costo)?
+    - step: 4
+      description: >
+        Aplicar el cambio en execution/enrutador.py (umbrales, vocabulario,
+        cadenas) y/o en esta directiva y en .agent/enrutamiento.md. La política
+        SIEMPRE vive en código/documentos, nunca en el criterio del chat.
+    - step: 5
+      description: >
+        Verificar: re-ejecutar las pruebas del router (formateo→flash,
+        contexto_masivo→deepseek, examen_complejo→opus, critico→opus,
+        modelo explicito→override, tarea desconocida→código 1) y el test de
+        determinismo (misma entrada → misma salida). py_compile + PyYAML.
+    - step: 6
+      description: >
+        Registrar el cambio: commit con mensaje descriptivo y actualización del
+        log de sesión. Bump de version de la directiva si cambió la política.
+  reglas:
+    - "El determinismo es inviolable: el mismo descriptor SIEMPRE produce el mismo tier."
+    - "Los umbrales se ajustan por telemetría acumulada, no por impresiones."
+    - "Un hallazgo sin commit ni registro en Sessions/ no se considera resuelto."
+    - "Máximo 3 reintentos por ajuste; si no estabiliza, escalar al usuario."
+
 metadata:
-  version: "2.1"
+  version: "2.2"
   created: "2026-08-20"
   author: "opencode"
   referencias:

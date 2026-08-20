@@ -91,3 +91,10 @@ hace por calidad percibida: solo por fallo de servicio.
   modelo, timestamp). Usarla para afinar umbrales; no afines la política a ojo.
 - **Saldo OpenRouter:** vigilar con `python execution/monitor_saldo_openrouter.py`; cerca
   del auto top-up de $10, priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
+
+## Refinamiento (ver `directives/enrutamiento_llm.yaml` → `refinement_protocol`)
+
+Al resolver problemas reales, perfecciona el flujo así: hallazgo → Sessions/ + telemetría
+(`.tmp/routing_log.jsonl`) → causa raíz → cambio en `execution/enrutador.py`/directiva →
+verificación (pruebas + determinismo) → commit. El determinismo es inviolable: el mismo
+descriptor SIEMPRE produce el mismo tier; los umbrales se afinan con evidencia, no a ojo.

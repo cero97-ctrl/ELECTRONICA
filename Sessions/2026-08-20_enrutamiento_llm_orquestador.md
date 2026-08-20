@@ -61,6 +61,17 @@ está en el tier Free, y que cuando opencode lo retire escogerá otro motor Free
   `OPENROUTER_API_KEY` vía `enrutador.py` + `MODEL_TIERS`). Cambiar el motor Free a
   futuro no requiere tocar el router (commit `90e9a6e`).
 
+## Quinta iteración: Protocolo de Refinamiento
+El usuario anticipó que al resolver problemas reales con la arquitectura se necesitará
+perfeccionar el flujo. Se codificó el checklist de perfeccionamiento:
+
+- `directives/enrutamiento_llm.yaml` (v2.2): añadido `refinement_protocol` con 6 pasos
+  (registrar hallazgo → evidencia de telemetría → causa raíz → cambio en
+  `execution/enrutador.py`/directiva → verificación con pruebas del router + test de
+  determinismo → commit + bump de versión) y 4 reglas (determinismo inviolable,
+  umbrales por telemetría no a ojo, hallazgo sin commit = no resuelto, máx 3 reintentos).
+- `.agent/enrutamiento.md`: sección "Refinamiento" apuntando al protocolo.
+
 ## Estado final de la arquitectura (2026-08-20, mañana)
 
 | Nivel | Modelo | Rol |
@@ -94,4 +105,5 @@ descriptor. Telemetría en `.tmp/routing_log.jsonl` (gitignored).
 - Determinismo verificado: misma entrada → idéntica salida en ejecuciones repetidas.
 
 ## Pendientes
-- Ninguno.
+- Aplicar el `refinement_protocol` cuando surja el primer problema real con la
+  arquitectura (primer caso de uso en producción).
