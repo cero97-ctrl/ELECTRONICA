@@ -49,7 +49,9 @@ El reinicio con el plugin tardó ~31 s extra (ventana config→init del log de
 Causa raíz: al detectar `.opencode/plugins/`, opencode auto-generó
 `.opencode/package.json` (dep `@opencode-ai/plugin@1.18.20`), `package-lock.json`
 y ejecutó `bun install` → `.opencode/node_modules` (63 MB). Costo único de red;
-arranques siguientes reutilizan el caché. El scaffolding generado trae su propio
+arranques siguientes reutilizan el caché. Verificado en reentrada (run=cf9b2225,
+15:02 UTC): ventana creating-instance→init de ~3.2 s y hook activo
+(`which python` → elect_env/bin/python). El scaffolding generado trae su propio
 `.gitignore` (excluye node_modules/package*.json/bun.lock), así que solo el plugin
 queda rastreable por git. Los WARN "duplicate skill name" (skills duplicadas entre
 `~/.claude/skills/` y `~/.config/opencode/skills/`) son preexistentes y ajenos.
