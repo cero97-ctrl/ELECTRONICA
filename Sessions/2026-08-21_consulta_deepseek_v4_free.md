@@ -1,0 +1,52 @@
+# Sesión: DeepSeek V4 fuera del tier Free + actualización de AGENTS.md
+
+**Fecha:** 2026-08-21
+**Agente:** opencode
+
+## Tema tratado
+El usuario consulta si el modelo DeepSeek V4 (actualmente configurado como `deepseek/deepseek-v4-flash` en el tier Free o como motor del asistente) ha dejado de ser gratuito en OpenRouter.
+
+## Contexto previo
+- En la sesión anterior (`2026-08-20_enrutamiento_llm_orquestador.md`), se documentó que el motor del asistente en opencode es `deepseek/deepseek-v4-flash` (un modelo en el tier Free de OpenRouter).
+- Se acordó el desacople total de este motor respecto de la arquitectura de enrutamiento local, que usa `google/gemini-3.7-flash`, `deepseek/deepseek-v4-pro`, `z-ai/glm-5.2` y `anthropic/claude-opus-5` con saldo propio (`OPENROUTER_API_KEY`).
+
+## Actividades a realizar
+1. Consultar el estado del modelo `deepseek/deepseek-v4-flash` y su gratuidad.
+2. Responder a la consulta del usuario de forma concisa y directa.
+
+## Decisiones
+- Se consultó en tiempo real la API de OpenRouter (`https://openrouter.ai/api/v1/models`).
+- Se confirmó que **DeepSeek V4 (tanto Flash como Pro)** ya no tiene versiones en el tier gratuito (`:free`) de OpenRouter.
+- Los precios actuales de DeepSeek V4 Flash son extremadamente bajos (Prompt: ~$0.08 / M token, Completion: ~$0.18 / M token), pero ya no son $0.00.
+- Como alternativa en el tier gratuito de OpenRouter para tareas de soporte o asistente, se encuentran activos modelos como `z-ai/glm-5.2:free`, `google/gemma-4-31b-it:free`, y `openai/gpt-oss-20b:free`.
+
+## Pendientes
+- Ninguno. La consulta fue resuelta y registrada.
+
+## Segunda parte: actualización de AGENTS.md (mismo día)
+El usuario confirmó que opencode conmutó su motor a `google/gemini-3.5-flash` al salir
+DeepSeek del tier Free, y luego reportó que la cuota Free de Gemini 3.5 Flash también
+se agotó. Pidió actualizar `AGENTS.md`.
+
+### Ediciones aplicadas (AGENTS.md)
+1. **Know before you act** — dos bullets nuevos tras el de geo-bloqueo:
+   - **Enrutamiento multi-LLM (determinista):** no elegir modelo razonando; descriptor →
+     `execution/enrutador.py` → invocar script con `--api-backend openrouter --modelo <id>`.
+     IDs en `MODEL_TIERS` (`execution/llm_client.py`), fallback cost-aware máx 3 intentos,
+     telemetría `.tmp/routing_log.jsonl`, política en `.agent/enrutamiento.md` +
+     `directives/enrutamiento_llm.yaml` + doc de arquitectura.
+   - **Motor del asistente opencode (rotativo):** solo interfaz del orquestador, NO parte
+     del routing; DeepSeek V4 salió del Free (2026-08-21) → motor `google/gemini-3.5-flash`;
+     cuotas Free se agotan rápido y el motor rota sin aviso (Free activos: glm-5.2, gpt-oss-20b,
+     gemma-4). Cambiarlo no toca el router.
+2. **Commands** — agregado **Enrutador LLM**: `python3 execution/enrutador.py --task <tipo>
+   [--tokens N | --archivos f1 f2] [--critico] [--vision] [--modelo-explicito <id>]` → JSON.
+
+### Verificación
+- Router probado: `--task contexto_masivo --tokens 80000` → deepseek ✔;
+  `--task formateo --tokens 500` → flash ✔ (salida JSON correcta).
+
+### Decisiones
+- No se tocó la bullet de geo-bloqueo ni la línea de RAG: siguen exactas.
+- El detalle fino del routing vive en `.agent/enrutamiento.md` (auto-cargado); AGENTS.md
+  solo lleva el resumen operativo + comando.

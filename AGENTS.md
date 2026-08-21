@@ -30,6 +30,8 @@ A new workflow must include all three layers; never write just an orchestrator w
 - **No linter, type checker, formatter, or CI** is configured — don't waste time running them
 - **Run everything from repo root** — imports use relative paths; `mcp_latex_server.py`, `mcp_sistema_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it. The newer MCP servers (`mcp_analizar_server.py`, `mcp_diagnostico_server.py`, `mcp_elaborar_server.py`, `mcp_evaluar_server.py`) resolve their own `project_root` via `os.path.dirname(os.path.abspath(__file__))` and load `.env` from there — they are path-agnostic and can run from anywhere
 - **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter (`openai/gpt-oss-20b`). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → usar `openai/gpt-oss-20b` para salida estructurada
+- **Enrutamiento multi-LLM (determinista):** NO elijas el modelo razonando en el chat — construye el descriptor (`--task` del vocabulario controlado, tokens medidos, criticidad, visión) y ejecuta el Enrutador (ver Commands); luego invoca el script con `--api-backend openrouter --modelo <id>`. Fuente única de IDs: `MODEL_TIERS` en `execution/llm_client.py` (flash=`google/gemini-3.7-flash`, deepseek=`deepseek/deepseek-v4-pro`, glm=`z-ai/glm-5.2`, opus=`anthropic/claude-opus-5`; Kimi K3 solo por `--modelo-explicito`). Fallback cost-aware ante 429/errores de servicio, máx 3 intentos. Telemetría: `.tmp/routing_log.jsonl`. Política completa: `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml`, `docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md`
+- **Motor del asistente opencode (rotativo):** es SOLO la interfaz del orquestador, NO forma parte del routing. DeepSeek V4 dejó el tier Free de OpenRouter (2026-08-21) y el motor pasó a `google/gemini-3.5-flash`; las cuotas Free se agotan rápido y el motor puede rotar sin previo aviso (Free activos: `z-ai/glm-5.2:free`, `openai/gpt-oss-20b:free`, `google/gemma-4-*:free`). Cambiar el motor no requiere tocar el router
 
 ## Commands
 
@@ -40,6 +42,8 @@ A new workflow must include all three layers; never write just an orchestrator w
 **LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
 
 **Saldo OpenRouter:** `python execution/monitor_saldo_openrouter.py` (chequeo puntual), `--watch [--interval N]` (bucle en background, log en `.tmp/saldo_openrouter.log`; alerta audible cerca del auto top-up de $10)
+
+**Enrutador LLM:** `python3 execution/enrutador.py --task <tipo> [--tokens N | --archivos f1 f2] [--critico] [--vision] [--modelo-explicito <id>]` → JSON `{tier, model, fallback}`; decisión determinista (tipos de tarea válidos y reglas en `.agent/enrutamiento.md`)
 
 ### Orchestrator flows
 ```
