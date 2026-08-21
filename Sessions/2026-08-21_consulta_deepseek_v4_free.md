@@ -74,3 +74,22 @@ parcialmente — había dos brechas.
 ### Decisiones
 - La separación queda explícita: motor del chat = $0 (nunca toca `OPENROUTER_API_KEY`);
   todo el trabajo de ejecución sale del saldo OpenRouter.
+
+## Cuarta parte: guardián del principio determinista
+El usuario pidió que se le alerte cuando una petición suya viole el espíritu
+determinista del proyecto (a veces pide cambios sin darse cuenta de que rompen el
+modelo de 3 capas / decisiones por reglas).
+
+### Edición aplicada (AGENTS.md)
+- Nueva subsección **"Determinism guardrail (alert before executing)"** justo tras la
+  tabla de la arquitectura de 3 capas. Protocolo: DETENERSE antes de ejecutar, alertar
+  con explicación y proponer la alternativa conforme; proceder con lo pedido solo si el
+  usuario confirma tras la alerta, registrando la excepción en el log de sesión.
+- Violaciones vigiladas: elegir modelo razonando en chat (→ `enrutador.py`), lógica de
+  decisión en prompts/chat (→ `execution/*.py`), flujos repetibles sin 3 capas,
+  procesamiento inline de datos, rupturas de reproducibilidad o de validación/retry budget.
+
+### Decisiones
+- La regla vive en AGENTS.md (auto-cargado por opencode) para persistir en sesiones futuras;
+  no se creó directiva nueva porque no es un flujo ejecutable sino una política de conducta
+  del orquestador.

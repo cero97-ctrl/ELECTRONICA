@@ -10,6 +10,17 @@
 
 A new workflow must include all three layers; never write just an orchestrator without a directive and execution script.
 
+### Determinism guardrail (alert before executing)
+
+El usuario pidió explícitamente ser alertado cuando una de sus peticiones viole el espíritu determinista del proyecto. Si detectas una de estas violaciones, **DETENTE, alerta al usuario explicando el porqué y propone la alternativa conforme ANTES de ejecutar**:
+- Elegir modelo/tier razonando en el chat → ejecutar `execution/enrutador.py` (la decisión es función pura del descriptor).
+- Meter lógica de decisión/negocio dentro de prompts o del chat → esa lógica vive en `execution/*.py`.
+- Crear un flujo repetible sin sus 3 capas (directiva + orquestador + script).
+- Procesar/raspear datos inline en el chat en lugar de un script determinista reutilizable.
+- Cambios que rompan reproducibilidad (mismo input → output distinto) o se salten la validación de entradas/salidas y el retry budget (máx 3).
+
+Solo procedas con la petición original si el usuario la confirma tras la alerta (decisión consciente suya); registra la excepción en el log de sesión.
+
 ## Configuration
 
 | File | Content |
