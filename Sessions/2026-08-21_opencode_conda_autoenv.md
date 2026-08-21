@@ -56,5 +56,13 @@ arranques siguientes reutilizan el caché. Verificado en reentrada (run=cf9b2225
 queda rastreable por git. Los WARN "duplicate skill name" (skills duplicadas entre
 `~/.claude/skills/` y `~/.config/opencode/skills/`) son preexistentes y ajenos.
 
+## Ajustes de cierre (mismo día)
+1. **Robustez del plugin:** guard `existsSync(prefix/bin/python)` evaluado una vez al
+   arrancar; si el env no existe (reinstalación/mudanza de anaconda) el hook no inyecta
+   nada (shells heredan PATH del sistema) y emite `console.warn` en el arranque.
+2. **Documentación:** bullet nuevo en `AGENTS.md` → "Know before you act": las shells de
+   opencode de este workspace arrancan en `elect_env` vía el plugin; no re-activar ni
+   usar `conda run`; si `CONDA_DEFAULT_ENV` desaparece, revisar el plugin.
+
 ## Pendientes
-- Ninguno bloqueante. Commit del plugin + este log ejecutado al cierre (autorizado por el usuario).
+- Ninguno bloqueante. Commits ejecutados al cierre (autorizados por el usuario).
