@@ -50,3 +50,27 @@ se agotó. Pidió actualizar `AGENTS.md`.
 - No se tocó la bullet de geo-bloqueo ni la línea de RAG: siguen exactas.
 - El detalle fino del routing vive en `.agent/enrutamiento.md` (auto-cargado); AGENTS.md
   solo lleva el resumen operativo + comando.
+
+## Tercera parte: facturación chat vs ejecución + motor Big Pickle
+El usuario preguntó si esa separación estaba documentada en AGENTS.md. Verificación:
+parcialmente — había dos brechas.
+
+### Hallazgos
+1. La bullet del motor decía `google/gemini-3.5-flash`, pero el motor actual es
+   **Big Pickle** (`opencode/big-pickle`), modelo stealth del gateway **OpenCode Zen**
+   (Free temporal), elegido por el usuario en `/models`.
+2. La distinción de facturación no estaba explícita: modelos vía Zen (`opencode/...`)
+   facturan a la cuenta Zen aparte (Free = $0); modelos vía proveedor OpenRouter
+   descuentan saldo de `OPENROUTER_API_KEY`. Confirmado con docs oficiales
+   (opencode.ai/docs/zen): Zen es pay-as-you-go con auto-recarga, los Free de Zen no
+   consumen nada, y "bring your own key" factura directo del proveedor.
+
+### Edición aplicada (AGENTS.md)
+- Bullet "Motor del asistente opencode (rotativo)" reescrita: motor actual Big Pickle,
+  rotación indistinta entre Free de Zen y de OpenRouter, y nota de **Facturación en
+  `/models`** (Zen vs OpenRouter; solo `enrutador.py`, `rag_system.py`, `agent_eda.py`
+  consumen créditos OpenRouter).
+
+### Decisiones
+- La separación queda explícita: motor del chat = $0 (nunca toca `OPENROUTER_API_KEY`);
+  todo el trabajo de ejecución sale del saldo OpenRouter.
