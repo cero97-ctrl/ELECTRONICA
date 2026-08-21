@@ -93,3 +93,26 @@ modelo de 3 capas / decisiones por reglas).
 - La regla vive en AGENTS.md (auto-cargado por opencode) para persistir en sesiones futuras;
   no se creó directiva nueva porque no es un flujo ejecutable sino una política de conducta
   del orquestador.
+
+## Quinta parte: clipboard del TUI en Terminator (resuelto)
+El usuario no podía copiar/pegar desde el TUI de opencode. Diagnóstico:
+- `xclip` no estaba instalado → instalado por el usuario (`sudo apt install -y xclip`).
+- Prueba ida-vuelta con `xclip -selection clipboard` OK (cadena de prueba leída de vuelta).
+- El toast "Copied to clipboard" del TUI usa **OSC 52**, que **Terminator (VTE/GTK3) no
+  soporta** → el texto nunca llega al portapapeles X11. La selección con ratón dentro del
+  TUI la captura opencode (mouse tracking), por eso el PRIMARY quedaba vacío.
+- Terminal identificada vía árbol de procesos: `terminator` sobre Cinnamon (X11, DISPLAY=:0).
+
+### Solución (verificada end-to-end)
+- Copiar desde el TUI: `Shift`+seleccionar → `Ctrl+Shift+C`.
+- Pegar: `Ctrl+Shift+V`. Selección primaria: botón central.
+- Verificación: tras copiar el usuario, `xclip -o -selection clipboard` devolvió su texto.
+
+### Edición aplicada (AGENTS.md)
+- Bullet "Clipboard en el TUI (terminal Terminator/X11)" en *Know before you act*: el
+  toast OSC 52 miente; verificar con `xclip` antes de asumir contenido; atajos reales.
+
+## Cierre de sesión
+Todo lo tratado hoy quedó documentado y commiteado: gratuidad de DeepSeek V4, motor
+rotativo del asistente (Big Pickle/Zen), facturación chat vs ejecución, guardián del
+principio determinista y flujo de clipboard del TUI.
