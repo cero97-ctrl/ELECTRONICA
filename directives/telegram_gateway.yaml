@@ -8,10 +8,9 @@ configuration:
     parse_mode: Markdown
   
   security:
-    # Agregaremos tu chat_id aquí una vez que lo obtengamos para que el bot solo te escuche a ti.
-    # Por ahora dejaremos una lista vacía, lo cual significa que en modo estricto rechazará todo,
-    # o implementaremos un modo de "descubrimiento" para tu primer mensaje.
-    allowed_chat_ids: [1315284048]
+    # Celular nuevo (reemplaza al ID antiguo 1315284048, dispositivo ya retirado).
+    # Obtenido vía modo descubrimiento el 2026-08-22.
+    allowed_chat_ids: [8671067338]
     
   mcp_servers:
     # Mapeo de prefijos/comandos a servidores MCP (Layer 2) locales
