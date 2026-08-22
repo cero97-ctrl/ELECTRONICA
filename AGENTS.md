@@ -26,9 +26,9 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 | File | Content |
 |---|---|
 | `.groq_api_key` | Groq API key (fallback provider `groq`) |
-| `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MAX_TOKENS`, `TELEGRAM_BOT_TOKEN`, `HF_TOKEN` |
+| `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MAX_TOKENS`, `GITHUB_TOKEN`, `TELEGRAM_BOT_TOKEN`, `HF_TOKEN` (+ otras claves de proveedor: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`) |
 
-`opencode.json` loads `instructions: [".agent/*.md"]` — those are your core operating instructions.
+`opencode.json` loads `instructions: [".agent/*.md"]` — those are your core operating instructions. **This file (`AGENTS.md`) is the authoritative instruction set**; `AGENTS_ES.md` is a Spanish translation that may lag — don't trust it where they differ.
 
 ## Know before you act
 
@@ -43,7 +43,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 - **Run everything from repo root** — imports use relative paths; `mcp_latex_server.py`, `mcp_sistema_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it. The newer MCP servers (`mcp_analizar_server.py`, `mcp_diagnostico_server.py`, `mcp_elaborar_server.py`, `mcp_evaluar_server.py`) resolve their own `project_root` via `os.path.dirname(os.path.abspath(__file__))` and load `.env` from there — they are path-agnostic and can run from anywhere
 - **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter (`openai/gpt-oss-20b`). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → usar `openai/gpt-oss-20b` para salida estructurada
 - **Enrutamiento multi-LLM (determinista):** NO elijas el modelo razonando en el chat — construye el descriptor (`--task` del vocabulario controlado, tokens medidos, criticidad, visión) y ejecuta el Enrutador (ver Commands); luego invoca el script con `--api-backend openrouter --modelo <id>`. Fuente única de IDs: `MODEL_TIERS` en `execution/llm_client.py` (flash=`google/gemini-3.7-flash`, deepseek=`deepseek/deepseek-v4-pro`, glm=`z-ai/glm-5.2`, opus=`anthropic/claude-opus-5`; Kimi K3 solo por `--modelo-explicito`). Fallback cost-aware ante 429/errores de servicio, máx 3 intentos. Telemetría: `.tmp/routing_log.jsonl`. Política completa: `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml`, `docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md`
-- **Motor del asistente opencode (rotativo):** es SOLO la interfaz del orquestador, NO forma parte del routing y NUNCA consume `OPENROUTER_API_KEY`. DeepSeek V4 dejó el tier Free de OpenRouter (2026-08-21); el motor pasó brevemente a `google/gemini-3.5-flash` y hoy es **Big Pickle** (`opencode/big-pickle`, modelo stealth del gateway OpenCode Zen, Free temporal). Las cuotas Free se agotan rápido y el motor puede rotar sin previo aviso, indistintamente entre Free de Zen (`opencode/big-pickle`, `x-preview-f-free`, `mimo-v2.5-free`, ...) o de OpenRouter (`z-ai/glm-5.2:free`, `openai/gpt-oss-20b:free`, `google/gemma-4-*:free`). **Facturación en `/models`:** los modelos vía Zen (`opencode/...`) facturan a la cuenta Zen aparte (los Free = $0); los modelos vía proveedor OpenRouter descuentan el saldo de `OPENROUTER_API_KEY`. Solo la ejecución real (`enrutador.py`, `rag_system.py`, `agent_eda.py`) consume créditos OpenRouter. Cambiar el motor no requiere tocar el router
+- **Motor del asistente opencode (rotativo):** es SOLO la interfaz del orquestador, NO forma parte del routing y NUNCA consume `OPENROUTER_API_KEY`. Las cuotas Free se agotan rápido y el motor puede rotar sin previo aviso, indistintamente entre Free del gateway OpenCode Zen (`opencode/...`) o Free de OpenRouter — verificar el modelo vigente en `/models` en vez de asumirlo. **Facturación en `/models`:** los modelos vía Zen facturan a la cuenta Zen aparte (los Free = $0); los modelos vía proveedor OpenRouter descuentan el saldo de `OPENROUTER_API_KEY`. Solo la ejecución real (`enrutador.py`, `rag_system.py`, `agent_eda.py`) consume créditos OpenRouter. Cambiar el motor no requiere tocar el router
 - **Clipboard en el TUI (terminal Terminator/X11):** el toast "Copied to clipboard" de opencode usa OSC 52, que Terminator/VTE no soporta — ese texto NO llega al portapapeles del sistema; verificar con `xclip -o -selection clipboard` antes de asumir que existe. Copia real desde el TUI: `Shift`+seleccionar → `Ctrl+Shift+C`; pegar: `Ctrl+Shift+V`
 
 ## Commands
@@ -102,8 +102,9 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 ## Git quirks
 
 - `chroma_db/` excluded (exceeds GitHub 100 MB) — `git rm -r --cached chroma_db/` if accidentally tracked
-- `examen*` pinned in `.gitignore` — exam PDFs/`.tex` starting with `examen` are never committed
+- `examen*` pinned in `.gitignore` — exam PDFs/`.tex` starting with `examen` are never committed; likewise raw datasets (`datasets/`) and router telemetry (`.tmp/routing_log.jsonl`)
 - `db_state.json` is tracked (not auto-generated in the CI sense, but it's the RAG state file — be careful modifying)
+- Repo update flow: `./update_repo.sh [-m "msg"] [--push] [--dry-run]` (commit+pull+push, per `directives/git_update.yaml`) or `./git-update.sh` (shortcut: WIP commit + pull + push)
 
 ## LaTeX conventions
 
