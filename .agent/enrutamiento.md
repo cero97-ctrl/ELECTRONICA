@@ -76,6 +76,29 @@ hace por calidad percibida: solo por fallo de servicio.
 | `execution/elaborar_examen.py`, `execution/elaborar_ejercicios.py`, `execution/generar_kicad_llm.py`, `agent_eda.py` | opus |
 | Cualquier tarea de contexto masivo (logs, repos, datasheets) | deepseek |
 
+## Qué consume créditos OpenRouter y qué no
+
+Principio: el **chat del orquestador es gratis** — tu motor rota entre modelos Free
+(Zen u OpenRouter Free) y NUNCA toca `OPENROUTER_API_KEY`. Los créditos se descuentan
+ÚNICAMENTE cuando un script de `execution/` llama a `openrouter_chat` de
+`execution/llm_client.py`. Tareas típicas y su consumo:
+
+| Instrucción del usuario | ¿Créditos? | Por qué |
+| :--- | :--- | :--- |
+| Editar/crear archivos, compilar LaTeX, git, diagnóstico de sistema, scraping determinista, cualquier trabajo tuyo en el chat | **No** | Orquestación pura; el motor del asistente rota entre modelos Free |
+| `python3 execution/enrutador.py ...` | **No** | Decisión 100% local y determinista ($0); solo decide, no llama a ninguna API |
+| `flujo_elaborar_examen.py` / `flujo_elaborar_ejercicios.py` | **Sí** | Default openrouter + tier opus ($5/$25 M tok) — la combinación más cara |
+| `flujo_evaluar_examen.py`, `rag_system.py`, `agent_eda.py`, `extraer_netlist_imagen.py`, `generar_kicad_llm.py` | **Sí** | Llamadas vía `openrouter_chat` |
+| `flujo_analizar_imagen.py` | Solo con `--api-backend openrouter` | Default es Gemini free tier (20 req/día/modelo); con openrouter consume créditos |
+| Cualquier flujo LLM con `--api-backend gemini` | **No** | Corre dentro de la cuota free de Gemini (20 req/día/modelo), con menor calidad/estabilidad en tareas críticas |
+
+Regla práctica para decidir si avisar al usuario sobre costo: mira el comando que vas a
+ejecutar. Si lleva `--api-backend openrouter` (o su default lo trae), avisa antes;
+si es edición/compilación/diagnóstico o backend gemini, corre sin avisar.
+
+Verificación: saldo puntual con `execution/monitor_saldo_openrouter.py`; decisiones
+enrutadas (no gasto real) en `.tmp/routing_log.jsonl`.
+
 ## Restricciones
 
 - **Geo VE:** Groq/OpenAI directos devuelven 403 (solo con VPN). Usar siempre OpenRouter
