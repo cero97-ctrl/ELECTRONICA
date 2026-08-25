@@ -1,0 +1,235 @@
+goal: >
+  Conducir una entrevista de requerimientos estructurada entre el orquestador
+  y el usuario ANTES de desarrollar un nuevo Agente IA. La entrevista cubre
+  objetivo, herramientas, arquitectura, flujo de ejecución, requisitos no
+  funcionales y política de fallos, y culmina con la síntesis determinista de
+  un borrador de directiva (SOP) validado que servirá como memoria base del
+  desarrollo del agente. El borrador se genera en .tmp/ y solo pasa a
+  directives/ con aprobación explícita del usuario.
+
+required_inputs:
+  - name: nombre_agente
+    description: >
+      Identificador corto del agente/flujo a diseñar, en snake_case.
+      Nombrará la futura directiva (directives/<nombre>.yaml) y el archivo
+      de respuestas (.tmp/entrevista_<nombre>.json).
+      Ejemplo: "monitor_saldo_broker"
+    example: "validador_netlists"
+  - name: objetivo_agente
+    description: >
+      Semilla inicial: propósito principal del agente (qué problema resuelve
+      o qué tarea automatiza) y dominio o entorno donde operará (interfaces,
+      herramientas clave, formatos de entrada/salida). No necesita ser
+      extenso, pero sí específico; si es genérico, refinar antes de empezar.
+      Ejemplo: "Agente que toma netlists SPICE, valida conexiones contra una
+      regla de diseño y reporta errores antes de generar el BOM".
+    example: "Agente que convierte esquemáticos en código a JSON EasyEDA válido"
+
+optional_inputs:
+  - name: max_bloques
+    description: >
+      Número máximo de bloques temáticos de la entrevista. La estructura
+      estándar define 6 bloques fijos; este parámetro existe por si el
+      usuario pide explícitamente acotar más la sesión.
+    default: 6
+  - name: archivo_respuestas
+    description: >
+      Ruta del JSON donde se registran progresivamente las respuestas.
+      Permite retomar una entrevista interrumpida.
+    default: ".tmp/entrevista_{{nombre_agente}}.json"
+
+steps:
+  - step: 1
+    description: >
+      Validar la semilla inicial: objetivo_agente no vacío y suficientemente
+      específico (identifica tarea, dominio y formato de E/S). Si es genérico
+      ("un asistente", "automatizar tareas"), pedir refinamiento ANTES de
+      iniciar bloques. Registrar nombre_agente y crear el JSON de respuestas
+      en .tmp/entrevista_<nombre>.json con los 6 bloques vacíos.
+    script: null
+    actor: orquestador
+
+  - step: 2
+    description: >
+      Conducir la entrevista bloque por bloque, EN ORDEN, haciendo las
+      preguntas de una en una o en bloques pequeños iterativos. Tras cerrar
+      cada bloque, guardar las respuestas en el JSON inmediatamente (progreso
+      recuperable). Reglas transversales:
+      (a) distinguir siempre RESPUESTA CONFIRMADA (el usuario la dio) de
+      SUPUESTO ASUMIDO (el orquestador lo propone y el usuario lo acepta);
+      (b) no aceptar respuestas que violen guardrails del proyecto sin
+      alertar primero (p.ej. lógica de decisión dentro de prompts en lugar
+      de execution/*.py); (c) acotar la entrevista: cuando los 6 bloques
+      estén resueltos, declararla cerrada aunque queden detalles menores,
+      dejándolos como supuestos documentados.
+    script: null
+    actor: orquestador
+    bloques:
+      - id: objetivo_alcance
+        titulo: "Objetivo y alcance"
+        preguntas_tipicas: >
+          ¿Cuál es el resultado concreto esperado? ¿Qué entra (formatos,
+          volumen) y qué sale? ¿Qué queda explícitamente FUERA de alcance?
+          ¿Quién consume la salida?
+        minimo_confirmar: "Entradas, salidas y límite de alcance definidos."
+      - id: herramientas_integraciones
+        titulo: "Herramientas e integraciones"
+        preguntas_tipicas: >
+          ¿Qué APIs, scripts existentes de execution/, bases vectoriales o
+          formatos de archivo necesita? ¿Cuáles ya existen en el repo y cuáles
+          hay que crear? ¿Qué secretos de .env requiere?
+        minimo_confirmar: "Lista de dependencias distinguiendo reutilizar vs crear."
+      - id: arquitectura_memoria
+        titulo: "Arquitectura y memoria"
+        preguntas_tipicas: >
+          ¿Requiere memoria persistente (ChromaDB, archivos de estado)?
+          ¿Estado entre ejecuciones (.tmp/run_state.json)? ¿Es un flujo único
+          o un servidor MCP? ¿Dónde viven los intermediarios?
+        minimo_confirmar: "Decisión de persistencia y forma de invocación (flujo/MCP/script)."
+      - id: flujo_ejecucion
+        titulo: "Flujo de ejecución y frontera determinismo/probabilístico"
+        preguntas_tipicas: >
+          ¿Qué pasos son función pura (deterministas → execution/*.py) y qué
+          decisiones delegan al LLM? ¿Qué validaciones de entrada/salida
+          aplican? ¿Cuál es el orden de etapas y su criterio de éxito?
+        minimo_confirmar: "Frontera explícita: lógica de negocio en scripts, no en prompts."
+      - id: requisitos_no_funcionales
+        titulo: "Requisitos no funcionales"
+        preguntas_tipicas: >
+          ¿Presupuesto de costo LLM (tier flash/deepseek/glm/opus vía
+          enrutador)? ¿Límite de RAM (estricto: 4 GB)? ¿Latencia aceptable?
+          ¿Frecuencia de uso (diario/esporádico)?
+        minimo_confirmar: "Tier de enrutamiento estimado y restricciones de recursos aceptadas."
+      - id: fallos_reintentos_exito
+        titulo: "Fallos, reintentos y criterios de éxito"
+        preguntas_tipicas: >
+          ¿Qué pasa cuando falla una herramienta o la entrada es inválida?
+          ¿Retry budget (estándar del proyecto: máx 3)? ¿Cuándo escalar al
+          usuario? ¿Cómo verificaremos que el agente FUNCIONA (casos de
+          prueba, salidas comparables)?
+        minimo_confirmar: "Edge cases listados y criterios de éxito verificables definidos."
+
+  - step: 3
+    description: >
+      Cierre de entrevista: confirmar que los 6 bloques tienen estado
+      'confirmado' o 'supuesto' en el JSON, capturar el descriptor de
+      enrutamiento sugerido para el futuro agente (--task del vocabulario
+      controlado del enrutador, tokens estimados, criticidad, visión) y
+      anunciar al usuario que se procederá a la síntesis.
+    script: null
+    actor: orquestador
+
+  - step: 4
+    description: >
+      Síntesis determinista: convertir el JSON de respuestas en un borrador
+      de directiva YAML con las 5 secciones obligatorias (goal,
+      required_inputs, steps, expected_outputs, edge_cases) más metadata y
+      descriptor_enrutamiento. Función pura sin llamadas LLM ($0): falla con
+      código 2 si hay bloques incompletos, listando los faltantes.
+    script: "execution/sintetizar_directiva.py"
+    inputs:
+      --respuestas: "{{archivo_respuestas}}"
+      --output: ".tmp/borrador_directiva_{{nombre_agente}}.yaml"
+      --nombre: "{{nombre_agente}}"
+    expected_output: >
+      JSON en stdout con status ok, ruta del borrador generado, bloques
+      sintetizados y supuestos_pendientes. Exit code 0.
+
+  - step: 5
+    description: >
+      Revisión humana: presentar al usuario un resumen del borrador (secciones
+      generadas, supuestos pendientes). Si el usuario aprueba, copiar el
+      borrador a directives/<nombre_agente>.yaml y recordar completar las 3
+      capas restantes (orquestador flujo_* y/o script execution/) según lo
+      entrevistado. Si corrige algo, editar el borrador y re-sintetizar
+      (re-ejecutar step 4), nunca superar el budget de 3 reintentos.
+    script: null
+    actor: orquestador + usuario
+
+  - step: 6
+    description: Emitir alerta audible de completado.
+    script: "execution/alert_user.py"
+    inputs:
+      status: "success"
+
+expected_outputs:
+  - name: respuestas_json
+    description: >
+      Registro completo de la entrevista en .tmp/entrevista_<nombre>.json:
+      semilla, 6 bloques con estado confirmado/supuesto, supuestos y notas,
+      descriptor de enrutamiento.
+  - name: borrador_directiva
+    description: >
+      Borrador YAML en .tmp/borrador_directiva_<nombre>.yaml con las 5
+      secciones obligatorias de una directiva, listo para revisión; tras
+      aprobación vive en directives/<nombre>.yaml.
+  - name: descriptor_enrutamiento
+    description: >
+      Sugerencia de descriptor (--task, tokens, criticidad, visión) incluida
+      en el borrador, para validarla luego con execution/enrutador.py.
+  - name: resumen_revision
+    description: >
+      Resumen impreso para el usuario: bloques sintetizados, supuestos
+      pendientes y siguiente paso (aprobación → mover a directives/).
+
+edge_cases:
+  - case: "La semilla inicial está vacía o es demasiado genérica"
+    recovery: >
+      No iniciar bloques. Pedir al usuario propósito + dominio concretos
+      (ver ejemplo en required_inputs). Repetir hasta tener una semilla
+      clasificable.
+
+  - case: "El usuario abandona la entrevista a mitad"
+    recovery: >
+      El JSON en .tmp conserva el progreso bloque a bloque. En una sesión
+      posterior, reanudar desde el primer bloque sin estado 'confirmado'/
+      'supuesto' leyendo archivo_respuestas.
+
+  - case: "Respuestas contradictorias entre bloques (p.ej. alcance dice X, herramientas requieren Y)"
+    recovery: >
+      Detener antes de sintetizar: mostrar la contradicción al usuario y
+      resolverla editando el bloque afectado en el JSON. No inventar
+      reconciliaciones.
+
+  - case: "Bloques sin responder al llegar a la síntesis"
+    recovery: >
+      El script retorna código 2 e incluye la lista exacta de bloques
+      faltantes/inválidos en stdout. Volver al step 2 solo para esos bloques.
+
+  - case: "Una respuesta viola guardrails del proyecto (lógica de decisión en prompts, flujo sin 3 capas, sin max_tokens)"
+    recovery: >
+      Alertar al usuario explicando el porqué y proponer la alternativa
+      conforme ANTES de registrar la respuesta. Solo proceder si confirma
+      explícitamente; dejar constancia del excepción en notas del bloque.
+
+  - case: "El JSON de respuestas está corrupto o malformado"
+    recovery: >
+      El script retorna código 3. Verificar el último estado válido (git o
+      backup manual); si es irrecuperable, reiniciar la entrevista conservando
+      la semilla original.
+
+metadata:
+  version: "1.0"
+  created: "2026-08-25"
+  author: "agente"
+  activacion: >
+    Frase de activación acordada: "Quiero entrevistar el agente <nombre>,
+    objetivo: <semilla>". Al detectarla, extraer nombre_agente y
+    objetivo_agente de la frase y avanzar directo al step 1 (validar semilla),
+    sin re-preguntar qué se desea hacer.
+  origen: >
+    Idea surgida en conversación con Gemini sobre entrevistas de
+    requerimientos previas al desarrollo de agentes (ver
+    docs/AGENTE_IA/Entrevista_Previa_para_Agentes_IA.md).
+  script_principal: "execution/sintetizar_directiva.py"
+  dependencias:
+    - "PyYAML>=6.0"
+  env_vars_requeridas: []
+  vocabulario_relacionado: >
+    Tipos de tarea válidos para el descriptor: FLASH_TASKS/KIMI_TASKS/
+    OPUS_TASKS en execution/enrutador.py (fuente única de verdad).
+  notas: >
+    Esta directiva NO desarrolla el agente: produce su especificación.
+    El desarrollo posterior debe seguir la regla de 3 capas de AGENTS.md
+    (directiva + orquestador + script) usando el borrador aprobado como
+    punto de partida.

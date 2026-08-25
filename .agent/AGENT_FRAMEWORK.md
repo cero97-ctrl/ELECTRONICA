@@ -39,6 +39,7 @@ This is a list of the currently implemented workflows. You should select the mos
 *   **`generate_kicad_pcb_script.yaml`**: "Crear diseños de PCB automatizados y generar archivos de fabricación (Gerbers) mediante scripting de KiCad."
 *   **`git_update.yaml`**: "Gestionar el control de versiones del proyecto, aplicando versionado semántico (SemVer) y sincronizando con el repositorio remoto."
 *   **`system_maintenance.yaml`**: "Realizar un diagnóstico y mantenimiento integral de los recursos del sistema (RAM, ZRAM, Disco) y la base de datos de memoria."
+*   **`entrevista_agente.yaml`**: "Entrevistar al usuario antes de desarrollar un nuevo Agente IA (6 bloques: objetivo, herramientas, arquitectura, flujo, requisitos no funcionales, fallos/éxito) y sintetizar con `execution/sintetizar_directiva.py` un borrador de directiva validado en `.tmp/`, que pasa a `directives/` solo con aprobación del usuario."
 
 ### Layer 2: Orchestration (You) — Toma de decisiones
 

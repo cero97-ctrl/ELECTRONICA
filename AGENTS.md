@@ -44,7 +44,95 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 - **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter (`openai/gpt-oss-20b`). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → usar `openai/gpt-oss-20b` para salida estructurada
 - **Enrutamiento multi-LLM (determinista):** NO elijas el modelo razonando en el chat — construye el descriptor (`--task` del vocabulario controlado, tokens medidos, criticidad, visión) y ejecuta el Enrutador (ver Commands); luego invoca el script con `--api-backend openrouter --modelo <id>`. Fuente única de IDs: `MODEL_TIERS` en `execution/llm_client.py` (flash=`google/gemini-3.7-flash`, deepseek=`deepseek/deepseek-v4-pro`, glm=`z-ai/glm-5.2`, opus=`anthropic/claude-opus-5`; Kimi K3 solo por `--modelo-explicito`). Fallback cost-aware ante 429/errores de servicio, máx 3 intentos. Telemetría: `.tmp/routing_log.jsonl`. Política completa: `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml`, `docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md`
 - **Motor del asistente opencode (rotativo):** es SOLO la interfaz del orquestador, NO forma parte del routing y NUNCA consume `OPENROUTER_API_KEY`. Las cuotas Free se agotan rápido y el motor puede rotar sin previo aviso, indistintamente entre Free del gateway OpenCode Zen (`opencode/...`) o Free de OpenRouter — verificar el modelo vigente en `/models` en vez de asumirlo. **Facturación en `/models`:** los modelos vía Zen facturan a la cuenta Zen aparte (los Free = $0); los modelos vía proveedor OpenRouter descuentan el saldo de `OPENROUTER_API_KEY`. Los créditos solo se consumen cuando un script de `execution/` llama a `openrouter_chat` (NOTA: `enrutador.py` NO consume — decide 100% local); matriz completa de qué consume y qué no: `.agent/enrutamiento.md` → "Qué consume créditos OpenRouter y qué no". Cambiar el motor no requiere tocar el router
-- **Clipboard en el TUI (terminal Terminator/X11):** el toast "Copied to clipboard" de opencode usa OSC 52, que Terminator/VTE no soporta — ese texto NO llega al portapapeles del sistema; verificar con `xclip -o -selection clipboard` antes de asumir que existe. Copia real desde el TUI: `Shift`+seleccionar → `Ctrl+Shift+C`; pegar: `Ctrl+Shift+V`
+
+## Integración con Frameworks de Modelos Plugin-based (Cordis, DeepSeek Harness)
+
+Visión general de cómo la arquitectura "todo es plugin" de frameworks como DeepSeek Harness (dsh) y su núcleo Cordis influye en nuestra selección y configuración de modelos dentro de ELECTRONICA:
+
+### 1. Filosofía del Framework Cordis
+- **Principio**: "Every part of the product is a plugin" — incluido el adaptador de modelo, el registro de herramientas, el registro de sesiones y el propio bucle del agente.
+- **Nucleo sin privilegio**: No hay un núcleo centralizado al que "enganchar"; cualquier componente puede ser reemplazado o recompuesto mediante plugins.
+- **Carga layerada**: Bundles → Perfil → Parche en home → Parches de línea de comandos, permitiendo composiciones complejas sin modificar el código base.
+
+### 2. Aplicación a la Selección de Modelos en ELECTRONICA
+Aunque nuestro proyecto utiliza un enrutador determinista en `execution/enrutador.py` (no un framework Cordis completo), los principios inspiran nuestras mejores prácticas:
+
+| Concepto Cordis | Aplicación en ELECTRONICA |
+|---|---|
+| **Modelos como plugins intercambiables** | El enrutador decide el modelo basado en descriptores estructurados (`--task`, `--tokens`, `--critico`), no en criterios probabilísticos en el chat. |
+| **Capas de configuración** | Análogo a: default por agente → providers múltiples → selección por sesión. Nuestro `execution/enrutador.py` cubre las capas 1 y 2; la capa 3 es posible mediante ajustes temporales en sesión. |
+| **Desacoplamiento de lógica** | Al igual que Cordis separa el agent-loop como un plugin más, nuestro enrutador separa la decisión de modelo de la ejecución del flujo. |
+| **Ecosistema de proveedores** | Igual que dsh soporta `llm-deepseek` y `llm-pi-ai` providers, nuestro sistema soporta tiers `flash`, `deepseek`, `glm`, `opus` con fallback cost-aware determinista. |
+
+### 3. Criterios de Selección Extendidos (Integración Profunda)
+
+La tabla seguente combina la política existente con inspiración de DeepSeek Harness:
+
+| Criterio | Política ELECTRONICA | Inspiración Cordis/Harness |
+|---|---|---|
+| **Volumen de tokens >50K** | `deepseek` (contexto masivo) | Deepseek tier por su contexto nativo de 1M tokens |
+| **Tarea crítica (exámenes, producción)** | `opus` | Análogo premium; cambio de modelo sin fork del proyecto |
+| **Rutina (parsing, formateo)** | `flash` | Mantener; bajo costo, rápido |
+| **JSON estructurado** | Algoritmo `_find_balanced_json` | Igual; el framework Cordis facilitaría plugins de parseo JSON por modelo |
+| **Geolocalización (restricciones VE)** | OpenRouter / Gemini | Al igual que dsh evitaGroq/OpenAI sin VPN, nuestro sistema respeta esta restricción |
+
+### 4. Flujo de Trabajo Mejorado
+Inspirado en la progresión de dsh, nuestro flujo recomendado es:
+
+1. **Definir descriptor** (`--task`, `--tokens N`, `--critico` true/false)
+2. **Ejecutar enrutador** (`python3 execution/enrutador.py <descriptor>`) → JSON `{tier, model, fallback}`
+3. **Invocar script** con `--api-backend openrouter --modelo <id>`
+4. **Registrar telemetría** en `.tmp/routing_log.jsonl` para afinar umbrales
+
+### 5. Próximas Mejoras para ELECTRONICA
+Considerar para futuras iteraciones:
+- **Extender `directives/enrutamiento_llm.yaml`** con sección de proveedores adicionales (análogo a `llm-pi-ai.providers` de dsh)
+- **Documentar patrón de adaptadores de modelo** en `.agent/python.md` para añadir nuevos proveedores siguiendo el patrón de `execution/llm_client.py`
+- **Evaluar arquitectura multi-provider** para simplificar flujos que actualmente requieren cambio manual de modelo
+- **Añadir soporte para `--modelo-explicito`** en enrutador para casos de prueba comparativa de tiers
+
+*Nota: Esta sección se inspira en la documentación oficial de DeepSeek Harness (dshdocs.com, deepseekdocs.com) y la filosofía Cordis. No implica adoption completa de dsh, sino selección de principios aplicables a nuestra arquitectura determinista existente.*
+
+## Comparativa: ELECTRONICA vs DeepSeek Harness
+
+A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRONICA y el framework DeepSeek Harness (dsh), basada en su arquitectura, capacidades y filosofía de diseño:
+
+| Aspecto | ELECTRONICA | DeepSeek Harness (dsh) |
+|---|---|---|
+| **Propósito Principal** | Espacio de trabajo multidisciplinario: programación, EDA, LaTeX, IoT, blockchain, RAG, sistemas | Framework de agentes de IA de código abierto |
+| **Arquitectura Core** | 3 capas deterministas: Directivas → Orquestación → Ejecución scripts Python | Cordis plugin framework con filosofía "todo es plugin" |
+| **Selección de Modelo** | Determinística vía `execution/enrutador.py` con descriptores estructurados (`--task`, `--tokens`, `--critico`) | Híbrida: `agent-default-model` por agente + selección en sesión UI; multi-provider via `llm-pi-ai` |
+| **Filosofía de Plugins** | Scripts deterministas en `execution/` con responsabilidades únicas; plugins implícitos en directivas YAML | Explicito: "Everything is a plugin" - adaptadores de modelo, bucle de agente, registro de sesiones, herramientas, UI son todos plugins reemplazables |
+| **Núcleo Privilegiado** | No aplica (arquitectura layered fija) | Ningún núcleo centralizado; cualquier componente puede ser reemplazado mediante plugins |
+| **Carga de Configuración** | Directivas YAML únicas por flujo; `opencode.json` carga `.agent/*.md` | Layered: Bundles → Perfil → Parche home → Parches CLI; plugins npm instalables |
+| **Interfaz de Usuario** | Línea de comandos (CLI) centrada; some flujos con servidores MCP FastMCP | UI web local (`http://127.0.0.1:3080`) + modo headless CLI; transición fluida entre ambos |
+| **Gestión de Sesiones** | `.tmp/run_state.json` por flujo; logs en `Sessions/` markdown | **Trayectoria (Trajectory)**: append-only event log en `~/.dsh/sessions` con prompts, razonamiento, llamadas a herramientas y resultados; resume/fork/resume soportado nativamente |
+| **Modelos Soportados** | Tiers definidos: flash (gemini-3.7-flash), deepseek (deepseek-v4-pro), glm (z-ai/glm-5.2), opus (claude-opus-5) | Cualquier modelo OpenAI-compatible via adaptadores; proveedores oficiales (`deepseek-official`), compatibles (`llm-pi-ai`), custom gateways |
+| **Ruteo de Decisiones** | 100% determinista en código; mismo descriptor → mismo tier/siempre | Configurable: default por agente overridable en sesión; multi-model en un mismo session posible |
+| **Consumo de Créditos** | Matriz documentada: orquestación gratis; scripts `execution/` consumen vía `openrouter_chat` | No especificado en documentación básica; dependería de proveedores configurados |
+| **Estado Actual** | Producción estable; workflows definidos y documentados | Developer Preview (`0.1.0-rc.x`, aug 2026); cambios breaking possible |
+| **Ecosistema** | Directivas propias + scripts Python especializados | +367 plugins npm (agosto 2026); 1,179+ en directorio; MCP bridges, visión, OCR, memory trackers, Git helpers |
+| **Geolocalización** | Restricciones VE: OpenRouter/Gemini; Groq/OpenAI requieren VPN | No especificado explícitamente en docs consultadas |
+| **JSON Estructurado** | Algoritmo `_find_balanced_json` para parseo robusto | No especificado; arquitectura plugin facilitaría implementación |
+| **Long-term Vision** | Mejorar arquitectura determinista existente; añadir capacidades plugin inspiradas en estándares del sector | Madurar framework Cordis; estabilizar API; crecer ecosistema plugins |
+
+### Puntos en Común
+
+1. **Arquitectura basada en plugins/extensibilidad**: Ambos diseños priorizan la capacidad de extender y reemplazar componentes sin reescribir el núcleo.
+2. **Separación de preocupaciones**: Lógica de negocio vs. ejecución técnica.
+3. **Enfoque en determinismo**: ELECTRONICA lo hace explícito en el enrutador; DeepSeek Harness lo permite mediante arquitectura plugin pero en preview.
+4. **Integración con LLM**: Ambos trabajan con modelos de lenguaje (ya sea vía OpenRouter, APIs directas o adaptadores).
+5. **Documentación orientada al flujo de trabajo**: Importancia de SOP y documentación del flujo.
+
+### Diferencias Clave
+
+1. **Madurez**: ELECTRONICA es un proyecto consolidado con workflows definidos; DeepSeek Harness es preview (lanzado aug 2026).
+2. **Enfoque de modelo**: ELECTRONICA tiene tiers deterministas codificados; DeepSeek Harness soporta cualquier modelo OpenAI-compatible mediante plugins.
+3. **Interfaz**: ELECTRONICA es CLI-first; DeepSeek Harness tiene UI web como interfaz principal con CLI headless opción.
+4. **Gestión de sesiones**: DeepSeek Harness tiene sistema de trayectoria advance; ELECTRONICA usa state JSON por flujo.
+5. **Ecosistema de terceros**: DeepSeek Harness tiene ecosistema de plugins npm activo; ELECTRONICA tiene directivas YAML y scripts Python propios.
+
+**Nota**: Esta comparativa extrae principios de la filosofía "todo es plugin" de DeepSeek Harness y Cordis, aplicándolos a nuestro contexto determinista. No implica adopción de dsh, sino identificación de patrones aplicables a mejoras futuras en ELECTRONICA.
 
 ## Commands
 
