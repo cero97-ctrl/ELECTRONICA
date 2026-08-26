@@ -20,6 +20,5 @@ Diagnóstico de la instalación de Node.js en el entorno y creación del plugin 
 - El node 18 del sistema queda intacto como reserva (solo pierde el PATH dentro de opencode).
 
 ## Pendientes
-- **Reiniciar opencode** para activar el plugin (los plugins solo cargan al arranque).
-- Tras el reinicio, verificar en shell real: `which node && node --version` → debe apuntar a `~/.nvm/.../v22.23.1/bin/node`; opcionalmente `npx wrangler --version` en `Proyectos/cloudflare-agent`.
-- Solo si aparecieran warnings `EBADENGINE`: regenerar `node_modules` de cloudflare-agent (no esperado).
+- Ninguno. Cierre (post-reinicio de opencode): plugin activo — `which node` → `~/.nvm/versions/node/v22.23.1/bin/node`, npm 10.9.8; sin conflicto con `conda-env.js` (PATH: `elect_env/bin` primero, nvm después); node 18 del sistema intacto.
+- Verificación previa del proyecto (sin reiniciar): `Proyectos/cloudflare-agent` compila con v22.23.1 (`wrangler deploy --dry-run`, bundle 865.91 KiB, exit 0, sin warnings EBADENGINE).
