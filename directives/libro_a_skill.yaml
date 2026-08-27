@@ -1,0 +1,214 @@
+goal: >
+  Convertir un libro en formato PDF en un skill de agente de referencia rápida,
+  instalado como skill global en ~/.config/opencode/skills/<nombre>/. El flujo
+  entrevista al usuario (tema, nombre, idioma, alcance, objetivo), extrae el
+  texto del PDF de forma determinista, destila el contenido con un LLM en un
+  SKILL.md con frontmatter válido y una carpeta references/ de materiales
+  auxiliares (tablas, fórmulas, índices, glosario), y lo instala en el directorio
+  global de skills de opencode. Es reutilizable para cualquier dominio (Física,
+  Matemáticas, Electrónica, etc.) según el proyecto en desarrollo.
+
+required_inputs:
+  - name: pdf
+    description: >
+      Ruta al libro PDF a convertir. Debe ser un PDF con texto selectable
+      (NO escaneado/imagen — se detecta por densidad de caracteres y se rechaza
+      con código 2 si requiere OCR, que está fuera de alcance).
+    example: "libros/SMPS_y_fuentes_conmutadas.pdf"
+  - name: nombre
+    description: >
+      Nombre del skill en snake_case (solo [a-z0-9_-]). Nombra la carpeta
+      destino en global (~/.config/opencode/skills/<nombre>/) y el 'name' del
+      frontmatter del SKILL.md. Debe coincidir entre ambos.
+    example: "electronica_smps"
+    optional_cli: true
+  - name: tema
+    description: >
+      Dominio del libro (Física, Matemáticas, Electrónica, Programación...).
+      Guía el vocabulario y las instrucciones del skill. Se pregunta si no se
+      provee por CLI.
+    example: "Electrónica — fuentes conmutadas"
+    optional_cli: true
+
+optional_inputs:
+  - name: idioma
+    description: "Idioma del contenido del skill." 
+    default: "es"
+  - name: alcance
+    description: >
+      'completo' (todo el libro con chunking) o 'parcial' (rango de capítulos/
+      páginas indicado por el usuario). Por defecto completo.
+    default: "completo"
+  - name: modelo
+    description: "ID de modelo OpenRouter explícito (override del tier del enrutador)."
+    default: null
+  - name: sobrescribir
+    description: "Sobrescribir un skill global existente con el mismo nombre."
+    default: false
+  - name: dry_run
+    description: "Generar el skill en .tmp/ sin instalarlo en global."
+    default: false
+
+steps:
+  - step: 1
+    description: >
+      Validar que el PDF existe y es legible. Conducir la entrevista ligera si
+      faltan nombre/tema/idioma (progreso guardado en
+      .tmp/entrevista_skill_<nombre>.json). Confirmar con el usuario el destino
+      global y si se desea sobrescribir.
+    script: null
+    actor: orquestador
+
+  - step: 2
+    description: >
+      Extracción determinista del texto del PDF.
+    script: "execution/extraer_libro_pdf.py"
+    inputs:
+      --pdf: "{{pdf}}"
+      --salida: ".tmp/libro_{{nombre}}_texto/"
+    expected_output: >
+      JSON {status ok, num_paginas, caracteres, tokens_estimados, archivo_texto}.
+      Rechaza con código 2 los PDFs escaneados (chars/página por debajo del umbral).
+
+  - step: 3
+    description: >
+      Decisión determinista de tier/modelo para la síntesis. Descriptor:
+      --task contexto_masivo (destilación de libros, vocabulario del enrutador),
+      --archivos <pdf> (token medido por el enrutador). No se razona en el chat.
+      Si el usuario pasó --modelo, se respeta como override explícito.
+    script: "execution/enrutador.py"
+    inputs:
+      --task: "contexto_masivo"
+      --archivos: "{{pdf}}"
+
+  - step: 4
+    description: >
+      Síntesis del skill. Chunking determinista del texto y destilación con LLM
+      vía openrouter_chat (default deepseek, o el modelo del enrutador/explícito).
+      Genera SKILL.md (frontmatter name/description válido) + references/*.md
+      (tablas, fórmulas, glosario, índices). Aplica _find_balanced_json para
+      extraer el JSON del LLM. Reintenta hasta 3 veces si el JSON/skill es inválido.
+    script: "execution/sintetizar_skill.py"
+    inputs:
+      --texto: ".tmp/libro_{{nombre}}_texto/texto_completo.txt"
+      --entrevista: ".tmp/entrevista_skill_{{nombre}}.json"
+      --nombre: "{{nombre}}"
+      --tema: "{{tema}}"
+      --idioma: "{{idioma}}"
+      --modelo: "{{modelo}}"
+      --salida: ".tmp/skill_{{nombre}}/"
+    expected_output: >
+      JSON {status ok, skill_dir, archivos, modelo, tokens_consumidos}.
+
+  - step: 5
+    description: >
+      Revisión humana del skill generado (resumen de archivos/secciones). Si el
+      usuario corrige, re-sintetizar (paso 4) sin superar 3 reintentos. Si
+      aprueba, instalar el skill en global.
+    script: null
+    actor: orquestador + usuario
+
+  - step: 6
+    description: >
+      Instalación en el directorio global de opencode
+      (~/.config/opencode/skills/<nombre>/). Valida el frontmatter y la
+      estructura antes de copiar. Con --dry-run solo valida, sin copiar.
+      Emite alerta audible y recuerda reiniciar opencode.
+    script: "execution/instalar_skill.py"
+    inputs:
+      --origen: ".tmp/skill_{{nombre}}/"
+      --nombre: "{{nombre}}"
+      --destino: "~/.config/opencode/skills/"
+    expected_output: >
+      JSON {status ok|dry_run, destino, archivos_copiados, reiniciar_opencode:true}.
+
+expected_outputs:
+  - name: skill_global
+    description: >
+      Skill instalado en ~/.config/opencode/skills/<nombre>/ con SKILL.md
+      (frontmatter name/description) y references/ (materiales auxiliares).
+  - name: skill_local
+    description: >
+      Copia intermedia en .tmp/skill_<nombre>/ para revisión antes de instalar
+      (siempre que no sea dry-run, se copia a global tras aprobación).
+  - name: entrevista_json
+    description: >
+      Registro de la entrevista en .tmp/entrevista_skill_<nombre>.json (tema,
+      nombre, idioma, alcance, objetivo, confirmación de instalación global).
+  - name: texto_extraido
+    description: >
+      Texto del libro en .tmp/libro_<nombre>_texto/texto_completo.txt + indice.json
+      (páginas, caracteres, tokens estimados).
+
+edge_cases:
+  - case: "El PDF es escaneado (texto no selectable)"
+    recovery: >
+      extraer_libro_pdf.py retorna código 2 (chars/página bajo el umbral). El
+      flujo se detiene y avisa que requeriría OCR, fuera del alcance. No fallar
+      en silencio ni intentar procesar basura.
+
+  - case: "Nombre de skill inválido o carpeta destino ya ocupada en global"
+    recovery: >
+      instalar_skill.py valida el nombre ([a-z0-9_-]) y, si el destino existe sin
+      --sobrescribir, retorna código 3 con la ruta. El flujo solicita un nombre
+      alternativo u ofrece --sobrescribir.
+
+  - case: "El libro es muy grande y el presupuesto de costo es alto"
+    recovery: >
+      Antes de la síntesis se muestra el tier/modelo y tokens medidos. Si el
+      costo estimado es alto y el usuario lo desea, se propone acotar el alcance
+      (capítulos/páginas) o usar un tier más barato. La decisión es consciente
+      del usuario, no automática.
+
+  - case: "El LLM devuelve JSON inválido o skill sin frontmatter válido"
+    recovery: >
+      sintetizar_skill.py aplica _find_balanced_json y revalida el frontmatter
+      (name coincide con carpeta, description presente). Reintenta hasta 3 veces
+      (retry budget del framework); si agota, retorna código 3/4 y escala al usuario.
+
+  - case: "El usuario interrumpe la entrevista a mitad"
+    recovery: >
+      La entrevista es ligera y los campos se guardan en .tmp/entrevista_skill_
+      <nombre>.json. En una corrida posterior, reanudar con los datos ya
+      capturados o volver a pasar los flags de CLI.
+
+  - case: "El PDF deja de existir o está corrupto"
+    recovery: >
+      Paso 1 valida existencia/legibilidad. extraer retorna código 1; el flujo
+      reporta el error y se detiene sin intentar instalar nada.
+
+metadata:
+  version: "1.0"
+  created: "2026-08-27"
+  author: "agente"
+  activacion: >
+    Frase típica: "Quiero crear un skill desde un libro PDF". Extraer --pdf y
+    opcionalmente --tema/--nombre, e iniciar el paso 1 (validar + entrevista).
+  script_principal: "flujo_libro_a_skill.py"
+  scripts_ejecucion:
+    - "execution/extraer_libro_pdf.py"
+    - "execution/sintetizar_skill.py"
+    - "execution/instalar_skill.py"
+  enrutamiento:
+    task: "contexto_masivo"
+    notas: >
+      La síntesis default usa deepseek (contexto masivo). Si el usuario pasa
+      --modelo, se respeta como override explícito. La etapa de estructura del
+      skill puede requerir max_tokens altos (8192) para ensamblar SKILL.md +
+      references.
+  consumo_creditos: true
+  env_vars_requeridas:
+    - "OPENROUTER_API_KEY"
+  dependencias_python:
+    - "openai"
+    - "yaml"
+    - "PyMuPDF (fitz, fallback de extracción)"
+  dependencias_sistema:
+    - "pdftotext"
+  reiniciar_opencode: >
+    Tras instalar un skill, el usuario debe reiniciar opencode: la config no se
+    recarga en caliente y el skill no se detectará hasta entonces.
+  notas: >
+    Este flujo NO hace OCR. Los PDFs escaneados (imagen) están fuera de alcance.
+    El agente generador vive en el repo ELECTRONICA (3 capas, versionable); solo
+    el skill generado se instala en global.
