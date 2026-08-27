@@ -1,0 +1,264 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{flask}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, colframe=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaAlerta/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=amarilloNota!10!white, colframe=amarilloNota,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{amarilloNota},
+    fonttitle=\bfseries\small, coltitle=amarilloNota!80!black,
+    drop fuzzy shadow=amarilloNota!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto ──────────────────────────────────────────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Cabeceras específicas del informe ──────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{Informe de Resultados Médicos}}
+\fancyhead[R]{\small 2026-08-27}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\bandaTitulo{Informe de Resultados Médicos}{Laboratorio Clínico Vittalab --- Análisis de Laboratorio}
+
+% ══ FICHA DEL LABORATORIO Y PACIENTE ══════════════════════════════════════════
+\vspace{4pt}
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{flask} ~Laboratorio}]
+  \textbf{Vittalab} Laboratorio Clínico, C.A. --- RIF: J-50367294-3.\\
+  Calle Bolívar, Quinta Ana María, Diagonal al Hospital Antonio Patricio de Alcalá. Cumaná --- Estado Sucre.
+  \begin{itemize}[leftmargin=1.2em, itemsep=1pt, nosep]
+    \item \textbf{Correo:} lab.clin.vitta@gmail.com
+    \item \textbf{Teléfono:} 0414.563.28.63
+  \end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{user} ~Información del Paciente}]
+\begin{tabular}{@{}llll@{}}
+  \textbf{Nombre:} & ALISON HERRERA & \textbf{Sexo:} & MASCULINO \\
+  \textbf{Edad:}   & 8 AÑOS         & \textbf{Orden:} & A00327 \\
+  \textbf{Fecha de examen:} & \multicolumn{3}{l}{25/08/2026} \\
+\end{tabular}
+\end{tcolorbox}
+
+% ══ MARCADORES HEPÁTICOS ══════════════════════════════════════════════════════
+\section*{Marcadores Hepáticos}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{lungs} ~Hepatitis B y C}]
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  \textbf{Prueba} & \textbf{Resultado} & \textbf{Interpretación} \\
+  \midrule
+  Hepatitis B HBsAg  & NEGATIVO & Detección cualitativa de marcadores de Hepatitis B \\
+  Hepatitis B HBcAb  & NEGATIVO & (HBsAg y HBcAb) en suero humano \\
+  Hepatitis C (Anti-HCV) & NEGATIVO & Inmunoensayo indirecto anti-Hepatitis C \\
+  \bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+% ══ SEROLOGÍA ESPECIAL ════════════════════════════════════════════════════════
+\section*{Serología Especial}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{bug} ~Herpes I --- Técnica ELISA}]
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  \textbf{Prueba} & \textbf{Resultado} & \textbf{Valor de referencia} \\
+  \midrule
+  Herpes I IgM & 0.34 & POSITIVO $>$ 1.1 \\
+  \bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\emph{El valor 0.34 se encuentra por debajo del umbral de positividad ($>1.1$), por lo que se interpreta como \textbf{negativo}.}
+\end{tcolorbox}
+
+% ══ PANEL VIRAL ═══════════════════════════════════════════════════════════════
+\section*{Panel Viral}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{virus} ~Detección cualitativa de anticuerpos}]
+\begin{tabular}{@{}llll@{}}
+  \toprule
+  \textbf{Paneles} & \textbf{IgM} & \textbf{IgG} & \textbf{Técnica} \\
+  \midrule
+  Citomegalovirus (CMV) & NEGATIVO & NEGATIVO & Prueba rápida cualitativa \\
+  Epstein Barr (EVB)    & \textcolor{naranjaVivo}{\textbf{POSITIVO DEBIL}} & --- & Prueba rápida heterófilos \\
+  Herpes Simple 2 (HSV2) & NEGATIVO & NEGATIVO & Prueba rápida cualitativa \\
+  \bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+% ══ OBSERVACIONES ════════════════════════════════════════════════════════════
+\section*{Observaciones}
+
+Los resultados de los marcadores hepáticos (Hepatitis B y C), Herpes I IgM (valor de 0.34 por debajo del umbral de positividad de $>1.1$), Citomegalovirus y Herpes Simple 2 son \textbf{negativos}.
+
+Sin embargo, se detecta un resultado \textbf{POSITIVO DEBIL} para IgM del Virus de Epstein Barr (EVB), lo que podría indicar una infección reciente o activa por este virus, comúnmente asociado a la mononucleosis infecciosa, una condición frecuente en niños.
+
+% ══ SUGERENCIAS / RECOMENDACIÓN ═══════════════════════════════════════════════
+\section*{Recomendación Clínica}
+
+\begin{tcolorbox}[cajaAlerta, title={\faIcon{exclamation-triangle} ~Hallazgo a correlacionar clínicamente}]
+  El resultado \textbf{POSITIVO DEBIL} para el Virus de Epstein Barr (EVB) IgM requiere una evaluación clínica por parte del médico tratante.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{user-md} ~Acción sugerida}]
+  Se recomienda correlacionar este hallazgo con los síntomas actuales del paciente y su historial médico para determinar la necesidad de pruebas adicionales (como una prueba de anticuerpos heterófilos o un panel más completo de EBV) o para establecer un plan de manejo adecuado, que podría incluir observación y tratamiento sintomático.
+\end{tcolorbox}
+
+% ══ FIRMA ═════════════════════════════════════════════════════════════════════
+\vspace{10pt}
+\begin{center}
+  \textbf{LCDA. MARÍA TERESA BRITO}\\
+  CB: 16.0850 / M.P.P.S: 17925
+\end{center}
+
+% ══ PIE DE INFORME ════════════════════════════════════════════════════════════
+\vspace{14pt}
+\begin{center}
+  \footnotesize\color{gray}
+  Informe generado automáticamente por el sistema de análisis con IA (gemini-2.5-flash) y soporte LaTeX. \\
+  Generado el 2026-08-27 \textbullet\ ELECTRÓNICA --- Sistema de Análisis de Imágenes.
+\end{center}
+
+\end{document}
