@@ -69,6 +69,25 @@ instalación en global. Registro progresivo en `.tmp/entrevista_skill_<nombre>.j
   usuario y su aprobación explícita del costo.
 - Tras instalar el primer skill real, recordar al usuario que **reinicie opencode**.
 
+## Nota sobre consumo de tokens (aclaración posterior)
+
+El usuario preguntó si, tras crear el skill, los LLM podrían extraer conocimiento del libro sin
+gastar muchos tokens. Se aclaró el matiz:
+
+- El skill **no retiene ni embeber el texto**: es un documento markdown que el agente lee
+  **bajo demanda** como contexto cuando lo consulta. No se relee el PDF entero en cada llamada,
+  por lo que sí reduce tokens frente a procesar el libro completo.
+- Pero **no llega a cero**: cada invocación del skill carga el `SKILL.md` (+ las `references/`
+  que use) como tokens de entrada. El costo depende del tamaño de esos archivos y de cuántos
+  cargue la tarea.
+- Diseño para minimizar costo: `SKILL.md` compacto y autocontenido; `references/` (tablas,
+  fórmulas, glosario) separadas para leerse **selectivamente** y no todas juntas.
+
+**Próximo paso acordado:** el usuario seleccionará más adelante un libro PDF para hacer las
+pruebas reales; allí se verá qué ajustes necesita el skill (p. ej. limitar el tamaño por
+referencia o hacer el `SKILL.md` lo más mínimo posible). El usuario pidió explícitamente no
+hacer más cambios hasta entonces.
+
 ## Notas
 
 - La medición de tokens del enrutador debe hacerse sobre el **texto extraído**
