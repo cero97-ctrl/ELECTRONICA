@@ -1,0 +1,288 @@
+\documentclass[11pt,a4paper]{article}
+% ── Estilo infográfico compartido (repo ELECTRONICA) ─────────────────────────
+% Fuente del esquema y desarrollo: Skill circuitos_dispositivos_electronicos.
+% Problema de prueba del flujo libro → skill (sesión 2026-08-28).
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{parskip}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage[european, straightvoltages]{circuitikz}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{20pt}{8pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{12pt}{5pt}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\color{azulNoche}\small\bfseries \faIcon{book}~\textcolor{cyanNeon}{BJT divisor de tensión}}
+\fancyhead[R]{\color{grisTexto}\small Skill\ circuitos\_dispositivos\_electronicos}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% Paleta (subconjunto del estilo infográfico compartido)
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{rojoAlerta}{HTML}{E53935}
+
+\newcommand{\iconoBanda}{calculator}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced, colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth, top=14pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{19}{23}\selectfont\bfseries\color{white}#2}\par\vspace{4pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable, arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche, boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, colframe=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+}
+\newtcolorbox{cajaRecuerda}{
+  enhanced, breakable, arc=6pt, outer arc=6pt,
+  colback=azulNoche!10!grisPapel, colframe=azulNoche, boxrule=1pt,
+  borderline west={4pt}{0pt}{cyanNeon},
+  fonttitle=\bfseries\small\color{white},
+  title={\faIcon{info-circle}~Recuerda},
+  attach boxed title to top left={yshift=-3mm, xshift=6mm},
+  boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+  drop fuzzy shadow=azulNoche!25!white, left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\begin{document}
+
+\bandaTitulo{Análisis DC de un BJT con polarización por divisor de voltaje}{
+  Desarrollo completo paso a paso · NPN, $\beta=200$, $V_{BE}=\SI{0.7}{V}$, $V_{CC}=\SI{15}{V}$
+}
+
+\section{Enunciado y datos}
+
+\begin{tabular}{@{}l l l l l@{}}
+\toprule
+\textbf{Parámetro} & $V_{CC}$ & $R_1$ & $R_2$ & \\
+\textbf{Valor} & \SI{15}{V} & \SI{82}{\kilo\ohm} & \SI{22}{\kilo\ohm} & \\
+\bottomrule
+\end{tabular}
+
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Parámetro} & $R_C$ & $R_E$ & \\
+\textbf{Valor} & \SI{3.9}{\kilo\ohm} & \SI{1}{\kilo\ohm} & \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+Transistor NPN con $\beta_F=200$ y $V_{BE}=\SI{0.7}{V}$ (tensión base-emisor en activa).
+
+\begin{center}
+\begin{circuitikz}[scale=0.95, transform shape]
+  % Columna del divisor de base (R1 a VCC, R2 a tierra)
+  \draw (0,0) node[vcc] to[R, l=$R_1$, l2=\SI{82}{\kilo\ohm}, *-] (0,-3.0);
+  \coordinate (base) at (0,-3.0);
+  \draw (base) to[R, l_=$R_2$, l2_=\SI{22}{\kilo\ohm}, *-] (0,-4.8) node[ground]{};
+  % Transistor NPN (base a la izquierda)
+  \node[npn] (q1) at (3.6,-3.0) {};
+  \draw (base) -- (q1.B) node[circ]{};
+  % Colector con RC a VCC
+  \draw (q1.C) to[R, l=$R_C$, l2=\SI{3.9}{\kilo\ohm}, *-] (3.6,0) node[vcc]{};
+  % Emisor con RE a tierra
+  \draw (q1.E) to[R, l_=$R_E$, l2_=\SI{1}{\kilo\ohm}, *-] (3.6,-4.8) node[ground]{};
+  % Referencia de alimentación y rótulo del transistor
+  \node[above=6pt] at (0,0.1) {$V_{CC}=\SI{15}{V}$};
+  \node[above=4pt] at (3.6,0.1) {$V_{CC}=\SI{15}{V}$};
+  \node[above=2pt] at (q1) {Q1};
+\end{circuitikz}
+\captionof{figure}{Polarización por divisor de voltaje (esquema orientativo).}
+\end{center}
+
+\begin{cajaRecuerda}
+En NJT activa directa: $V_{BE}\approx \SI{0.7}{V}$, $I_C = \beta_F I_B$ e $I_E = (\beta_F+1) I_B$.
+\end{cajaRecuerda}
+
+\section{Paso 1 — Equivalente Thévenin del divisor de base}
+
+Reduciendo el divisor $R_1$–$R_2$ visto desde la base:
+
+\begin{align*}
+  V_{BB} &= V_{CC}\,\frac{R_2}{R_1 + R_2}
+           = \SI{15}{V}\,\frac{\SI{22}{\kilo\ohm}}{\SI{82}{\kilo\ohm} + \SI{22}{\kilo\ohm}}
+           = \frac{\SI{330}{V\kilo\ohm}}{\SI{104}{\kilo\ohm}} = \SI{3.17}{V}\\
+  R_{BB} &= R_1 \parallel R_2
+           = \frac{R_1\,R_2}{R_1 + R_2}
+           = \frac{\SI{82}{\kilo\ohm}\cdot\SI{22}{\kilo\ohm}}{\SI{104}{\kilo\ohm}}
+           = \SI{17.3}{\kilo\ohm}
+\end{align*}
+
+\section{Paso 2 — Punto de operación: $I_B$, $I_C$, $I_E$}
+
+KVL en la malla base–emisor (Thévenin + $V_{BE}$ + $R_E$):
+
+\begin{equation*}
+  V_{BB} = I_B R_{BB} + V_{BE} + I_E R_E
+  \qquad\text{con}\qquad
+  I_E = (\beta_F + 1) I_B = 201\, I_B
+\end{equation*}
+
+\begin{align*}
+  I_B &= \frac{V_{BB} - V_{BE}}{R_{BB} + (\beta_F+1)R_E}
+        = \frac{\SI{3.17}{V} - \SI{0.7}{V}}{\SI{17.3}{\kilo\ohm} + 201\cdot\SI{1}{\kilo\ohm}}
+        = \frac{\SI{2.47}{V}}{\SI{218.3}{\kilo\ohm}}\\
+      &= \SI{11.3}{\micro\ampere}
+\end{align*}
+
+Utilizando las relaciones del transistor en activa:
+
+\begin{align*}
+  I_C &= \beta_F\, I_B = 200 \cdot \SI{11.3}{\micro\ampere} = \SI{2.27}{\milli\ampere}\\
+  I_E &= (\beta_F+1)\, I_B = 201 \cdot \SI{11.3}{\micro\ampere} = \SI{2.28}{\milli\ampere}
+\end{align*}
+
+\section{Paso 3 — Tensión colector–emisor $V_{CEQ}$}
+
+KVL en la malla colector–emisor:
+
+\begin{equation*}
+  V_{CC} = I_C R_C + V_{CE} + I_E R_E
+\end{equation*}
+
+\begin{align*}
+  V_{CEQ} &= V_{CC} - I_C R_C - I_E R_E\\
+          &= \SI{15}{V} - \SI{2.27}{\milli\ampere}\cdot\SI{3.9}{\kilo\ohm}
+             - \SI{2.28}{\milli\ampere}\cdot\SI{1}{\kilo\ohm}\\
+          &= \SI{15}{V} - \SI{8.84}{V} - \SI{2.28}{V}
+          = \boxed{\SI{3.89}{V}}
+\end{align*}
+
+Datos auxiliares de los nudos:
+
+\begin{equation*}
+  V_B = V_{BE} + I_E R_E = \SI{0.7}{V} + \SI{2.28}{V} = \SI{2.98}{V}
+  \qquad
+  V_C = V_{CC} - I_C R_C = \SI{15}{V} - \SI{8.84}{V} = \SI{6.16}{V}
+\end{equation*}
+
+\section{Paso 4 — Verificación de la región activa directa}
+
+Para región activa directa en un NPN se exige que la unión colector–base quede
+polarizada en inversa ($V_{CB} > 0$) y que el transistor no esté en saturación
+($V_{CE} > V_{CEsat}\approx\SI{0.2}{V}$):
+
+\begin{align*}
+  V_{CB} &= V_C - V_B = \SI{6.16}{V} - \SI{2.98}{V} = \SI{3.19}{V} > 0\\
+  V_{CE} &= \SI{3.89}{V} > \SI{0.2}{V}
+\end{align*}
+
+\begin{cajaRecuerda}
+\faIcon{check-circle}~Cumple ambas condiciones: la unión $BE$ está en directa y la
+$BC$ en inversa, y queda margen sobre $V_{CEsat}$. El BJT opera en \textbf{región
+activa directa} y las hipótesis usadas ($I_C=\beta I_B$, $V_{BE}=\SI{0.7}{V}$) son consistentes.
+\end{cajaRecuerda}
+
+\section{Paso 5 — Pequeña señal: $g_m$, $r_\pi$ y ganancia a vacío}
+
+Con tensión térmica $V_T = \SI{26}{\milli\volt}$:
+
+\begin{align*}
+  g_m &= \frac{I_{CQ}}{V_T} = \frac{\SI{2.27}{\milli\ampere}}{\SI{26}{\milli\volt}}
+        = \SI{87}{\milli\siemens}\\
+  r_\pi &= \frac{\beta_F}{g_m} = \frac{200}{\SI{87}{\milli\siemens}}
+          = \SI{2.30}{\kilo\ohm}
+\end{align*}
+
+Ganancia en tensión a vacío (aproximación solicitada, emisor incremental a masa):
+
+\begin{equation*}
+  A_v \approx -\, g_m\, R_C = -\,\SI{87}{\milli\siemens}\cdot\SI{3.9}{\kilo\ohm}
+        = \boxed{-340}
+\end{equation*}
+
+\begin{cajaRecuerda}
+\faIcon{lightbulb}~La expresión exacta con $R_E$ no desacoplado es
+$A_v = -\dfrac{g_m R_C}{1 + g_m R_E}\approx -7.9$; el valor $-340$ corresponde al
+emisor AC cortocircuitado a masa (típico con condensador de desacoplo en $R_E$).
+\end{cajaRecuerda}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{clipboard-list}~Resumen de resultados}]
+\centering
+\begin{tabular}{@{}l l ll l@{}}
+\toprule
+\textbf{Magnitud} & \textbf{Valor} & \quad & \textbf{Magnitud} & \textbf{Valor}\\
+\midrule
+$V_{BB}$ & \SI{3.17}{V} & & $V_{CEQ}$ & \SI{3.89}{V}\\
+$R_{BB}$ & \SI{17.3}{\kilo\ohm} & & $V_{CB}$ & \SI{3.19}{V}\\
+$I_B$ & \SI{11.3}{\micro\ampere} & & $g_m$ & \SI{87}{\milli\siemens}\\
+$I_C$ & \SI{2.27}{\milli\ampere} & & $r_\pi$ & \SI{2.30}{\kilo\ohm}\\
+$I_E$ & \SI{2.28}{\milli\ampere} & & $A_v$ (aprox.) & $-340$\\
+\bottomrule
+\end{tabular}
+
+\textbf{Veredicto:} región \textbf{activa directa} ($V_{CB}>\SI{0}{V}$, $V_{CE}>V_{CEsat}$).\\
+Punto de operación Q: $I_{CQ}=\SI{2.27}{\milli\ampere}$, $V_{CEQ}=\SI{3.89}{V}$.
+\end{tcolorbox}
+
+\end{document}

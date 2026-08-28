@@ -55,3 +55,33 @@ auxiliares y guardar `.tex` + `.pdf` en `docs/SKILL/<nombre>/`.
 ## Pendientes
 - Probar el Paso 4 integrado con un flujo completo en dry-run (re-sintetiza con LLM,
   consume créditos OpenRouter ~$1.20) cuando el usuario lo autorice.
+
+---
+
+## Ampliación (misma fecha): solución del problema de prueba en LaTeX
+
+Aclaración del usuario: el LaTeX que pedía originalmente era la **solución del problema
+de prueba del skill** (BJT con polarización por divisor de tensión), no solo el reporte
+genérico. Se generó el entregable documental:
+
+`docs/SKILL/ejemplo_bjt_divisor_tension.tex` + `.pdf` (3 páginas, A4).
+
+### Contenido
+- Esquema circuitikz del circuito (divisor R1–R2, RC, RE, Q1 NPN) + datos.
+- Paso 1: Thévenin del divisor — VBB = 3.17 V, RBB = 17.3 kΩ.
+- Paso 2: KVL malla B–E → IB = 11.3 µA, IC = 2.27 mA, IE = 2.28 mA.
+- Paso 3: KVL malla C–E → VCEQ = 3.89 V (VB = 2.98 V, VC = 6.16 V).
+- Paso 4: verificación región activa — VCB = 3.19 V > 0 y VCE > VCEsat ≈ 0.2 V ✓.
+- Paso 5: gm = 87 mS, rπ = 2.30 kΩ, Av ≈ −gm·RC = −340 (nota: la expresión exacta con
+  RE no desacoplado da ≈ −7.9; la pedida asume emisor AC cortocircuitado).
+- Tarjeta resumen final con tabla de resultados y veredicto.
+
+### Detalles técnicos
+- Documento manual estilo infográfico (preámbulo subconjunto de PREAMBULO_INFOGRAFIA:
+  bandaTitulo, tarjetaDato, cajaRecuerda, secciones titlesec, circuitikz european).
+- Compilado con `execution/compile_latex.py` → `compile_latex_code` (2 pasadas + limpieza
+  de auxiliares); el CLI de compile_latex.py solo tiene `--test`, por lo que se invocó
+  `compile_latex_code` directamente desde la raíz.
+- Curva de aprendizaje circuitikz: se corrigió un primer boceto que usaba `xscale=-1`
+  (invertía la orientación y no tocaba el anchor `q1.B`); el definitivo conecta por
+  anchors (`q1.B/C/E`) con transistor en orientación normal.
