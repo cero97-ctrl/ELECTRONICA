@@ -1,0 +1,674 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabecera específica del reporte del skill ──
+\renewcommand{\iconoBanda}{book}
+\fancyhead[L]{\color{azulNoche}\small\bfseries \faIcon{book}~\textcolor{cyanNeon}{circuitos\_dispositivos\_electronicos}}
+\fancyhead[R]{\color{grisTexto}\smallElectrónica: dispositivos semiconductores y circuitos analógicos}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Skill: circuitos\_dispositivos\_electronicos}{Proporciona conceptos fundamentales de electrónica analógica, incluyendo leyes de Kirchhoff, análisis de circuitos con diodos, BJT, MOSFET, amplificadores operacionales y respuesta transitoria RC/RL. Úsalo cuando el usua}
+
+\section*{Skill: Circuitos y Dispositivos Electrónicos}
+
+
+\subsection*{Cuándo usar este skill}
+
+
+Utiliza este skill cuando el usuario necesite asistencia con:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Análisis de circuitos analógicos (DC, transitorios, pequeña señal).
+  \item Comprensión del funcionamiento de dispositivos semiconductores (diodos, BJT, MOSFET, JFET, tiristores).
+  \item Aplicación de leyes de Kirchhoff, métodos de nudos y mallas.
+  \item Cálculo de equivalentes Thévenin y Norton.
+  \item Diseño y análisis de circuitos con amplificadores operacionales (inversor, no inversor, comparador, etc.).
+  \item Respuesta de circuitos RC y RL a excitaciones escalón y sinusoidales.
+  \item Conceptos de potencia, energía y máxima transferencia de señal.
+  \item Interpretación de modelos SPICE básicos y hojas de especificaciones.
+\end{itemize}
+
+
+\subsection*{Conceptos clave}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Tensión y Corriente:} Diferencia de potencial (V) y flujo de carga (A). Convenio de signos para potencia (carga vs. generador).
+  \item \textbf{Leyes de Kirchhoff:} KCL (suma de corrientes en nudo = 0) y KVL (suma de tensiones en malla = 0).
+  \item \textbf{Elementos Ideales:} Resistencia (Ley de Ohm), condensador ($i = C dv/dt$), bobina ($v = L di/dt$), fuentes independientes y dependientes.
+  \item \textbf{Linealidad y Superposición:} La respuesta de un circuito lineal es la suma de las respuestas a cada fuente independiente actuando sola.
+  \item \textbf{Equivalentes Thévenin/Norton:} Cualquier circuito lineal de dos terminales puede representarse por una fuente de tensión en serie con una resistencia, o una fuente de corriente en paralelo con una resistencia.
+  \item \textbf{Dispositivos Semiconductores:} Diodos (rectificador, Zener, LED), Transistores Bipolares (BJT - NPN/PNP, regiones de operación), Transistores de Efecto de Campo (MOSFET - acumulación/vaciamiento, JFET), Tiristores (SCR, TRIAC).
+  \item \textbf{Amplificador Operacional (A.O.):} Dispositivo activo de alta ganancia. En realimentación negativa, opera en zona lineal con cortocircuito virtual ($v^+ \approx v^-$).
+  \item \textbf{Análisis en Pequeña Señal:} Técnica para analizar circuitos no lineales (con transistores) linealizando el comportamiento alrededor de un punto de operación (Q).
+\end{itemize}
+
+
+\subsection*{Fórmulas fundamentales}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Ley de Ohm:} $v = i \cdot R$
+  \item \textbf{Potencia:} $p = v \cdot i = i^2 R = v^2 / R$
+  \item \textbf{Divisor de Tensión:} $v_o = v_{in} \cdot \frac{R_2}{R_1 + R_2}$
+  \item \textbf{Divisor de Corriente:} $i_2 = i_{in} \cdot \frac{R_1}{R_1 + R_2}$
+  \item \textbf{Constante de Tiempo RC:} $\tau = R \cdot C$
+  \item \textbf{Carga de Condensador:} $v_c(t) = V_f + (V_i - V_f)e^{-t/\tau}$
+  \item \textbf{Impedancia Condensador:} $Z_c = \frac{1}{j\omega C}$
+  \item \textbf{Impedancia Bobina:} $Z_L = j\omega L$
+  \item \textbf{Ganancia A.O. Inversor:} $A_v = -\frac{R_F}{R_s}$
+  \item \textbf{Ganancia A.O. No Inversor:} $A_v = 1 + \frac{R_1}{R_2}$
+  \item \textbf{Corriente Diodo (Shockley):} $I_d = I_s (e^{v_D/(\eta V_T)} - 1)$
+  \item \textbf{BJT en Activa:} $I_C = \beta_F I_B$, $V_{BE} \approx 0.7V$
+  \item \textbf{MOSFET en Saturación:} $I_D = \frac{1}{2} K \frac{W}{L} (V_{GS} - V_T)^2$
+\end{itemize}
+
+
+\subsection*{Procedimiento básico de análisis}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Identificar} el tipo de circuito y los componentes clave.
+  \item \textbf{Simplificar} el circuito si es posible (resistencias serie/paralelo, Thévenin/Norton).
+  \item \textbf{Determinar el punto de operación} (análisis DC) si hay dispositivos no lineales.
+  \item \textbf{Aplicar el método de análisis} adecuado (nudos, mallas, superposición).
+  \item \textbf{Para transitorios}, identificar condiciones iniciales y finales, y la constante de tiempo.
+  \item \textbf{Para pequeña señal}, obtener el circuito incremental y calcular ganancias e impedancias.
+  \item \textbf{Verificar} la coherencia de los resultados (regiones de operación, márgenes dinámicos).
+\end{enumerate}
+
+
+\section*{Fórmulas de Electrónica}
+
+
+\subsection*{Ley de Ohm y Potencia}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $v = i \cdot R$
+  \item $p = v \cdot i = i^2 R = \frac{v^2}{R}$
+\end{itemize}
+
+
+\subsection*{Leyes de Kirchhoff}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item KCL: $\sum i_{nudo} = 0$
+  \item KVL: $\sum v_{malla} = 0$
+\end{itemize}
+
+
+\subsection*{Divisores}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Tensión: $v_o = v_{in} \frac{R_2}{R_1 + R_2}$
+  \item Corriente: $i_2 = i_{in} \frac{R_1}{R_1 + R_2}$
+\end{itemize}
+
+
+\subsection*{Resistencias Equivalentes}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Serie: $R_{eq} = R_1 + R_2 + \dots$
+  \item Paralelo: $\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \dots$
+\end{itemize}
+
+
+\subsection*{Condensadores y Bobinas}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $i_c = C \frac{dv_c}{dt}$
+  \item $v_L = L \frac{di_L}{dt}$
+  \item Serie: $\frac{1}{C_{eq}} = \sum \frac{1}{C_i}$, $L_{eq} = \sum L_i$
+  \item Paralelo: $C_{eq} = \sum C_i$, $\frac{1}{L_{eq}} = \sum \frac{1}{L_i}$
+\end{itemize}
+
+
+\subsection*{Transitorios RC/RL}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $\tau = RC$ o $\tau = L/R$
+  \item $x(t) = X_f + (X_i - X_f)e^{-t/\tau}$
+\end{itemize}
+
+
+\subsection*{Impedancias (RPS)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $Z_R = R$
+  \item $Z_C = \frac{1}{j\omega C}$
+  \item $Z_L = j\omega L$
+\end{itemize}
+
+
+\subsection*{Amplificador Operacional Ideal}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Inversor: $A_v = -\frac{R_F}{R_s}$
+  \item No Inversor: $A_v = 1 + \frac{R_1}{R_2}$
+  \item Seguidor: $A_v = 1$
+  \item Sumador: $v_o = -R_F \sum \frac{v_i}{R_i}$
+\end{itemize}
+
+
+\subsection*{Diodo}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Shockley: $I_d = I_s (e^{v_D/(\eta V_T)} - 1)$
+  \item $V_T \approx 25mV$ a 300K
+\end{itemize}
+
+
+\subsection*{BJT (Activa)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $I_C = \beta_F I_B$
+  \item $I_E = (\beta_F + 1)I_B$
+  \item $g_m = I_{CQ} / V_T$
+  \item $r_\pi = \beta_F / g_m$
+\end{itemize}
+
+
+\subsection*{MOSFET (Saturación)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $I_D = \frac{1}{2} K \frac{W}{L} (V_{GS} - V_T)^2$
+  \item $g_m = 2 \sqrt{K \frac{W}{L} I_{DQ}}$
+\end{itemize}
+
+
+\subsection*{Máxima Transferencia de Potencia}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item $R_L = R_{th}$ para máxima potencia.
+  \item $P_{max} = \frac{V_{th}^2}{4 R_{th}}$
+\end{itemize}
+
+
+\vspace{10pt}
+
+\section*{Glosario de Términos}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Ánodo (A):} Terminal positivo de un diodo.
+  \item \textbf{Cátodo (K):} Terminal negativo de un diodo.
+  \item \textbf{Circuito Abierto:} Interrupción en un circuito; corriente cero.
+  \item \textbf{Cortocircuito:} Conexión directa entre dos puntos; tensión cero.
+  \item \textbf{Cortocircuito Virtual:} Condición en A.O. ideal con realimentación negativa donde $v^+ \approx v^-$.
+  \item \textbf{Diodo:} Dispositivo semiconductor que permite el paso de corriente en una sola dirección.
+  \item \textbf{Diodo Zener:} Diodo diseñado para operar en la región de ruptura inversa, usado como referencia de tensión.
+  \item \textbf{Efecto Early:} Modulación de la anchura de la base en un BJT que causa dependencia de $I_C$ con $V_{CE}$.
+  \item \textbf{Efecto Sustrato:} Variación de la tensión umbral $V_T$ en un MOSFET debido a la tensión entre surtidor y sustrato.
+  \item \textbf{Fuente Dependiente:} Fuente de tensión o corriente cuyo valor está controlado por otra tensión o corriente del circuito.
+  \item \textbf{Fuente Independiente:} Fuente de tensión o corriente con valor fijo o definido por una función del tiempo.
+  \item \textbf{LED (Diodo Emisor de Luz):} Diodo que emite luz cuando se polariza en directa.
+  \item \textbf{Masa (Tierra):} Nodo de referencia en un circuito con potencial de 0V.
+  \item \textbf{Nudo:} Punto de conexión entre dos o más componentes.
+  \item \textbf{Malla:} Trayectoria cerrada en un circuito.
+  \item \textbf{Realimentación Negativa:} Conexión de la salida a la entrada inversora de un amplificador, estabilizando la ganancia.
+  \item \textbf{Rectificador:} Circuito que convierte corriente alterna (AC) en corriente continua (DC).
+  \item \textbf{Señal:} Magnitud física (tensión o corriente) que varía en el tiempo para transportar información.
+  \item \textbf{Tensión de Ruptura ($V_z$, BV):} Tensión inversa a la que un diodo comienza a conducir fuertemente.
+  \item \textbf{Tensión Térmica ($V_T$):} $kT/q \approx 25mV$ a temperatura ambiente.
+  \item \textbf{Tensión Umbral ($V_\gamma$, $V_T$):} Tensión mínima de polarización directa para que un diodo conduzca (\textasciitilde{}0.7V para Si), o tensión puerta-surtidor para formar el canal en un MOSFET.
+  \item \textbf{Transconductancia ($g_m$):} Relación entre la variación de corriente de salida y la variación de tensión de entrada en un dispositivo activo.
+\end{itemize}
+
+
+\vspace{10pt}
+
+\section*{Tablas de Referencia}
+
+
+\subsection*{Unidades y Prefijos}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Magnitud & Unidad & Símbolo \\
+\midrule
+Tensión & Voltio & V \\
+Corriente & Amperio & A \\
+Potencia & Vatio & W \\
+Resistencia & Ohmio & $\Omega$ \\
+Capacidad & Faradio & F \\
+Inductancia & Henrio & H \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Prefijo & Símbolo & Factor \\
+\midrule
+giga & G & $10^9$ \\
+mega & M & $10^6$ \\
+kilo & k & $10^3$ \\
+mili & m & $10^{-3}$ \\
+micro & $\mu$ & $10^{-6}$ \\
+nano & n & $10^{-9}$ \\
+pico & p & $10^{-12}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Regiones de Operación del BJT (NPN)}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Región & Unión BE & Unión BC & Característica \\
+\midrule
+Activa & Directa & Inversa & $I_C = \beta_F I_B$ \\
+Corte & Inversa & Inversa & $I_C \approx 0$ \\
+Saturación & Directa & Directa & $V_{CE} \approx 0.2V$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Regiones de Operación del MOSFET (Canal N)}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Región & Condición & $I_D$ \\
+\midrule
+Corte & $V_{GS} < V_T$ & 0 \\
+Óhmica & $V_{DS} < V_{GS} - V_T$ & $K \frac{W}{L}[(V_{GS}-V_T)V_{DS} - \frac{V_{DS}^2}{2}]$ \\
+Saturación & $V_{DS} \ge V_{GS} - V_T$ & $\frac{1}{2} K \frac{W}{L} (V_{GS}-V_T)^2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Configuraciones de Amplificadores (BJT)}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Configuración & Ganancia de Tensión & Impedancia de Entrada & Impedancia de Salida \\
+\midrule
+Emisor Común & Alta (-) & Media & Media \\
+Colector Común & $\approx 1$ & Alta & Baja \\
+Base Común & Alta (+) & Baja & Alta \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Modelos Equivalentes}
+
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Teorema & Circuito Equivalente \\
+\midrule
+Thévenin & Fuente de tensión $V_{th}$ en serie con $R_{th}$ \\
+Norton & Fuente de corriente $I_n$ en paralelo con $R_n$ \\
+Relación & $V_{th} = I_n \cdot R_{th}$, $R_{th} = R_n$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\vspace{10pt}
+
+\end{document}

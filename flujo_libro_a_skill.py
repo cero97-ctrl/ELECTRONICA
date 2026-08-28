@@ -8,12 +8,13 @@ Ejecuta el flujo completo definido en la directiva libro_a_skill.yaml:
   2. extraer_libro_pdf.py   → extrae el texto del PDF (determinista).
   3. enrutador.py           → decisión determinista de tier (contexto masivo).
   4. sintetizar_skill.py    → destila SKILL.md + references/ con LLM.
-  5. instalar_skill.py      → copia a ~/.config/opencode/skills/<name>/.
-  6. alert_user.py          → notifica + aviso de reiniciar opencode.
+  5. generar_latex_skill.py → reporte LaTeX (SKILL.md + references) en docs/SKILL/<name>/.
+  6. instalar_skill.py      → copia a ~/.config/opencode/skills/<name>/.
+  7. alert_user.py          → notifica + aviso de reiniciar opencode.
 
 Uso:
     python3 flujo_libro_a_skill.py --pdf <libro.pdf> [--tema "..."] [--nombre <name>]
-        [--idioma es] [--modelo <id>] [--sobrescribir] [--dry-run] [--no-alert]
+        [--idioma es] [--modelo <id>] [--sobrescribir] [--dry-run] [--no-alert] [--no-latex]
         [--salida .tmp/skill_<name>/]
 
 --pdf es requerido. Si no se pasan --tema/--nombre/--idioma, se entrevista al
@@ -38,6 +39,7 @@ EXTRAER = SCRIPT_DIR / "execution" / "extraer_libro_pdf.py"
 ENRUTADOR = SCRIPT_DIR / "execution" / "enrutador.py"
 SINTETIZAR = SCRIPT_DIR / "execution" / "sintetizar_skill.py"
 INSTALAR = SCRIPT_DIR / "execution" / "instalar_skill.py"
+GENERAR_LATEX = SCRIPT_DIR / "execution" / "generar_latex_skill.py"
 ALERTAR = SCRIPT_DIR / "execution" / "alert_user.py"
 
 TMP_DIR = SCRIPT_DIR / ".tmp"
@@ -145,6 +147,7 @@ def main() -> int:
     parser.add_argument("--modelo", default=None, help="ID de modelo OpenRouter (override del tier).")
     parser.add_argument("--salida", default=None, help="Dir local del skill generado.")
     parser.add_argument("--sobrescribir", action="store_true", help="Sobrescribir skill global existente.")
+    parser.add_argument("--no-latex", action="store_true", help="No generar el reporte LaTeX en docs/SKILL/.")
     parser.add_argument("--dry-run", action="store_true", help="Generar skill sin instalar en global.")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta audible al final.")
     parser.add_argument("--destino", default=str(DESTINO_GLOBAL), help="Directorio global de skills.")
@@ -181,7 +184,7 @@ def main() -> int:
     }
     save_state(state)
 
-    total = 4 + (0 if args.dry_run else 1)
+    total = 4 + (0 if args.no_latex else 1) + (0 if args.dry_run else 1)
 
     # ── Paso 1: extracción ──
     print("\n" + "─" * 56)
@@ -260,8 +263,37 @@ def main() -> int:
     for a in sint["archivos"]:
         print(f"     · {a}")
 
+    # ── Paso 4: reporte LaTeX (determinista, sin créditos) ──
+    if not args.no_latex:
+        paso_latex = 4
+        dir_latex = SCRIPT_DIR / "docs" / "SKILL" / nombre
+        print("\n" + "─" * 56)
+        print(f"  Paso {paso_latex}/{total}  │  Generando reporte LaTeX del skill")
+        print("─" * 56)
+        code_lat, lat = run_script(
+            [PYTHON, str(GENERAR_LATEX),
+             "--skill", str(salida_local),
+             "--nombre", nombre,
+             "--tema", tema,
+             "--idioma", idioma,
+             "--salida", str(dir_latex)],
+            capture_json=True,
+        )
+        if code_lat != 0 or not isinstance(lat, dict) or lat.get("status") != "ok":
+            msg = (lat or {}).get("message") or "Fallo generando el reporte LaTeX"
+            print(f"  ⚠  Reporte LaTeX: {msg}", file=sys.stderr)
+            state.update(latex_error=msg, last_updated=now_iso())
+            save_state(state)
+        else:
+            if lat.get("compilado"):
+                print(f"  ✅ PDF compilado: {lat['pdf']}")
+            else:
+                print(f"  ⚠  LaTeX generado pero el PDF falló: {(lat.get('detalle_error') or '')[:140]}", file=sys.stderr)
+            print(f"  ✅ Reporte en {lat['tex']} (auxiliares limpiados)")
+            estado_ok(state, paso_latex)
+
     if not args.dry_run and datos["instalar_global"]:
-        n_pasos_hasta_aqui = 3 + (1 if not args.modelo else 0)
+        n_pasos_hasta_aqui = 3 + (1 if not args.modelo else 0) + (1 if not args.no_latex else 0)
         # ── Paso de instalación ──
         print("\n" + "─" * 56)
         print(f"  Paso {n_pasos_hasta_aqui + 1}/{total}  │  Instalando en global")

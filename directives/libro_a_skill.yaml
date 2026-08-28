@@ -48,6 +48,13 @@ optional_inputs:
   - name: dry_run
     description: "Generar el skill en .tmp/ sin instalarlo en global."
     default: false
+  - name: no_latex
+    description: >
+      Saltar la generación del reporte LaTeX (docs/SKILL/<nombre>/). Por defecto
+      el flujo convierte SKILL.md + references/ a un documento infográfico con
+      PREAMBULO_INFOGRAFIA, lo compila con pdflatex (2 pasadas) y limpia los
+      auxiliares, dejando .tex y .pdf en la carpeta destino.
+    default: false
 
 steps:
   - step: 1
@@ -102,13 +109,33 @@ steps:
 
   - step: 5
     description: >
+      Reporte LaTeX del skill (determinista, sin LLM ni créditos). Convierte
+      SKILL.md + references/*.md a un documento con el estilo infográfico
+      compartido (PREAMBULO_INFOGRAFIA + \bandaTitulo), respetando el math
+      $...$ tal cual y convirtiendo listas, párrafos y tablas markdown a booktabs.
+      Compila con compile_latex_code (pdflatex, 2 pasadas), que limpia los
+      auxiliares dejando .tex + .pdf en docs/SKILL/<nombre>/. Con --no-latex se salta.
+    script: "execution/generar_latex_skill.py"
+    inputs:
+      --skill: ".tmp/skill_{{nombre}}/"
+      --nombre: "{{nombre}}"
+      --tema: "{{tema}}"
+      --idioma: "{{idioma}}"
+      --salida: "docs/SKILL/{{nombre}}/"
+    expected_output: >
+      JSON {status ok, tex, pdf, compilado, archivos}. El .tex siempre se guarda
+      aunque la compilación falle (compilado=false); en ese caso el flujo avisa
+      pero NO aborta la instalación del skill.
+
+  - step: 6
+    description: >
       Revisión humana del skill generado (resumen de archivos/secciones). Si el
       usuario corrige, re-sintetizar (paso 4) sin superar 3 reintentos. Si
       aprueba, instalar el skill en global.
     script: null
     actor: orquestador + usuario
 
-  - step: 6
+  - step: 7
     description: >
       Instalación en el directorio global de opencode
       (~/.config/opencode/skills/<nombre>/). Valida el frontmatter y la
@@ -139,6 +166,11 @@ expected_outputs:
     description: >
       Texto del libro en .tmp/libro_<nombre>_texto/texto_completo.txt + indice.json
       (páginas, caracteres, tokens estimados).
+  - name: reporte_latex
+    description: >
+      Reporte del skill en docs/SKILL/<nombre>/ con <nombre>.tex (fuente LaTeX del
+      estilo infográfico) y <nombre>.pdf compilado. Entregable versionable en el
+      repo, en la carpeta de convención LaTeX del proyecto.
 
 edge_cases:
   - case: "El PDF es escaneado (texto no selectable)"
@@ -194,6 +226,14 @@ edge_cases:
       (from execution.llm_client ... / except ImportError: from llm_client ...) para
       resolver tanto desde la raíz como con el dir del script en sys.path.
 
+  - case: "El math del skill rompe el énfasis markdown (**...$...**) o el PDF no compila"
+    recovery: >
+      generar_latex_skill.py protege los spans $...$ con placeholders antes de
+      convertir **negrita*/*cursiva*/`código`, y escapa _ % & # ~ del texto (nunca
+      dentro del math). Si pese a todo el PDF falla (compilado=false), el flujo
+      conserva el .tex, avisa con los errores de pdflatex y continúa con la
+      instalación: el reporte es un extra, no bloquea el entregable principal.
+
 metadata:
   version: "1.0"
   created: "2026-08-27"
@@ -205,6 +245,7 @@ metadata:
   scripts_ejecucion:
     - "execution/extraer_libro_pdf.py"
     - "execution/sintetizar_skill.py"
+    - "execution/generar_latex_skill.py"
     - "execution/instalar_skill.py"
   enrutamiento:
     task: "contexto_masivo"
