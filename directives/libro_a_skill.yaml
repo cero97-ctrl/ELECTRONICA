@@ -177,6 +177,23 @@ edge_cases:
       Paso 1 valida existencia/legibilidad. extraer retorna código 1; el flujo
       reporta el error y se detiene sin intentar instalar nada.
 
+  - case: "deepseek-v4-pro devuelve content=None (razonamiento agota max_tokens)"
+    recovery: >
+      El modelo razonador consume todo el budget de salida en razonamiento interno
+      (finish_reason=length, reasoning_tokens=2048, content=None) con prompts largos.
+      sintetizar_skill.py desactiva el thinking con reasoning={'enabled': False}
+      (vía _razonamiento_para, solo para modelos con 'deepseek' en el id) y añade un
+      retry de hasta 3 intentos por chunk. No reintentar con max_tokens pequeños
+      mientras el razonamiento siga activo: content=None se repite.
+
+  - case: "Ejecución sin TTY (no interactiva)"
+    recovery: >
+      La entrevista usa defaults ante EOFError (preguntar/confirmar lo capturan) y
+      todos los campos clave se pasan por CLI (--tema/--nombre/--idioma). Los scripts
+      de execution/ deben importar llm_client con fallback doble
+      (from execution.llm_client ... / except ImportError: from llm_client ...) para
+      resolver tanto desde la raíz como con el dir del script en sys.path.
+
 metadata:
   version: "1.0"
   created: "2026-08-27"

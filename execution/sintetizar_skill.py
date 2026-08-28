@@ -48,11 +48,19 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
 CHARS_PER_TOKEN = 4
 MAX_RETRIES = 3
+
+
+def _razonamiento_para(modelo: str) -> Optional[dict]:
+    """Desactiva el thinking de modelos razonadores (deepseek-v4-pro consume
+    todo el budget de salida en razonamiento y deja content=None). None = sin
+    control (modelos no-razonadores: openai/gpt-oss, gemini, etc.)."""
+    return {"enabled": False} if "deepseek" in modelo else None
 
 # Backends de LLM. Default: openrouter (consumo de créditos).
 DEFAULT_BACKEND = "openrouter"
@@ -168,7 +176,10 @@ def _validar_frontmatter(texto: str, nombre: str) -> list[str]:
 
 def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
     """Destila un chunk del libro en notas de referencia (texto plano markdown)."""
-    from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    try:
+        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    except ImportError:
+        from llm_client import load_api_key, openrouter_chat  # type: ignore
 
     api_key = load_api_key()
     sys_prompt = (
@@ -186,23 +197,39 @@ def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
         "nueva, devuelve solo la línea '[sin contenido relevante]'.\n\n"
         f"FRAGMENTO INICIA:\n{chunk}\nFRAGMENTO TERMINA."
     )
-    content, tokens = openrouter_chat(
-        [
-            {"role": "system", "content": sys_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        model=modelo,
-        api_key=api_key,
-        temperature=0.3,
-        max_tokens=2048,
-        title="ELECTRONICA - Sintetizar Skill",
+    ultimo_error = None
+    for intento in range(1, MAX_RETRIES + 1):
+        try:
+            content, tokens = openrouter_chat(
+                [
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                model=modelo,
+                api_key=api_key,
+                temperature=0.3,
+                max_tokens=2048,
+                title="ELECTRONICA - Sintetizar Skill",
+                reasoning=_razonamiento_para(modelo),
+            )
+            if content and content.strip():
+                return content.strip()
+            raise RuntimeError("El modelo devolvió un mensaje vacío.")
+        except Exception as exc:  # noqa: BLE001
+            ultimo_error = exc
+            if intento >= MAX_RETRIES:
+                break
+    raise RuntimeError(
+        f"No se pudo destilar el chunk tras {MAX_RETRIES} intentos: {ultimo_error}"
     )
-    return content.strip()
 
 
 def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str) -> dict:
     """Pide al LLM el SKILL.md (con frontmatter) y la lista de references."""
-    from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    try:
+        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    except ImportError:
+        from llm_client import load_api_key, openrouter_chat  # type: ignore
 
     api_key = load_api_key()
     sys_prompt = (
@@ -241,6 +268,7 @@ def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, mo
         temperature=0.2,
         max_tokens=8192,
         title="ELECTRONICA - Estructura Skill",
+        reasoning=_razonamiento_para(modelo),
     )
     return extract_json_from_response(content)
 

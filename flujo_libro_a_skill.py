@@ -82,7 +82,10 @@ def slug_name(texto: str) -> str:
 
 
 def confirmar(prompt: str, default="s") -> bool:
-    r = input(f"{prompt} [{'S/n' if default == 's' else 's/N'}] ").strip().lower()
+    try:
+        r = input(f"{prompt} [{'S/n' if default == 's' else 's/N'}] ").strip().lower()
+    except EOFError:
+        r = ""
     if not r:
         return default == "s"
     return r in ("s", "si", "y", "yes")
@@ -99,7 +102,7 @@ def entrevista(pdf: Path, tema, nombre, idioma) -> dict:
 
     print("\n── Alcance del skill ──")
     print("  El skill será de REFERENCIA RÁPIDA (conceptos, fórmulas, tablas, glosario).")
-    acotar = confirmar("¿Acotar a capítulos/secciones específicos del libro? (s/N)")
+    acotar = confirmar("¿Acotar a capítulos/secciones específicos del libro? (s/N)", default="n")
     alcance = {"tipo": "completo"}
     if acotar:
         rango = preguntar("Indica rango de páginas o secciones (ej. 1-80):", "all")

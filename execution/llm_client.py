@@ -128,11 +128,16 @@ def openrouter_chat(
     max_tokens: int = 8192,
     title: str = "ELECTRONICA",
     response_format: Optional[dict] = None,
+    reasoning: Optional[dict] = None,
 ) -> tuple[str, dict]:
     """Envía mensajes a OpenRouter y devuelve (contenido, tokens).
 
     messages: lista de {role, content}; content puede ser str o list multimodal
               (ver build_multimodal_content).
+    reasoning: control de razonamiento del modelo (solo vía extra_body del SDK
+               OpenAI). Ej. {"enabled": False} desactiva el thinking de modelos
+               razonadores (deepseek-v4-pro, etc.), evitando que consuman todo
+               max_tokens y devuelvan content=None. None = sin control.
     """
     client = get_openai_client(api_key)
     kwargs = {
@@ -147,6 +152,8 @@ def openrouter_chat(
     }
     if response_format:
         kwargs["response_format"] = response_format
+    if reasoning is not None:
+        kwargs["extra_body"] = {"reasoning": reasoning}
 
     response = client.chat.completions.create(**kwargs)
 
