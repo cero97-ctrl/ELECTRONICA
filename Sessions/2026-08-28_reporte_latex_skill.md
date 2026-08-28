@@ -66,6 +66,14 @@ genérico. Se generó el entregable documental:
 
 `docs/SKILL/ejemplo_bjt_divisor_tension.tex` + `.pdf` (3 páginas, A4).
 
+### Convención de carpetas (decidida por el usuario)
+Cada skill vive en `docs/SKILL/<nombre_skill>/` y ahí van TODOS los artefactos que se
+generen producto de su uso:
+- `circuitos_dispositivos_electronicos.pdf/.tex` → reporte LaTeX del skill (mayo integrado
+  en el Paso 4 del flujo).
+- `ejemplo_bjt_divisor_tension.pdf/.tex` → solución del problema de prueba (se movió de
+  `docs/SKILL/` raíz a esta carpeta el 2026-08-28).
+
 ### Contenido
 - Esquema circuitikz del circuito (divisor R1–R2, RC, RE, Q1 NPN) + datos.
 - Paso 1: Thévenin del divisor — VBB = 3.17 V, RBB = 17.3 kΩ.
