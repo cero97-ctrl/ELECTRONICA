@@ -195,6 +195,32 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 - `db_state.json` is tracked (not auto-generated in the CI sense, but it's the RAG state file — be careful modifying)
 - Repo update flow: `./update_repo.sh [-m "msg"] [--push] [--dry-run]` (commit+pull+push, per `directives/git_update.yaml`) or `./git-update.sh` (shortcut: WIP commit + pull + push)
 
+## Migración de entorno (a otra PC)
+
+Clonar el repo NO basta para migrar el entorno de trabajo. Hay piezas críticas que viven
+**fuera del repo** (en `~/.config/opencode/`, `~/.claude/`, home del usuario) y se deben
+replicar manualmente en la PC destino:
+
+| Pieza | Ubicación | ¿En el repo? | Qué es |
+| :--- | :--- | :--- | :--- |
+| **Skills globales** | `~/.config/opencode/skills/<name>/` | No | p. ej. `computacion_cientifica`; reutilizables en cualquier proyecto |
+| **Skills externos** | `~/.claude/skills/`, `~/.agents/skills/` | No | auto-cargados (cloudflare, agents-sdk, etc.) |
+| **Config global opencode** | `~/.config/opencode/opencode.json(c)`, plugins/agentes globales | No | `default_agent`, permisos, MCP globales |
+| **`.env` (claves API)** | `.env` (raíz del repo) | No (gitignored a propósito) | `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, etc. |
+| `.groq_api_key` | raíz del repo | No (gitignored) | clave Groq |
+| **Project skills/plugins/agentes** | `.opencode/skills/`, `.opencode/plugin(s)/`, `.opencode/agent(s)/` | **Sí** | viajan con el repo |
+| Directivas, flujos, scripts | `directives/`, `flujo_*`, `execution/` | **Sí** | viajan con el repo |
+
+**Checklist de migración (además de `git clone`):**
+1. Copiar `~/.config/opencode/` completa (skills globales + config + plugins globales).
+2. Copiar `~/.claude/skills/` (y `~/.agents/skills/` si existe) — skills externos auto-cargados.
+3. Recrear `.env` y `.groq_api_key` en el repo destino (nunca viajan por git).
+4. Entorno conda `elect_env` + `node` vía nvm (ver plugins `.opencode/plugin/conda-env.js` y `nvm-env.js`).
+5. Dependencias del proyecto (ver AGENTS.md "Know before you act": `requirements.txt` es mínimo).
+
+> Pendiente: implementar un script de respaldo/exportación de estos elementos cuando se vaya a
+> migrar de verdad (acordado 2026-08-27).
+
 ## LaTeX conventions
 
 - `\usepackage[spanish,es-noshorthands]{babel}`, `circuitikz`, `siunitx`, `amsmath`
