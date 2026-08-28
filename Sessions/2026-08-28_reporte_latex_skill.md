@@ -53,8 +53,27 @@ auxiliares y guardar `.tex` + `.pdf` en `docs/SKILL/<nombre>/`.
   del reporte y el skill es el entregable principal del flujo.
 
 ## Pendientes
-- Probar el Paso 4 integrado con un flujo completo en dry-run (re-sintetiza con LLM,
-  consume créditos OpenRouter ~$1.20) cuando el usuario lo autorice.
+- ~~Probar el Paso 4 integrado con un flujo completo en dry-run~~ → HECHO (ver "Validación
+  E2E" abajo). Re-sintetiza con LLM, consume créditos OpenRouter (~$0.49–$1.20).
+
+---
+
+## Validación E2E (dry-run con créditos, 2026-08-28)
+
+- Comando: `python3 flujo_libro_a_skill.py --pdf "...Lluis Prat Vinas.pdf" --nombre
+  circuitos_dispositivos_electronicos --tema "..." --idioma es --dry-run` (sin `--no-latex`).
+- Resultado: 5 pasos OK; Paso 2 enrutó `deepseek/deepseek-v4-pro`; **Paso 4 integrado
+  compiló el reporte** en `docs/SKILL/circuitos_dispositivos_electronicos/…tex/.pdf`
+  (auxiliares limpiados); dry-run no instaló en global. Saldo: $8.64 → $8.15
+  (usage $1.20 → $1.69, +≈$0.49 esta carrera).
+- **Hallazgo (reproducibilidad):** en esta carrera la síntesis devolvió un skill válido
+  SIN `references/` (1 archivo reportado, correcto), pero `sintetizar_skill.py` no limpia
+  su directorio de salida → quedaron `references/*.md` obsoletas (10:51) junto al SKILL.md
+  fresco (12:14): el disco no reflejaba la síntesis actual.
+- **Fix determinista (0 créditos, validado):** nuevo `_limpiar_salida(salida)` en
+  `sintetizar_skill.py` (elimina `SKILL.md` + `references/` previos antes de escribir);
+  verificado que vacía bien el dir y que `generar_latex_skill.py` compila sin `references/`
+  (reporte con solo SKILL.md).
 
 ---
 

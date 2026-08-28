@@ -45,6 +45,7 @@ Códigos de salida:
 import argparse
 import json
 import re
+import shutil
 import sys
 from datetime import date
 from pathlib import Path
@@ -319,6 +320,20 @@ def _sanitizar_ref_nombre(archivo: str) -> str:
     return base
 
 
+def _limpiar_salida(salida: Path) -> None:
+    """Elimina artefactos de una corrida anterior para que el directorio de
+    salida refleje EXACTAMENTE la síntesis actual (evita references/ o SKILL.md
+    obsoletos acumulados en carreras previas con un modelo que omitió refs)."""
+    for p in (salida / "SKILL.md", salida / "references"):
+        try:
+            if p.is_dir():
+                shutil.rmtree(p, ignore_errors=True)
+            elif p.is_file():
+                p.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def sintetizar(
     texto: str, entrevista: dict, nombre: str, tema: str, idioma: str,
     modelo: str, max_chunk_tokens: int, salida: Path,
@@ -329,6 +344,7 @@ def sintetizar(
     skilL_md, refs, tokens = _construir_skill(nombre, tema, idioma, chunks, modelo)
 
     salida.mkdir(parents=True, exist_ok=True)
+    _limpiar_salida(salida)
 
     archivo_md = salida / "SKILL.md"
     archivo_md.write_text(skilL_md.strip() + "\n", encoding="utf-8")

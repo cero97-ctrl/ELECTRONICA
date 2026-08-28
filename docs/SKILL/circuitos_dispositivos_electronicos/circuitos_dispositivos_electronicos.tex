@@ -337,26 +337,22 @@
 \fancyhead[R]{\color{grisTexto}\smallElectrónica: dispositivos semiconductores y circuitos analógicos}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Skill: circuitos\_dispositivos\_electronicos}{Proporciona conceptos fundamentales de electrónica analógica, incluyendo leyes de Kirchhoff, análisis de circuitos con diodos, BJT, MOSFET, amplificadores operacionales y respuesta transitoria RC/RL. Úsalo cuando el usua}
+\bandaTitulo[fondoOscuro]{Skill: circuitos\_dispositivos\_electronicos}{Skill de referencia rápida para análisis de circuitos con dispositivos semiconductores (diodos, BJT, MOS, A.O.) y circuitos analógicos. Úsese cuando se requieran leyes de Kirchhoff, Thévenin/Norton, respuesta transitoria}
 
-\section*{Skill: Circuitos y Dispositivos Electrónicos}
+\section*{Circuitos y Dispositivos Electrónicos}
 
 
 \subsection*{Cuándo usar este skill}
 
 
-Utiliza este skill cuando el usuario necesite asistencia con:
-
-
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Análisis de circuitos analógicos (DC, transitorios, pequeña señal).
-  \item Comprensión del funcionamiento de dispositivos semiconductores (diodos, BJT, MOSFET, JFET, tiristores).
-  \item Aplicación de leyes de Kirchhoff, métodos de nudos y mallas.
-  \item Cálculo de equivalentes Thévenin y Norton.
-  \item Diseño y análisis de circuitos con amplificadores operacionales (inversor, no inversor, comparador, etc.).
-  \item Respuesta de circuitos RC y RL a excitaciones escalón y sinusoidales.
-  \item Conceptos de potencia, energía y máxima transferencia de señal.
-  \item Interpretación de modelos SPICE básicos y hojas de especificaciones.
+  \item Resolver circuitos resistivos, RC, RL y con fuentes dependientes.
+  \item Analizar diodos rectificadores, zener, LED, fotodiodos y circuitos recortadores/fijadores.
+  \item Analizar y diseñar etapas con transistores bipolares (BJT) y MOS en continua y pequeña señal.
+  \item Trabajar con amplificadores operacionales en región lineal y no lineal (comparadores, Schmitt trigger).
+  \item Calcular equivalentes Thévenin/Norton, superposición, transferencia de señal y potencia.
+  \item Interpretar modelos SPICE y hojas de especificaciones de dispositivos.
+  \item Comprender fundamentos físicos: unión PN, efecto transistor, efecto de campo, capacidades parásitas.
 \end{itemize}
 
 
@@ -364,34 +360,52 @@ Utiliza este skill cuando el usuario necesite asistencia con:
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Tensión y Corriente:} Diferencia de potencial (V) y flujo de carga (A). Convenio de signos para potencia (carga vs. generador).
-  \item \textbf{Leyes de Kirchhoff:} KCL (suma de corrientes en nudo = 0) y KVL (suma de tensiones en malla = 0).
-  \item \textbf{Elementos Ideales:} Resistencia (Ley de Ohm), condensador ($i = C dv/dt$), bobina ($v = L di/dt$), fuentes independientes y dependientes.
-  \item \textbf{Linealidad y Superposición:} La respuesta de un circuito lineal es la suma de las respuestas a cada fuente independiente actuando sola.
-  \item \textbf{Equivalentes Thévenin/Norton:} Cualquier circuito lineal de dos terminales puede representarse por una fuente de tensión en serie con una resistencia, o una fuente de corriente en paralelo con una resistencia.
-  \item \textbf{Dispositivos Semiconductores:} Diodos (rectificador, Zener, LED), Transistores Bipolares (BJT - NPN/PNP, regiones de operación), Transistores de Efecto de Campo (MOSFET - acumulación/vaciamiento, JFET), Tiristores (SCR, TRIAC).
-  \item \textbf{Amplificador Operacional (A.O.):} Dispositivo activo de alta ganancia. En realimentación negativa, opera en zona lineal con cortocircuito virtual ($v^+ \approx v^-$).
-  \item \textbf{Análisis en Pequeña Señal:} Técnica para analizar circuitos no lineales (con transistores) linealizando el comportamiento alrededor de un punto de operación (Q).
+  \item \textbf{Tensión, corriente y potencia}: definiciones, convenios de signos, analogía hidráulica.
+  \item \textbf{Leyes de Kirchhoff}: LCK (nudos) y LTK (mallas).
+  \item \textbf{Señales}: escalón, pulso, rampa, exponencial, sinusoidal; valor medio y eficaz; representación compleja.
+  \item \textbf{Elementos ideales}: conductor, interruptor, fuentes independientes y dependientes.
+  \item \textbf{Resistencia}: Ley de Ohm, conductancia, efecto Joule, asociaciones serie/paralelo, divisores de tensión/corriente.
+  \item \textbf{Métodos de análisis}: nudos, mallas, superposición, Thévenin/Norton, fuente de prueba.
+  \item \textbf{Condensador y bobina}: relaciones i-v, continuidad, asociaciones, constante de tiempo, respuesta transitoria y sinusoidal, impedancia, energía almacenada.
+  \item \textbf{Transformador ideal y real}: relación de transformación, adaptación de impedancias.
+  \item \textbf{Diodo}: modelo ideal, exponencial, por tramos lineales; recta de carga; aplicaciones (rectificador, detector de envolvente, recortador, fijador, protección).
+  \item \textbf{Transistor bipolar (BJT)}: regiones de operación, βF, αF, efecto Early, modelos de pequeña señal (híbrido en π, parámetros h), etapas EC/CC/BC, par diferencial, CMRR, puertas lógicas.
+  \item \textbf{Transistor MOS}: tipos (acumulación/vaciamiento, canal N/P), regiones (corte, óhmica, saturación), efecto sustrato, modulación de longitud de canal, inversor CMOS, puertas lógicas, amplificación, modelo de pequeña señal.
+  \item \textbf{Amplificador operacional}: modelo ideal, cortocircuito virtual, configuraciones básicas, comparadores, realimentación.
+  \item \textbf{Dispositivos de potencia}: SCR, triac, diac, GTO, IGBT, convertidor DC-DC reductor.
+  \item \textbf{Optoelectrónica}: LED, fotodiodo, célula solar, fototransistor, optoacoplador.
+  \item \textbf{Fundamentos físicos}: semiconductores intrínsecos/extrínsecos, unión PN, capacidades de transición y difusión, principio de operación de BJT y MOS.
+  \item \textbf{SPICE}: directivas .OP, .TF, .TRAN, .AC, .PRINT, .PROBE; modelos de diodo, BJT y MOS.
 \end{itemize}
 
 
-\subsection*{Fórmulas fundamentales}
+\subsection*{Fórmulas esenciales}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Ley de Ohm:} $v = i \cdot R$
-  \item \textbf{Potencia:} $p = v \cdot i = i^2 R = v^2 / R$
-  \item \textbf{Divisor de Tensión:} $v_o = v_{in} \cdot \frac{R_2}{R_1 + R_2}$
-  \item \textbf{Divisor de Corriente:} $i_2 = i_{in} \cdot \frac{R_1}{R_1 + R_2}$
-  \item \textbf{Constante de Tiempo RC:} $\tau = R \cdot C$
-  \item \textbf{Carga de Condensador:} $v_c(t) = V_f + (V_i - V_f)e^{-t/\tau}$
-  \item \textbf{Impedancia Condensador:} $Z_c = \frac{1}{j\omega C}$
-  \item \textbf{Impedancia Bobina:} $Z_L = j\omega L$
-  \item \textbf{Ganancia A.O. Inversor:} $A_v = -\frac{R_F}{R_s}$
-  \item \textbf{Ganancia A.O. No Inversor:} $A_v = 1 + \frac{R_1}{R_2}$
-  \item \textbf{Corriente Diodo (Shockley):} $I_d = I_s (e^{v_D/(\eta V_T)} - 1)$
-  \item \textbf{BJT en Activa:} $I_C = \beta_F I_B$, $V_{BE} \approx 0.7V$
-  \item \textbf{MOSFET en Saturación:} $I_D = \frac{1}{2} K \frac{W}{L} (V_{GS} - V_T)^2$
+  \item Ley de Ohm: $v = iR$, $i = Gv$, $P_R = i^2R = v^2/R$.
+  \item Divisor de tensión: $v_o = v_g \frac{R_2}{R_1+R_2}$.
+  \item Divisor de corriente: $i_2 = i_g \frac{R_1}{R_1+R_2}$.
+  \item Serie: $R_s = \sum R_i$; Paralelo: $\frac{1}{R_p} = \sum \frac{1}{R_i}$.
+  \item Condensador: $i_c = C \frac{dv_c}{dt}$, $v_c(t) = v_c(0) + \frac{1}{C}\int_0^t i_c d\tau$, $Z_c = \frac{1}{j\omega C}$.
+  \item Bobina: $v_L = L \frac{di_L}{dt}$, $i_L(t) = i_L(0) + \frac{1}{L}\int_0^t v_L d\tau$, $Z_L = j\omega L$.
+  \item Constante de tiempo: $\tau = RC$ o $\tau = L/R$.
+  \item Respuesta RC escalón: $v_c(t) = V_a(1 - e^{-t/RC})$, $i_c(t) = \frac{V_a}{R}e^{-t/RC}$.
+  \item Respuesta RL escalón: $i(t) = \frac{V_a}{R}(1 - e^{-tR/L})$, $v_L(t) = V_a e^{-tR/L}$.
+  \item Energía: $W_C = \frac{1}{2}CV^2$, $W_L = \frac{1}{2}LI^2$.
+  \item Transformador ideal: $\frac{v_2}{v_1} = n$, $\frac{i_2}{i_1} = -\frac{1}{n}$, $R_e = \frac{R_L}{n^2}$.
+  \item Diodo exponencial: $I_d = I_s(e^{v_D/\eta V_T} - 1)$, $V_T \approx 25$ mV a 300 K.
+  \item Diodo por tramos: $v_D = V_\gamma + i_d R_s$ (conduce), $i_d = 0$ (corte).
+  \item Rizado rectificador: $\Delta V_o \approx \frac{V_M}{f C R_L}$.
+  \item BJT activa: $i_C = \beta_F i_B$, $i_E = (\beta_F+1)i_B$, $\alpha_F = \frac{\beta_F}{\beta_F+1}$.
+  \item BJT pequeña señal: $g_m = \frac{I_{CQ}}{V_T}$, $r_\pi = \frac{\beta_F}{g_m}$, $r_o = \frac{V_A}{I_{CQ}}$.
+  \item MOS saturación: $I_D = \frac{KW}{2L}(v_{GS}-V_T)^2(1+\lambda v_{DS})$.
+  \item MOS óhmica: $I_D = K\frac{W}{L}\left[(v_{GS}-V_T)v_{DS} - \frac{v_{DS}^2}{2}\right]$.
+  \item MOS pequeña señal: $g_m = 2\sqrt{K\frac{W}{L}I_{DQ}}$, $r_{ds} = \frac{1}{\lambda I_{DQ}}$.
+  \item A.O. inversor: $\frac{v_o}{v_g} = -\frac{R_F}{R_s}$; no inversor: $1+\frac{R_1}{R_2}$.
+  \item CMRR: $CMRR = 20\log(\rho)$ dB.
+  \item Unión PN: $V_{bi} = V_T \ln\left(\frac{N_A N_D}{n_i^2}\right)$, $C_j = \frac{C_{jo}}{\sqrt{1-V/V_{bi}}}$.
+  \item Capacidad de difusión: $C_s = \tau_t \frac{I_s}{V_T}e^{V/V_T}$.
 \end{itemize}
 
 
@@ -399,14 +413,37 @@ Utiliza este skill cuando el usuario necesite asistencia con:
 
 
 \begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Identificar} el tipo de circuito y los componentes clave.
-  \item \textbf{Simplificar} el circuito si es posible (resistencias serie/paralelo, Thévenin/Norton).
-  \item \textbf{Determinar el punto de operación} (análisis DC) si hay dispositivos no lineales.
-  \item \textbf{Aplicar el método de análisis} adecuado (nudos, mallas, superposición).
-  \item \textbf{Para transitorios}, identificar condiciones iniciales y finales, y la constante de tiempo.
-  \item \textbf{Para pequeña señal}, obtener el circuito incremental y calcular ganancias e impedancias.
-  \item \textbf{Verificar} la coherencia de los resultados (regiones de operación, márgenes dinámicos).
+  \item \textbf{Identificar} el tipo de circuito (resistivo, RC/RL, con diodos, con BJT/MOS, con A.O.).
+  \item \textbf{Simplificar} si es posible: asociaciones serie/paralelo, equivalentes Thévenin/Norton.
+  \item \textbf{Aplicar} leyes de Kirchhoff y ecuaciones de los dispositivos (hipótesis de región para no lineales).
+  \item \textbf{Verificar} hipótesis (p. ej., diodo conduce/corta, BJT en activa/saturación, MOS en saturación/óhmica).
+  \item \textbf{Calcular} variables de interés: tensiones, corrientes, potencias, ganancias, márgenes dinámicos.
+  \item \textbf{Validar} con SPICE o comparación con resultados analíticos si es necesario.
 \end{enumerate}
+
+
+\subsection*{Tablas de referencia rápida}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Ver \texttt{tablas.md} para tablas de símbolos, prefijos, regiones de operación, configuraciones de A.O., etapas BJT, tipos de MOS, etc.
+\end{itemize}
+
+
+\subsection*{Glosario}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Ver \texttt{glosario.md} para definiciones de términos técnicos.
+\end{itemize}
+
+
+\subsection*{Fórmulas detalladas}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Ver \texttt{formulas.md} para el compendio completo de fórmulas.
+\end{itemize}
 
 
 \section*{Fórmulas de Electrónica}
