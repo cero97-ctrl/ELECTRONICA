@@ -65,6 +65,8 @@ usando el skill) queda pendiente para una iteración futura.
 - Decidir si instalar `z3-solver` para validación SMT de condiciones de borde,
   y si el Aviso de estructuras faltantes debe ser bloqueante vía directiva.
 - E2E del libro completo (452 págs) con la validación nueva (≈25–40 min, +$0.5–1).
+  **Plan (decisión del usuario 2026-08-30): probar mañana al cargar créditos a
+  OpenRouter. Saldo al cierre: $7.51 (auto top-up en $10).**
 
 ## Commit
 - `flujo_libro_a_skill.py`, `execution/sintetizar_skill.py`,
