@@ -143,7 +143,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 **LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
 
-**Saldo OpenRouter:** `python execution/monitor_saldo_openrouter.py` (chequeo puntual), `--watch [--interval N]` (bucle en background, log en `.tmp/saldo_openrouter.log`; alerta audible cerca del auto top-up de $10)
+**Saldo OpenRouter:** `python execution/monitor_saldo_openrouter.py` (chequeo puntual), `--watch [--interval N]` (bucle en background, log en `.tmp/saldo_openrouter.log`; alerta audible cerca del auto top-up de $5, que OpenRouter dispara cuando el saldo baja de $3)
 
 **Enrutador LLM:** `python3 execution/enrutador.py --task <tipo> [--tokens N | --archivos f1 f2] [--critico] [--vision] [--modelo-explicito <id>]` → JSON `{tier, model, fallback}`; decisión determinista (tipos de tarea válidos y reglas en `.agent/enrutamiento.md`)
 

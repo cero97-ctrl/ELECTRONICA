@@ -20,9 +20,9 @@ Códigos de salida:
     1 — Error (API o red)
 
 Alertas audibles (execution/alert_user.py "waiting") cuando el saldo cruza
-los umbrales --warn (por defecto 5.50) y --alert (por defecto 5.10). El umbral
---alert corresponde al punto donde OpenRouter dispara el auto top-up de $10
-(la recarga se intenta cuando el saldo baja de $5).
+los umbrales --warn (por defecto 3.50) y --alert (por defecto 3.10). El umbral
+--alert corresponde al punto donde OpenRouter dispara el auto top-up (recarga
+automática de $5 cuando el saldo baja de $3).
 """
 
 import argparse
@@ -118,10 +118,10 @@ def chequeo(args) -> dict:
     )
 
     if cruzando_alert:
-        _alert(f"Saldo < ${args.alert:.2f} — OpenRouter intentará cobrar $10 a tu tarjeta. Verifica fondos.")
+        _alert(f"Saldo < ${args.alert:.2f} — OpenRouter añadirá $5 a tu crédito (auto top-up, saldo < $3). Verifica la tarjeta.")
         result["alerta"] = "top_up_inminente"
     elif cruzando_warn:
-        _alert(f"Saldo cerca de ${args.warn:.2f} — prepara la tarjeta para el top-up de $10.")
+        _alert(f"Saldo cerca de ${args.warn:.2f} — prepara la tarjeta para el auto top-up de $5.")
         result["alerta"] = "cerca_umbral"
     return result
 
@@ -130,8 +130,8 @@ def main():
     parser = argparse.ArgumentParser(description="Estima el saldo de créditos de OpenRouter.")
     parser.add_argument("--watch", action="store_true", help="Bucle continuo (segundo plano).")
     parser.add_argument("--interval", type=int, default=300, help="Segundos entre chequeos (default 300).")
-    parser.add_argument("--warn", type=float, default=5.50, help="Umbral de advertencia (default 5.50).")
-    parser.add_argument("--alert", type=float, default=5.10, help="Umbral de alerta/top-up (default 5.10).")
+    parser.add_argument("--warn", type=float, default=3.50, help="Umbral de advertencia (default 3.50).")
+    parser.add_argument("--alert", type=float, default=3.10, help="Umbral de alerta/top-up (default 3.10; auto top-up de $5 al bajar de $3).")
     args = parser.parse_args()
 
     if not args.watch:
@@ -151,11 +151,11 @@ def main():
             )
             if saldo < args.alert and not cruzo_alert:
                 cruzo_alert = True
-                _alert(f"Saldo < ${args.alert:.2f} — OpenRouter intentará cobrar $10 a tu tarjeta. Verifica fondos.")
+                _alert(f"Saldo < ${args.alert:.2f} — OpenRouter añadirá $5 a tu crédito (auto top-up, saldo < $3). Verifica la tarjeta.")
                 _log("[ALERTA] Top-up inminente, alerta audible emitida.")
             elif saldo < args.warn and not cruzo_warn:
                 cruzo_warn = True
-                _alert(f"Saldo cerca de ${args.warn:.2f} — prepara la tarjeta para el top-up de $10.")
+                _alert(f"Saldo cerca de ${args.warn:.2f} — prepara la tarjeta para el auto top-up de $5.")
                 _log("[WARN] Cerca del umbral, alerta audible emitida.")
             elif saldo >= args.warn:
                 cruzo_warn = cruzo_alert = False

@@ -113,7 +113,7 @@ enrutadas (no gasto real) en `.tmp/routing_log.jsonl`.
 - **Telemetría:** cada decisión se registra en `.tmp/routing_log.jsonl` (tier, tokens,
   modelo, timestamp). Usarla para afinar umbrales; no afines la política a ojo.
 - **Saldo OpenRouter:** vigilar con `python execution/monitor_saldo_openrouter.py`; cerca
-  del auto top-up de $10, priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
+  del auto top-up de $5 (cuando el saldo baja de $3), priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
 
 ## Refinamiento (ver `directives/enrutamiento_llm.yaml` → `refinement_protocol`)
 

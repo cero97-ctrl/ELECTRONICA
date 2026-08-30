@@ -136,8 +136,9 @@ edge_cases:
   - case: "OpenRouter devuelve 402 por saldo bajo (falta max_tokens o presupuesto)"
     recovery: >
       Respetar OPENROUTER_MAX_TOKENS del .env (default 2048, activo 8192). Vigilar
-      saldo con execution/monitor_saldo_openrouter.py; cerca del auto top-up de $10,
-      priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
+      saldo con execution/monitor_saldo_openrouter.py; cerca del auto top-up de $5
+      (cuando el saldo baja de $3, OpenRouter recarga $5), priorizar tiers baratos
+      (flash/deepseek) y evitar opus para no agotar saldo.
 
   - case: "Kimi K3 no soporta el rol 'developer'"
     recovery: >
