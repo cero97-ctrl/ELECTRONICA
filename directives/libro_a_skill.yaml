@@ -1,12 +1,16 @@
 goal: >
-  Convertir un libro en formato PDF en un skill de agente de referencia rápida,
-  instalado como skill global en ~/.config/opencode/skills/<nombre>/. El flujo
-  entrevista al usuario (tema, nombre, idioma, alcance, objetivo), extrae el
-  texto del PDF de forma determinista, destila el contenido con un LLM en un
-  SKILL.md con frontmatter válido y una carpeta references/ de materiales
-  auxiliares (tablas, fórmulas, índices, glosario), y lo instala en el directorio
-  global de skills de opencode. Es reutilizable para cualquier dominio (Física,
-  Matemáticas, Electrónica, etc.) según el proyecto en desarrollo.
+  Convertir un libro en formato PDF en un skill de agente de referencia rápida
+  orientado a RAZONAR y resolver problemas (metodologías de resolución paso a
+  paso, límites de aplicabilidad, prerrequisitos y fórmulas con representación
+  formal Python/SymPy), instalado como skill global en
+  ~/.config/opencode/skills/<nombre>/. El flujo entrevista al usuario (tema,
+  nombre, idioma, alcance, objetivo), extrae el texto del PDF de forma
+  determinista, destila el contenido con un LLM en un SKILL.md con frontmatter
+  válido y una carpeta references/ de materiales auxiliares, valida de forma
+  neuro-simbólica los bloques de código generados (synpy sandbox, con bucle de
+  reflexión opcional), y lo instala en el directorio global de skills de
+  opencode. Es reutilizable para cualquier dominio (Física, Matemáticas,
+  Electrónica, etc.) según el proyecto en desarrollo.
 
 required_inputs:
   - name: pdf
@@ -55,6 +59,18 @@ optional_inputs:
       PREAMBULO_INFOGRAFIA, lo compila con pdflatex (2 pasadas) y limpia los
       auxiliares, dejando .tex y .pdf en la carpeta destino.
     default: false
+  - name: validar_estricto
+    description: >
+      Abortar la instalación si la validación neuro-simbólica (paso 5) encuentra
+      bloques de código inválidos (sintaxis, import inseguro o error de
+      ejecución). Por defecto la validación solo advierte.
+    default: false
+  - name: reflexion
+    description: >
+      Número de re-síntesis con --feedback (bucle de reflexión) si la validación
+      encuentra bloques inválidos. Máximo respetado: 3 (retry budget del
+      framework). Cada re-síntesis consume créditos OpenRouter.
+    default: 0
 
 steps:
   - step: 1
@@ -92,9 +108,15 @@ steps:
     description: >
       Síntesis del skill. Chunking determinista del texto y destilación con LLM
       vía openrouter_chat (default deepseek, o el modelo del enrutador/explícito).
-      Genera SKILL.md (frontmatter name/description válido) + references/*.md
-      (tablas, fórmulas, glosario, índices). Aplica _find_balanced_json para
-      extraer el JSON del LLM. Reintenta hasta 3 veces si el JSON/skill es inválido.
+      Genera SKILL.md (frontmatter name/description válido) + references/*.md con
+      las estructuras de razonamiento: formulas.md (con representación formal en
+      bloques ```python sympy + nota de validez), metodologias.md (plantillas de
+      resolución paso a paso), limites_aplicabilidad.md (condiciones de borde,
+      cuándo NO aplicar), prerrequisitos.md (grafo de dependencias), tablas.md y
+      glosario.md. Aplica _find_balanced_json para extraer el JSON del LLM.
+      Reintenta hasta 3 veces si el JSON/skill es inválido. Con --feedback inyecta
+      los errores del validador como "CORRECCIONES PENDIENTES" (bucle de reflexión,
+      reutilizando el corpus destilado persistido sin volver a destilar).
     script: "execution/sintetizar_skill.py"
     inputs:
       --texto: ".tmp/libro_{{nombre}}_texto/texto_completo.txt"
@@ -109,12 +131,34 @@ steps:
 
   - step: 5
     description: >
+      Validación neuro-simbólica del skill (determinista, sin LLM ni créditos).
+      validar_skill_formulas.py extrae los bloques ```python/```sympy de
+      SKILL.md + references/ y los valida: sintaxis (ast), seguridad de imports
+      (solo math/sympy/fractions; veta os/subprocess/open/eval...) y ejecución
+      en sandbox aislado con sympy (oráculo) y timeout. Informa además la
+      presencia de las estructuras de razonamiento (metodologias.md,
+      limites_aplicabilidad.md, prerrequisitos.md) como warning.
+      Con --reflexion N, si hay bloques inválidos y queda budget (máx 3),
+      re-sintetizar pasando --feedback <errores.json> a sintetizar_skill.py
+      (consumo de créditos) y revalidar. Con --validar-estricto, abortar antes
+      de instalar si quedan bloques inválidos.
+    script: "execution/validar_skill_formulas.py"
+    inputs:
+      --skill: ".tmp/skill_{{nombre}}/"
+    expected_output: >
+      JSON {status ok, oraculo, estructuras, bloques[], resumen{total,ok,errores}}.
+      Exit 0 sin errores; 3 si hay bloques inválidos; 2 si falta SKILL.md;
+      1 argumentos inválidos.
+
+  - step: 6
+    description: >
       Reporte LaTeX del skill (determinista, sin LLM ni créditos). Convierte
       SKILL.md + references/*.md a un documento con el estilo infográfico
       compartido (PREAMBULO_INFOGRAFIA + \bandaTitulo), respetando el math
       $...$ tal cual y convirtiendo listas, párrafos y tablas markdown a booktabs.
-      Compila con compile_latex_code (pdflatex, 2 pasadas), que limpia los
-      auxiliares dejando .tex + .pdf en docs/SKILL/<nombre>/. Con --no-latex se salta.
+      Cada reference recibe su propia sección para navegar el PDF. Compila con
+      compile_latex_code (pdflatex, 2 pasadas), que limpia los auxiliares
+      dejando .tex + .pdf en docs/SKILL/<nombre>/. Con --no-latex se salta.
     script: "execution/generar_latex_skill.py"
     inputs:
       --skill: ".tmp/skill_{{nombre}}/"
@@ -127,7 +171,7 @@ steps:
       aunque la compilación falle (compilado=false); en ese caso el flujo avisa
       pero NO aborta la instalación del skill.
 
-  - step: 6
+  - step: 7
     description: >
       Revisión humana del skill generado (resumen de archivos/secciones). Si el
       usuario corrige, re-sintetizar (paso 4) sin superar 3 reintentos. Si
@@ -135,7 +179,7 @@ steps:
     script: null
     actor: orquestador + usuario
 
-  - step: 7
+  - step: 8
     description: >
       Instalación en el directorio global de opencode
       (~/.config/opencode/skills/<nombre>/). Valida el frontmatter y la
@@ -171,6 +215,12 @@ expected_outputs:
       Reporte del skill en docs/SKILL/<nombre>/ con <nombre>.tex (fuente LaTeX del
       estilo infográfico) y <nombre>.pdf compilado. Entregable versionable en el
       repo, en la carpeta de convención LaTeX del proyecto.
+  - name: validacion_skill
+    description: >
+      Resultado de la validación neuro-simbólica del paso 5, persistido en
+      state.validacion_skill y en .tmp/errores_skill_<nombre>.json (si hubo
+      bloques inválidos y se usó --reflexion): resumen de bloques válidos/
+      inválidos, oráculo usado y estructuras de razonamiento faltantes.
 
 edge_cases:
   - case: "El PDF es escaneado (texto no selectable)"
@@ -234,6 +284,32 @@ edge_cases:
       conserva el .tex, avisa con los errores de pdflatex y continúa con la
       instalación: el reporte es un extra, no bloquea el entregable principal.
 
+  - case: "Bloques Python/SymPy inválidos en el skill (sintaxis, import inseguro o error de ejecución)"
+    recovery: >
+      validar_skill_formulas.py reporta cada bloque con su estado. El flujo avisa
+      con el detalle y continúa por defecto. Con --validar-estricto aborta antes de
+      instalar. Con --reflexion N>0 re-sintetiza con --feedback (créditos, budget
+      máx 3) y revalida hasta agotar; si persisten los errores, reporta y sigue
+      (o aborta si --validar-estricto).
+
+  - case: "El skill no trae las estructuras de razonamiento (metodologias/limites/prerrequisitos)"
+    recovery: >
+      El validador lo reporta como warning (faltantes), no como error: la decisión
+      de qué estructuras son obligatorias pertenece a la directiva. Si el usuario
+      las exige, re-sintetizar con --reflexion (los faltantes se incluyen en el
+      feedback) o aceptarlo explícitamente.
+
+  - case: "sympy no está disponible en el entorno"
+    recovery: >
+      El oráculo degrada a AST-only (solo sintaxis + seguridad, sin ejecución) y
+      lo reporta en "oraculo". Instalar sympy en elect_env si se quiere ejecución.
+
+  - case: "z3 no está instalado"
+    recovery: >
+      Es un oráculo opcional: la validación lógica SMT de condiciones de borde se
+      omite con aviso; sympy sigue cubriendo la exactitud matemática. Instalar
+      z3-solver si se necesita verificación de consistencia lógica avanzada.
+
 metadata:
   version: "1.0"
   created: "2026-08-27"
@@ -245,6 +321,7 @@ metadata:
   scripts_ejecucion:
     - "execution/extraer_libro_pdf.py"
     - "execution/sintetizar_skill.py"
+    - "execution/validar_skill_formulas.py"
     - "execution/generar_latex_skill.py"
     - "execution/instalar_skill.py"
   enrutamiento:
@@ -261,6 +338,7 @@ metadata:
     - "openai"
     - "yaml"
     - "PyMuPDF (fitz, fallback de extracción)"
+    - "sympy (oráculo de validación neuro-simbólica)"
   dependencias_sistema:
     - "pdftotext"
   reiniciar_opencode: >

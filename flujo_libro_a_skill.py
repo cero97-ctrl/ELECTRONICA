@@ -8,14 +8,16 @@ Ejecuta el flujo completo definido en la directiva libro_a_skill.yaml:
   2. extraer_libro_pdf.py   → extrae el texto del PDF (determinista).
   3. enrutador.py           → decisión determinista de tier (contexto masivo).
   4. sintetizar_skill.py    → destila SKILL.md + references/ con LLM.
-  5. generar_latex_skill.py → reporte LaTeX (SKILL.md + references) en docs/SKILL/<name>/.
-  6. instalar_skill.py      → copia a ~/.config/opencode/skills/<name>/.
-  7. alert_user.py          → notifica + aviso de reiniciar opencode.
+  5. validar_skill_formulas.py → valida bloques Python/SymPy (neuro-simbólico,
+     determinista) y, si se pide --reflexion, re-sintetiza con correcciones.
+  6. generar_latex_skill.py → reporte LaTeX (SKILL.md + references) en docs/SKILL/<name>/.
+  7. instalar_skill.py      → copia a ~/.config/opencode/skills/<name>/.
+  8. alert_user.py          → notifica + aviso de reiniciar opencode.
 
 Uso:
     python3 flujo_libro_a_skill.py --pdf <libro.pdf> [--tema "..."] [--nombre <name>]
-        [--idioma es] [--modelo <id>] [--sobrescribir] [--dry-run] [--no-alert] [--no-latex]
-        [--salida .tmp/skill_<name>/]
+        [--idioma es] [--modelo <id>] [--sobrescribir] [--dry-run] [--no-alert]
+        [--no-latex] [--validar-estricto] [--reflexion N] [--salida .tmp/skill_<name>/]
 
 --pdf es requerido. Si no se pasan --tema/--nombre/--idioma, se entrevista al
 usuario. Con --dry-run se genera el skill pero NO se instala en global.
@@ -38,6 +40,7 @@ PYTHON = sys.executable
 EXTRAER = SCRIPT_DIR / "execution" / "extraer_libro_pdf.py"
 ENRUTADOR = SCRIPT_DIR / "execution" / "enrutador.py"
 SINTETIZAR = SCRIPT_DIR / "execution" / "sintetizar_skill.py"
+VALIDAR_FORMULAS = SCRIPT_DIR / "execution" / "validar_skill_formulas.py"
 INSTALAR = SCRIPT_DIR / "execution" / "instalar_skill.py"
 GENERAR_LATEX = SCRIPT_DIR / "execution" / "generar_latex_skill.py"
 ALERTAR = SCRIPT_DIR / "execution" / "alert_user.py"
@@ -66,6 +69,21 @@ def run_script(cmd: list[str], capture_json: bool = False) -> tuple[int, dict | 
         except json.JSONDecodeError:
             return result.returncode, {"raw_output": result.stdout, "stderr": result.stderr}
     return result.returncode, result.stdout
+
+
+def _msg_fallo(d: dict | str, fallback: str) -> str:
+    """Extrae el mejor mensaje de fallo: message JSON, stderr o raw_output."""
+    if isinstance(d, dict):
+        m = d.get("message")
+        if m:
+            return str(m)
+        err = d.get("stderr")
+        if err and str(err).strip():
+            return str(err).strip().splitlines()[-1]
+        raw = d.get("raw_output")
+        if raw and str(raw).strip():
+            return str(raw)[:200]
+    return fallback
 
 
 def preguntar(prompt: str, default=None) -> str:
@@ -148,6 +166,11 @@ def main() -> int:
     parser.add_argument("--salida", default=None, help="Dir local del skill generado.")
     parser.add_argument("--sobrescribir", action="store_true", help="Sobrescribir skill global existente.")
     parser.add_argument("--no-latex", action="store_true", help="No generar el reporte LaTeX en docs/SKILL/.")
+    parser.add_argument("--validar-estricto", action="store_true", help=(
+        "Abortar si la validación neuro-simbólica encuentra bloques de código inválidos."))
+    parser.add_argument("--reflexion", type=int, default=0, help=(
+        "Re-síntesis con --feedback hasta N veces si la validación encuentra errores "
+        "(consumo de créditos; respeta el retry budget máx 3)."))
     parser.add_argument("--dry-run", action="store_true", help="Generar skill sin instalar en global.")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta audible al final.")
     parser.add_argument("--destino", default=str(DESTINO_GLOBAL), help="Directorio global de skills.")
@@ -184,7 +207,7 @@ def main() -> int:
     }
     save_state(state)
 
-    total = 4 + (0 if args.no_latex else 1) + (0 if args.dry_run else 1)
+    total = 5 + (0 if args.no_latex else 1) + (0 if args.dry_run else 1)
 
     # ── Paso 1: extracción ──
     print("\n" + "─" * 56)
@@ -253,7 +276,7 @@ def main() -> int:
         capture_json=True,
     )
     if code_sint != 0 or not isinstance(sint, dict) or sint.get("status") != "ok":
-        msg = (sint or {}).get("message") or "Fallo en síntesis"
+        msg = _msg_fallo(sint, "Fallo en síntesis")
         print(f"  ❌ Síntesis: {msg}", file=sys.stderr)
         state.update(current_step=3, steps_failed=["sintesis"], last_updated=now_iso())
         save_state(state)
@@ -263,9 +286,82 @@ def main() -> int:
     for a in sint["archivos"]:
         print(f"     · {a}")
 
-    # ── Paso 4: reporte LaTeX (determinista, sin créditos) ──
+    # ── Paso 4: validación neuro-simbólica (determinista, sin créditos) ──
+    print("\n" + "─" * 56)
+    print(f"  Paso 4/{total}  │  Validación neuro-simbólica (bloques Python/SymPy)")
+    print("─" * 56)
+    def _comando_validador() -> list[str]:
+        return [PYTHON, str(VALIDAR_FORMULAS), "--skill", str(salida_local)]
+
+    def _validacion_ok(val: dict) -> bool:
+        return isinstance(val, dict) and val.get("status") == "ok" and val.get("resumen", {}).get("errores", 0) == 0
+
+    code_val, val = run_script(_comando_validador(), capture_json=True)
+    if code_val in (1, 2) or not isinstance(val, dict) or val.get("status") != "ok":
+        msg = (val or {}).get("message") or f"Fallo en validación neuro-simbólica (código {code_val})"
+        print(f"  ⚠  Validación: {msg}", file=sys.stderr)
+        state.update(validacion_error=msg, last_updated=now_iso())
+        save_state(state)
+    else:
+        # ── Bucle de reflexión (opt-in, consume créditos, máx 3) ──
+        reflexion_restante = min(args.reflexion, 3)
+        while not _validacion_ok(val) and reflexion_restante > 0:
+            errores = [b for b in val.get("bloques", []) if b.get("estado") != "ok"]
+            feedback_file = TMP_DIR / f"errores_skill_{nombre}.json"
+            feedback_file.write_text(
+                json.dumps({"bloques": errores}, ensure_ascii=False, indent=2), encoding="utf-8",
+            )
+            print(f"  ⚠  {len(errores)} bloques inválidos; re-síntesis con correcciones "
+                  f"(reflexión {reflexion_restante} restante).")
+            print("  ℹ  Este paso consume créditos OpenRouter.")
+            code_sint2, sint2 = run_script(
+                [PYTHON, str(SINTETIZAR),
+                 "--texto", str(texto),
+                 "--entrevista", str(_commit_entrevista(datos)),
+                 "--nombre", nombre,
+                 "--tema", tema,
+                 "--idioma", idioma,
+                 "--modelo", modelo,
+                 "--salida", str(salida_local),
+                 "--feedback", str(feedback_file)],
+                capture_json=True,
+            )
+            if code_sint2 != 0 or not isinstance(sint2, dict) or sint2.get("status") != "ok":
+                msg2 = _msg_fallo(sint2, "Fallo en re-síntesis con feedback")
+                print(f"  ⚠  Re-síntesis: {msg2}", file=sys.stderr)
+                break
+            print(f"  ✅ Re-síntesis OK ({len(sint2.get('archivos', []))} archivos)")
+            reflexion_restante -= 1
+            code_val, val = run_script(_comando_validador(), capture_json=True)
+            if code_val != 0 or not isinstance(val, dict) or val.get("status") != "ok":
+                break
+
+        estado = "OK" if _validacion_ok(val) else "INVÁLIDO"
+        r = val.get("resumen", {})
+        print(f"  {'✅' if estado == 'OK' else '⚠'} Bloques {r.get('ok', 0)}/{r.get('total', 0)} válidos "
+              f"({estado}), oráculo: {val.get('oraculo')}")
+        faltantes = val.get("estructuras", {}).get("faltantes", [])
+        if faltantes:
+            print(f"  ℹ  Estructuras de razonamiento ausentes: {', '.join(faltantes)} (warning)")
+        for b in val.get("bloques", []):
+            if b.get("estado") != "ok":
+                print(f"     ⚠ {b['archivo']} #{b['indice']} [{b['estado']}]: {(b.get('error') or '')[:120]}", file=sys.stderr)
+        state.update(validacion_skill={
+            "resumen": r,
+            "oraculo": val.get("oraculo"),
+            "faltantes": faltantes,
+            "reflexiones_usadas": args.reflexion - reflexion_restante,
+        }, last_updated=now_iso())
+        save_state(state)
+        if args.validar_estricto and not _validacion_ok(val):
+            print("  ❌ --validar-estricto: hay bloques inválidos; se aborta.", file=sys.stderr)
+            run_script([PYTHON, str(ALERTAR), "error"])
+            return 1
+        estado_ok(state, 4)
+
+    # ── Paso 5: reporte LaTeX (determinista, sin créditos) ──
     if not args.no_latex:
-        paso_latex = 4
+        paso_latex = 5
         dir_latex = SCRIPT_DIR / "docs" / "SKILL" / nombre
         print("\n" + "─" * 56)
         print(f"  Paso {paso_latex}/{total}  │  Generando reporte LaTeX del skill")
@@ -280,7 +376,7 @@ def main() -> int:
             capture_json=True,
         )
         if code_lat != 0 or not isinstance(lat, dict) or lat.get("status") != "ok":
-            msg = (lat or {}).get("message") or "Fallo generando el reporte LaTeX"
+            msg = _msg_fallo(lat, "Fallo generando el reporte LaTeX")
             print(f"  ⚠  Reporte LaTeX: {msg}", file=sys.stderr)
             state.update(latex_error=msg, last_updated=now_iso())
             save_state(state)
@@ -293,7 +389,7 @@ def main() -> int:
             estado_ok(state, paso_latex)
 
     if not args.dry_run and datos["instalar_global"]:
-        n_pasos_hasta_aqui = 3 + (1 if not args.modelo else 0) + (1 if not args.no_latex else 0)
+        n_pasos_hasta_aqui = 4 + (1 if not args.modelo else 0) + (1 if not args.no_latex else 0)
         # ── Paso de instalación ──
         print("\n" + "─" * 56)
         print(f"  Paso {n_pasos_hasta_aqui + 1}/{total}  │  Instalando en global")
@@ -307,7 +403,7 @@ def main() -> int:
             capture_json=True,
         )
         if code_inst != 0 or not isinstance(inst, dict) or inst.get("status") != "ok":
-            msg = (inst or {}).get("message") or "Fallo en instalación"
+            msg = _msg_fallo(inst, "Fallo en instalación")
             print(f"  ❌ Instalación: {msg}", file=sys.stderr)
             state.update(current_step=n_pasos_hasta_aqui + 1, steps_failed=["instalacion"], last_updated=now_iso())
             save_state(state)

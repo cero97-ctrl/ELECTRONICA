@@ -272,9 +272,9 @@ def main() -> int:
             nombre = args.nombre or meta.get("name", nombre)
             descripcion = meta.get("description", descripcion)
         if resto.strip():
-            cuerpo.extend(_cuerpo(resto))
             if md.name != "SKILL.md" and (dir_skill / "references").name in str(md.parent):
-                cuerpo.append(r"\vspace{10pt}" + "\n")
+                cuerpo.append(rf"\section*{{{_inline(md.stem)}}}" + "\n")
+            cuerpo.extend(_cuerpo(resto))
 
     salida = Path(args.salida).expanduser() if args.salida else (
         SCRIPT_DIR.parent / "docs" / "SKILL" / nombre

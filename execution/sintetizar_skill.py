@@ -5,9 +5,16 @@ sintetizar_skill.py — Destilación del texto de un libro en un skill (Layer 3:
 Flujo asociado: directives/libro_a_skill.yaml
 
 Toma el texto extraído de un libro (ej. extraer_libro_pdf.py) más el descriptor
-de la entrevista y genera un skill de referencia rápida:
+de la entrevista y genera un skill de referencia rápida orientado a RAZONAR y
+resolver problemas:
   - SKILL.md  (frontmatter válido name/description + cuerpo de referencia)
-  - references/*.md (tablas, fórmulas, índices, glosarios auxiliares)
+  - references/*.md (formulas con representación formal Python/SymPy,
+    metodologías de resolución, límites de aplicabilidad, prerrequisitos,
+    tablas, glosario)
+
+Opcionalmente acepta --feedback con los errores de validación neuro-simbólica
+para corregirlos en un bucle de reflexión (re-síntesis reutilizando el corpus
+destilado persistido, sin distilar de nuevo).
 
 El chunking y el ensamblaje final son deterministas; solo la redacción de cada
 sección delega en un LLM vía openrouter_chat (según el tier decidido por el
@@ -105,6 +112,16 @@ def _find_balanced_json(text: str) -> str | None:
     return None
 
 
+def _sanear_json(s: str) -> str:
+    """Repara JSON de LLM tolerando sus descuidos habituales:
+       - trailing commas:  [, } / , ] -> } / ]  (python.md #4)
+       - barras LaTeX crudas:\O, \mu... -> \O, \mu (invalid escape #6-equivalente)
+       Nunca toca escapes válidos (\\n, \\", \\\\, \\u...)."""
+    s = re.sub(r",\s*([}\]])", r"\1", s)
+    s = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", s)
+    return s
+
+
 def extract_json_from_response(text: str) -> dict:
     """Extrae el primer objeto JSON balanceado del texto crudo del LLM."""
     bloque = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
@@ -115,7 +132,7 @@ def extract_json_from_response(text: str) -> dict:
         candidate = _find_balanced_json(text)
     if candidate is None:
         raise ValueError("No se pudo extraer un JSON válido de la respuesta del modelo.")
-    return json.loads(candidate)
+    return json.loads(_sanear_json(candidate))
 
 
 def _repartir_chunks(texto: str, max_tokens: int) -> list[str]:
@@ -150,6 +167,44 @@ def _leer_json(ruta: str) -> dict:
         raise FileNotFoundError(f"No existe: {ruta}")
     with open(p, encoding="utf-8") as f:
         return json.load(f)
+
+
+def _yaml_q(valor: str) -> str:
+    """Convierte un scalar YAML a string doble-comilla válido (soporta ':' y
+    caracteres especiales que rompen scalars planos)."""
+    return json.dumps(str(valor), ensure_ascii=False)
+
+
+def _normalizar_frontmatter(texto: str, nombre: str) -> str:
+    """Reescribe el bloque ---...--- con scalares YAML entre comillas.
+
+    El LLM suele emitir descriptions con ':' (ej. 'clave: valor') que rompen el
+    scalar plano YAML ('mapping values are not allowed here'). Este saneo
+    determinista re-emite name/description con comillas dobles, garantizando que
+    yaml.safe_load nunca falle por formato de scalar."""
+    m = re.match(r"^---\s*\n(?P<cuerpo>.*?)\n---\s*\n(?P<resto>.*)$", texto, re.DOTALL)
+    if not m:
+        return texto
+    cuerpo, resto = m.group("cuerpo"), m.group("resto")
+    lineas: list[str] = []
+    if not re.search(r"(?m)^name\s*:", cuerpo):
+        lineas.append(f"name: {_yaml_q(nombre)}")
+    for linea in cuerpo.splitlines():
+        km = re.match(r"^(?P<clave>\w+)\s*:(?P<valor>.*)$", linea)
+        if not km:
+            lineas.append(linea)
+            continue
+        clave, valor = km.group("clave"), km.group("valor").strip()
+        if clave == "name":
+            lineas.append(f"name: {_yaml_q(nombre)}")
+        elif clave == "description":
+            if valor.startswith('"') or valor.startswith("'"):
+                lineas.append(linea)
+            else:
+                lineas.append(f"description: {_yaml_q(valor)}")
+        else:
+            lineas.append(linea)
+    return f"---\n" + "\n".join(lineas) + "\n---\n" + resto
 
 
 def _validar_frontmatter(texto: str, nombre: str) -> list[str]:
@@ -225,7 +280,10 @@ def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
     )
 
 
-def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str) -> dict:
+def _llm_estructura(
+    resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str,
+    feedback: Optional[list[dict]] = None,
+) -> dict:
     """Pide al LLM el SKILL.md (con frontmatter) y la lista de references."""
     try:
         from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
@@ -235,16 +293,24 @@ def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, mo
     api_key = load_api_key()
     sys_prompt = (
         "Eres un arquitecto de 'skills' de agente. Creas un SKILL.md de referencia "
-        "rápida para un asistente de código, más archivos auxiliares. "
+        "rápida para un asistente de código, más archivos auxiliares que habilitan "
+        "RAZONAR y RESOLVER problemas (no solo responder preguntas sobre el libro): "
+        "metodologías de resolución paso a paso, límites de aplicabilidad y "
+        "prerrequisitos conceptuales. Toda representación formal de fórmulas debe "
+        "usar código Python/SymPy ejecutable. Extrae TODO del libro: no inventes. "
         f"Responde en {idioma}. Siempre devuelves un único objeto JSON válido."
     )
     ejemplo_json = (
         '{\\n'
         '  "skilL_md": "---\\nname: <NOMBRE>\\ndescription: <frase en 3a persona, '
         'cuándo usarlo, con palabras clave de disparo>\\n---\\n\\n'
-        '<Cuerpo del skill: Cuando usar, Conceptos clave, Formulas, Tablas, '
-        'Glosario, Procedimiento basico>",\\n'
+        '<Cuerpo del skill: Cuando usar, Conceptos clave, Formulas con su '
+        'representacion formal, Tablas, Glosario, Procedimiento basico, '
+        'Metodologias de resolucion, Limites de aplicacion, Prerrequisitos>",\\n'
         '  "references": [ {"archivo": "formulas.md", "contenido": "..."}, '
+        '{"archivo": "metodologias.md", "contenido": "..."}, '
+        '{"archivo": "limites_aplicabilidad.md", "contenido": "..."}, '
+        '{"archivo": "prerrequisitos.md", "contenido": "..."}, '
         '{"archivo": "tablas.md", "contenido": "..."}, '
         '{"archivo": "glosario.md", "contenido": "..."} ]\\n'
         '}'
@@ -256,9 +322,41 @@ def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, mo
         f"{resumen_chunks}\n\n"
         "Genera un objeto JSON con esta forma EXACTA:\n"
         f"{ejemplo_json}\n"
+        "NORMAS DE CONTENIDO:\n"
+        "1. formulas.md: cada fórmula relevante con (a) notación $...$, (b) "
+        "representación formal en un bloque ```python con sympy (variables "
+        "simbólicas explícitas y restricciones de dominio, ej. x > 0), y (c) nota "
+        "'Validez:' indicando el rango de aplicación.\n"
+        "2. metodologias.md: plantillas de razonamiento — para cada clase de "
+        "problema común del libro, el procedimiento paso a paso numerado que el "
+        "autor emplea para resolverlo (método, no solo teoría).\n"
+        "3. limites_aplicabilidad.md: por fórmula/teorema, las CONDICIONES DE "
+        "BORDE — cuándo NO aplica ('NUNCA aplicar si ...'), supuestos que deben "
+        "cumplirse y qué usar en su lugar.\n"
+        "4. prerrequisitos.md: grafo de dependencias conceptuales — por concepto "
+        "clave, 'requiere: [concepto A, B]' (los conceptos previos necesarios "
+        "antes de aplicar el nuevo).\n"
+        "5. tablas.md y glosario.md: como de costumbre.\n"
+        "6. Los bloques ```python solo deben usar sympy y math (variables, "
+        "ecuaciones, solve/simplify), sin archivos, sin red, sin os/subprocess.\n"
         "IMPORTANTE: 'name' del frontmatter debe ser exactamente: " + nombre + ".\n"
         "JSON válido, sin texto fuera del JSON."
     )
+    if feedback:
+        _fb: list[str] = []
+        for err in feedback:
+            if isinstance(err, dict):
+                ficha = f"- {err.get('archivo', '?')} (bloque {err.get('indice', '?')}): "
+                ficha += str(err.get('error') or err.get('estado') or 'error')
+                _fb.append(ficha)
+            elif isinstance(err, str):
+                _fb.append(f"- {err}")
+        if _fb:
+            user_prompt += (
+                "\n\nCORRECCIONES PENDIENTES (el validador neuro-simbólico falló en "
+                "estos bloques de esta misma síntesis; corrígelos en la nueva "
+                "salida):\n" + "\n".join(_fb[:20])
+            )
     content, tokens = openrouter_chat(
         [
             {"role": "system", "content": sys_prompt},
@@ -274,37 +372,41 @@ def _llm_estructura(resumen_chunks: str, tema: str, idioma: str, nombre: str, mo
     return extract_json_from_response(content)
 
 
-def _construir_skill(
-    nombre: str, tema: str, idioma: str, resumen_chunks: list[str], modelo: str
-) -> tuple[str, list[dict], dict]:
-    """Devuelve (skilL_md_text, references, tokens_totales)."""
-    tokens_totales: dict = {"prompt": 0, "respuesta": 0}
-
-    # Fase 1: destilar cada chunk.
+def _destilar_chunks(
+    resumen_chunks: list[str], tema: str, idioma: str, modelo: str,
+) -> str:
+    """Fase 1: destila cada chunk en notas de referencia (devuelve el corpus)."""
     resumenes: list[str] = []
     for chunk in resumen_chunks:
         # nos interesa solo el texto devuelto; los tokens se reportan globalmente
         texto = _llm_chunk(chunk, tema, idioma, modelo)
         if texto and texto.strip() and texto.strip() != "[sin contenido relevante]":
             resumenes.append(texto)
+    return "\n\n".join(resumenes) if resumenes else "(sin contenido extraído)"
 
-    cuerpo_resumen = "\n\n".join(resumenes) if resumenes else "(sin contenido extraído)"
 
-    # Fase 2: ensamblar estructura (SKILL.md + references). Con reintentos.
+def _ensamblar_estructura(
+    cuerpo_resumen: str, nombre: str, tema: str, idioma: str, modelo: str,
+    feedback: Optional[list[dict]] = None,
+) -> tuple[str, list[dict]]:
+    """Fase 2: ensambla SKILL.md + references a partir del corpus destilado."""
     ultimo_error = None
     for intento in range(1, MAX_RETRIES + 1):
         try:
-            estructura = _llm_estructura(cuerpo_resumen, tema, idioma, nombre, modelo)
+            estructura = _llm_estructura(
+                cuerpo_resumen, tema, idioma, nombre, modelo, feedback=feedback,
+            )
             skilL = estructura.get("skilL_md") or estructura.get("skill_md") or estructura.get("SKILL.md")
             if not isinstance(skilL, str) or not skilL.strip():
                 raise ValueError("El LLM no devolvió el campo del SKILL.md")
+            skilL = _normalizar_frontmatter(skilL, nombre)
             refs = estructura.get("references") or []
             if not isinstance(refs, list):
                 refs = []
             errores_fm = _validar_frontmatter(skilL, nombre)
             if errores_fm:
                 raise ValueError(" | ".join(errores_fm))
-            return skilL, refs, tokens_totales
+            return skilL, refs
         except Exception as exc:  # noqa: BLE001
             ultimo_error = exc
             if intento >= MAX_RETRIES:
@@ -337,11 +439,27 @@ def _limpiar_salida(salida: Path) -> None:
 def sintetizar(
     texto: str, entrevista: dict, nombre: str, tema: str, idioma: str,
     modelo: str, max_chunk_tokens: int, salida: Path,
+    feedback: Optional[list[dict]] = None,
 ) -> dict:
     chunks = _repartir_chunks(texto, max_chunk_tokens)
 
-    # Fase LLM (con retry budget del framework sobre la fase de estructura).
-    skilL_md, refs, tokens = _construir_skill(nombre, tema, idioma, chunks, modelo)
+    # Corpus destilado persistido como intermedio (hermano del dir, fuera del
+    # skill): en re-síntesis con --feedback se reutiliza sin distilar de nuevo
+    # (el feedback afecta solo a la fase de estructura, no al chunking).
+    corpus_file = salida.parent / f"{salida.name}_destilado.txt"
+    if feedback and corpus_file.is_file():
+        cuerpo_resumen = corpus_file.read_text(encoding="utf-8")
+    else:
+        cuerpo_resumen = _destilar_chunks(chunks, tema, idioma, modelo)
+        try:
+            corpus_file.write_text(cuerpo_resumen, encoding="utf-8")
+        except OSError:
+            pass
+
+    # Fase 2: estructura (SKILL.md + references) con retry budget.
+    skilL_md, refs = _ensamblar_estructura(
+        cuerpo_resumen, nombre, tema, idioma, modelo, feedback=feedback,
+    )
 
     salida.mkdir(parents=True, exist_ok=True)
     _limpiar_salida(salida)
@@ -381,8 +499,8 @@ def sintetizar(
         "archivos": archivos,
         "secciones": [str(s) for s in sorted(refs_dir.glob("*.md"))] if refs_dir.is_dir() else [],
         "modelo": modelo,
-        "tokens_consumidos": tokens,
         "chunks": len(chunks),
+        "re_sintesis": bool(feedback),
     }
 
 
@@ -397,6 +515,9 @@ def main() -> None:
     parser.add_argument("--modelo", default=None, help="ID de modelo OpenRouter (override).")
     parser.add_argument("--max-chunk-tokens", type=int, default=16000)
     parser.add_argument("--salida", default=None, help="Directorio del skill generado.")
+    parser.add_argument("--feedback", default=None, help=(
+        "JSON con los errores del validador (bucle de reflexión). Opcional."
+    ))
 
     args = parser.parse_args()
 
@@ -437,11 +558,21 @@ def main() -> None:
 
     salida = Path(args.salida) if args.salida else Path(".tmp") / f"skill_{args.nombre}"
 
-    # Dry-run de estructura: si hay una bandera, se resuelve en el orquestador.
+    # Feedback opcional (bucle de reflexión): lista de dicts {archivo, indice, estado, error}.
+    feedback = None
+    if args.feedback:
+        try:
+            feedback = _leer_json(args.feedback).get("bloques") or _leer_json(args.feedback)
+        except (FileNotFoundError, json.JSONDecodeError):
+            print(json.dumps({"status": "error", "code": 1, "message": f"Feedback JSON inválido: {args.feedback}"}, ensure_ascii=False), file=sys.stderr)
+            sys.exit(1)
+        if not isinstance(feedback, list):
+            feedback = [feedback]
+
     try:
         resultado = sintetizar(
             texto, entrevista, args.nombre, args.tema, args.idioma,
-            modelo, args.max_chunk_tokens, salida,
+            modelo, args.max_chunk_tokens, salida, feedback=feedback,
         )
     except (ValueError, RuntimeError, KeyError) as exc:
         print(json.dumps({"status": "error", "code": 3, "message": str(exc)}, ensure_ascii=False), file=sys.stderr)
