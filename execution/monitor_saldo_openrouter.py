@@ -39,7 +39,8 @@ from pathlib import Path
 # ── Referencia de créditos totales ───────────────────────────────────────────
 # balance_visto + usage en ese instante. Ajustar si cambia la compra/top-up.
 # 2026-08-16: página mostró $9.82 con usage=0.01721381 → créditos totales ≈ 9.83721381
-CREDITS_TOTAL_REF = 9.83721381
+# 2026-09-01: recarga → página mostró $22.44 con usage=2.329395 → ≈ 24.769395
+CREDITS_TOTAL_REF = 24.769395
 
 _ALERT_SCRIPT = Path(__file__).resolve().parent / "alert_user.py"
 _LOG_PATH = Path(__file__).resolve().parent.parent / ".tmp" / "saldo_openrouter.log"

@@ -334,25 +334,28 @@
 % ── Cabecera específica del reporte del skill ──
 \renewcommand{\iconoBanda}{book}
 \fancyhead[L]{\color{azulNoche}\small\bfseries \faIcon{book}~\textcolor{cyanNeon}{circuitos\_dispositivos\_electronicos}}
-\fancyhead[R]{\color{grisTexto}\smallElectrónica: dispositivos semiconductores y circuitos analógicos}
+\fancyhead[R]{\color{grisTexto}\smallCircuitos y Dispositivos Electrónicos}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Skill: circuitos\_dispositivos\_electronicos}{Skill de referencia rápida para análisis de circuitos con dispositivos semiconductores (diodos, BJT, MOS, A.O.) y circuitos analógicos. Úsese cuando se requieran leyes de Kirchhoff, Thévenin/Norton, respuesta transitoria}
+\bandaTitulo[fondoOscuro]{Skill: circuitos\_dispositivos\_electronicos}{"Asistente para analizar y resolver problemas de circuitos y dispositivos electrónicos. Úsalo cuando necesites aplicar leyes de Kirchhoff, analizar circuitos con resistencias, condensadores, bobinas, diodos, transistores}
 
-\section*{Circuitos y Dispositivos Electrónicos}
+\section*{Skill: Circuitos y Dispositivos Electrónicos}
 
 
 \subsection*{Cuándo usar este skill}
 
 
+Este skill debe activarse cuando el usuario plantee problemas o preguntas sobre:
+
+
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Resolver circuitos resistivos, RC, RL y con fuentes dependientes.
-  \item Analizar diodos rectificadores, zener, LED, fotodiodos y circuitos recortadores/fijadores.
-  \item Analizar y diseñar etapas con transistores bipolares (BJT) y MOS en continua y pequeña señal.
-  \item Trabajar con amplificadores operacionales en región lineal y no lineal (comparadores, Schmitt trigger).
-  \item Calcular equivalentes Thévenin/Norton, superposición, transferencia de señal y potencia.
-  \item Interpretar modelos SPICE y hojas de especificaciones de dispositivos.
-  \item Comprender fundamentos físicos: unión PN, efecto transistor, efecto de campo, capacidades parásitas.
+  \item Análisis de circuitos eléctricos y electrónicos (DC, transitorio, AC).
+  \item Cálculo de tensiones, corrientes y potencias en circuitos.
+  \item Aplicación de leyes de Kirchhoff, métodos de nudos y mallas.
+  \item Simplificación de circuitos mediante equivalentes Thévenin y Norton.
+  \item Análisis de circuitos con resistencias, condensadores, bobinas, diodos, transistores (BJT, MOSFET) y amplificadores operacionales.
+  \item Modelado de dispositivos electrónicos (modelos ideales, de pequeña señal, etc.).
+  \item Interpretación de hojas de especificaciones de componentes.
 \end{itemize}
 
 
@@ -360,52 +363,16 @@
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Tensión, corriente y potencia}: definiciones, convenios de signos, analogía hidráulica.
-  \item \textbf{Leyes de Kirchhoff}: LCK (nudos) y LTK (mallas).
-  \item \textbf{Señales}: escalón, pulso, rampa, exponencial, sinusoidal; valor medio y eficaz; representación compleja.
-  \item \textbf{Elementos ideales}: conductor, interruptor, fuentes independientes y dependientes.
-  \item \textbf{Resistencia}: Ley de Ohm, conductancia, efecto Joule, asociaciones serie/paralelo, divisores de tensión/corriente.
-  \item \textbf{Métodos de análisis}: nudos, mallas, superposición, Thévenin/Norton, fuente de prueba.
-  \item \textbf{Condensador y bobina}: relaciones i-v, continuidad, asociaciones, constante de tiempo, respuesta transitoria y sinusoidal, impedancia, energía almacenada.
-  \item \textbf{Transformador ideal y real}: relación de transformación, adaptación de impedancias.
-  \item \textbf{Diodo}: modelo ideal, exponencial, por tramos lineales; recta de carga; aplicaciones (rectificador, detector de envolvente, recortador, fijador, protección).
-  \item \textbf{Transistor bipolar (BJT)}: regiones de operación, βF, αF, efecto Early, modelos de pequeña señal (híbrido en π, parámetros h), etapas EC/CC/BC, par diferencial, CMRR, puertas lógicas.
-  \item \textbf{Transistor MOS}: tipos (acumulación/vaciamiento, canal N/P), regiones (corte, óhmica, saturación), efecto sustrato, modulación de longitud de canal, inversor CMOS, puertas lógicas, amplificación, modelo de pequeña señal.
-  \item \textbf{Amplificador operacional}: modelo ideal, cortocircuito virtual, configuraciones básicas, comparadores, realimentación.
-  \item \textbf{Dispositivos de potencia}: SCR, triac, diac, GTO, IGBT, convertidor DC-DC reductor.
-  \item \textbf{Optoelectrónica}: LED, fotodiodo, célula solar, fototransistor, optoacoplador.
-  \item \textbf{Fundamentos físicos}: semiconductores intrínsecos/extrínsecos, unión PN, capacidades de transición y difusión, principio de operación de BJT y MOS.
-  \item \textbf{SPICE}: directivas .OP, .TF, .TRAN, .AC, .PRINT, .PROBE; modelos de diodo, BJT y MOS.
-\end{itemize}
-
-
-\subsection*{Fórmulas esenciales}
-
-
-\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Ley de Ohm: $v = iR$, $i = Gv$, $P_R = i^2R = v^2/R$.
-  \item Divisor de tensión: $v_o = v_g \frac{R_2}{R_1+R_2}$.
-  \item Divisor de corriente: $i_2 = i_g \frac{R_1}{R_1+R_2}$.
-  \item Serie: $R_s = \sum R_i$; Paralelo: $\frac{1}{R_p} = \sum \frac{1}{R_i}$.
-  \item Condensador: $i_c = C \frac{dv_c}{dt}$, $v_c(t) = v_c(0) + \frac{1}{C}\int_0^t i_c d\tau$, $Z_c = \frac{1}{j\omega C}$.
-  \item Bobina: $v_L = L \frac{di_L}{dt}$, $i_L(t) = i_L(0) + \frac{1}{L}\int_0^t v_L d\tau$, $Z_L = j\omega L$.
-  \item Constante de tiempo: $\tau = RC$ o $\tau = L/R$.
-  \item Respuesta RC escalón: $v_c(t) = V_a(1 - e^{-t/RC})$, $i_c(t) = \frac{V_a}{R}e^{-t/RC}$.
-  \item Respuesta RL escalón: $i(t) = \frac{V_a}{R}(1 - e^{-tR/L})$, $v_L(t) = V_a e^{-tR/L}$.
-  \item Energía: $W_C = \frac{1}{2}CV^2$, $W_L = \frac{1}{2}LI^2$.
-  \item Transformador ideal: $\frac{v_2}{v_1} = n$, $\frac{i_2}{i_1} = -\frac{1}{n}$, $R_e = \frac{R_L}{n^2}$.
-  \item Diodo exponencial: $I_d = I_s(e^{v_D/\eta V_T} - 1)$, $V_T \approx 25$ mV a 300 K.
-  \item Diodo por tramos: $v_D = V_\gamma + i_d R_s$ (conduce), $i_d = 0$ (corte).
-  \item Rizado rectificador: $\Delta V_o \approx \frac{V_M}{f C R_L}$.
-  \item BJT activa: $i_C = \beta_F i_B$, $i_E = (\beta_F+1)i_B$, $\alpha_F = \frac{\beta_F}{\beta_F+1}$.
-  \item BJT pequeña señal: $g_m = \frac{I_{CQ}}{V_T}$, $r_\pi = \frac{\beta_F}{g_m}$, $r_o = \frac{V_A}{I_{CQ}}$.
-  \item MOS saturación: $I_D = \frac{KW}{2L}(v_{GS}-V_T)^2(1+\lambda v_{DS})$.
-  \item MOS óhmica: $I_D = K\frac{W}{L}\left[(v_{GS}-V_T)v_{DS} - \frac{v_{DS}^2}{2}\right]$.
-  \item MOS pequeña señal: $g_m = 2\sqrt{K\frac{W}{L}I_{DQ}}$, $r_{ds} = \frac{1}{\lambda I_{DQ}}$.
-  \item A.O. inversor: $\frac{v_o}{v_g} = -\frac{R_F}{R_s}$; no inversor: $1+\frac{R_1}{R_2}$.
-  \item CMRR: $CMRR = 20\log(\rho)$ dB.
-  \item Unión PN: $V_{bi} = V_T \ln\left(\frac{N_A N_D}{n_i^2}\right)$, $C_j = \frac{C_{jo}}{\sqrt{1-V/V_{bi}}}$.
-  \item Capacidad de difusión: $C_s = \tau_t \frac{I_s}{V_T}e^{V/V_T}$.
+  \item \textbf{Tensión y Corriente:} Definiciones, analogías, convenios de signos.
+  \item \textbf{Potencia:} Cálculo, convenio de signos (elemento pasivo vs. generador).
+  \item \textbf{Componentes ideales:} Resistencia, condensador, bobina, fuentes independientes y dependientes, transformador ideal.
+  \item \textbf{Leyes de Kirchhoff:} KCL (nudos) y KVL (mallas).
+  \item \textbf{Métodos de análisis:} Nudos, mallas, superposición, Thévenin, Norton.
+  \item \textbf{Señales:} Escalón, pulso, rampa, exponencial, sinusoidal; valores medio y eficaz.
+  \item \textbf{Dispositivos semiconductores:} Diodo (rectificador, zener), transistor bipolar (BJT), transistor de efecto de campo (MOSFET).
+  \item \textbf{Amplificador Operacional:} Modelo ideal, realimentación negativa/positiva, configuraciones básicas (inversor, no inversor, sumador, diferencial).
+  \item \textbf{Respuesta transitoria:} Circuitos RC y RL de primer orden, constante de tiempo.
+  \item \textbf{Análisis en pequeña señal:} Modelos de pequeña señal del BJT y MOSFET, ganancia, resistencias de entrada/salida.
 \end{itemize}
 
 
@@ -413,189 +380,1509 @@
 
 
 \begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Identificar} el tipo de circuito (resistivo, RC/RL, con diodos, con BJT/MOS, con A.O.).
-  \item \textbf{Simplificar} si es posible: asociaciones serie/paralelo, equivalentes Thévenin/Norton.
-  \item \textbf{Aplicar} leyes de Kirchhoff y ecuaciones de los dispositivos (hipótesis de región para no lineales).
-  \item \textbf{Verificar} hipótesis (p. ej., diodo conduce/corta, BJT en activa/saturación, MOS en saturación/óhmica).
-  \item \textbf{Calcular} variables de interés: tensiones, corrientes, potencias, ganancias, márgenes dinámicos.
-  \item \textbf{Validar} con SPICE o comparación con resultados analíticos si es necesario.
+  \item \textbf{Identificar} el tipo de circuito y los componentes involucrados.
+  \item \textbf{Determinar} el régimen de operación (DC, transitorio, pequeña señal).
+  \item \textbf{Sustituir} los dispositivos por sus modelos adecuados para el régimen de análisis.
+  \item \textbf{Aplicar} las leyes de Kirchhoff y los métodos de análisis de circuitos (nudos, mallas, superposición, equivalentes).
+  \item \textbf{Plantear y resolver} las ecuaciones resultantes.
+  \item \textbf{Verificar} las hipótesis de operación (ej. diodo en directa, transistor en activa).
+  \item \textbf{Interpretar} los resultados en el contexto del problema.
 \end{enumerate}
 
 
-\subsection*{Tablas de referencia rápida}
+\subsection*{Metodologías de resolución}
 
 
-\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Ver \texttt{tablas.md} para tablas de símbolos, prefijos, regiones de operación, configuraciones de A.O., etapas BJT, tipos de MOS, etc.
-\end{itemize}
+Para problemas comunes, consulta el archivo \texttt{metodologias.md}.
+
+
+\subsection*{Límites de aplicabilidad}
+
+
+Las condiciones de borde y cuándo NO aplicar ciertas fórmulas se detallan en \texttt{limites\_aplicabilidad.md}.
+
+
+\subsection*{Prerrequisitos conceptuales}
+
+
+El grafo de dependencias entre conceptos se encuentra en \texttt{prerrequisitos.md}.
+
+
+\subsection*{Fórmulas y Tablas}
+
+
+Las fórmulas con su representación formal en SymPy están en \texttt{formulas.md}. Las tablas de referencia rápida en \texttt{tablas.md}.
 
 
 \subsection*{Glosario}
 
 
+Definiciones de términos clave en \texttt{glosario.md}.
+
+
+\section*{formulas}
+
+\section*{Fórmulas de Circuitos y Dispositivos Electrónicos}
+
+
+\subsection*{1. Tensión, Corriente y Potencia}
+
+
+\subsubsection*{Corriente Eléctrica}
+
+
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Ver \texttt{glosario.md} para definiciones de términos técnicos.
+  \item \textbf{Notación:} $i = \frac{dq}{dt}$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{Fórmulas detalladas}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+q, t = sp.symbols('q t', real=True)
+i = sp.Function('i')(t)
+
+# Corriente como derivada de la carga
+i_expr = sp.Derivative(q, t)
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Ver \texttt{formulas.md} para el compendio completo de fórmulas.
+  \item \textbf{Validez:} Definición general para corriente instantánea.
 \end{itemize}
 
 
-\section*{Fórmulas de Electrónica}
-
-
-\subsection*{Ley de Ohm y Potencia}
+\subsubsection*{Potencia Eléctrica}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $v = i \cdot R$
-  \item $p = v \cdot i = i^2 R = \frac{v^2}{R}$
+  \item \textbf{Notación:} $p = i \cdot v$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{Leyes de Kirchhoff}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+i, v, t = sp.symbols('i v t', real=True)
+p = sp.Function('p')(t)
+
+# Potencia instantánea
+p_expr = i * v
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item KCL: $\sum i_{nudo} = 0$
-  \item KVL: $\sum v_{malla} = 0$
+  \item \textbf{Validez:} General para cualquier elemento de dos terminales.
 \end{itemize}
 
 
-\subsection*{Divisores}
+\subsection*{2. Ley de Ohm y Resistencia}
+
+
+\subsubsection*{Ley de Ohm}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Tensión: $v_o = v_{in} \frac{R_2}{R_1 + R_2}$
-  \item Corriente: $i_2 = i_{in} \frac{R_1}{R_1 + R_2}$
+  \item \textbf{Notación:} $v = i \cdot R$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{Resistencias Equivalentes}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+v, i, R = sp.symbols('v i R', real=True)
+
+# Ley de Ohm
+ecuacion_ohm = sp.Eq(v, i * R)
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Serie: $R_{eq} = R_1 + R_2 + \dots$
-  \item Paralelo: $\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \dots$
+  \item \textbf{Validez:} Solo para resistencias lineales ideales (característica i-v lineal que pasa por el origen).
 \end{itemize}
 
 
-\subsection*{Condensadores y Bobinas}
+\subsubsection*{Potencia disipada en una resistencia (Efecto Joule)}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $i_c = C \frac{dv_c}{dt}$
-  \item $v_L = L \frac{di_L}{dt}$
-  \item Serie: $\frac{1}{C_{eq}} = \sum \frac{1}{C_i}$, $L_{eq} = \sum L_i$
-  \item Paralelo: $C_{eq} = \sum C_i$, $\frac{1}{L_{eq}} = \sum \frac{1}{L_i}$
+  \item \textbf{Notación:} $P_R = i^2 R = \frac{v^2}{R}$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{Transitorios RC/RL}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+P_R, i, v, R = sp.symbols('P_R i v R', real=True, positive=True)
+
+# Potencia disipada
+P_R_expr1 = i**2 * R
+P_R_expr2 = v**2 / R
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $\tau = RC$ o $\tau = L/R$
-  \item $x(t) = X_f + (X_i - X_f)e^{-t/\tau}$
+  \item \textbf{Validez:} Resistencia lineal ideal. La potencia siempre es positiva (disipada).
 \end{itemize}
 
 
-\subsection*{Impedancias (RPS)}
+\subsection*{3. Leyes de Kirchhoff}
+
+
+\subsubsection*{Ley de Corrientes de Kirchhoff (KCL)}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $Z_R = R$
-  \item $Z_C = \frac{1}{j\omega C}$
-  \item $Z_L = j\omega L$
+  \item \textbf{Notación:} $\sum_{k=1}^{n} i_k = 0$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{Amplificador Operacional Ideal}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos para n corrientes
+n = 3
+i_sym = sp.symbols('i0:%d' % n, real=True)
+
+# KCL en un nudo
+kcl_expr = sp.Eq(sum(i_sym), 0)
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Inversor: $A_v = -\frac{R_F}{R_s}$
-  \item No Inversor: $A_v = 1 + \frac{R_1}{R_2}$
-  \item Seguidor: $A_v = 1$
-  \item Sumador: $v_o = -R_F \sum \frac{v_i}{R_i}$
+  \item \textbf{Validez:} Aplicable en cualquier nudo de un circuito de parámetros concentrados.
 \end{itemize}
 
 
-\subsection*{Diodo}
+\subsubsection*{Ley de Tensiones de Kirchhoff (KVL)}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item Shockley: $I_d = I_s (e^{v_D/(\eta V_T)} - 1)$
-  \item $V_T \approx 25mV$ a 300K
+  \item \textbf{Notación:} $\sum_{k=1}^{n} v_k = 0$
+  \item \textbf{Representación formal:}
 \end{itemize}
 
 
-\subsection*{BJT (Activa)}
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos para n tensiones
+n = 3
+v_sym = sp.symbols('v0:%d' % n, real=True)
+
+# KVL en una malla
+kvl_expr = sp.Eq(sum(v_sym), 0)
+\end{lstlisting}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $I_C = \beta_F I_B$
-  \item $I_E = (\beta_F + 1)I_B$
+  \item \textbf{Validez:} Aplicable en cualquier malla cerrada de un circuito de parámetros concentrados.
+\end{itemize}
+
+
+\subsection*{4. Asociación de Resistencias}
+
+
+\subsubsection*{Resistencias en Serie}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $R_{eq} = R_1 + R_2 + \dots + R_n$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R = sp.symbols('R0:3', real=True, positive=True)
+
+# Resistencia equivalente serie
+R_eq_serie = sum(R)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Resistencias conectadas en serie (misma corriente).
+\end{itemize}
+
+
+\subsubsection*{Resistencias en Paralelo}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \dots + \frac{1}{R_n}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R = sp.symbols('R0:3', real=True, positive=True)
+
+# Resistencia equivalente paralelo
+R_eq_paralelo = 1 / sum(1 / r for r in R)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Resistencias conectadas en paralelo (misma tensión).
+\end{itemize}
+
+
+\subsection*{5. Divisores de Tensión y Corriente}
+
+
+\subsubsection*{Divisor de Tensión}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $v_o = v_g \frac{R_2}{R_1 + R_2}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+v_g, R1, R2 = sp.symbols('v_g R1 R2', real=True, positive=True)
+
+# Tensión de salida del divisor
+v_o = v_g * R2 / (R1 + R2)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito con dos resistencias en serie y tensión de salida en bornes de R2, sin carga ($i_o=0$).
+\end{itemize}
+
+
+\subsubsection*{Divisor de Corriente}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_2 = i_g \frac{R_1}{R_1 + R_2}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+i_g, R1, R2 = sp.symbols('i_g R1 R2', real=True, positive=True)
+
+# Corriente en R2 del divisor
+i_2 = i_g * R1 / (R1 + R2)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito con dos resistencias en paralelo y fuente de corriente total $i_g$.
+\end{itemize}
+
+
+\subsection*{6. Equivalentes Thévenin y Norton}
+
+
+\subsubsection*{Tensión Thévenin ($v_{th}$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $v_{th} = v_{oc}$ (tensión de circuito abierto)
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+v_oc = sp.symbols('v_oc', real=True)
+
+# Tensión Thévenin
+v_th = v_oc
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito lineal. Se calcula como la tensión entre los terminales de salida con $i=0$.
+\end{itemize}
+
+
+\subsubsection*{Resistencia Thévenin ($R_{th}$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $R_{th} = \frac{v_x}{i_x}$ (con fuentes independientes anuladas)
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+v_x, i_x = sp.symbols('v_x i_x', real=True)
+
+# Resistencia Thévenin
+R_th = v_x / i_x
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito lineal con fuentes independientes anuladas (tensión -> cortocircuito, corriente -> circuito abierto). Las fuentes dependientes se mantienen.
+\end{itemize}
+
+
+\subsubsection*{Corriente Norton ($i_n$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_n = i_{sc}$ (corriente de cortocircuito)
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+i_sc = sp.symbols('i_sc', real=True)
+
+# Corriente Norton
+i_n = i_sc
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito lineal. Se calcula como la corriente entre los terminales de salida con $v=0$.
+\end{itemize}
+
+
+\subsection*{7. Condensador}
+
+
+\subsubsection*{Relación tensión-corriente}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_c = C \frac{dv_c}{dt}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+C, t = sp.symbols('C t', real=True, positive=True)
+v_c = sp.Function('v_c')(t)
+i_c = sp.Function('i_c')(t)
+
+# Relación i-v del condensador
+i_c_expr = C * sp.Derivative(v_c, t)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Condensador ideal. La tensión no puede variar bruscamente.
+\end{itemize}
+
+
+\subsubsection*{Energía almacenada}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $W_C = \frac{1}{2} C v_c^2$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+C, v_c = sp.symbols('C v_c', real=True, positive=True)
+
+# Energía en condensador
+W_C = sp.Rational(1, 2) * C * v_c**2
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Condensador ideal.
+\end{itemize}
+
+
+\subsection*{8. Bobina}
+
+
+\subsubsection*{Relación tensión-corriente}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $v_L = L \frac{di_L}{dt}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+L, t = sp.symbols('L t', real=True, positive=True)
+i_L = sp.Function('i_L')(t)
+v_L = sp.Function('v_L')(t)
+
+# Relación v-i de la bobina
+v_L_expr = L * sp.Derivative(i_L, t)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Bobina ideal. La corriente no puede variar bruscamente.
+\end{itemize}
+
+
+\subsubsection*{Energía almacenada}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $W_L = \frac{1}{2} L i_L^2$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+L, i_L = sp.symbols('L i_L', real=True, positive=True)
+
+# Energía en bobina
+W_L = sp.Rational(1, 2) * L * i_L**2
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Bobina ideal.
+\end{itemize}
+
+
+\subsection*{9. Circuitos RC y RL (Respuesta transitoria)}
+
+
+\subsubsection*{Constante de tiempo RC}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $\tau = RC$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R, C = sp.symbols('R C', real=True, positive=True)
+
+# Constante de tiempo
+tau = R * C
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito RC de primer orden.
+\end{itemize}
+
+
+\subsubsection*{Carga de condensador (respuesta al escalón)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $v_c(t) = V_a (1 - e^{-t/\tau})$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+V_a, t, tau = sp.symbols('V_a t tau', real=True, positive=True)
+
+# Tensión de carga del condensador
+v_c_t = V_a * (1 - sp.exp(-t / tau))
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito RC serie con fuente de tensión constante $V_a$, condensador inicialmente descargado.
+\end{itemize}
+
+
+\subsubsection*{Descarga de condensador}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $v_c(t) = V_0 e^{-t/\tau}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+V_0, t, tau = sp.symbols('V_0 t tau', real=True, positive=True)
+
+# Tensión de descarga del condensador
+v_c_t_desc = V_0 * sp.exp(-t / tau)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Circuito RC serie sin fuente, condensador con tensión inicial $V_0$.
+\end{itemize}
+
+
+\subsection*{10. Diodo}
+
+
+\subsubsection*{Modelo exponencial}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_D = I_s (e^{v_D / (\eta V_T)} - 1)$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+I_s, v_D, eta, V_T = sp.symbols('I_s v_D eta V_T', real=True)
+# I_s > 0, V_T > 0, eta >= 1
+
+# Corriente del diodo
+i_D = I_s * (sp.exp(v_D / (eta * V_T)) - 1)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Modelo de unión PN ideal. $V_T \approx 25\text{ mV}$ a 300 K. $\eta$ típicamente 1-2.
+\end{itemize}
+
+
+\subsubsection*{Tensión umbral ($V_\gamma$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $V_\gamma \approx 0.7\text{ V}$ para silicio
+  \item \textbf{Validez:} Aproximación para diodos de silicio en conducción con corrientes de mA.
+\end{itemize}
+
+
+\subsection*{11. Transistor Bipolar (BJT)}
+
+
+\subsubsection*{Región activa (NPN)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_C = \beta_F i_B$, $V_{BE} \approx 0.7\text{ V}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+i_C, i_B, beta_F = sp.symbols('i_C i_B beta_F', real=True, positive=True)
+
+# Corriente de colector en activa
+i_C_expr = beta_F * i_B
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} BJT en región activa directa ($V_{BE} > 0.7\text{ V}$, $V_{CE} > 0.2\text{ V}$).
+\end{itemize}
+
+
+\subsubsection*{Transconductancia (pequeña señal)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $g_m = \frac{I_{CQ}}{V_T}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+I_CQ, V_T = sp.symbols('I_CQ V_T', real=True, positive=True)
+
+# Transconductancia
+g_m = I_CQ / V_T
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Modelo de pequeña señal del BJT en activa.
+\end{itemize}
+
+
+\subsubsection*{Resistencia de entrada (pequeña señal)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $r_\pi = \frac{\beta_F}{g_m} = \frac{\beta_F V_T}{I_{CQ}}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+beta_F, g_m, I_CQ, V_T = sp.symbols('beta_F g_m I_CQ V_T', real=True, positive=True)
+
+# Resistencia de entrada
+r_pi = beta_F / g_m
+# o bien
+r_pi_alt = beta_F * V_T / I_CQ
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Modelo de pequeña señal del BJT en activa.
+\end{itemize}
+
+
+\subsection*{12. Transistor MOS (MOSFET)}
+
+
+\subsubsection*{Región de saturación (canal N)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $i_D = \frac{K}{2} \frac{W}{L} (v_{GS} - V_T)^2$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+K, W, L, v_GS, V_T = sp.symbols('K W L v_GS V_T', real=True, positive=True)
+# v_GS > V_T
+
+# Corriente de drenador en saturación
+i_D_sat = (K / 2) * (W / L) * (v_GS - V_T)**2
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} MOSFET de acumulación de canal N en saturación ($v_{DS} \ge v_{GS} - V_T$).
+\end{itemize}
+
+
+\subsubsection*{Transconductancia (pequeña señal)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $g_m = 2 \sqrt{K \frac{W}{L} I_{DQ}}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+K, W, L, I_DQ = sp.symbols('K W L I_DQ', real=True, positive=True)
+
+# Transconductancia del MOSFET
+g_m_mos = 2 * sp.sqrt(K * (W / L) * I_DQ)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Modelo de pequeña señal del MOSFET en saturación.
+\end{itemize}
+
+
+\subsection*{13. Amplificador Operacional}
+
+
+\subsubsection*{Ganancia en lazo cerrado (inversor)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $G_v = -\frac{R_F}{R_s}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R_F, R_s = sp.symbols('R_F R_s', real=True, positive=True)
+
+# Ganancia del amplificador inversor ideal
+G_v_inv = -R_F / R_s
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Amplificador operacional ideal ($A \to \infty$) con realimentación negativa.
+\end{itemize}
+
+
+\subsubsection*{Ganancia en lazo cerrado (no inversor)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $G_v = 1 + \frac{R_1}{R_2}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R1, R2 = sp.symbols('R1 R2', real=True, positive=True)
+
+# Ganancia del amplificador no inversor ideal
+G_v_noinv = 1 + R1 / R2
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Amplificador operacional ideal con realimentación negativa.
+\end{itemize}
+
+
+\subsection*{14. Señales}
+
+
+\subsubsection*{Valor medio}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $V_m = \frac{1}{T} \int_0^T v(t) dt$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+T, t = sp.symbols('T t', real=True, positive=True)
+v = sp.Function('v')(t)
+
+# Valor medio
+V_m = (1 / T) * sp.Integral(v, (t, 0, T))
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Señal periódica de período $T$.
+\end{itemize}
+
+
+\subsubsection*{Valor eficaz (RMS)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $V_{ef} = \sqrt{\frac{1}{T} \int_0^T v^2(t) dt}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+T, t = sp.symbols('T t', real=True, positive=True)
+v = sp.Function('v')(t)
+
+# Valor eficaz
+V_ef = sp.sqrt((1 / T) * sp.Integral(v**2, (t, 0, T)))
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Señal periódica de período $T$.
+\end{itemize}
+
+
+\subsubsection*{Valor eficaz de una sinusoide}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $V_{ef} = \frac{A}{\sqrt{2}}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+A = sp.symbols('A', real=True, positive=True)
+
+# Valor eficaz de sinusoide
+V_ef_sin = A / sp.sqrt(2)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Señal sinusoidal $v(t) = A \sin(\omega t + \phi)$.
+\end{itemize}
+
+
+\subsection*{15. Transformador Ideal}
+
+
+\subsubsection*{Relación de transformación}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $\frac{v_2}{v_1} = n$, $\frac{i_2}{i_1} = -\frac{1}{n}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+v1, v2, i1, i2, n = sp.symbols('v1 v2 i1 i2 n', real=True)
+
+# Relaciones del transformador ideal
+eq1 = sp.Eq(v2 / v1, n)
+eq2 = sp.Eq(i2 / i1, -1 / n)
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Transformador ideal (acoplamiento perfecto, sin pérdidas, inductancias infinitas).
+\end{itemize}
+
+
+\subsubsection*{Adaptación de impedancias}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Notación:} $R_e = \frac{R_L}{n^2}$
+  \item \textbf{Representación formal:}
+\end{itemize}
+
+
+\begin{lstlisting}
+import sympy as sp
+
+# Definir símbolos
+R_L, n = sp.symbols('R_L n', real=True, positive=True)
+
+# Resistencia reflejada al primario
+R_e = R_L / n**2
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Validez:} Transformador ideal con carga resistiva $R_L$ en el secundario.
+\end{itemize}
+
+
+\section*{glosario}
+
+\section*{Glosario}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Amplificador Operacional (A.O.):} Circuito integrado activo con dos entradas (inversora y no inversora) y una salida. Modelo ideal: ganancia infinita, impedancia de entrada infinita, impedancia de salida nula.
+  \item \textbf{Ancho de histéresis:} Diferencia entre los umbrales de conmutación superior e inferior en un comparador con histéresis (Schmitt trigger).
+  \item \textbf{Bobina (Inductor):} Elemento pasivo que almacena energía en forma de campo magnético. Su relación tensión-corriente es $v = L \frac{di}{dt}$.
+  \item \textbf{Capacidad (C):} Constante de proporcionalidad entre carga y tensión en un condensador ($q = C v$). Unidad: faradio (F).
+  \item \textbf{Circuito:} Interconexión de componentes para realizar una función.
+  \item \textbf{Circuito activo:} Aquel capaz de entregar a una carga más potencia que la recibida de la fuente de señal.
+  \item \textbf{Circuito equivalente:} Dos circuitos de dos terminales son equivalentes si su característica $i$-$v$ es idéntica para cualquier carga externa.
+  \item \textbf{CMRR (Relación de Rechazo al Modo Común):} Medida de la capacidad de un amplificador diferencial para rechazar señales en modo común. $CMRR = 20 \log(\rho)$.
+  \item \textbf{Condensador:} Elemento pasivo que almacena energía en forma de campo eléctrico. Su relación tensión-corriente es $i = C \frac{dv}{dt}$.
+  \item \textbf{Conductancia (G):} Inversa de la resistencia ($G = 1/R$). Unidad: siemens (S).
+  \item \textbf{Constante de tiempo ($\tau$):} Tiempo característico de carga/descarga de un circuito RC o RL. $\tau = RC$ o $\tau = L/R$.
+  \item \textbf{Cortocircuito virtual:} En un A.O. ideal con realimentación negativa, la tensión diferencial de entrada tiende a cero ($v_p \approx v_n$), sin que exista corriente entre las entradas.
+  \item \textbf{Corriente eléctrica:} Cantidad de carga que atraviesa la sección de un conductor por unidad de tiempo ($i = dq/dt$). Unidad: amperio (A).
+  \item \textbf{Diodo:} Dispositivo semiconductor de dos terminales que permite el paso de corriente en un sentido (directa) y lo bloquea en el opuesto (inversa).
+  \item \textbf{Diodo Zener:} Diodo diseñado para operar en la región de ruptura, manteniendo una tensión casi constante ($V_z$) para un amplio rango de corrientes inversas.
+  \item \textbf{Efecto Early:} Aumento de la corriente de colector en un BJT al aumentar la tensión colector-emisor, debido a la modulación del ancho de la base.
+  \item \textbf{Elemento ideal:} Modelo matemático simple que aproxima el comportamiento de un componente real.
+  \item \textbf{Fuente dependiente:} Generador cuya magnitud (tensión o corriente) depende de una tensión o corriente en otra parte del circuito.
+  \item \textbf{Fuente independiente:} Generador que mantiene una tensión o corriente fija, independientemente del resto del circuito.
+  \item \textbf{Ley de Ohm:} Relación lineal entre tensión y corriente en una resistencia ideal ($v = iR$).
+  \item \textbf{Ley de corrientes de Kirchhoff (KCL):} La suma algebraica de corrientes en un nudo es cero.
+  \item \textbf{Ley de tensiones de Kirchhoff (KVL):} La suma algebraica de tensiones en una malla es cero.
+  \item \textbf{Linealidad:} Propiedad de una función que cumple $f(k_1 u_1 + k_2 u_2) = k_1 f(u_1) + k_2 f(u_2)$.
+  \item \textbf{Masa:} Punto de referencia del circuito (potencial 0 V).
+  \item \textbf{Modelo de pequeña señal:} Circuito lineal incremental que modela el comportamiento de un dispositivo no lineal para pequeñas variaciones alrededor de un punto de operación.
+  \item \textbf{Modulación de longitud de canal:} Efecto en MOSFETs donde la corriente de drenador en saturación aumenta ligeramente con $v_{DS}$.
+  \item \textbf{Potencia eléctrica:} Energía entregada por unidad de tiempo ($p = i \cdot v$). Unidad: vatio (W).
+  \item \textbf{Punto de trabajo (Q):} Valores de corrientes y tensiones en continua de un circuito, en ausencia de señal.
+  \item \textbf{Realimentación negativa:} Conexión de la salida a la entrada inversora de un A.O., que tiende a estabilizar la ganancia y mantenerlo en la región lineal.
+  \item \textbf{Realimentación positiva:} Conexión de la salida a la entrada no inversora, que tiende a llevar el A.O. a saturación.
+  \item \textbf{Resistencia:} Elemento pasivo que disipa energía en forma de calor. Relación $v = iR$. Unidad: ohmio ($\Omega$).
+  \item \textbf{Señal:} Magnitud física (tensión o corriente) que contiene información.
+  \item \textbf{Superposición:} Principio que establece que la respuesta de un circuito lineal a múltiples fuentes es la suma de las respuestas a cada fuente actuando por separado.
+  \item \textbf{Tensión (Voltaje):} Energía por unidad de carga necesaria para mover una carga entre dos puntos. Unidad: voltio (V).
+  \item \textbf{Tensión umbral ($V_T$):} En un MOSFET, tensión mínima $v_{GS}$ necesaria para formar el canal conductor. En un diodo ($V_\gamma$), tensión de polarización directa a partir de la cual la corriente se vuelve significativa.
+  \item \textbf{Transconductancia ($g_m$):} Parámetro de pequeña señal que relaciona la variación de corriente de salida con la variación de tensión de entrada ($g_m = \Delta i_{out} / \Delta v_{in}$).
+  \item \textbf{Transformador:} Dispositivo que transfiere energía entre circuitos mediante acoplamiento magnético. En su modelo ideal, $v_2/v_1 = n$ e $i_2/i_1 = -1/n$.
+  \item \textbf{Transistor Bipolar (BJT):} Dispositivo semiconductor de tres terminales (emisor, base, colector) donde la corriente de colector es controlada por la corriente de base.
+  \item \textbf{Transistor de Efecto de Campo (MOSFET):} Dispositivo semiconductor de tres terminales (drenador, puerta, surtidor) donde la corriente de drenador es controlada por la tensión de puerta.
+  \item \textbf{Valor eficaz (RMS):} Raíz cuadrada del valor medio del cuadrado de una señal periódica. Para una sinusoide, $V_{ef} = A/\sqrt{2}$.
+  \item \textbf{Valor medio:} Promedio de una señal periódica en un período.
+\end{itemize}
+
+
+\section*{limites\_aplicabilidad}
+
+\section*{Límites de Aplicabilidad}
+
+
+\subsection*{1. Ley de Ohm ($v = iR$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El elemento no es una resistencia lineal ideal (ej. diodo, transistor, resistencia no lineal).
+  \item La temperatura del elemento varía significativamente, cambiando su resistividad.
+  \item La frecuencia es extremadamente alta, donde los efectos parásitos (inductancia, capacidad) dominan.
+  \item \textbf{Supuestos:}
+  \item El material es óhmico (relación $v$-$i$ lineal e invariante en el tiempo).
+  \item La resistencia es constante.
+  \item \textbf{Alternativa:} Usar el modelo no lineal del dispositivo (ej. modelo exponencial del diodo, modelo de Ebers-Moll para BJT).
+\end{itemize}
+
+
+\subsection*{2. Leyes de Kirchhoff (KCL y KVL)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El circuito no es de parámetros concentrados (las dimensiones físicas son comparables a la longitud de onda de la señal).
+  \item Existen campos magnéticos variables externos que induzcan tensiones significativas no modeladas.
+  \item \textbf{Supuestos:}
+  \item La corriente que entra en un nudo es igual a la que sale (no hay acumulación de carga).
+  \item La suma de tensiones en una malla es cero (campo eléctrico conservativo).
+  \item \textbf{Alternativa:} Usar teoría de líneas de transmisión o análisis de campos electromagnéticos.
+\end{itemize}
+
+
+\subsection*{3. Principio de Superposición}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El circuito contiene elementos no lineales (diodos, transistores fuera de pequeña señal).
+  \item Se desea calcular la potencia directamente (la potencia es una función no lineal de la corriente/tensión).
+  \item \textbf{Supuestos:}
+  \item El circuito es estrictamente lineal (resistencias, condensadores, bobinas, fuentes dependientes lineales).
+  \item Las condiciones iniciales en elementos almacenadores de energía son nulas.
+  \item \textbf{Alternativa:} Para circuitos no lineales, usar análisis por tramos lineales o métodos numéricos.
+\end{itemize}
+
+
+\subsection*{4. Equivalentes Thévenin y Norton}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El circuito no es lineal.
+  \item No existen fuentes dependientes y la resistencia equivalente es cero o infinita (se puede representar, pero son casos límite).
+  \item \textbf{Supuestos:}
+  \item El circuito a simplificar es lineal.
+  \item La parte del circuito a reemplazar no está acoplada magnéticamente con la carga.
+  \item \textbf{Alternativa:} Para circuitos no lineales, no existe un equivalente Thévenin/Norton lineal único; se debe analizar el circuito completo.
+\end{itemize}
+
+
+\subsection*{5. Modelo Exponencial del Diodo ($i_D = I_s(e^{v_D/\eta V_T} - 1)$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item La tensión inversa supera la tensión de ruptura ($V_z$).
+  \item La corriente directa es muy alta, donde la resistencia serie parásita ($R_s$) domina.
+  \item Se requiere un modelo para análisis de conmutación rápida (se deben incluir capacidades parásitas).
+  \item \textbf{Supuestos:}
+  \item Unión PN ideal, dopado uniforme, baja inyección.
+  \item Temperatura constante y conocida.
+  \item \textbf{Alternativa:} Usar modelo con resistencia serie, modelo de ruptura, o modelo dinámico con $C_j$ y $C_s$.
+\end{itemize}
+
+
+\subsection*{6. Modelo de Pequeña Señal del BJT (Híbrido en $\pi$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item La amplitud de la señal es grande (no se puede linealizar alrededor del punto Q).
+  \item El transistor no está polarizado en la región activa.
+  \item La frecuencia de la señal es muy alta (se deben considerar las capacidades parásitas $C_\pi$ y $C_\mu$).
+  \item \textbf{Supuestos:}
+  \item El transistor opera en región activa en continua.
+  \item La señal incremental es de pequeña amplitud ($\Delta v_{be} \ll V_T$).
+  \item Análisis en baja frecuencia (capacidades parásitas despreciables).
+  \item \textbf{Alternativa:} Para gran señal, usar modelos de Ebers-Moll o Gummel-Poon. Para alta frecuencia, usar el modelo híbrido en $\pi$ completo con capacidades.
+\end{itemize}
+
+
+\subsection*{7. Modelo de Pequeña Señal del MOSFET}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item La amplitud de la señal es grande.
+  \item El transistor no está polarizado en saturación.
+  \item La frecuencia es alta (se deben considerar las capacidades $C_{gs}$, $C_{gd}$, etc.).
+  \item \textbf{Supuestos:}
+  \item MOSFET operando en saturación en continua.
+  \item Señal incremental de pequeña amplitud.
+  \item Análisis en baja frecuencia.
+  \item \textbf{Alternativa:} Para gran señal, usar las ecuaciones cuadráticas completas. Para alta frecuencia, añadir las capacidades al modelo.
+\end{itemize}
+
+
+\subsection*{8. Amplificador Operacional Ideal (Cortocircuito Virtual)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El A.O. está saturado ($v_o = \pm V_{cc}$).
+  \item La realimentación es positiva.
+  \item Se analiza el comportamiento en frecuencia (la ganancia $A$ es finita y dependiente de la frecuencia).
+  \item \textbf{Supuestos:}
+  \item Ganancia diferencial infinita ($A \to \infty$).
+  \item Impedancia de entrada infinita ($i_p = i_n = 0$).
+  \item Impedancia de salida nula.
+  \item Existe realimentación negativa y el A.O. opera en la región lineal.
+  \item \textbf{Alternativa:} Usar el modelo de A.O. con ganancia finita, o el modelo de saturaciones si está fuera de la región lineal.
+\end{itemize}
+
+
+\subsection*{9. Fórmula de Carga/Descarga de Circuitos RC ($v_c(t) = V_f + (V_i - V_f)e^{-t/\tau}$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El circuito no es de primer orden (más de un elemento almacenador de energía).
+  \item La excitación no es constante (escalón) o no se puede reducir a un circuito equivalente de primer orden.
+  \item La resistencia equivalente vista por el condensador no es constante (ej. circuito con diodos).
+  \item \textbf{Supuestos:}
+  \item Circuito RC de primer orden.
+  \item Fuente de tensión constante aplicada en $t=0$.
+  \item Resistencia equivalente $R_{th}$ constante.
+  \item \textbf{Alternativa:} Para circuitos de orden superior, resolver la ecuación diferencial completa. Para excitaciones arbitrarias, usar la integral de convolución.
+\end{itemize}
+
+
+\subsection*{10. Fórmula de Carga/Descarga de Circuitos RL ($i_L(t) = I_f + (I_i - I_f)e^{-tR/L}$)}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{NUNCA aplicar si:}
+  \item El circuito no es de primer orden.
+  \item La excitación no es constante.
+  \item La resistencia equivalente vista por la bobina no es constante.
+  \item \textbf{Supuestos:}
+  \item Circuito RL de primer orden.
+  \item Fuente de tensión constante aplicada en $t=0$.
+  \item Resistencia equivalente $R_{th}$ constante.
+  \item \textbf{Alternativa:} Resolver la ecuación diferencial completa o usar convolución.
+\end{itemize}
+
+
+\section*{metodologias}
+
+\section*{Metodologías de Resolución}
+
+
+\subsection*{1. Análisis de Circuitos por el Método de Nudos}
+
+
+\textbf{Aplicación:} Circuitos con resistencias y fuentes de corriente (o fuentes de tensión convertidas).
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Elegir un nudo de referencia} (tierra, 0 V) y asignar tensiones de nudo incógnita ($v_1, v_2, \dots$) a los demás nudos.
+  \item \textbf{Aplicar KCL} en cada nudo excepto el de referencia. La suma de corrientes que salen del nudo es cero.
+  \item \textbf{Expresar las corrientes} de las resistencias en función de las tensiones de nudo usando la Ley de Ohm ($i = (v_a - v_b)/R$).
+  \item Si hay \textbf{fuentes de tensión}, se introduce la corriente de la fuente como incógnita y se añade la ecuación de la tensión de la fuente ($v_a - v_b = v_{fuente}$).
+  \item \textbf{Resolver el sistema de ecuaciones} para hallar las tensiones de nudo.
+  \item \textbf{Calcular las variables deseadas} (corrientes, tensiones en elementos) a partir de las tensiones de nudo.
+\end{enumerate}
+
+
+\subsection*{2. Análisis de Circuitos por el Método de Mallas}
+
+
+\textbf{Aplicación:} Circuitos planos con fuentes de tensión (o fuentes de corriente convertidas).
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Asignar corrientes de malla} ($i_1, i_2, \dots$) a cada malla del circuito.
+  \item \textbf{Aplicar KVL} en cada malla. La suma de tensiones a lo largo de la malla es cero.
+  \item \textbf{Expresar las tensiones} en las resistencias en función de las corrientes de malla usando la Ley de Ohm. Si una resistencia es compartida por dos mallas, la corriente que la atraviesa es la diferencia de las corrientes de malla.
+  \item Si hay \textbf{fuentes de corriente}, se introduce la tensión en la fuente como incógnita y se añade la ecuación de la corriente de la fuente ($i_a - i_b = i_{fuente}$).
+  \item \textbf{Resolver el sistema de ecuaciones} para hallar las corrientes de malla.
+  \item \textbf{Calcular las variables deseadas} a partir de las corrientes de malla.
+\end{enumerate}
+
+
+\subsection*{3. Aplicación del Principio de Superposición}
+
+
+\textbf{Aplicación:} Circuitos lineales con múltiples fuentes independientes.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Anular todas las fuentes independientes excepto una.}
+  \item Fuente de tensión: sustituir por un cortocircuito ($v=0$).
+  \item Fuente de corriente: sustituir por un circuito abierto ($i=0$).
+  \item \textbf{Las fuentes dependientes NO se anulan.}
+  \item \textbf{Calcular la salida} (tensión o corriente deseada) producida únicamente por esa fuente activa.
+  \item \textbf{Repetir los pasos 1 y 2} para cada fuente independiente del circuito.
+  \item \textbf{Sumar algebraicamente} todas las salidas parciales obtenidas para obtener la salida total.
+\end{enumerate}
+
+
+\subsection*{4. Cálculo del Equivalente Thévenin}
+
+
+\textbf{Aplicación:} Simplificar un circuito lineal de dos terminales visto desde una carga.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Calcular la tensión Thévenin ($v_{th}$):}
+  \item Determinar la tensión de circuito abierto entre los terminales A y B ($v_{oc}$).
+  \item $v_{th} = v_{oc}$.
+  \item \textbf{Calcular la resistencia Thévenin ($R_{th}$):}
+  \item \textbf{Anular todas las fuentes independientes} dentro del circuito (cortocircuito para tensión, circuito abierto para corriente).
+  \item \textbf{Mantener las fuentes dependientes.}
+  \item Conectar una fuente de tensión de prueba $v_x$ entre los terminales A y B.
+  \item Calcular la corriente $i_x$ que suministra la fuente de prueba al circuito.
+  \item $R_{th} = v_x / i_x$.
+  \item \textbf{Circuito equivalente:} Fuente de tensión $v_{th}$ en serie con la resistencia $R_{th}$.
+\end{enumerate}
+
+
+\subsection*{5. Cálculo del Equivalente Norton}
+
+
+\textbf{Aplicación:} Simplificar un circuito lineal de dos terminales visto desde una carga.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Calcular la corriente Norton ($i_n$):}
+  \item Determinar la corriente de cortocircuito entre los terminales A y B ($i_{sc}$).
+  \item $i_n = i_{sc}$.
+  \item \textbf{Calcular la resistencia Norton ($R_n$):}
+  \item $R_n = R_{th}$ (calculada como en el equivalente Thévenin).
+  \item \textbf{Circuito equivalente:} Fuente de corriente $i_n$ en paralelo con la resistencia $R_n$.
+\end{enumerate}
+
+
+\subsection*{6. Análisis de Circuitos con Diodos en DC}
+
+
+\textbf{Aplicación:} Circuitos con diodos rectificadores y fuentes de continua.
+
+
+\textbf{Procedimiento (Método de aproximación por tramos lineales):}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Sustituir el diodo} por su modelo de tramos lineales (diodo ideal + $V_\gamma$ + $R_s$).
+  \item \textbf{Suponer un estado} para cada diodo (ON: conduce, OFF: no conduce).
+  \item \textbf{Analizar el circuito lineal resultante} para la hipótesis elegida.
+  \item \textbf{Verificar la hipótesis:}
+  \item Si se supuso ON, verificar que $i_D > 0$.
+  \item Si se supuso OFF, verificar que $v_D < V_\gamma$.
+  \item Si la hipótesis no se cumple, \textbf{cambiar el estado} del diodo y repetir desde el paso 3.
+  \item Una vez verificada la hipótesis, la solución es válida.
+\end{enumerate}
+
+
+\subsection*{7. Análisis de Circuitos con Transistores BJT en DC}
+
+
+\textbf{Aplicación:} Calcular el punto de trabajo (Q) de un circuito con BJT.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Suponer que el BJT opera en región activa} ($V_{BE} \approx 0.7\text{ V}$, $i_C = \beta_F i_B$).
+  \item \textbf{Plantear la ecuación de la malla de base} para hallar $I_{BQ}$.
+  \item \textbf{Calcular $I_{CQ} = \beta_F I_{BQ}$}.
+  \item \textbf{Plantear la ecuación de la malla de colector} para hallar $V_{CEQ}$.
+  \item \textbf{Verificar la hipótesis de región activa:}
+  \item $V_{CEQ} > 0.2\text{ V}$ (o $V_{CEsat}$).
+  \item $V_{BC} < 0.7\text{ V}$ (unión colectora en inversa).
+  \item Si no se cumple, el transistor está en \textbf{saturación} o \textbf{corte}. Repetir el análisis con el modelo adecuado:
+  \item \textbf{Saturación:} $V_{BE} \approx 0.7\text{ V}$, $V_{CE} \approx 0.2\text{ V}$, $i_C < \beta_F i_B$.
+  \item \textbf{Corte:} $i_B = 0$, $i_C = 0$.
+\end{enumerate}
+
+
+\subsection*{8. Análisis de Circuitos con Transistores MOSFET en DC}
+
+
+\textbf{Aplicación:} Calcular el punto de trabajo (Q) de un circuito con MOSFET.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Suponer que el MOSFET opera en región de saturación} ($i_D = \frac{K}{2}\frac{W}{L}(v_{GS} - V_T)^2$).
+  \item \textbf{Plantear las ecuaciones} del circuito para hallar $V_{GSQ}$ e $I_{DQ}$.
+  \item \textbf{Calcular $V_{DSQ}$} a partir de la malla de drenador.
+  \item \textbf{Verificar la hipótesis de saturación:}
+  \item $V_{DSQ} \ge V_{GSQ} - V_T$.
+  \item Si no se cumple, el MOSFET está en \textbf{región óhmica}. Repetir el análisis con la ecuación de región óhmica.
+\end{enumerate}
+
+
+\subsection*{9. Análisis de Circuitos con Amplificadores Operacionales Ideales}
+
+
+\textbf{Aplicación:} Circuitos con A.O. en región lineal (realimentación negativa).
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Verificar} que la realimentación es negativa.
+  \item \textbf{Aplicar las reglas del A.O. ideal:}
+  \item $v_p = v_n$ (cortocircuito virtual).
+  \item $i_p = i_n = 0$ (corrientes de entrada nulas).
+  \item \textbf{Plantear KCL} en los nudos de entrada ($v_n$ y $v_p$).
+  \item \textbf{Resolver} para encontrar la relación $v_o / v_i$ u otras variables de interés.
+  \item \textbf{Verificar} que la salida no excede las tensiones de saturación ($|v_o| < V_{cc}$).
+\end{enumerate}
+
+
+\subsection*{10. Análisis de Respuesta Transitoria en Circuitos RC/RL de Primer Orden}
+
+
+\textbf{Aplicación:} Circuitos con un solo elemento almacenador de energía (C o L) y fuentes constantes o conmutadas.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Determinar la condición inicial} en $t=0^-$ (justo antes de la conmutación).
+  \item Para $C$: $v_C(0^-)$.
+  \item Para $L$: $i_L(0^-)$.
+  \item \textbf{Determinar la condición inicial en $t=0^+$} (justo después de la conmutación).
+  \item $v_C(0^+) = v_C(0^-)$ (continuidad de tensión).
+  \item $i_L(0^+) = i_L(0^-)$ (continuidad de corriente).
+  \item \textbf{Calcular el valor final} en régimen permanente ($t \to \infty$).
+  \item Sustituir $C$ por circuito abierto y $L$ por cortocircuito.
+  \item \textbf{Calcular la constante de tiempo $\tau$:}
+  \item $\tau = R_{th} C$ o $\tau = L / R_{th}$, donde $R_{th}$ es la resistencia equivalente vista desde el elemento almacenador.
+  \item \textbf{Escribir la solución completa:}
+  \item $x(t) = x(\infty) + [x(0^+) - x(\infty)] e^{-t/\tau}$
+  \item donde $x(t)$ es $v_C(t)$ o $i_L(t)$.
+\end{enumerate}
+
+
+\subsection*{11. Análisis en Pequeña Señal de Amplificadores con BJT}
+
+
+\textbf{Aplicación:} Calcular ganancia, resistencias de entrada y salida de amplificadores BJT.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Calcular el punto de trabajo en continua (Q)} del transistor (ver Metodología 7).
+  \item \textbf{Obtener los parámetros de pequeña señal} en el punto Q:
   \item $g_m = I_{CQ} / V_T$
   \item $r_\pi = \beta_F / g_m$
-\end{itemize}
+  \item $r_o = V_A / I_{CQ}$ (si se considera efecto Early)
+  \item \textbf{Dibujar el circuito incremental (de pequeña señal):}
+  \item Anular fuentes de continua ($V_{CC} \to$ cortocircuito, $I_{CC} \to$ circuito abierto).
+  \item Sustituir el BJT por su modelo de pequeña señal (híbrido en $\pi$).
+  \item Los condensadores de acoplo y desacoplo se consideran cortocircuitos a la frecuencia de señal.
+  \item \textbf{Analizar el circuito incremental} para hallar:
+  \item Ganancia de tensión: $A_v = v_o / v_i$.
+  \item Resistencia de entrada: $R_i = v_i / i_i$.
+  \item Resistencia de salida: $R_o$ (vista desde la carga, anulando la fuente de señal).
+\end{enumerate}
 
 
-\subsection*{MOSFET (Saturación)}
+\subsection*{12. Análisis en Pequeña Señal de Amplificadores con MOSFET}
 
 
-\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $I_D = \frac{1}{2} K \frac{W}{L} (V_{GS} - V_T)^2$
+\textbf{Aplicación:} Calcular ganancia, resistencias de entrada y salida de amplificadores MOSFET.
+
+
+\textbf{Procedimiento:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Calcular el punto de trabajo en continua (Q)} del transistor (ver Metodología 8).
+  \item \textbf{Obtener los parámetros de pequeña señal} en el punto Q:
   \item $g_m = 2 \sqrt{K \frac{W}{L} I_{DQ}}$
-\end{itemize}
+  \item $r_{ds} = 1 / (\lambda I_{DQ})$ (si se considera modulación de canal)
+  \item \textbf{Dibujar el circuito incremental:}
+  \item Anular fuentes de continua.
+  \item Sustituir el MOSFET por su modelo de pequeña señal (fuente de corriente $g_m v_{gs}$ con $r_{ds}$ en paralelo).
+  \item Condensadores de acoplo/desacoplo como cortocircuitos.
+  \item \textbf{Analizar el circuito incremental} para hallar $A_v$, $R_i$, $R_o$.
+\end{enumerate}
 
 
-\subsection*{Máxima Transferencia de Potencia}
+\section*{prerrequisitos}
+
+\section*{Prerrequisitos Conceptuales}
+
+
+\subsection*{Grafo de Dependencias}
+
+
+\subsubsection*{Conceptos Fundamentales}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item $R_L = R_{th}$ para máxima potencia.
-  \item $P_{max} = \frac{V_{th}^2}{4 R_{th}}$
+  \item \textbf{Carga, Tensión, Corriente, Potencia, Energía}
+  \item requiere: [Conceptos básicos de física (fuerza, trabajo)]
+  \item \textbf{Ley de Ohm}
+  \item requiere: [Tensión, Corriente, Resistencia]
+  \item \textbf{Leyes de Kirchhoff (KCL, KVL)}
+  \item requiere: [Tensión, Corriente, Nudo, Malla]
 \end{itemize}
 
 
-\vspace{10pt}
-
-\section*{Glosario de Términos}
+\subsubsection*{Análisis de Circuitos}
 
 
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-  \item \textbf{Ánodo (A):} Terminal positivo de un diodo.
-  \item \textbf{Cátodo (K):} Terminal negativo de un diodo.
-  \item \textbf{Circuito Abierto:} Interrupción en un circuito; corriente cero.
-  \item \textbf{Cortocircuito:} Conexión directa entre dos puntos; tensión cero.
-  \item \textbf{Cortocircuito Virtual:} Condición en A.O. ideal con realimentación negativa donde $v^+ \approx v^-$.
-  \item \textbf{Diodo:} Dispositivo semiconductor que permite el paso de corriente en una sola dirección.
-  \item \textbf{Diodo Zener:} Diodo diseñado para operar en la región de ruptura inversa, usado como referencia de tensión.
-  \item \textbf{Efecto Early:} Modulación de la anchura de la base en un BJT que causa dependencia de $I_C$ con $V_{CE}$.
-  \item \textbf{Efecto Sustrato:} Variación de la tensión umbral $V_T$ en un MOSFET debido a la tensión entre surtidor y sustrato.
-  \item \textbf{Fuente Dependiente:} Fuente de tensión o corriente cuyo valor está controlado por otra tensión o corriente del circuito.
-  \item \textbf{Fuente Independiente:} Fuente de tensión o corriente con valor fijo o definido por una función del tiempo.
-  \item \textbf{LED (Diodo Emisor de Luz):} Diodo que emite luz cuando se polariza en directa.
-  \item \textbf{Masa (Tierra):} Nodo de referencia en un circuito con potencial de 0V.
-  \item \textbf{Nudo:} Punto de conexión entre dos o más componentes.
-  \item \textbf{Malla:} Trayectoria cerrada en un circuito.
-  \item \textbf{Realimentación Negativa:} Conexión de la salida a la entrada inversora de un amplificador, estabilizando la ganancia.
-  \item \textbf{Rectificador:} Circuito que convierte corriente alterna (AC) en corriente continua (DC).
-  \item \textbf{Señal:} Magnitud física (tensión o corriente) que varía en el tiempo para transportar información.
-  \item \textbf{Tensión de Ruptura ($V_z$, BV):} Tensión inversa a la que un diodo comienza a conducir fuertemente.
-  \item \textbf{Tensión Térmica ($V_T$):} $kT/q \approx 25mV$ a temperatura ambiente.
-  \item \textbf{Tensión Umbral ($V_\gamma$, $V_T$):} Tensión mínima de polarización directa para que un diodo conduzca (\textasciitilde{}0.7V para Si), o tensión puerta-surtidor para formar el canal en un MOSFET.
-  \item \textbf{Transconductancia ($g_m$):} Relación entre la variación de corriente de salida y la variación de tensión de entrada en un dispositivo activo.
+  \item \textbf{Método de Nudos}
+  \item requiere: [KCL, Ley de Ohm, Fuentes de tensión/corriente]
+  \item \textbf{Método de Mallas}
+  \item requiere: [KVL, Ley de Ohm, Fuentes de tensión/corriente]
+  \item \textbf{Principio de Superposición}
+  \item requiere: [Linealidad, Fuentes independientes]
+  \item \textbf{Equivalentes Thévenin y Norton}
+  \item requiere: [Linealidad, Fuentes, KCL, KVL, Ley de Ohm]
+  \item \textbf{Divisores de Tensión y Corriente}
+  \item requiere: [Ley de Ohm, KCL, KVL]
 \end{itemize}
 
 
-\vspace{10pt}
+\subsubsection*{Componentes Reactivos}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Condensador}
+  \item requiere: [Carga, Tensión, Corriente, Campo eléctrico]
+  \item \textbf{Bobina}
+  \item requiere: [Corriente, Tensión, Campo magnético]
+  \item \textbf{Respuesta Transitoria RC/RL}
+  \item requiere: [Condensador/Bobina, Leyes de Kirchhoff, Equivalentes Thévenin]
+  \item \textbf{Impedancia en AC}
+  \item requiere: [Condensador, Bobina, Fasores, Números complejos]
+\end{itemize}
+
+
+\subsubsection*{Dispositivos Semiconductores}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Diodo}
+  \item requiere: [Unión PN, Corriente, Tensión, Modelo exponencial]
+  \item \textbf{Transistor Bipolar (BJT)}
+  \item requiere: [Unión PN, Diodo, Corriente, Tensión, Ganancia de corriente]
+  \item \textbf{Transistor de Efecto de Campo (MOSFET)}
+  \item requiere: [Capacidad, Campo eléctrico, Tensión umbral]
+  \item \textbf{Amplificador Operacional (A.O.)}
+  \item requiere: [Fuentes dependientes, Ganancia, Realimentación]
+\end{itemize}
+
+
+\subsubsection*{Análisis de Amplificadores}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Punto de Trabajo (Q) en DC}
+  \item requiere: [BJT/MOSFET, Leyes de Kirchhoff, Método de Nudos/Mallas]
+  \item \textbf{Análisis en Pequeña Señal}
+  \item requiere: [Punto de Trabajo, Modelo de pequeña señal del dispositivo, Linealidad]
+  \item \textbf{Configuraciones de A.O.}
+  \item requiere: [A.O. ideal, Cortocircuito virtual, KCL]
+\end{itemize}
+
+
+\subsubsection*{Señales}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Señales Básicas (escalón, rampa, exponencial, sinusoidal)}
+  \item requiere: [Funciones matemáticas, Tensión/Corriente]
+  \item \textbf{Valor Medio y Eficaz}
+  \item requiere: [Señales periódicas, Cálculo integral]
+\end{itemize}
+
+
+\section*{tablas}
 
 \section*{Tablas de Referencia}
 
@@ -603,27 +1890,35 @@
 \subsection*{Unidades y Prefijos}
 
 
+\subsubsection*{Magnitudes y Unidades Principales}
+
+
 \begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}llll@{}}
 \toprule
-Magnitud & Unidad & Símbolo \\
+Magnitud & Símbolo & Unidad & Símbolo Unidad \\
 \midrule
-Tensión & Voltio & V \\
-Corriente & Amperio & A \\
-Potencia & Vatio & W \\
-Resistencia & Ohmio & $\Omega$ \\
-Capacidad & Faradio & F \\
-Inductancia & Henrio & H \\
+Carga & $q$ & culombio & C \\
+Tensión & $v$ & voltio & V \\
+Corriente & $i$ & amperio & A \\
+Potencia & $p$ & vatio & W \\
+Energía & $w$ & julio & J \\
+Resistencia & $R$ & ohmio & $\Omega$ \\
+Capacidad & $C$ & faradio & F \\
+Inductancia & $L$ & henrio & H \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 
 
+\subsubsection*{Prefijos Comunes}
+
+
 \begin{center}
 \begin{tabular}{@{}lll@{}}
 \toprule
-Prefijo & Símbolo & Factor \\
+Prefijo & Símbolo & Multiplicador \\
 \midrule
 giga & G & $10^9$ \\
 mega & M & $10^6$ \\
@@ -638,74 +1933,112 @@ pico & p & $10^{-12}$ \\
 
 
 
-\subsection*{Regiones de Operación del BJT (NPN)}
+\subsection*{Modelos de Dispositivos}
 
 
-\begin{center}
-\begin{tabular}{@{}llll@{}}
-\toprule
-Región & Unión BE & Unión BC & Característica \\
-\midrule
-Activa & Directa & Inversa & $I_C = \beta_F I_B$ \\
-Corte & Inversa & Inversa & $I_C \approx 0$ \\
-Saturación & Directa & Directa & $V_{CE} \approx 0.2V$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-
-
-\subsection*{Regiones de Operación del MOSFET (Canal N)}
+\subsubsection*{Regiones de Operación del BJT (NPN)}
 
 
 \begin{center}
 \begin{tabular}{@{}lll@{}}
 \toprule
-Región & Condición & $I_D$ \\
+Región & Condiciones & Aproximaciones \\
 \midrule
-Corte & $V_{GS} < V_T$ & 0 \\
-Óhmica & $V_{DS} < V_{GS} - V_T$ & $K \frac{W}{L}[(V_{GS}-V_T)V_{DS} - \frac{V_{DS}^2}{2}]$ \\
-Saturación & $V_{DS} \ge V_{GS} - V_T$ & $\frac{1}{2} K \frac{W}{L} (V_{GS}-V_T)^2$ \\
+\textbf{Activa} & $V_{BE} \approx 0.7\text{ V}$, $V_{CE} > 0.2\text{ V}$ & $i_C = \beta_F i_B$ \\
+\textbf{Corte} & $V_{BE} < 0.7\text{ V}$, $V_{BC} < 0.7\text{ V}$ & $i_C = 0$, $i_B = 0$ \\
+\textbf{Saturación} & $V_{BE} \approx 0.7\text{ V}$, $V_{CE} \approx 0.2\text{ V}$ & $i_C < \beta_F i_B$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 
 
-\subsection*{Configuraciones de Amplificadores (BJT)}
+\subsubsection*{Regiones de Operación del MOSFET (Canal N, Acumulación)}
 
 
 \begin{center}
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
-Configuración & Ganancia de Tensión & Impedancia de Entrada & Impedancia de Salida \\
+Región & Condición & Ecuación \\
 \midrule
-Emisor Común & Alta (-) & Media & Media \\
-Colector Común & $\approx 1$ & Alta & Baja \\
-Base Común & Alta (+) & Baja & Alta \\
+\textbf{Corte} & $v_{GS} < V_T$ & $i_D = 0$ \\
+\textbf{Óhmica (Lineal)} & $v_{GS} > V_T$, $v_{DS} < v_{GS} - V_T$ & $i_D = K \frac{W}{L}[(v_{GS}-V_T)v_{DS} - \frac{v_{DS}^2}{2}]$ \\
+\textbf{Saturación} & $v_{GS} > V_T$, $v_{DS} \ge v_{GS} - V_T$ & $i_D = \frac{K}{2}\frac{W}{L}(v_{GS}-V_T)^2$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 
 
-\subsection*{Modelos Equivalentes}
+\subsubsection*{Configuraciones del Amplificador Operacional Ideal}
 
 
 \begin{center}
 \begin{tabular}{@{}ll@{}}
 \toprule
-Teorema & Circuito Equivalente \\
+Configuración & Ganancia de Tensión ($v_o/v_i$) \\
 \midrule
-Thévenin & Fuente de tensión $V_{th}$ en serie con $R_{th}$ \\
-Norton & Fuente de corriente $I_n$ en paralelo con $R_n$ \\
-Relación & $V_{th} = I_n \cdot R_{th}$, $R_{th} = R_n$ \\
+Inversor & $-R_F / R_s$ \\
+No Inversor & $1 + R_1 / R_2$ \\
+Seguidor de Tensión & $1$ \\
+Sumador Inversor & $-R_F (v_1/R_1 + v_2/R_2)$ \\
+Diferencial (Sustractor) & $(R_1+R_2)/R_1 \cdot R_4/(R_3+R_4) v_2 - R_2/R_1 v_1$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 
 
-\vspace{10pt}
+\subsection*{Parámetros de Pequeña Señal}
+
+
+\subsubsection*{BJT (Modelo Híbrido en $\pi$)}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Parámetro & Fórmula & Descripción \\
+\midrule
+$g_m$ & $I_{CQ} / V_T$ & Transconductancia \\
+$r_\pi$ & $\beta_F / g_m$ & Resistencia de entrada base-emisor \\
+$r_o$ & $V_A / I_{CQ}$ & Resistencia de salida (efecto Early) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsubsection*{MOSFET (Saturación)}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Parámetro & Fórmula & Descripción \\
+\midrule
+$g_m$ & $2 \sqrt{K \frac{W}{L} I_{DQ}}$ & Transconductancia \\
+$r_{ds}$ & $1 / (\lambda I_{DQ})$ & Resistencia de salida (modulación de canal) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Constantes de Tiempo}
+
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Circuito & Constante de Tiempo ($\tau$) \\
+\midrule
+RC & $R_{th}C$ \\
+RL & $L / R_{th}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
 
 \end{document}

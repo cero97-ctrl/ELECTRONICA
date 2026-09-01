@@ -174,6 +174,13 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Generar skill sin instalar en global.")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta audible al final.")
     parser.add_argument("--destino", default=str(DESTINO_GLOBAL), help="Directorio global de skills.")
+    parser.add_argument("--estructura-max-tokens", type=int, default=0, help=(
+        "Presupuesto de tokens de salida para el ensamblaje (SKILL.md + "
+        "references en un JSON). 0 = automático: 32768 en tier deepseek "
+        "(contexto masivo), 8192 en el resto."))
+    parser.add_argument("--usar-corpus", action="store_true", help=(
+        "Reutilizar el corpus destilado persistido (.tmp/*_destilado.txt) si "
+        "existe, en lugar de distilar los chunks de nuevo (0 créditos extra)."))
 
     args = parser.parse_args()
     pdf = Path(args.pdf).expanduser()
@@ -257,6 +264,10 @@ def main() -> int:
     state.update(tier=tier, modelo=modelo, last_updated=now_iso())
     save_state(state)
 
+    estructura_max_tokens = args.estructura_max_tokens
+    if estructura_max_tokens <= 0:
+        estructura_max_tokens = 32768 if "deepseek" in str(modelo) else 8192
+
     # ── Paso 3: síntesis (LLM, consume créditos) ──
     print("\n" + "─" * 56)
     print(f"  Paso 3/{total}  │  Destilando skill con LLM ({modelo})")
@@ -272,7 +283,9 @@ def main() -> int:
          "--tema", tema,
          "--idioma", idioma,
          "--modelo", modelo,
-         "--salida", str(salida_local)],
+         "--salida", str(salida_local),
+         "--estructura-max-tokens", str(estructura_max_tokens)]
+        + (["--usar-corpus"] if args.usar_corpus else []),
         capture_json=True,
     )
     if code_sint != 0 or not isinstance(sint, dict) or sint.get("status") != "ok":
@@ -290,6 +303,7 @@ def main() -> int:
     print("\n" + "─" * 56)
     print(f"  Paso 4/{total}  │  Validación neuro-simbólica (bloques Python/SymPy)")
     print("─" * 56)
+    validacion_ok_flag = True
     def _comando_validador() -> list[str]:
         return [PYTHON, str(VALIDAR_FORMULAS), "--skill", str(salida_local)]
 
@@ -323,7 +337,9 @@ def main() -> int:
                  "--idioma", idioma,
                  "--modelo", modelo,
                  "--salida", str(salida_local),
-                 "--feedback", str(feedback_file)],
+                 "--feedback", str(feedback_file),
+                 "--estructura-max-tokens", str(estructura_max_tokens)]
+                + (["--usar-corpus"] if args.usar_corpus else []),
                 capture_json=True,
             )
             if code_sint2 != 0 or not isinstance(sint2, dict) or sint2.get("status") != "ok":
@@ -337,6 +353,7 @@ def main() -> int:
                 break
 
         estado = "OK" if _validacion_ok(val) else "INVÁLIDO"
+        validacion_ok_flag = _validacion_ok(val)
         r = val.get("resumen", {})
         print(f"  {'✅' if estado == 'OK' else '⚠'} Bloques {r.get('ok', 0)}/{r.get('total', 0)} válidos "
               f"({estado}), oráculo: {val.get('oraculo')}")
@@ -390,27 +407,33 @@ def main() -> int:
 
     if not args.dry_run and datos["instalar_global"]:
         n_pasos_hasta_aqui = 4 + (1 if not args.modelo else 0) + (1 if not args.no_latex else 0)
-        # ── Paso de instalación ──
-        print("\n" + "─" * 56)
-        print(f"  Paso {n_pasos_hasta_aqui + 1}/{total}  │  Instalando en global")
-        print("─" * 56)
-        code_inst, inst = run_script(
-            [PYTHON, str(INSTALAR),
-             "--origen", str(salida_local),
-             "--nombre", nombre,
-             "--destino", args.destino]
-            + (["--sobrescribir"] if args.sobrescribir else []),
-            capture_json=True,
-        )
-        if code_inst != 0 or not isinstance(inst, dict) or inst.get("status") != "ok":
-            msg = _msg_fallo(inst, "Fallo en instalación")
-            print(f"  ❌ Instalación: {msg}", file=sys.stderr)
-            state.update(current_step=n_pasos_hasta_aqui + 1, steps_failed=["instalacion"], last_updated=now_iso())
-            save_state(state)
-            run_script([PYTHON, str(ALERTAR), "error"])
-            return 1
-        print(f"  ✅ Instalado en {inst['destino']}")
-        estado_ok(state, n_pasos_hasta_aqui + 1)
+        # ── Paso de instalación (solo si la validación no dejó bloques inválidos) ──
+        if not validacion_ok_flag:
+            print("\n" + "─" * 56)
+            print(f"  ⚠  Paso {n_pasos_hasta_aqui + 1}/{total}  │  Instalación OMITIDA: validación con bloques inválidos.")
+            print("  ℹ  Usa --validar-estricto y revisa la salida del Paso 4, o elimina/edita los bloques rojos antes de instalar.")
+            estado_ok(state, n_pasos_hasta_aqui + 1)
+        else:
+            print("\n" + "─" * 56)
+            print(f"  Paso {n_pasos_hasta_aqui + 1}/{total}  │  Instalando en global")
+            print("─" * 56)
+            code_inst, inst = run_script(
+                [PYTHON, str(INSTALAR),
+                 "--origen", str(salida_local),
+                 "--nombre", nombre,
+                 "--destino", args.destino]
+                + (["--sobrescribir"] if args.sobrescribir else []),
+                capture_json=True,
+            )
+            if code_inst != 0 or not isinstance(inst, dict) or inst.get("status") != "ok":
+                msg = _msg_fallo(inst, "Fallo en instalación")
+                print(f"  ❌ Instalación: {msg}", file=sys.stderr)
+                state.update(current_step=n_pasos_hasta_aqui + 1, steps_failed=["instalacion"], last_updated=now_iso())
+                save_state(state)
+                run_script([PYTHON, str(ALERTAR), "error"])
+                return 1
+            print(f"  ✅ Instalado en {inst['destino']}")
+            estado_ok(state, n_pasos_hasta_aqui + 1)
     elif args.dry_run:
         print(f"\n  (dry-run) Skill listo en {salida_local}, no instalado en global.")
         estado_ok(state, total)

@@ -1,0 +1,102 @@
+# Directiva: Resolver un problema usando un skill estructurado (Fase 2)
+---
+goal: >
+  Dado un problema de ingeniería/electrónica y un skill destilado de un libro
+  (SKILL.md + references/), resolverlo siguiendo las metodologías del skill y
+  verificar el resultado con un oráculo simbólico (SymPy) antes de entregarlo.
+  El LLM solo formula (análisis + código); el retrieval, la ejecución del
+  oráculo y el juicio de éxito son deterministas (execution/resolver_skill.py).
+
+required_inputs:
+  - name: problema
+    description: Enunciado del problema a resolver (texto libre).
+    required: true
+  - name: skill
+    description: >
+      Directorio del skill generado por flujo_libro_a_skill.py
+      (debe contener SKILL.md y, preferiblemente, references/ con las
+      estructuras enriquecidas: metodologías, límites, prerrequisitos, fórmulas).
+    required: true
+
+optional_inputs:
+  - name: critico
+    description: Escala el tier del enrutador si la tarea es de alto impacto.
+    default: false
+  - name: task
+    description: Tipo de tarea del vocabulario controlado para el enrutador.
+    default: calculo_formal
+  - name: modelo
+    description: ID de modelo OpenRouter explícito (salta el enrutador).
+    default: null
+  - name: max_reflexion
+    description: Rondas máx de reflexión ante errores del oráculo (límite 3).
+    default: 3
+  - name: top_k / min_score
+    description: Afinación del retrieval por embeddings.
+    default: 6 / 0.05
+
+steps:
+  - step: 1
+    name: validacion_entradas
+    script: flujo_resolver_skill.py (validación inline, orquestación)
+    description: >
+      Comprueba que el problema no esté vacío y que el skill tenga SKILL.md.
+      Si algo falla, abortar con código de salida 1.
+  - step: 2
+    name: enrutamiento_llm
+    script: execution/enrutador.py --task <tipo> --tokens N [--critico]
+    description: >
+      Decisión 100% determinista del tier/modelo (NUNCA razonar el modelo en el
+      chat). Si el usuario nombró --modelo, respetarlo como override sin enrutar.
+      Default: task calculo_formal → opus (riguroso); rutina → flash.
+  - step: 3
+    name: resolucion
+    script: execution/resolver_skill.py
+    description: >
+      Sub-etapas internas deterministas y LLM dentro del script:
+      a) retrieval por embeddings → top-k secciones afines (0 créditos);
+      b) formulador LLM → análisis paso a paso + bloque SymPy autocontenido;
+      c) oráculo → ejecución del bloque en sandbox aislado (0 créditos);
+      d) reflexión (máx 3) → ante error del oráculo, re-formulación con el error.
+  - step: 4
+    name: reporte
+    script: flujo_resolver_skill.py (guardado + alerta)
+    description: >
+      Persiste el resultado en .tmp/resolucion_<fecha>.json, registra el estado
+      en .tmp/run_state.json y emite alerta audible (success/error).
+
+expected_outputs:
+  - >
+    JSON en .tmp/resolucion_<fecha>.json con status (ok|error), code, problema,
+    skill, modelo, enrutamiento, secciones_usadas [{archivo, titulo, score}],
+    analisis, codigo_sympy, resultado_esperado, resultado_oraculo
+    {exit_code, stdout, stderr}, resultado_final, reflexiones_usadas y tokens.
+  - >
+    Exit code del script de ejecución: 0 si el oráculo verificó la solución;
+    3 si no se resolvió tras agotar las reflexiones.
+
+edge_cases:
+  - case: problema vacío o sin context
+    protocol: Abortar (exit 1) antes de gastar créditos.
+  - case: skill sin SKILL.md o sin references/
+    protocol: Abortar (exit 2 de resolver_skill.py) con mensaje claro.
+  - case: retrieval sin secciones afines (score < umbral)
+    protocol: Abortar (exit 3) y sugerir bajar --min-score o revisar el skill.
+  - case: LLM devuelve JSON inválido o sin codigo_sympy
+    protocol: Inyectar feedback y reintentar (cuenta como reflexión).
+  - case: oráculo falla (sintaxis, NameError, inseguro, timeout)
+    protocol: Inyectar el stderr real al LLM y re-formular; máx 3 rondas.
+  - case: 429 / límite de API del proveedor
+    protocol: Repetir la llamada con el fallback del enrutador (cadena del
+      tier); tras 3 intentos totales, detener y reportar.
+  - case: saldo OpenRouter bajo
+    protocol: Con saldo < $3, evitar tiers caros (opus) para esta tarea;
+      avisar al usuario antes si --critico fuerza opus.
+  - case: timeout del sandbox (bloque más lento de N s)
+    protocol: Informar en el resultado y sugerir subir --timeout-s.
+
+retry_budget: 3
+notas: >
+  La capa "razonamiento" del LLM nunca es la validación final: la decisión de
+  éxito la toma el oráculo SymPy. La fidelidad de los claims al libro se puede
+  auditar después con las secciones_usadas (contraste con los chunks de origen).

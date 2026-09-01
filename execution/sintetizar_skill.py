@@ -54,6 +54,7 @@ import json
 import re
 import shutil
 import sys
+import time
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -283,6 +284,7 @@ def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
 def _llm_estructura(
     resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str,
     feedback: Optional[list[dict]] = None,
+    estructura_max_tokens: int = 8192,
 ) -> dict:
     """Pide al LLM el SKILL.md (con frontmatter) y la lista de references."""
     try:
@@ -365,10 +367,17 @@ def _llm_estructura(
         model=modelo,
         api_key=api_key,
         temperature=0.2,
-        max_tokens=8192,
+        max_tokens=estructura_max_tokens,
         title="ELECTRONICA - Estructura Skill",
         reasoning=_razonamiento_para(modelo),
     )
+    try:
+        raw_dir = Path(__file__).resolve().parent.parent / ".tmp"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        (raw_dir / f"sintesis_estructura_{nombre}_{int(time.time())}.json").write_text(
+            content, encoding="utf-8")
+    except OSError:
+        pass
     return extract_json_from_response(content)
 
 
@@ -388,6 +397,7 @@ def _destilar_chunks(
 def _ensamblar_estructura(
     cuerpo_resumen: str, nombre: str, tema: str, idioma: str, modelo: str,
     feedback: Optional[list[dict]] = None,
+    estructura_max_tokens: int = 8192,
 ) -> tuple[str, list[dict]]:
     """Fase 2: ensambla SKILL.md + references a partir del corpus destilado."""
     ultimo_error = None
@@ -395,6 +405,7 @@ def _ensamblar_estructura(
         try:
             estructura = _llm_estructura(
                 cuerpo_resumen, tema, idioma, nombre, modelo, feedback=feedback,
+                estructura_max_tokens=estructura_max_tokens,
             )
             skilL = estructura.get("skilL_md") or estructura.get("skill_md") or estructura.get("SKILL.md")
             if not isinstance(skilL, str) or not skilL.strip():
@@ -440,6 +451,8 @@ def sintetizar(
     texto: str, entrevista: dict, nombre: str, tema: str, idioma: str,
     modelo: str, max_chunk_tokens: int, salida: Path,
     feedback: Optional[list[dict]] = None,
+    estructura_max_tokens: int = 8192,
+    usar_corpus: bool = False,
 ) -> dict:
     chunks = _repartir_chunks(texto, max_chunk_tokens)
 
@@ -447,7 +460,7 @@ def sintetizar(
     # skill): en re-síntesis con --feedback se reutiliza sin distilar de nuevo
     # (el feedback afecta solo a la fase de estructura, no al chunking).
     corpus_file = salida.parent / f"{salida.name}_destilado.txt"
-    if feedback and corpus_file.is_file():
+    if (feedback or usar_corpus) and corpus_file.is_file():
         cuerpo_resumen = corpus_file.read_text(encoding="utf-8")
     else:
         cuerpo_resumen = _destilar_chunks(chunks, tema, idioma, modelo)
@@ -459,6 +472,7 @@ def sintetizar(
     # Fase 2: estructura (SKILL.md + references) con retry budget.
     skilL_md, refs = _ensamblar_estructura(
         cuerpo_resumen, nombre, tema, idioma, modelo, feedback=feedback,
+        estructura_max_tokens=estructura_max_tokens,
     )
 
     salida.mkdir(parents=True, exist_ok=True)
@@ -518,6 +532,14 @@ def main() -> None:
     parser.add_argument("--feedback", default=None, help=(
         "JSON con los errores del validador (bucle de reflexión). Opcional."
     ))
+    parser.add_argument("--estructura-max-tokens", type=int, default=8192, help=(
+        "Presupuesto de tokens de salida para la fase de ensamblaje (SKILL.md + "
+        "references en un JSON grande). Subir si el corpus destilado es muy grande."
+    ))
+    parser.add_argument("--usar-corpus", action="store_true", help=(
+        "Reutilizar el corpus destilado persistido (<salida>_destilado.txt) si "
+        "existe, en lugar de distilar los chunks de nuevo (0 créditos extra)."
+    ))
 
     args = parser.parse_args()
 
@@ -573,6 +595,8 @@ def main() -> None:
         resultado = sintetizar(
             texto, entrevista, args.nombre, args.tema, args.idioma,
             modelo, args.max_chunk_tokens, salida, feedback=feedback,
+            estructura_max_tokens=args.estructura_max_tokens,
+            usar_corpus=args.usar_corpus,
         )
     except (ValueError, RuntimeError, KeyError) as exc:
         print(json.dumps({"status": "error", "code": 3, "message": str(exc)}, ensure_ascii=False), file=sys.stderr)
