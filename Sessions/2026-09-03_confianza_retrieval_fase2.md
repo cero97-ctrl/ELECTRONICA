@@ -113,3 +113,30 @@ universitario debe reflejarlo.
   scores; mismo descriptor → misma salida. La decisión de "ampliar con más PDFs" queda como
   aviso (heurística) al usuario, no como bloqueo automático (salvo `--abortar-debil`).
 
+---
+
+## Cierre de sesión (pausa)
+
+**Confirmación final del usuario (idea rectora):** la ampliación de conocimiento debe estar
+orientada a la señal de **confianza del retrieval**. Cuando un problema requiera más de lo que
+los skills actuales cubren (confianza `baja` en un problema difícil), debe existir la
+posibilidad de **agregar más PDFs** para obtener una respuesta confiable. Este circuito ya
+está operativo:
+
+```
+Problema difícil + confianza baja  →  aviso (por_skill)  →  añadir PDF del dominio
+    →  Fase 1: flujo_libro_a_skill.py  →  nuevo skill  →  resolver con --skill <todos los skills>
+```
+
+**Estado:** pausa. Nada pendiente de implementar para esta idea (la mecánica está commiteada).
+Cuando se retome, se probará el ciclo completo con un caso real (problema que deje confianza
+`baja` + PDF faltante del dominio).
+
+**Próximos pasos sugeridos (al reanudar):**
+1. Proponer un problema que hoy quede con confianza `baja` con los skills actuales; confirmar
+   el aviso y ver por `por_skill` qué skill/área aporta.
+2. Si ya existe un PDF del dominio que cubra la laguna (≤5 MB), generar su skill con la Fase 1
+   y re-resolver pasando todos los skills.
+3. (Opcional) telemetría de scores reales para afinar umbrales por skill.
+
+
