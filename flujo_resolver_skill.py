@@ -97,6 +97,10 @@ def main() -> int:
     parser.add_argument("--max-reflexion", type=int, default=3, help="Rondas máx de reflexión (≤3).")
     parser.add_argument("--top-k", type=int, default=6, help="Secciones a recuperar por embeddings.")
     parser.add_argument("--min-score", type=float, default=0.05, help="Score mínimo de similitud.")
+    parser.add_argument("--alerta-score", type=float, default=None,
+                        help="Umbral de confianza débil del retrieval (default 0.35).")
+    parser.add_argument("--abortar-debil", action="store_true",
+                        help="Abortar (exit 3) si el retrieval tiene confianza baja.")
     parser.add_argument("--timeout-s", type=int, default=30, help="Timeout del sandbox SymPy (s).")
     parser.add_argument("--salida", default=None, help="Ruta del JSON de resultado (default .tmp/resolucion_<ts>.json).")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta audible.")
@@ -146,6 +150,10 @@ def main() -> int:
            "--top-k", str(args.top_k),
            "--min-score", str(args.min_score),
            "--timeout-s", str(args.timeout_s)]
+    if args.alerta_score is not None:
+        cmd += ["--alerta-score", str(args.alerta_score)]
+    if args.abortar_debil:
+        cmd += ["--abortar-debil"]
     code, res = run_script(cmd, capture_json=True)
     if not isinstance(res, dict):
         print_err("resolver_skill.py no devolvió JSON válido.")
@@ -153,6 +161,16 @@ def main() -> int:
 
     res["enrutamiento"] = info_enrutador
     res["resuelto"] = res.get("status") == "ok"
+
+    confianza = res.get("confianza_retrieval") or {}
+    nivel_conf = confianza.get("nivel")
+    if nivel_conf == "baja":
+        print(f"\n  ⚠  Confianza del retrieval BAJA (mejor score {confianza.get('mejor_score')})")
+        if confianza.get("alerta"):
+            print(f"     {confianza['alerta']}")
+    elif nivel_conf == "media":
+        print(f"\n  ℹ  Confianza del retrieval media (mejor score {confianza.get('mejor_score')})")
+
     salida = Path(args.salida) if args.salida else TMP_DIR / f"resolucion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     TMP_DIR.mkdir(parents=True, exist_ok=True)
     salida.write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")

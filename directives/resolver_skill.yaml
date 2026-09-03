@@ -34,6 +34,14 @@ optional_inputs:
   - name: top_k / min_score
     description: Afinación del retrieval por embeddings.
     default: 6 / 0.05
+  - name: alerta_score / abortar_debil
+    description: >
+      Umbral de confianza del retrieval. Si el mejor score de las secciones
+      recuperadas es < alerta_score (default 0.35) se marca la confianza como
+      'baja' y se avisa al usuario; con abortar_debil=true se aborta (exit 3)
+      en lugar de solo avisar. Umbral de 'alta' en 0.55. Calibrados con
+      evidencia medida (dentro de alcance ~0.45-0.75, fuera ~0.25).
+    default: 0.35 / false
 
 steps:
   - step: 1
@@ -55,7 +63,11 @@ steps:
     description: >
       Sub-etapas internas deterministas y LLM dentro del script:
       a) retrieval por embeddings → top-k secciones afines (0 créditos);
+         clasifica la confianza del fundamento (alta/media/baja según el mejor
+         score vs alerta_score=0.35 y alta=0.55); con confianza baja avisa, o
+         aborta si --abortar-debil;
       b) formulador LLM → análisis paso a paso + bloque SymPy autocontenido;
+         con fundamento débil se inyecta un aviso para no forzar fórmulas;
       c) oráculo → ejecución del bloque en sandbox aislado (0 créditos);
       d) reflexión (máx 3) → ante error del oráculo, re-formulación con el error.
   - step: 4
@@ -68,7 +80,9 @@ steps:
 expected_outputs:
   - >
     JSON en .tmp/resolucion_<fecha>.json con status (ok|error), code, problema,
-    skill, modelo, enrutamiento, secciones_usadas [{archivo, titulo, score}],
+    skill, modelo, enrutamiento, confianza_retrieval
+    {nivel: alta|media|baja, mejor_score, alerta, alerta_score},
+    secciones_usadas [{archivo, titulo, score}],
     analisis, codigo_sympy, resultado_esperado, resultado_oraculo
     {exit_code, stdout, stderr}, resultado_final, reflexiones_usadas y tokens.
   - >
@@ -82,6 +96,12 @@ edge_cases:
     protocol: Abortar (exit 2 de resolver_skill.py) con mensaje claro.
   - case: retrieval sin secciones afines (score < umbral)
     protocol: Abortar (exit 3) y sugerir bajar --min-score o revisar el skill.
+  - case: retrieval con fundamento débil (score < alerta_score pero >= min_score)
+    protocol: >
+      Reportar confianza 'baja' (mejor_score y alerta) en el JSON y avisar al
+      usuario en consola. La resolución continúa por defecto (inyectando un
+      aviso al formulador para no forzar fórmulas); con --abortar-debil se
+      aborta (exit 3) en su lugar.
   - case: LLM devuelve JSON inválido o sin codigo_sympy
     protocol: Inyectar feedback y reintentar (cuenta como reflexión).
   - case: oráculo falla (sintaxis, NameError, inseguro, timeout)

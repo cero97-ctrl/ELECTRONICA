@@ -42,11 +42,18 @@ El **LLM nunca decide ni valida**: formula. La decisión de quién es el modelo 
 
 ## 3. `execution/resolver_skill.py` — el motor (determinista)
 
-### 3.1 Retrielleval por embeddings (0 créditos)
+### 3.1 Retrieval por embeddings (0 créditos)
 - Divide `SKILL.md` + `references/*.md` en **secciones** partiendo por cabeceras markdown `#...###`.
 - Convierte a embeddings con `paraphrase-multilingual-MiniLM-L12-v2` y hace **cosine similarity**
   entre el problema y cada sección.
 - Devuelve `top-k` secciones con `score > min-score` (default k=6, score=0.05).
+- **Confianza del fundamento** (`confianza_retrieval`): clasifica el mejor score en
+  `alta` (>= 0.55), `media` (>= `alerta-score`, default 0.35) o `baja` (< `alerta-score`).
+  Umbrales calibrados con evidencia medida sobre el skill real (problemas dentro de
+  alcance dan ~0.45-0.75; fuera de alcance ~0.25).
+  - Confianza `baja` → se **avisa** al usuario y se inyecta un aviso al formulador para no
+    forzar fórmulas inventadas; con `--abortar-debil` se aborta (exit 3) en su lugar.
+  - `--solo-retrieval` también reporta `confianza_retrieval` (inspección 0 créditos).
 - **Caché determinista** en `.tmp/resolver_skill/<skill>/`:
   - `secciones.json` con hash del texto (invalida si cambia el skill).
   - `embeddings.npz` con hash del contenido (invalida si cambia).
@@ -79,10 +86,12 @@ El **LLM nunca decide ni valida**: formula. La decisión de quién es el modelo 
 - El prompt de reflexión pide corregir "solo el error sin cambiar la estrategia".
 
 ### Salida
-JSON con: `status, code, problema, skill, modelo, secciones_usadas[{archivo,titulo,score}],
+JSON con: `status, code, problema, skill, modelo, confianza_retrieval
+{nivel, mejor_score, alerta, alerta_score}, secciones_usadas[{archivo,titulo,score}],
 analisis, codigo_sympy, resultado_esperado, resultado_oraculo, resultado_final,
 reflexiones_usadas, tokens`.
-Exit: `0` ok / `1` args / `2` skill inválido / `3` no resuelto / `5` error LLM.
+Exit: `0` ok / `1` args / `2` skill inválido / `3` no resuelto (o confianza baja con
+`--abortar-debil`) / `5` error LLM.
 
 ---
 
@@ -142,8 +151,14 @@ python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skil
 # Test barato con modelo flash (override, salta enrutador)
 python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --modelo google/gemini-3.7-flash --max-reflexion 1
 
-# Solo ver qué secciones recupera (0 créditos)
+# Solo ver qué secciones recupera (0 créditos) — incluye confianza_retrieval
 python3 execution/resolver_skill.py --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --problema "..." --solo-retrieval
+
+# Abortar si el retrieval tiene fundamento débil (confianza baja) en vez de continuar
+python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --abortar-debil
+
+# Ajustar el umbral de confianza débil (default 0.35; más estricto = más alto)
+python3 flujo_resolver_skill.py --problema "..." --skill <dir> --alerta-score 0.40
 ```
 
 ---

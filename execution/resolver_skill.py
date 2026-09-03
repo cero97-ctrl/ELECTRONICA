@@ -14,7 +14,8 @@ Etapas (patrón neuro-simbólico del doc de diseño, §4):
      con el error real. Máximo --max-reflexion rondas.
 
 Salida JSON a stdout. Exit codes: 0 ok / 1 args / 2 skill inválido /
-3 no resuelto tras agotar reflexión o formulación fallida.
+3 no resuelto tras agotar reflexión, formulación fallida, o con
+--abortar-debil y retrieval de confianza baja.
 """
 import argparse
 import ast
@@ -43,6 +44,11 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MAX_SECCION_CHARS = 6000
 CACHE_DIR = PROJECT_ROOT / ".tmp" / "resolver_skill"
 EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
+# Calibrado con evidencia (2026-09-03): con MiniLM los problemas dentro de alcance
+# dan >= ~0.45 y los fuera de alcance ~0.25. Umbral de 'alta' en 0.55 y alerta de
+# confianza débil en 0.35 para separar ambos conjuntos.
+CONFIANZA_ALTA = 0.55
+ALERTA_SCORE_DEFAULT = 0.35
 
 _PROMPT_SISTEMA = """Eres un formulador formal dentro de un sistema neuro-simbólico.
 Debes resolver un problema de ingeniería/electrónica SIGUIENDO ESTRICTAMENTE el
@@ -76,6 +82,11 @@ def _arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--max-reflexion", type=int, default=3, help="Rondas máx de reflexión (≤3).")
     p.add_argument("--top-k", type=int, default=6, help="Secciones a recuperar por embeddings.")
     p.add_argument("--min-score", type=float, default=0.05, help="Score mínimo de similitud.")
+    p.add_argument("--alerta-score", type=float, default=ALERTA_SCORE_DEFAULT,
+                   help="Umbral de confianza débil: si el mejor score es < este valor, "
+                        "se marca/avisa fundamento bajo (no bloquea, salvo --abortar-debil).")
+    p.add_argument("--abortar-debil", action="store_true",
+                   help="Convertir la confianza baja en aborto (exit 3) en lugar de solo avisar.")
     p.add_argument("--timeout-s", type=int, default=30, help="Timeout del sandbox SymPy (s).")
     p.add_argument("--max-tokens", type=int, default=None, help="Override de max_tokens de salida.")
     p.add_argument("--temperatura", type=float, default=0.2)
@@ -203,6 +214,35 @@ def _retrieval(dir_skill: Path, problema: str, top_k: int, min_score: float) -> 
     return out
 
 
+def _nivel_confianza(secciones: list[dict], alerta_score: float) -> dict:
+    """Clasifica la confianza del retrieval según el mejor score coseno.
+
+    - 'alta':  mejor_score >= CONFIANZA_ALTA (0.55); fundamento sólido
+    - 'media': mejor_score >= alerta_score (0.35): aceptable
+    - 'baja':  mejor_score < alerta_score: fundamento débil → aviso/aborto
+    Umbrales calibrados con evidencia (ver CONFIANZA_ALTA / ALERTA_SCORE_DEFAULT).
+    Determinista: solo depende de los scores ya calculados.
+    """
+    mejor = max((s.get("score") or 0.0) for s in secciones) if secciones else 0.0
+    if not secciones:
+        nivel, alerta = "baja", "No hay secciones recuperadas."
+    elif mejor >= CONFIANZA_ALTA:
+        nivel, alerta = "alta", ""
+    elif mejor >= alerta_score:
+        nivel, alerta = "media", ""
+    else:
+        nivel, alerta = "baja", (
+            f"El mejor score de retrieval ({mejor:.3f}) es inferior al umbral de "
+            f"confianza ({alerta_score:.2f}); la respuesta puede apoyarse en "
+            f"conocimiento débil o fuera de alcance del skill.")
+    return {
+        "nivel": nivel,
+        "mejor_score": round(mejor, 4),
+        "alerta": alerta,
+        "alerta_score": alerta_score,
+    }
+
+
 # ── Etapa 3: oráculo determinista (0 créditos) ──────────────────────────────
 
 def _oraculo(src: str, timeout_s: int) -> dict:
@@ -301,13 +341,20 @@ def _bloques_contexto(secciones: list[dict]) -> str:
     return "\n\n".join(partes)
 
 
-def _mensaje_usuario(problema: str, secciones: list[dict], feedback: str | None = None) -> str:
+def _mensaje_usuario(problema: str, secciones: list[dict], confianza: dict | None = None,
+                     feedback: str | None = None) -> str:
     bloque = _bloques_contexto(secciones)
+    aviso = ""
+    if confianza and confianza.get("nivel") == "baja":
+        aviso = ("AVISO DE FUNDAMENTO DÉBIL: las secciones recuperadas tienen baja "
+                 "similitud con el problema. Si el problema cae FUERA del alcance del "
+                 "skill, indícalo en 'analisis' (p. ej. 'no cubierto por el libro') en "
+                 "lugar de forzar una fórmula o inventar datos.\n\n")
     if feedback:
         return (f"El intento anterior fracasó. Corrige solo el error sin cambiar la estrategia.\n"
                 f"ERROR DETECTADO:\n{feedback}\n\n"
-                f"PROBLEMA (el mismo):\n{problema}\n\nSKILL (secciones recuperadas):\n{bloque}")
-    return f"PROBLEMA:\n{problema}\n\nSKILL (secciones recuperadas):\n{bloque}"
+                f"PROBLEMA (el mismo):\n{problema}\n\n{aviso}SKILL (secciones recuperadas):\n{bloque}")
+    return f"PROBLEMA:\n{problema}\n\n{aviso}SKILL (secciones recuperadas):\n{bloque}"
 
 
 def main() -> int:
@@ -325,14 +372,24 @@ def main() -> int:
     max_reflexion = max(0, min(args.max_reflexion, 3))
 
     secciones = _retrieval(dir_skill, args.problema, args.top_k, args.min_score)
+    confianza = _nivel_confianza(secciones, args.alerta_score)
     if args.solo_retrieval:
-        print(json.dumps({"status": "ok", "secciones_usadas": [
+        print(json.dumps({"status": "ok", "confianza_retrieval": confianza, "secciones_usadas": [
             {k: s[k] for k in ("archivo", "titulo", "score")} for s in secciones
         ]}, ensure_ascii=False))
         return 0
     if not secciones:
         print(json.dumps({"status": "error", "code": 3,
-                          "message": "El retrieval no encontró secciones afines al problema (baja el umbral)."},
+                          "message": "El retrieval no encontró secciones afines al problema (baja el umbral).",
+                          "confianza_retrieval": confianza},
+                         ensure_ascii=False), file=sys.stderr)
+        return 3
+    if args.abortar_debil and confianza["nivel"] == "baja":
+        print(json.dumps({"status": "error", "code": 3,
+                          "message": confianza["alerta"],
+                          "confianza_retrieval": confianza,
+                          "sugerencia": "Usa --abortar-debil solo para repos rígidos; "
+                                        "o baja --alerta-score / amplía el skill."},
                          ensure_ascii=False), file=sys.stderr)
         return 3
 
@@ -348,7 +405,7 @@ def main() -> int:
         if intento > 0:
             reflexiones += 1
         messages = [sistema, {"role": "user", "content": _mensaje_usuario(
-            args.problema, secciones, feedback)}]
+            args.problema, secciones, confianza, feedback)}]
         try:
             raw, tok = _formular(messages, args.modelo, args.max_tokens, args.temperatura)
         except Exception as exc:  # noqa: BLE001
@@ -380,6 +437,7 @@ def main() -> int:
         "problema": args.problema,
         "skill": str(dir_skill),
         "modelo": args.modelo,
+        "confianza_retrieval": confianza,
         "secciones_usadas": [{k: s[k] for k in ("archivo", "titulo", "score")} for s in secciones],
         "analisis": ultimo_intento.get("analisis", ""),
         "codigo_sympy": ultimo_intento.get("codigo_sympy", ""),
