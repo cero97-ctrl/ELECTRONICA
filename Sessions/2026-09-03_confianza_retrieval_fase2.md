@@ -59,7 +59,9 @@ Verificación en vivo (0 créditos) tras recalibrar:
 
 ## Pendientes
 
-- El `.tex`/`.pdf` universitario (ya enviado) no refleja esta mejora; actualizarlo solo si
-  se quiere una versión revisada.
+- ~~El `.tex`/`.pdf` universitario (ya enviado) no refleja esta mejora; actualizarlo solo si
+  se quiere una versión revisada.~~ → **HECHO (2026-09-03):** versión revisada de
+  `skill_fases_1_y_2.tex/.pdf` (13 págs) con la sección §10.2 "Validación de Confianza del
+  Retrieval" (calibración empírica, detección de fundamento débil) y los comandos nuevos.
 - Considerar telemetría de scores reales (`.tmp/routing_log.jsonl`-style) para afinar aún
   más los umbrales por skill concreto.

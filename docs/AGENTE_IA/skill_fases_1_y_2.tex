@@ -1,0 +1,694 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos y gráficos ──────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{url}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{22pt}{9pt}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\textcolor{grisTexto}{\footnotesize\faIcon{robot}~Ecosistema Agente IA --- Destilación y Resolución Neuro-Simbólica}}
+\fancyhead[R]{\textcolor{grisTexto}{\footnotesize\faIcon{calendar-alt}~Septiembre 2026}}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon, citecolor=azulMedio]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+\newcommand{\iconoBanda}{brain}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=16pt, bottom=14pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.08\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{32}{32}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{10pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{19}{23}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!90!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{2pt}
+  \end{tcolorbox}%
+  \vspace{6pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto ────────────────────────────────────────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\footnotesize\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=4pt,
+    belowskip=4pt,
+    xleftmargin=12pt,
+    framexleftmargin=12pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstdefinestyle{estiloBash}{
+    style=estiloCodigo,
+    language=bash,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaAlerta}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{exclamation-triangle}~Punto crítico de diseño},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Documento Principal ───────────────────────────────────────────────────────
+\begin{document}
+
+% ── Portada Infográfica ───────────────────────────────────────────────────────
+\bandaTitulo[fondoOscuro]{Destilación y Resolución con Skills Neuro-Simbólicos}{Fase 1: Síntesis de Libro a Skill \quad|\quad Fase 2: Razonamiento y Oráculo SymPy}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{info-circle}~Ficha Técnica del Documento de Estudio}]
+  \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X >{\bfseries\color{azulNoche}}l X}
+    \faIcon{calendar-check}~Fecha: & Septiembre 2026 & \faIcon{layer-group}~Arquitectura: & 3 Capas Deterministas \\
+    \faIcon{coins}~Coste E2E (452 págs): & $\sim$\$0.75 USD (Fase 1 + Fase 2) & \faIcon{shield-alt}~Oráculo Simbólico: & SymPy 1.14.0 (Sandbox AST) \\
+    \faIcon{microchip}~Modelos Tier: & DeepSeek V4 Pro / Gemini Flash & \faIcon{check-double}~Tasa Validación: & 33/33 Bloques SymPy (100\%) \\
+  \end{tabularx}
+\end{tcolorbox}
+
+\vspace{-4pt}
+\tableofcontents
+\vspace{10pt}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+% PARTE I: FASE 1 — SÍNTESIS DE LIBRO A SKILL
+% ═══════════════════════════════════════════════════════════════════════════════
+\newpage
+\part*{PARTE I: Fase 1 --- De un Libro PDF a un Skill Estructurado}
+\addcontentsline{toc}{part}{PARTE I: Fase 1 --- De un Libro PDF a un Skill Estructurado}
+
+\section[Qué Resuelve la Fase 1]{\iconotexto{bullseye}{Qué Resuelve la Fase 1: Destilación Neuro-Simbólica}}
+
+Un modelo de lenguaje (LLM) que simplemente ``responde preguntas sobre un libro técnico'' tiende a alucinar constantes, inventar ecuaciones y saltarse hipótesis fundamentales. La \textbf{Fase 1} transforma un documento técnico en PDF en un \textbf{skill estructurado} que permite al agente razonar formalmente:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Teoría y definiciones rigurosas:} Sin resúmenes superficiales; preservando supuestos y rango de validez.
+  \item \textbf{Metodologías de resolución paso a paso:} Plantillas algorítmicas que replican el método del autor.
+  \item \textbf{Límites de aplicabilidad y prerrequisitos:} Condiciones exactas de borde (\textit{cuándo NO aplicar}).
+  \item \textbf{Fórmulas ejecutables en SymPy:} Cada fórmula matemática se representa como código ejecutable, permitiendo validación formal determinista con 0 alucinaciones.
+\end{itemize}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{project-diagram}~Pipeline E2E de Destilación de la Fase 1}]
+\begin{lstlisting}
+[Libro PDF] --> extraer_libro_pdf.py --> texto_completo.txt --> enrutador.py
+                                                                     |
+                                             (destilacion chunk a chunk  |  -> corpus)
+                                             (ensamblaje 7 archivos)    |
+                                                                     v
+                                              SKILL.md + references/ (formulas,
+                                              metodologias, limites, prerrequisitos,
+                                              tablas, glosario)
+                                                                     v
+                                        [validar_skill_formulas.py -> gate instalacion]
+                                        [generar_latex_skill.py -> reporte tecnico PDF]
+                                        [instalar_skill.py -> ~/.config/opencode/skills]
+\end{lstlisting}
+\end{tcolorbox}
+
+% ── Sección 2: Arquitectura 3 Capas ───────────────────────────────────────────
+\section[Arquitectura de 3 Capas (Fase 1)]{\iconotexto{layer-group}{Arquitectura de 3 Capas de la Fase 1}}
+
+Siguiendo el principio de diseño del proyecto, toda la funcionalidad se divide estrictamente en 3 capas desacopladas:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\ttfamily}p{5.2cm} >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Capa} & \textbf{Archivo / Artefacto} & \textbf{Responsabilidad y Rol} \\
+\midrule
+\textbf{Directiva} & directives/libro\_a\_skill.yaml & SOP determinista: 8 pasos secuenciales, 13 edge cases catalogados y política de reintentos. \\
+\midrule
+\textbf{Orquestación} & flujo\_libro\_a\_skill.py & Entrevista al usuario, orquestación de scripts, manejo de estados en \texttt{.tmp/} y gate de instalación. \\
+\midrule
+\textbf{Ejecución} & execution/sintetizar\_skill.py \newline execution/extraer\_libro\_pdf.py \newline execution/validar\_skill\_formulas.py \newline execution/generar\_latex\_skill.py \newline execution/instalar\_skill.py & Scripts unitarios deterministas con entrada/salida estricta. Cero lógica de negocio en prompts del chat. \\
+\bottomrule
+\end{tabularx}
+\caption{Matriz de responsabilidades de la arquitectura de 3 capas en la Fase 1.}
+\end{table}
+
+% ── Sección 3: Orquestador flujo_libro_a_skill.py ─────────────────────────────
+\section[El Orquestador flujo\_libro\_a\_skill.py]{\iconotexto{cogs}{El Orquestador \texttt{flujo\_libro\_a\_skill.py}}}
+
+El orquestador ejecuta una secuencia rigurosa de 8 pasos:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Paso 1 --- Entrevista interactiva / CLI:} Captura nombre (\textit{snake\_case}), tema, idioma y alcance. Persiste estado en \path{.tmp/entrevista_skill_<nombre>.json}.
+  \item \textbf{Paso 2 --- Extracción determinista (0 créditos):} Ejecuta \texttt{extraer\_libro\_pdf.py}. En el test E2E real extrajo 452 páginas, 1.6M caracteres y $\sim$400K tokens.
+  \item \textbf{Paso 3 --- Enrutamiento inteligente:} Invoca \texttt{execution/enrutador.py --task contexto\_masivo} para seleccionar deterministamente el tier \textbf{deepseek} (\texttt{deepseek/deepseek-v4-pro}).
+  \item \textbf{Paso 4 --- Síntesis y destilación (créditos):} Invoca \texttt{sintetizar\_skill.py} produciendo los 7 archivos estructurados.
+  \item \textbf{Paso 5 --- Validación neuro-simbólica (0 créditos):} Ejecuta \texttt{validar\_skill\_formulas.py}. Si hay fórmulas inválidas, dispara bucle de reflexión hasta $\le 3$ veces.
+  \item \textbf{Paso 6 --- Reporte LaTeX infográfico (0 créditos):} Genera reporte PDF en \path{docs/SKILL/<nombre>/}.
+  \item \textbf{Paso 7 --- Instalación global condicionada (0 créditos):} Copia a \path{~/.config/opencode/skills/<nombre>/}.
+  \item \textbf{Paso 8 --- Alerta sonora y telemetría:} Notifica al usuario con \texttt{alert\_user.py} avisando de reiniciar el entorno.
+\end{enumerate}
+
+\begin{cajaAlerta}
+\textbf{Gate de Instalación Seguro (Implementado 2026-09-01):} Si la validación del Paso 5 arroja bloques simbólicos rotos, la instalación en el directorio global se \textbf{omite automáticamente} emitiendo un warning claro, pero \textbf{no se aborta el flujo}. De esta forma se genera siempre el reporte LaTeX con los diagnósticos sin contaminar el entorno de producción con skills defectuosos.
+\end{cajaAlerta}
+
+\subsection{Estrategia Determinista de Chunking}
+La función \texttt{\_repartir\_chunks(texto, max\_tokens)} divide el texto por párrafos (\texttt{\textbackslash n\textbackslash n}) hasta alcanzar \texttt{max\_chars = max\_tokens * 4}. Párrafos más extensos que el límite se dividen a nivel de página. Con el default de \texttt{16000} tokens por chunk, un libro de 400K tokens se particiona limpiamente en $\approx 27$ chunks.
+
+% ── Sección 4: Motor sintetizar_skill.py ──────────────────────────────────────
+\section[Motor de Síntesis sintetizar\_skill.py]{\iconotexto{microchip}{Motor de Síntesis: \texttt{sintetizar\_skill.py}}}
+
+\subsection{Dos Fases Internas de Procesamiento}
+\begin{itemize}[leftmargin=*]
+     \item \textbf{Fase A --- Destilación Chunk a Chunk (DeepSeek):} Cada chunk se envía con un prompt especializado que produce un resumen denso en markdown con definiciones, variables y ecuaciones en notación \texttt{\$...\$}. Fragmentos no técnicos devuelven \texttt{[sin contenido relevante]} y se filtran. El resultado se guarda en \path{.tmp/skill_<nombre>_destilado.txt} como \textbf{corpus destilado}.
+  \item \textbf{Fase B --- Ensamblaje Estructurado (DeepSeek):} Genera un JSON único con \texttt{SKILL.md} y exactamente las 6 referencias formales obligatorias:
+  \begin{enumerate}
+    \item \texttt{formulas.md}: Ecuaciones con SymPy, dominio y notas de validez.
+    \item \texttt{metodologias.md}: Plantillas numeradas paso a paso del procedimiento de cálculo.
+    \item \texttt{limites\_aplicabilidad.md}: Supuestos de borde (\textit{cuándo NO aplicar}).
+    \item \texttt{prerrequisitos.md}: Grafo de dependencias de conceptos y herramientas.
+    \item \texttt{tablas.md} y \texttt{glosario.md}: Parámetros de componentes y definiciones formales.
+  \end{enumerate}
+\end{itemize}
+
+\subsection{Saneo Determinista del JSON y Frontmatter}
+Debido a imperfecciones típicas de LLMs al emitir JSONs de gran tamaño, se aplican algoritmos deterministas de reparación:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{\texttt{\_sanear\_json}:} Corrige \textit{trailing commas} (\texttt{, \}} $\to$ \texttt{\}}) y escapa barras invertidas de LaTeX crudas (\texttt{\textbackslash Omega} $\to$ \texttt{\textbackslash\textbackslash Omega}) sin alterar caracteres de escape válidos.
+  \item \textbf{\texttt{\_find\_balanced\_json}:} Extractor determinista mediante escaneo de llaves balanceadas que respeta cadenas y escapes, evitando fallos de expresiones regulares no codiciosas.
+  \item \textbf{\texttt{\_normalizar\_frontmatter} + \texttt{\_yaml\_q}:} Re-emite escalares YAML entre comillas dobles, evitando que caracteres especiales como dos puntos (\texttt{:}) rompan el encabezado del skill.
+\end{itemize}
+
+\begin{cajaConcepto}
+\textbf{Presupuesto de Ensamblaje y Solución de Truncamiento:} En libros completos, las 6 referencias estructuradas superan el límite de salida estándar de 8192 tokens. Se implementó el parámetro \texttt{--estructura-max-tokens 32768} para tier DeepSeek y el flag \texttt{--usar-corpus}, el cual permite re-ensamblar un skill existente sin volver a pagar la destilación chunk a chunk (ahorro de $\sim$30 min y $\sim$\$0.70 USD).
+\end{cajaConcepto}
+
+% ── Sección 5: Validación Neuro-Simbólica ─────────────────────────────────────
+\section[Validación Neuro-Simbólica y Oráculo SymPy]{\iconotexto{shield-alt}{Validación Neuro-Simbólica: \texttt{validar\_skill\_formulas.py}}}
+
+El validador escanea todos los bloques Python en \texttt{SKILL.md} y \texttt{references/*.md} sin consumir créditos de API:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Análisis de Sintaxis:} Parseo de Abstract Syntax Tree (\texttt{ast.parse}).
+  \item \textbf{Escaneo de Seguridad AST:} Bloquea llamadas inseguras (\texttt{os}, \texttt{subprocess}, \texttt{eval}, \texttt{exec}, dunders).
+  \item \textbf{Ejecución en Sandbox Aislado:} Ejecución controlada con \texttt{subprocess.run([sys.executable, -c, src], timeout=5\,s)} en el validador de la Fase 1, y \texttt{timeout=30\,s} en el oráculo de la Fase 2.
+  \item \textbf{Verificación de Estructuras Obligatorias:} Comprueba presencia de metodologías, límites y prerrequisitos.
+\end{enumerate}
+
+% ── Sección 6: Resultados Experimentales ──────────────────────────────────────
+\section[Resultados Experimentales E2E]{\iconotexto{chart-bar}{Resultados Experimentales en Libro Completo (Fase 1)}}
+
+Datos obtenidos en la prueba de validación E2E sobre el libro \textit{``Circuitos y Dispositivos Electrónicos''} (Lluís Prat Viñas):
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Métrica de Evaluación} & \textbf{Valor Observado en Ejecución Real} \\
+\midrule
+Volumen de entrada & 452 páginas / 1.6M caracteres / $\sim$400K tokens \\
+Modelo y Tier de enrutamiento & Tier \textbf{deepseek} (\texttt{deepseek/deepseek-v4-pro}) \\
+Bloques SymPy extraídos y validados & \textbf{33/33 Bloques OK (100\% de éxito, 0 errores)} \\
+Re-síntesis por reflexión requerida & 0 iteraciones adicionales (éxito en pasada inicial) \\
+Artefactos estructurados producidos & 7 archivos (\texttt{SKILL.md} + 6 referencias técnicas) \\
+Ubicación de reportes & \path{docs/SKILL/circuitos_dispositivos_electronicos/} \\
+Instalación final & \path{~/.config/opencode/skills/circuitos_dispositivos_electronicos} \\
+Coste total de la fase & $\sim$\$0.75 USD \\
+\bottomrule
+\end{tabularx}
+\caption{Resultados del proceso de destilación neuro-simbólica E2E.}
+\end{table}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+% PARTE II: FASE 2 — RESOLUCIÓN DE PROBLEMAS
+% ═══════════════════════════════════════════════════════════════════════════════
+\newpage
+\part*{PARTE II: Fase 2 --- Resolver Problemas con un Skill Estructurado}
+\addcontentsline{toc}{part}{PARTE II: Fase 2 --- Resolver Problemas con un Skill Estructurado}
+
+\section[Qué Resuelve la Fase 2]{\iconotexto{calculator}{Qué Resuelve la Fase 2: Patrón Neuro-Simbólico}}
+
+Habiendo creado el skill en la Fase 1, la \textbf{Fase 2} lo utiliza para resolver problemas cuantitativos de ingeniería. El principio fundamental es:
+\begin{center}
+  \textit{El LLM jamás calcula mentalmente: razona cualitativamente y formula un programa simbólico; el oráculo determinista ejecuta y valida.}
+\end{center}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{sync-alt}~Flujo de Razonamiento, Formulación y Validación Simbólica}]
+\begin{lstlisting}
+[Problema + Skill] --> [Retrieval Embeddings] --> [LLM: Formulador] --> [Oraculo SymPy]
+                                                          | (analisis +        |
+                                                          |  codigo SymPy)     |
+                                                          +---- feedback ------+
+                                                                   |
+                                                        [Reflexion Local <=3]
+\end{lstlisting}
+\end{tcolorbox}
+
+% ── Sección 8: Arquitectura 3 Capas (Fase 2) ──────────────────────────────────
+\section[Arquitectura de 3 Capas (Fase 2)]{\iconotexto{layer-group}{Arquitectura de 3 Capas de la Fase 2}}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\ttfamily}p{5.2cm} >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Capa} & \textbf{Archivo / Artefacto} & \textbf{Responsabilidad y Rol} \\
+\midrule
+\textbf{Directiva} & directives/resolver\_skill.yaml & SOP: validación de entradas, pasos, 8 edge cases y presupuesto de retry. \\
+\midrule
+\textbf{Orquestación} & flujo\_resolver\_skill.py & Valida el problema, consulta al enrutador determinista, invoca el solver y reporta resultados. \\
+\midrule
+\textbf{Ejecución} & execution/resolver\_skill.py & Motor de retrieval por similitud coseno, formulador LLM, sandbox del oráculo y reflexión. \\
+\bottomrule
+\end{tabularx}
+\caption{Arquitectura de 3 capas para la resolución neuro-simbólica de problemas.}
+\end{table}
+
+% ── Sección 9: Motor resolver_skill.py ────────────────────────────────────────
+\section[Motor de Ejecución resolver\_skill.py]{\iconotexto{cogs}{Motor de Ejecución: \texttt{resolver\_skill.py}}}
+
+\subsection{1. Retrieval Semántico por Embeddings (0 créditos)}
+\begin{itemize}[leftmargin=*]
+  \item Divide \texttt{SKILL.md} y referencias en secciones respetando encabezados markdown (\texttt{\# ... \#\#\#}).
+  \item Genera representaciones vectoriales mediante el modelo local \texttt{paraphrase-multilingual-MiniLM-L12-v2}.
+  \item Aplica similitud coseno seleccionando el $\text{top-}k$ de secciones con $\text{score} > \text{min\_score}$ (default $k=6$, umbral $0.05$).
+  \item \textbf{Confianza del fundamento} (\texttt{confianza\_retrieval}): clasifica el mejor score coseno en \texttt{alta} ($\ge 0.55$), \texttt{media} ($\ge \text{alerta\_score}$, default $0.35$) o \texttt{baja} ($< 0.35$). Umbrales calibrados con evidencia medida (ver §10.2).
+  \item Implementa caché determinista en \path{.tmp/resolver_skill/<skill>/} con \texttt{secciones.json} y \texttt{embeddings.npz} basados en hashes \textbf{SHA-256} del contenido.
+\end{itemize}
+
+\subsection{2. Formulador LLM y Estructura de Salida}
+El modelo recibe las secciones recuperadas y está obligado a responder con un JSON estricto de 3 claves:
+\begin{tcolorbox}[cajaContenido, title={\faIcon{code}~Contrato de Datos del Formulador}]
+\begin{lstlisting}
+{
+  "analisis": "Razonamiento paso a paso citando la Metodologia y limites",
+  "codigo_sympy": "from sympy import *\n# Variables, ecuaciones y print formal",
+  "resultado_esperado": "Valor numerico o simbolico esperado (prediccion)"
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\subsection{3. Oráculo SymPy y Bucle de Reflexión}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Seguridad previa:} Inspección AST con \texttt{\_escaneo\_seguridad}.
+  \item \textbf{Sandbox:} Ejecución aislada con límite de tiempo (\texttt{timeout=30s}).
+  \item \textbf{Bucle de Reflexión ($\le 3$):} Ante fallos de ejecución (\texttt{NameError}, \texttt{TypeError}, etc.), se inyecta el \texttt{stderr} real del compilador al LLM para corregir el código sin alterar la estrategia física de resolución.
+\end{itemize}
+
+% ── Sección 10: Validación Experimental Fase 2 ────────────────────────────────
+\section[Validación Experimental Fase 2]{\iconotexto{flask}{Validación Experimental en Circuito BJT Real}}
+
+Se evaluó la resolución del punto de operación Q de un transistor BJT en configuración emisor común con divisor de tensión en base ($V_{CC} = \SI{12}{\volt}$, $R_1 = \SI{100}{\kilo\ohm}$, $R_2 = \SI{50}{\kilo\ohm}$, $R_E = \SI{1}{\kilo\ohm}$, $R_C = \SI{2}{\kilo\ohm}$, $\beta = 100$):
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{check-circle}~Resultados de la Ejecución Experimental de Fase 2}]
+  \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X}
+    Sección top recuperada: & \textit{``Metodología 7: Análisis BJT en DC''} (Score: \textbf{0.680}) \\
+    Razonamiento del LLM: & Citó explícitamente la metodología del skill y verificó hipótesis activas de unión. \\
+    Salida del Oráculo SymPy: & $I_{CQ} = \SI{2.4566}{\milli\ampere}, \quad V_{CEQ} = \SI{4.6057}{\volt}$ (Exactitud 100\%) \\
+    Reflexiones necesarias: & \textbf{0 rondas} (Resuelto y validado a la primera pasada) \\
+    Coste de inferencia: & $\sim$\$0.005 USD (utilizando Tier Flash para validación rápida) \\
+  \end{tabularx}
+\end{tcolorbox}
+
+\subsection{Validación Experimental de Confianza del Retrieval (2026-09-03)}
+Para que el sistema distinga robustamente \textit{problemas dentro de alcance} de los que
+\textbf{no están reseñados en el PDF}, se calibaron los umbrales de confianza con evidencia
+real medida sobre el skill del libro (modelo \texttt{paraphrase-multilingual-MiniLM-L12-v2}):
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Tipo de problema} & \textbf{Mejor score coseno medido} \\
+\midrule
+Dentro de alcance (BJT punto Q, Ley de Ohm, Thévenin, Kirchhoff) & \textbf{0.45 -- 0.75} \\
+Fuera de alcance (química orgánica, poesía griega) & \textbf{$\sim$0.25} \\
+\bottomrule
+\end{tabularx}
+\caption{Separación empírica en/out-of-scope que sustenta la calibración de umbrales.}
+\end{table}
+
+Con los defaults iniciales (\texttt{alerta\_score}=0.20) la confianza \texttt{baja} jamás
+se disparaba en la práctica (incluso un problema ajeno daba $\sim$0.25). Por ello se
+**recalibró** con la separación medida: umbral de confianza débil \texttt{alerta\_score =
+0.35} y tope de confianza \texttt{alta} en \texttt{0.55}.
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{shield-alt}~Detección de Fundamento Débil (Medición Real, 0 créditos)}]
+  \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X}
+    Problema fuera de alcance (química) & best score \textbf{0.2648} $\to$ confianza \textbf{\texttt{baja}} \\
+    Problema dentro de alcance (BJT) & best score \textbf{0.7092} $\to$ confianza \textbf{\texttt{alta}} \\
+    Abortar por fundamento débil (\texttt{--abortar-debil}) & exit \textbf{3} antes del LLM (0 créditos) \\
+    Aviso al usuario & ``Confianza del retrieval BAJA (mejor score X)'' \\
+    Formulador con fundamento débil & inyecta ``no cubierto por el libro'' en vez de forzar fórmula \\
+  \end{tabularx}
+\end{tcolorbox}
+El campo \texttt{confianza\_retrieval} \texttt{\{nivel, mejor\_score, alerta, alerta\_score\}}
+se incluye en el JSON de salida, permitiendo auditar la fiabilidad de la respuesta y
+**detener el flujo (exit 3) sin gastar créditos** cuando el problema cae fuera del alcance
+del knowledge del skill.
+
+
+% ═══════════════════════════════════════════════════════════════════════════════
+% PARTE III: GUÍA DE COMANDOS Y COMPARATIVA GLOBAL
+% ═══════════════════════════════════════════════════════════════════════════════
+\newpage
+\part*{PARTE III: Operatoria, Costes y Síntesis Global}
+\addcontentsline{toc}{part}{PARTE III: Operatoria, Costes y Síntesis Global}
+
+\section[Guía de Comandos Operativos]{\iconotexto{terminal}{Guía de Comandos Operativos}}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{terminal}~Comandos para la Fase 1 (Creación del Skill)}]
+\begin{lstlisting}[style=estiloBash]
+# 1. Flujo completo de sintesis con validacion y reporte
+python3 flujo_libro_a_skill.py --pdf "libro.pdf" --nombre mi_skill \
+    --tema "Electronica Analogica" --idioma es --sobrescribir --reflexion 1
+
+# 2. Modo Dry-Run (solo genera y valida, sin instalar globalmente)
+python3 flujo_libro_a_skill.py --pdf "libro.pdf" --nombre mi_skill \
+    --tema "Electronica Analogica" --dry-run
+
+# 3. Re-ensamblar reutilizando el corpus ya destilado (Ahorro de ~90% creditos)
+python3 flujo_libro_a_skill.py --pdf "libro.pdf" --nombre mi_skill \
+    --tema "Electronica Analogica" --sobrescribir --usar-corpus --estructura-max-tokens 32768
+
+# 4. Validar formulas simbolicas de forma 100% local (0 creditos)
+python3 execution/validar_skill_formulas.py --skill ~/.config/opencode/skills/mi_skill
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{terminal}~Comandos para la Fase 2 (Resolución de Problemas)}]
+\begin{lstlisting}[style=estiloBash]
+# 1. Resolver problema en modo produccion (calculo_formal -> Opus)
+python3 flujo_resolver_skill.py --problema "Calcular el punto Q de un BJT..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos
+
+# 2. Test rapido y economico con override a modelo Flash (~$0.005)
+python3 flujo_resolver_skill.py --problema "Calcular el punto Q de un BJT..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos \
+    --modelo google/gemini-3.7-flash --max-reflexion 1
+
+# 3. Inspeccionar unicamente las secciones relevantes recuperadas (0 creditos)
+python3 execution/resolver_skill.py --problema "Calcular el punto Q de un BJT..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --solo-retrieval
+
+# 4. Abortar si el retrieval tiene fundamento debil (confianza baja) -> exit 3
+python3 flujo_resolver_skill.py --problema "..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --abortar-debil
+
+# 5. Ajustar el umbral de confianza debil (default 0.35; mas estricto = mas alto)
+python3 flujo_resolver_skill.py --problema "..." --skill <dir> --alerta-score 0.40
+\end{lstlisting}
+\end{tcolorbox}
+
+\section[Comparativa y Síntesis Global]{\iconotexto{balance-scale}{Cuadro Comparativo: Fase 1 vs Fase 2}}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Eje de Comparación} & \textbf{Fase 1: Síntesis de Skill} & \textbf{Fase 2: Resolución con Skill} \\
+\midrule
+\textbf{Objetivo Primario} & Extraer y destilar el conocimiento de un libro en un skill formal. & Aplicar el conocimiento estructurado para resolver problemas. \\
+\midrule
+\textbf{Entrada} & Archivo PDF técnico (centenares de páginas). & Enunciado del problema de ingeniería. \\
+\midrule
+\textbf{Salida} & \texttt{SKILL.md} + 6 archivos en \texttt{references/}. & JSON con análisis, código SymPy y resultado verificado. \\
+\midrule
+\textbf{Rol del LLM} & Destilador y estructurador formal de contenido. & Razonador cualitativo y formulador simbólico. \\
+\midrule
+\textbf{Oráculo Determinista} & Validador estático/ejecutable de bloques SymPy. & Ejecutor dinámico del cálculo y evaluador de solución. \\
+\midrule
+\textbf{Consumo de Créditos} & Pago único por libro ($\sim$\$0.75 USD). & Fraccional por problema resuelto ($\sim$\$0.005 a \$0.03 USD). \\
+\midrule
+\textbf{Ahorro Inteligente} & Persistencia de corpus destilado (\texttt{--usar-corpus}). & Caché local de embeddings (\texttt{embeddings.npz}). \\
+\bottomrule
+\end{tabularx}
+\caption{Matriz comparativa integral de las Fases 1 y 2 del ecosistema de IA.}
+\end{table}
+
+\begin{cajaRecuerda}
+El enfoque neuro-simbólico desacopla la potencia de abstracción lingüística del LLM de la precisión matemática. Al forzar al modelo a emitir código SymPy verificado en sandbox, se eliminan por diseño las alucinaciones numéricas y se garantiza la reproducibilidad técnica exigida en ingeniería.
+\end{cajaRecuerda}
+
+\end{document}
