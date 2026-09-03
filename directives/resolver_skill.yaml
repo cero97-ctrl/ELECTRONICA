@@ -1,11 +1,16 @@
 # Directiva: Resolver un problema usando un skill estructurado (Fase 2)
 ---
 goal: >
-  Dado un problema de ingeniería/electrónica y un skill destilado de un libro
-  (SKILL.md + references/), resolverlo siguiendo las metodologías del skill y
-  verificar el resultado con un oráculo simbólico (SymPy) antes de entregarlo.
-  El LLM solo formula (análisis + código); el retrieval, la ejecución del
-  oráculo y el juicio de éxito son deterministas (execution/resolver_skill.py).
+  Dado un problema de ingeniería/electrónica y uno o más skills destilados de
+  libros afines del mismo dominio (SKILL.md + references/ cada uno), resolverlo
+  siguiendo las metodologías de los skills y verificar el resultado con un
+  oráculo simbólico (SymPy) antes de entregarlo. El resolver hace retrieval
+  sobre TODOS los skills y combina los resultados (Opción C): cada skill del
+  dominio amplía el campo de conocimiento. El LLM solo formula (análisis +
+  código); el retrieval, la ejecución del oráculo y el juicio de éxito son
+  deterministas (execution/resolver_skill.py). Si el problema es difícil y la
+  confianza del retrieval queda baja, eso indica que conviene añadir más PDFs/skills
+  del dominio al campo de conocimiento.
 
 required_inputs:
   - name: problema
@@ -13,9 +18,12 @@ required_inputs:
     required: true
   - name: skill
     description: >
-      Directorio del skill generado por flujo_libro_a_skill.py
-      (debe contener SKILL.md y, preferiblemente, references/ con las
+      Uno o más directorios de skill generados por flujo_libro_a_skill.py
+      (cada uno con SKILL.md y, preferiblemente, references/ con las
       estructuras enriquecidas: metodologías, límites, prerrequisitos, fórmulas).
+      Se aceptan varios (--skill a b c); el retrieval se hace sobre todos y se
+      combina. Los skills deben ser del mismo dominio o afines (ej. electrónica,
+      física) para que la teoría sea complementaria.
     required: true
 
 optional_inputs:
@@ -48,8 +56,8 @@ steps:
     name: validacion_entradas
     script: flujo_resolver_skill.py (validación inline, orquestación)
     description: >
-      Comprueba que el problema no esté vacío y que el skill tenga SKILL.md.
-      Si algo falla, abortar con código de salida 1.
+      Comprueba que el problema no esté vacío y que TODOS los skills tengan
+      SKILL.md. Si algo falla, abortar con código de salida 1.
   - step: 2
     name: enrutamiento_llm
     script: execution/enrutador.py --task <tipo> --tokens N [--critico]
@@ -62,10 +70,12 @@ steps:
     script: execution/resolver_skill.py
     description: >
       Sub-etapas internas deterministas y LLM dentro del script:
-      a) retrieval por embeddings → top-k secciones afines (0 créditos);
-         clasifica la confianza del fundamento (alta/media/baja según el mejor
-         score vs alerta_score=0.35 y alta=0.55); con confianza baja avisa, o
-         aborta si --abortar-debil;
+      a) retrieval por embeddings sobre TODOS los skills → combine y corta al
+         top-k global (0 créditos); cada sección se etiqueta con su skill de
+         origen; clasifica la confianza del fundamento (alta/media/baja según el
+         mejor score vs alerta_score=0.35 y alta=0.55) y reporta el mejor score
+         por skill (detección de qué skill aporta y si hace falta añadir más
+         PDFs); con confianza baja avisa, o aborta si --abortar-debil;
       b) formulador LLM → análisis paso a paso + bloque SymPy autocontenido;
          con fundamento débil se inyecta un aviso para no forzar fórmulas;
       c) oráculo → ejecución del bloque en sandbox aislado (0 créditos);
@@ -80,9 +90,11 @@ steps:
 expected_outputs:
   - >
     JSON en .tmp/resolucion_<fecha>.json con status (ok|error), code, problema,
-    skill, modelo, enrutamiento, confianza_retrieval
-    {nivel: alta|media|baja, mejor_score, alerta, alerta_score},
-    secciones_usadas [{archivo, titulo, score}],
+    skills [lista de directorios], modelo, enrutamiento, confianza_retrieval
+    {nivel: alta|media|baja, mejor_score, alerta, alerta_score,
+     skills_consultados, skills_sin_secciones, mejor_skill, por_skill
+     [{skill, ruta, secciones_recuperadas, mejor_score}]},
+    secciones_usadas [{fuente, skill, archivo, titulo, score}],
     analisis, codigo_sympy, resultado_esperado, resultado_oraculo
     {exit_code, stdout, stderr}, resultado_final, reflexiones_usadas y tokens.
   - >
@@ -93,15 +105,21 @@ edge_cases:
   - case: problema vacío o sin context
     protocol: Abortar (exit 1) antes de gastar créditos.
   - case: skill sin SKILL.md o sin references/
-    protocol: Abortar (exit 2 de resolver_skill.py) con mensaje claro.
+    protocol: >
+      Abortar (exit 2 de resolver_skill.py) con mensaje claro. En modo multi-skill,
+      un skill sin secciones se omite del retrieval (se reporta en
+      skills_sin_secciones) sin abortar, siempre que al menos otro skill aporte
+      secciones; si NINGUNO aporta, abortar.
   - case: retrieval sin secciones afines (score < umbral)
-    protocol: Abortar (exit 3) y sugerir bajar --min-score o revisar el skill.
+    protocol: Abortar (exit 3) y sugerir bajar --min-score o revisar/añadir skills.
   - case: retrieval con fundamento débil (score < alerta_score pero >= min_score)
     protocol: >
       Reportar confianza 'baja' (mejor_score y alerta) en el JSON y avisar al
-      usuario en consola. La resolución continúa por defecto (inyectando un
-      aviso al formulador para no forzar fórmulas); con --abortar-debil se
-      aborta (exit 3) en su lugar.
+      usuario en consola, mostrando el mejor score por skill. La resolución
+      continúa por defecto (inyectando un aviso al formulador para no forzar
+      fórmulas); con --abortar-debil se aborta (exit 3) en su lugar. La confianza
+      baja en un problema difícil señala que hace falta añadir más PDFs/skills del
+      dominio al campo de conocimiento.
   - case: LLM devuelve JSON inválido o sin codigo_sympy
     protocol: Inyectar feedback y reintentar (cuenta como reflexión).
   - case: oráculo falla (sintaxis, NameError, inseguro, timeout)

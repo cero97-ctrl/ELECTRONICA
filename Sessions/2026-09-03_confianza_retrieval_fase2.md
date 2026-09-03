@@ -65,3 +65,51 @@ Verificación en vivo (0 créditos) tras recalibrar:
   Retrieval" (calibración empírica, detección de fundamento débil) y los comandos nuevos.
 - Considerar telemetría de scores reales (`.tmp/routing_log.jsonl`-style) para afinar aún
   más los umbrales por skill concreto.
+
+---
+
+# Ampliación: Multi-Skill (Opción C) — el resolver consulta varios skills del dominio
+
+Fecha: 2026-09-03 (misma sesión)
+Decisión del usuario: usar **varios skills separados** que el resolver consulte (no fusionar
+en uno solo), porque **la dificultad/confianza del problema señala si faltan PDFs**. Los PDFs
+adicionales deben ser del mismo dominio o afines (electrónica, física), ~≤5 MB, y el documento
+universitario debe reflejarlo.
+
+## Actividades
+
+1. **`execution/resolver_skill.py`:**
+   - `--skill` pasa a `nargs="+"` (acepta varios).
+   - Nueva función pura `_combinar_retrievals(retrievals, top_k)` (testable sin embeddings):
+     etiqueta `fuente`, ordena por score, corta al `top-k` GLOBAL, reporta `por_skill`.
+   - `_retrieval_multi` ensambla por-skill y delega en `_combinar_retrievals`.
+   - `confianza` sobre el **mejor score combinado** + `skills_consultados`,
+     `skills_sin_secciones`, `mejor_skill`, `por_skill[{skill,ruta,secc,mejor_score}]`.
+   - Salida: `skills` (lista) y `secciones_usadas[{fuente,...}]`.
+   - `--abortar-debil` sugiere "añadir más PDFs/skills del dominio".
+2. **`flujo_resolver_skill.py`:** valida todos los skills, pasa la lista, y en consola muestra
+   el mejor score por skill + sugiere añadir PDFs si confianza baja.
+3. **`directives/resolver_skill.yaml`:** skill plural, step 1/3 actualizados, expected_outputs
+   multi-skill, edge case "skill sin secciones en modo multi (se omite)" y señal
+   dificultad→añadir PDFs.
+4. **`docs/AGENTE_IA/fase2_resolver_skill.md`:** multi-skill en 3.1, Salida, §4, comandos.
+5. **`test_resolver_confianza.py`:** +9 casos multi-skill de `_combinar_retrievals` y aviso
+   plural (28 total, 0 créditos). Todos pasan.
+6. **Documento universitario `skill_fases_1_y_2.tex/.pdf`:** flujo multi-skill, §9.1
+   "Retrieval Multi-Skill", tabla 3 capas, comandos 6/7, §10.2 con filas de multi-skill y
+   señal dificultad→añadir PDFs. PDF regenerado (13 págs).
+
+## Verificación multi-skill (0 créditos)
+
+- `--skill circuitos ... computacion_cientifica` (problema RLC, dentro de alcance electrónica):
+  `confianza: alta` (0.6836 combinado), `mejor_skill: circuitos_dispositivos_electronicos`,
+  `por_skill`: circuitos 0.6836 / computación 0.3457. `secciones_usadas` con `fuente` ✅
+- Problema fuera de alcance (poesía griega): `confianza: baja` (0.2264) con `por_skill` y mensaje ✅
+
+## Decisiones
+
+- Opción C confirmada por el usuario: skills separados + retrieval agregado en consulta.
+- El determinismo se preserva: `_combinar_retrievals` es función pura del conjunto de
+  scores; mismo descriptor → misma salida. La decisión de "ampliar con más PDFs" queda como
+  aviso (heurística) al usuario, no como bloqueo automático (salvo `--abortar-debil`).
+

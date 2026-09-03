@@ -1,16 +1,23 @@
-# Fase 2 — Resolver problemas con un skill estructurado (patrón neuro-simbólico)
+# Fase 2 — Resolver problemas con uno o más skills estructurados (patrón neuro-simbólico)
 
 > Documento de estudio. Archivo de referencia: `docs/AGENTE_IA/conversacion_agentes_skills.md`
 > (sección 4, "Integración Neuro-Simbólica SymPy/Z3") y su arquitectura de 3 capas.
 > Implementado el 2026-09-01. Coste de la sesión completa: ~$0.75.
+> Ampliación **multi-skill** (Opción C) el 2026-09-03: el resolver consulta varios skills del
+> mismo dominio y agrega el retrieval.
 
 ---
 
 ## 1. Qué resuelve
 
 Un skill destilado de un libro guarda teoría, metodologías, límites y prerrequisitos
-(estructura enriquecida, Fase 1). La **Fase 2** usa ese skill para **resolver problemas**
-con fundamento, no para "responder preguntas sobre el libro".
+(estructura enriquecida, Fase 1). La **Fase 2** usa **uno o más skills** para **resolver
+problemas** con fundamento, no para "responder preguntas sobre el libro".
+
+Al aceptar **varios skills del mismo dominio** (`--skill a b c`), se amplía el campo de
+conocimiento sin re-destilar nada: cada libro aporta su teoría y el resolver agrega el
+retrieval de todos. Si un problema es difícil y la confianza del retrieval queda **baja**,
+eso señala que conviene **añadir más PDFs/skills del dominio**.
 
 El problema clave que aborda: el LLM no debe calcular *a ciegas* ni inventar fórmulas.
 La arquitectura separa **razonamiento cualitativo** (LLM) de **verificación simbólica**
@@ -47,14 +54,23 @@ El **LLM nunca decide ni valida**: formula. La decisión de quién es el modelo 
 - Convierte a embeddings con `paraphrase-multilingual-MiniLM-L12-v2` y hace **cosine similarity**
   entre el problema y cada sección.
 - Devuelve `top-k` secciones con `score > min-score` (default k=6, score=0.05).
-- **Confianza del fundamento** (`confianza_retrieval`): clasifica el mejor score en
+- **Multi-skill (Opción C):** `--skill` acepta varios directorios. El retrieval se hace sobre
+  **todos** (cada uno con su propio caché de embeddings) y los resultados se **combinan** cortando
+  al `top-k` **global** (0 créditos). Cada sección se etiqueta con `fuente` (nombre del skill) y se
+  reporta el **mejor score por skill** (`confianza_retrieval.por_skill`): permite ver qué skill
+  aporta más y detectar si el campo de conocimiento del dominio es insuficiente.
+  - `mejor_skill`: el skill con el mayor mejor-score (el más afín al problema).
+  - `skills_sin_secciones`: skills que no aportaron secciones (se omiten sin abortar).
+- **Confianza del fundamento** (`confianza_retrieval`): clasifica el **mejor score combinado** en
   `alta` (>= 0.55), `media` (>= `alerta-score`, default 0.35) o `baja` (< `alerta-score`).
   Umbrales calibrados con evidencia medida sobre el skill real (problemas dentro de
   alcance dan ~0.45-0.75; fuera de alcance ~0.25).
   - Confianza `baja` → se **avisa** al usuario y se inyecta un aviso al formulador para no
     forzar fórmulas inventadas; con `--abortar-debil` se aborta (exit 3) en su lugar.
-  - `--solo-retrieval` también reporta `confianza_retrieval` (inspección 0 créditos).
-- **Caché determinista** en `.tmp/resolver_skill/<skill>/`:
+  - Confianza `baja` en un problema difícil = señal de que **hace falta añadir más PDFs/skills
+    del dominio** al campo de conocimiento.
+  - `--solo-retrieval` también reporta `confianza_retrieval` y `por_skill` (inspección 0 créditos).
+- **Caché determinista** en `.tmp/resolver_skill/<skill>/` (por skill):
   - `secciones.json` con hash del texto (invalida si cambia el skill).
   - `embeddings.npz` con hash del contenido (invalida si cambia).
   - Re-hit ~instantáneo; el modelo de embeddings se carga **una sola vez** (singleton).
@@ -86,8 +102,10 @@ El **LLM nunca decide ni valida**: formula. La decisión de quién es el modelo 
 - El prompt de reflexión pide corregir "solo el error sin cambiar la estrategia".
 
 ### Salida
-JSON con: `status, code, problema, skill, modelo, confianza_retrieval
-{nivel, mejor_score, alerta, alerta_score}, secciones_usadas[{archivo,titulo,score}],
+JSON con: `status, code, problema, skills [lista], modelo, confianza_retrieval
+{nivel, mejor_score, alerta, alerta_score, skills_consultados, skills_sin_secciones,
+mejor_skill, por_skill[{skill, ruta, secciones_recuperadas, mejor_score}]},
+secciones_usadas[{fuente, skill, archivo, titulo, score}],
 analisis, codigo_sympy, resultado_esperado, resultado_oraculo, resultado_final,
 reflexiones_usadas, tokens`.
 Exit: `0` ok / `1` args / `2` skill inválido / `3` no resuelto (o confianza baja con
@@ -98,14 +116,16 @@ Exit: `0` ok / `1` args / `2` skill inválido / `3` no resuelto (o confianza baj
 ## 4. `flujo_resolver_skill.py` — orquestador
 
 ```
-Paso 1  Validación de entradas (problema no vacío, skill tiene SKILL.md)
+Paso 1  Validación de entradas (problema no vacío, todos los skills tienen SKILL.md)
 Paso 2  Enrutamiento determinista → execution/enrutador.py (task, tokens, crítico)
-Paso 3  resolver_skill.py + guardar resultado en .tmp/resolucion_<ts>.json + alerta
+Paso 3  resolver_skill.py (multi-skill) + guardar resultado + alerta
 ```
 
 - **Default task = `calculo_formal`** → enrutador decide **opus** (riguroso).
 - `--modelo <id>` = override explícito (salta el enrutador). Útil para **tests baratos**: ej.
   `--modelo google/gemini-3.7-flash` (flash ≈ centavos).
+- En la consola, si hay varios skills se muestra el **mejor score por skill**; si la confianza es
+  `baja`, sugiere añadir más PDFs del dominio.
 - Guarda `.tmp/resolucion_<ts>.json`, registra `.tmp/run_state.json`, alerta audible
   (`success`/`error`), código `3` si no se resolvió.
 
@@ -148,18 +168,30 @@ Observaciones:
 # Resolver un problema con el skill instalado (producción: calculo_formal → opus)
 python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos
 
-# Test barato con modelo flash (override, salta enrutador)
-python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --modelo google/gemini-3.7-flash --max-reflexion 1
+# AMPLIAR el campo de conocimiento: varios skills del mismo dominio (Electrónica + Física)
+python3 flujo_resolver_skill.py --problema "..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos \
+    ~/.config/opencode/skills/electronica_2 ~/.config/opencode/skills/fisica_electronica
 
-# Solo ver qué secciones recupera (0 créditos) — incluye confianza_retrieval
-python3 execution/resolver_skill.py --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --problema "..." --solo-retrieval
+# Test barato con modelo flash (override, salta enrutador)
+python3 flujo_resolver_skill.py --problema "..." --skill <dir> --modelo google/gemini-3.7-flash --max-reflexion 1
+
+# Solo ver qué secciones recupera de TODOS los skills (0 créditos) — incluye confianza y por_skill
+python3 execution/resolver_skill.py --skill <dir1> <dir2> --problema "..." --solo-retrieval
 
 # Abortar si el retrieval tiene fundamento débil (confianza baja) en vez de continuar
-python3 flujo_resolver_skill.py --problema "..." --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos --abortar-debil
+python3 flujo_resolver_skill.py --problema "..." --skill <dir> --abortar-debil
 
 # Ajustar el umbral de confianza débil (default 0.35; más estricto = más alto)
 python3 flujo_resolver_skill.py --problema "..." --skill <dir> --alerta-score 0.40
 ```
+
+### Ampliar el conocimiento con más PDFs (Opción C)
+Al generar un nuevo libro del mismo dominio con `flujo_libro_a_skill.py`, se obtiene un skill
+adicional instalado en `~/.config/opencode/skills/`. Para usarlo junto a los existentes, basta
+pasar **todos** los directorios a `--skill`. No hace falta re-destilar ni fusionar: el resolver
+agrega el retrieval en tiempo de consulta. Si la confianza de un problema difícil queda `baja`,
+ese es el indicador de que conviene añadir otro PDF/skill cubriendo la laguna detectada.
 
 ---
 

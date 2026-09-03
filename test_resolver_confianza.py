@@ -101,11 +101,64 @@ def test_aviso_fundamento():
           "FUNDAMENTO DÉBIL" in fb and "NameError" in fb)
 
 
+# ── Multi-skill: `_combinar_retrievals` (función pura, sin embeddings) ──────
+
+def test_multi_skill():
+    ra = [{"score": 0.6, "titulo": "A1", "skill": "/x/electronica"},
+          {"score": 0.4, "titulo": "A2", "skill": "/x/electronica"}]
+    rb = [{"score": 0.9, "titulo": "B1", "skill": "/y/fisica"},
+          {"score": 0.2, "titulo": "B2", "skill": "/y/fisica"}]
+    res = r._combinar_retrievals([ra, rb], top_k=2)
+
+    check("combina y corta al top_k GLOBAL",
+          len(res["secciones"]) == 2)
+    check("ordena por score descendente",
+          [s["score"] for s in res["secciones"]] == [0.9, 0.6])
+    check("etiqueta cada sección con su fuente",
+          res["secciones"][0]["fuente"] == "fisica"
+          and res["secciones"][1]["fuente"] == "electronica")
+    check("reporta por-skill el mejor score",
+          {s["skill"]: s["mejor_score"] for s in res["skills"]}
+          == {"electronica": 0.6, "fisica": 0.9})
+    check("reporta secciones_recuperadas por skill",
+          {s["skill"]: s["secciones_recuperadas"] for s in res["skills"]}
+          == {"electronica": 2, "fisica": 2})
+
+    # La confianza del retrieval se calcula sobre la combinación: el mejor de todos.
+    comb_tags = r._nivel_confianza(res["secciones"], r.ALERTA_SCORE_DEFAULT)
+    check("confianza combina el mejor score global (0.9 => alta)",
+          comb_tags["nivel"] == "alta" and comb_tags["mejor_score"] == 0.9)
+
+    # Skill sin secciones se omite, no rompe.
+    res_vacio = r._combinar_retrievals([[], ra], top_k=6)
+    check("skill vacío se omite sin romper",
+          len(res_vacio["secciones"]) == 2
+          and all(s["fuente"] == "electronica" for s in res_vacio["secciones"])
+          and [s["skill"] for s in res_vacio["skills"]] == ["electronica"])
+
+    # Todo vacío => sin secciones, skills vacío.
+    res_todo_vacio = r._combinar_retrievals([[], []], top_k=6)
+    check("todo vacío => 0 secciones y 0 skills",
+          res_todo_vacio["secciones"] == [] and res_todo_vacio["skills"] == [])
+
+
+# ── Multi-skill: aviso de fundamento débil menciona 'skills' en plural ───────
+def test_aviso_multiskill():
+    secciones = [{"archivo": "references/formulas.md", "titulo": "Ley de Ohm",
+                  "texto": "V = I*R", "fuente": "electronica", "skill": "/x/electronica"}]
+    conf_baja = {"nivel": "baja", "mejor_score": 0.05, "alerta": "x"}
+    aviso = r._mensaje_usuario("p", secciones, confianza=conf_baja)
+    check("aviso de fundamento débil usa 'skills' en plural (multi)",
+          "alcance de los" in aviso and "skills" in aviso)
+
+
 if __name__ == "__main__":
     test_niveles()
     test_umbral()
     test_borde()
     test_aviso_fundamento()
+    test_multi_skill()
+    test_aviso_multiskill()
     print()
     if FALLOS:
         print(f"{len(FALLOS)} FALLOS: {FALLOS}")

@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """
-flujo_resolver_skill.py — Orquestador: resuelve un problema usando un skill (Layer 2)
+flujo_resolver_skill.py — Orquestador: resuelve un problema usando uno o más skills (Layer 2)
 
 Ejecuta el flujo definido en la directiva resolver_skill.yaml:
-  1. Validación de entradas (problema no vacío, skill válido)
+  1. Validación de entradas (problema no vacío, skills válidos)
   2. Enrutador LLM (decisión 100% determinista) → tier/modelo vía execution/enrutador.py
-  3. resolver_skill.py → retrieval + formulador + oráculo SymPy + reflexión
+  3. resolver_skill.py → retrieval (multi-skill) + formulador + oráculo SymPy + reflexión
   4. Estado en .tmp/run_state.json y alerta al usuario
+
+Soporta VARIOS skills: --skill acepta una lista (--skill a b c). El retrieval se
+hace sobre todos y se combina. Si el problema es difícil y la confianza queda baja,
+revisa el mejor score por skill: señala que conviene añadir más PDFs del dominio.
 
 Uso:
     python3 flujo_resolver_skill.py --problema "..." --skill <dir>
+    python3 flujo_resolver_skill.py --problema "..." --skill <dir1> <dir2>
     python3 flujo_resolver_skill.py --problema "..." --skill <dir> --critico --max-reflexion 3
     python3 flujo_resolver_skill.py --problema "..." --skill <dir> --modelo z-ai/glm-5.2
 
@@ -86,7 +91,8 @@ def estado_ok(state: dict, paso: int) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--problema", required=True, help="Enunciado del problema a resolver.")
-    parser.add_argument("--skill", required=True, help="Directorio del skill (SKILL.md + references/).")
+    parser.add_argument("--skill", required=True, nargs="+",
+                        help="Directorios de skill (SKILL.md + references/). Puede pasar varios.")
     parser.add_argument("--task", default="calculo_formal",
                         help="Tipo de tarea para el enrutador (vocabulario controlado). Default calculo_formal.")
     parser.add_argument("--critico", action="store_true", help="Escalar el tier si la tarea es de alto impacto.")
@@ -113,12 +119,14 @@ def main() -> int:
     if not problema:
         print_err("El problema no puede estar vacío.")
         return 1
-    skill_dir = Path(args.skill).expanduser()
-    if not (skill_dir / "SKILL.md").is_file():
-        print_err(f"No es un skill válido (falta SKILL.md): {skill_dir}")
+    skill_dirs = [Path(s).expanduser() for s in args.skill]
+    invalidos = [str(s) for s in skill_dirs if not (s / "SKILL.md").is_file()]
+    if invalidos:
+        print_err("No son skills válidos (falta SKILL.md): " + ", ".join(invalidos))
         return 1
     max_reflexion = max(0, min(args.max_reflexion, 3))
-    print_ok(f"Problema ({len(problema)} chars) → skill {skill_dir}")
+    print_ok(f"Problema ({len(problema)} chars) → {len(skill_dirs)} skill(s): "
+             + ", ".join(s.name for s in skill_dirs))
     estado_ok(state, 1)
 
     # ── Paso 2: enrutamiento determinista del modelo ──
@@ -143,7 +151,7 @@ def main() -> int:
     # ── Paso 3: resolver_skill.py ──
     print_step(3, 3, "Resolución con skill (retrieval → formulador → oráculo → reflexión)")
     cmd = [PYTHON, str(RESOLVER),
-           "--skill", str(skill_dir),
+           *[a for s in skill_dirs for a in ("--skill", str(s))],
            "--problema", problema,
            "--modelo", modelo,
            "--max-reflexion", str(max_reflexion),
@@ -164,10 +172,19 @@ def main() -> int:
 
     confianza = res.get("confianza_retrieval") or {}
     nivel_conf = confianza.get("nivel")
+    por_skill = confianza.get("por_skill") or []
+    if por_skill:
+        print("\n  ▸ Mejor score por skill:")
+        for sk in sorted(por_skill, key=lambda x: x.get("mejor_score", 0), reverse=True):
+            print(f"      {sk.get('skill')}: {sk.get('secciones_recuperadas')} secc, "
+                  f"mejor {sk.get('mejor_score'):.4f}")
     if nivel_conf == "baja":
         print(f"\n  ⚠  Confianza del retrieval BAJA (mejor score {confianza.get('mejor_score')})")
         if confianza.get("alerta"):
             print(f"     {confianza['alerta']}")
+        if por_skill:
+            print("     El problema puede quedar fuera de alcance de los skills actuales;")
+            print("     considera añadir más PDFs del dominio como skills separados.")
     elif nivel_conf == "media":
         print(f"\n  ℹ  Confianza del retrieval media (mejor score {confianza.get('mejor_score')})")
 

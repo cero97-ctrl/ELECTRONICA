@@ -1,12 +1,19 @@
 #!/usr/bin/env python
-"""resolver_skill.py — Resuelve un problema usando un skill estructurado (Fase 2).
+"""resolver_skill.py — Resuelve un problema usando uno o más skills (Fase 2).
 
 Determinista en la capa de decisión: el retrieval, el sandbox y el juicio de
 éxito viven EN ESTE SCRIPT. El LLM solo formula (análisis + bloque SymPy).
 
+Soporta VARIOS skills (Opción C): --skill acepta una lista. El retrieval se
+hace sobre todos (cada uno con su caché de embeddings) y los resultados se
+combinan cortando al top_k global. Cada sección se etiqueta con su skill de
+origen, y se reporta el mejor score por skill: si el problema es difícil y
+todos los skills dan cambios baja/media confianza, eso indica que hace falta
+añadir más PDFs del dominio al campo de conocimiento.
+
 Etapas (patrón neuro-simbólico del doc de diseño, §4):
   1. Retrieval por embeddings (0 créditos): selecciona las secciones de
-     references/ más afines al problema.
+     references/ más afines al problema (de todos los skills).
   2. Formulador LLM (créditos): análisis paso a paso + bloque SymPy
      autocontenido siguiendo las metodologías/límites/prerrequisitos del skill.
   3. Oráculo (0 créditos): ejecuta el bloque en sandbox aislado.
@@ -76,7 +83,9 @@ _FENCE_RE = re.compile(r"```(?:json|python|py)?\s*(.*?)\s*```", re.DOTALL)
 
 def _arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--skill", required=True, help="Directorio del skill (SKILL.md + references/).")
+    p.add_argument("--skill", required=True, nargs="+",
+                   help="Uno o más directorios de skill (SKILL.md + references/). El "
+                        "resolver hace retrieval sobre TODOS y combina los resultados.")
     p.add_argument("--problema", required=True, help="Enunciado del problema a resolver.")
     p.add_argument("--modelo", default="google/gemini-3.7-flash", help="ID de modelo OpenRouter.")
     p.add_argument("--max-reflexion", type=int, default=3, help="Rondas máx de reflexión (≤3).")
@@ -170,15 +179,13 @@ def _indexar(dir_skill: Path, secciones: list[dict]) -> dict:
 
 
 def _retrieval(dir_skill: Path, problema: str, top_k: int, min_score: float) -> list[dict]:
+    """Retrieval por embeddings de UN skill. Devuelve [] si el skill no tiene
+    secciones (sin abortar: el orquestador _retrieval_multi valida el conjunto)."""
     import numpy as np
 
     secciones = _secciones(dir_skill)
     if not secciones:
-        print(json.dumps(
-            {"status": "error", "code": 2,
-             "message": f"El skill en {dir_skill} no tiene SKILL.md ni references/."},
-            ensure_ascii=False), file=sys.stderr)
-        sys.exit(2)
+        return []
     idx = _indexar(dir_skill, secciones)
     texts = [s["texto"] for s in idx["secciones"]]
     npz = _cache_sk(dir_skill) / "embeddings.npz"
@@ -212,6 +219,59 @@ def _retrieval(dir_skill: Path, problema: str, top_k: int, min_score: float) -> 
         if len(out) >= top_k:
             break
     return out
+
+
+def _combinar_retrievals(retrievals: list[list[dict]], top_k: int) -> dict:
+    """Combina los retrievals de varios skills (función pura, testable sin embeddings).
+
+    - Etiqueta cada sección con su skill de origen ('fuente' + 'skill').
+    - Combina todo, ordena por score, y corta al top_k GLOBAL.
+    - Reporta por-skill el mejor score para detectar qué skill aporta más y si
+      hace falta añadir más PDFs del dominio.
+
+    `retrievals`: lista de listas, una por skill; cada item es un dict de sección
+    con al menos {"score", "skill": Path}. Devuelve
+    {"secciones": [...], "skills": [info...], "sin_secciones": [nombres]}.
+    """
+    combinadas: list[dict] = []
+    info_skills: list[dict] = []
+    sin_secciones: list[str] = []
+    for res in retrievals:
+        if not res:
+            continue
+        nombre = str(Path(res[0]["skill"]).name or "skill")
+        for s in res:
+            s["fuente"] = nombre
+        info_skills.append({
+            "skill": nombre,
+            "ruta": str(Path(res[0]["skill"]).expanduser()),
+            "secciones_recuperadas": len(res),
+            "mejor_score": max((x.get("score") or 0.0) for x in res),
+        })
+        combinadas.extend(res)
+    combinadas.sort(key=lambda s: (s.get("score") or 0.0), reverse=True)
+    return {
+        "secciones": combinadas[:top_k],
+        "skills": info_skills,
+        "sin_secciones": sin_secciones,
+    }
+
+
+def _retrieval_multi(skills: list[Path], problema: str, top_k: int, min_score: float) -> dict:
+    """Retrieval agregado sobre VARIOS skills (Opción C)."""
+    retrievals: list[list[dict]] = []
+    sin_secciones: list[str] = []
+    for dir_skill in skills:
+        res = _retrieval(dir_skill, problema, top_k, min_score)
+        if not res:
+            sin_secciones.append(dir_skill.name or "skill")
+            continue
+        for s in res:
+            s["skill"] = str(dir_skill)
+        retrievals.append(res)
+    salida = _combinar_retrievals(retrievals, top_k)
+    salida["sin_secciones"] = sin_secciones
+    return salida
 
 
 def _nivel_confianza(secciones: list[dict], alerta_score: float) -> dict:
@@ -347,9 +407,9 @@ def _mensaje_usuario(problema: str, secciones: list[dict], confianza: dict | Non
     aviso = ""
     if confianza and confianza.get("nivel") == "baja":
         aviso = ("AVISO DE FUNDAMENTO DÉBIL: las secciones recuperadas tienen baja "
-                 "similitud con el problema. Si el problema cae FUERA del alcance del "
-                 "skill, indícalo en 'analisis' (p. ej. 'no cubierto por el libro') en "
-                 "lugar de forzar una fórmula o inventar datos.\n\n")
+                 "similitud con el problema. Si el problema cae FUERA del alcance de los "
+                 "skills consultados, indícalo en 'analisis' (p. ej. 'no cubierto por el "
+                 "libro') en lugar de forzar una fórmula o inventar datos.\n\n")
     if feedback:
         return (f"El intento anterior fracasó. Corrige solo el error sin cambiar la estrategia.\n"
                 f"ERROR DETECTADO:\n{feedback}\n\n"
@@ -363,24 +423,32 @@ def main() -> int:
         print(json.dumps({"status": "error", "code": 2,
                           "message": "Falta OPENROUTER_API_KEY en .env."}, ensure_ascii=False), file=sys.stderr)
         return 2
-    dir_skill = Path(args.skill).expanduser()
-    if not (dir_skill / "SKILL.md").is_file():
+    skills = [Path(s).expanduser() for s in args.skill]
+    invalidos = [str(s) for s in skills if not (s / "SKILL.md").is_file()]
+    if invalidos:
         print(json.dumps({"status": "error", "code": 2,
-                          "message": f"No es un skill válido (falta SKILL.md): {dir_skill}"},
+                          "message": "No son skills válidos (falta SKILL.md): " + ", ".join(invalidos)},
                          ensure_ascii=False), file=sys.stderr)
         return 2
     max_reflexion = max(0, min(args.max_reflexion, 3))
 
-    secciones = _retrieval(dir_skill, args.problema, args.top_k, args.min_score)
+    retrieval = _retrieval_multi(skills, args.problema, args.top_k, args.min_score)
+    secciones = retrieval["secciones"]
     confianza = _nivel_confianza(secciones, args.alerta_score)
+    confianza["skills_consultados"] = [s["skill"] for s in retrieval["skills"]]
+    confianza["skills_sin_secciones"] = retrieval["sin_secciones"]
+    if retrieval["skills"]:
+        confianza["mejor_skill"] = max(retrieval["skills"],
+                                       key=lambda s: s["mejor_score"])["skill"]
+        confianza["por_skill"] = retrieval["skills"]
     if args.solo_retrieval:
         print(json.dumps({"status": "ok", "confianza_retrieval": confianza, "secciones_usadas": [
-            {k: s[k] for k in ("archivo", "titulo", "score")} for s in secciones
+            {k: s[k] for k in ("fuente", "skill", "archivo", "titulo", "score")} for s in secciones
         ]}, ensure_ascii=False))
         return 0
     if not secciones:
         print(json.dumps({"status": "error", "code": 3,
-                          "message": "El retrieval no encontró secciones afines al problema (baja el umbral).",
+                          "message": "El retrieval no encontró secciones afines al problema en ningún skill (baja el umbral).",
                           "confianza_retrieval": confianza},
                          ensure_ascii=False), file=sys.stderr)
         return 3
@@ -388,8 +456,9 @@ def main() -> int:
         print(json.dumps({"status": "error", "code": 3,
                           "message": confianza["alerta"],
                           "confianza_retrieval": confianza,
-                          "sugerencia": "Usa --abortar-debil solo para repos rígidos; "
-                                        "o baja --alerta-score / amplía el skill."},
+                          "sugerencia": "El problema parece quedar fuera del alcance de los "
+                                        "skills consultados. Considera añadir más PDFs/skills "
+                                        "del dominio, o bajar --alerta-score."},
                          ensure_ascii=False), file=sys.stderr)
         return 3
 
@@ -435,10 +504,10 @@ def main() -> int:
         "status": "ok" if resuelto else "error",
         "code": 0 if resuelto else 3,
         "problema": args.problema,
-        "skill": str(dir_skill),
+        "skills": [str(s) for s in skills],
         "modelo": args.modelo,
         "confianza_retrieval": confianza,
-        "secciones_usadas": [{k: s[k] for k in ("archivo", "titulo", "score")} for s in secciones],
+        "secciones_usadas": [{k: s[k] for k in ("fuente", "skill", "archivo", "titulo", "score")} for s in secciones],
         "analisis": ultimo_intento.get("analisis", ""),
         "codigo_sympy": ultimo_intento.get("codigo_sympy", ""),
         "resultado_esperado": ultimo_intento.get("resultado_esperado", ""),

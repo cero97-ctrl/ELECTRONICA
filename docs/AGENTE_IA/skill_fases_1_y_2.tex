@@ -487,19 +487,28 @@ Coste total de la fase & $\sim$\$0.75 USD \\
 
 \section[Qué Resuelve la Fase 2]{\iconotexto{calculator}{Qué Resuelve la Fase 2: Patrón Neuro-Simbólico}}
 
-Habiendo creado el skill en la Fase 1, la \textbf{Fase 2} lo utiliza para resolver problemas cuantitativos de ingeniería. El principio fundamental es:
+Habiendo creado los skills en la Fase 1, la \textbf{Fase 2} los utiliza para resolver problemas cuantitativos de ingeniería. Soporta \textbf{múltiples skills del mismo dominio} (Opción C): el resolver hace retrieval sobre \emph{todos} ellos y combina los resultados, ampliando el campo de conocimiento sin re-destilar. El principio fundamental es:
 \begin{center}
   \textit{El LLM jamás calcula mentalmente: razona cualitativamente y formula un programa simbólico; el oráculo determinista ejecuta y valida.}
 \end{center}
 
 \begin{tcolorbox}[cajaContenido, title={\faIcon{sync-alt}~Flujo de Razonamiento, Formulación y Validación Simbólica}]
 \begin{lstlisting}
-[Problema + Skill] --> [Retrieval Embeddings] --> [LLM: Formulador] --> [Oraculo SymPy]
-                                                          | (analisis +        |
-                                                          |  codigo SymPy)     |
-                                                          +---- feedback ------+
-                                                                   |
-                                                        [Reflexion Local <=3]
+[Problema + N Skills del dominio]
+        |
+        v
+[Retrieval Embeddings (multi-skill, 0 creditos)]
+   - retrieval sobre TODOS los skills
+   - combina y corta al top-k global
+   - confianza_retrieval + mejor score por skill
+        |
+        v
+[LLM: Formulador] --> [Oraculo SymPy]
+   | (analisis +        |
+   |  codigo SymPy)     |
+   +---- feedback ------+
+                |
+      [Reflexion Local <=3]
 \end{lstlisting}
 \end{tcolorbox}
 
@@ -515,9 +524,9 @@ Habiendo creado el skill en la Fase 1, la \textbf{Fase 2} lo utiliza para resolv
 \midrule
 \textbf{Directiva} & directives/resolver\_skill.yaml & SOP: validación de entradas, pasos, 8 edge cases y presupuesto de retry. \\
 \midrule
-\textbf{Orquestación} & flujo\_resolver\_skill.py & Valida el problema, consulta al enrutador determinista, invoca el solver y reporta resultados. \\
+\textbf{Orquestación} & flujo\_resolver\_skill.py & Valida el/los problema(s) y skills, consulta al enrutador determinista, invoca el solver y reporta resultados. \\
 \midrule
-\textbf{Ejecución} & execution/resolver\_skill.py & Motor de retrieval por similitud coseno, formulador LLM, sandbox del oráculo y reflexión. \\
+\textbf{Ejecución} & execution/resolver\_skill.py & Motor de retrieval multi-skill por similitud coseno, formulador LLM, sandbox del oráculo y reflexión. \\
 \bottomrule
 \end{tabularx}
 \caption{Arquitectura de 3 capas para la resolución neuro-simbólica de problemas.}
@@ -526,13 +535,15 @@ Habiendo creado el skill en la Fase 1, la \textbf{Fase 2} lo utiliza para resolv
 % ── Sección 9: Motor resolver_skill.py ────────────────────────────────────────
 \section[Motor de Ejecución resolver\_skill.py]{\iconotexto{cogs}{Motor de Ejecución: \texttt{resolver\_skill.py}}}
 
-\subsection{1. Retrieval Semántico por Embeddings (0 créditos)}
+\subsection{1. Retrieval Semántico Multi-Skill por Embeddings (0 créditos)}
 \begin{itemize}[leftmargin=*]
   \item Divide \texttt{SKILL.md} y referencias en secciones respetando encabezados markdown (\texttt{\# ... \#\#\#}).
+  \item \textbf{Multi-skill (Opción C):} \texttt{--skill} acepta varios directorios de skills afines. El retrieval se ejecuta sobre \emph{todos} (cada uno con su caché de embeddings) y los resultados se \textbf{combinan} cortando al $\text{top-}k$ \textbf{global}. Cada sección se etiqueta con su \texttt{fuente} (skill de origen) y se reporta el \textbf{mejor score por skill} (\texttt{confianza\_retrieval.por\_skill}).
   \item Genera representaciones vectoriales mediante el modelo local \texttt{paraphrase-multilingual-MiniLM-L12-v2}.
   \item Aplica similitud coseno seleccionando el $\text{top-}k$ de secciones con $\text{score} > \text{min\_score}$ (default $k=6$, umbral $0.05$).
-  \item \textbf{Confianza del fundamento} (\texttt{confianza\_retrieval}): clasifica el mejor score coseno en \texttt{alta} ($\ge 0.55$), \texttt{media} ($\ge \text{alerta\_score}$, default $0.35$) o \texttt{baja} ($< 0.35$). Umbrales calibrados con evidencia medida (ver §10.2).
+  \item \textbf{Confianza del fundamento} (\texttt{confianza\_retrieval}): clasifica el \textbf{mejor score combinado} en \texttt{alta} ($\ge 0.55$), \texttt{media} ($\ge \text{alerta\_score}$, default $0.35$) o \texttt{baja} ($< 0.35$). Umbrales calibrados con evidencia medida (ver §10.2). Reporta además \texttt{mejor\_skill} (el más afín) y \texttt{skills\_sin\_secciones}.
   \item Implementa caché determinista en \path{.tmp/resolver_skill/<skill>/} con \texttt{secciones.json} y \texttt{embeddings.npz} basados en hashes \textbf{SHA-256} del contenido.
+  \item \textbf{Ampliación del conocimiento:} si un problema es difícil y la confianza queda \texttt{baja}, ese es el indicador de que hace falta añadir más PDFs/skills del dominio (cada nuevo libro de la Fase 1 se usa como skill adicional sin re-destilar).
 \end{itemize}
 
 \subsection{2. Formulador LLM y Estructura de Salida}
@@ -593,19 +604,23 @@ se disparaba en la práctica (incluso un problema ajeno daba $\sim$0.25). Por el
 **recalibró** con la separación medida: umbral de confianza débil \texttt{alerta\_score =
 0.35} y tope de confianza \texttt{alta} en \texttt{0.55}.
 
-\begin{tcolorbox}[tarjetaDato, title={\faIcon{shield-alt}~Detección de Fundamento Débil (Medición Real, 0 créditos)}]
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{shield-alt}~Detección de Fundamento Débil y Ampliación Multi-Skill (Medición Real, 0 créditos)}]
   \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X}
     Problema fuera de alcance (química) & best score \textbf{0.2648} $\to$ confianza \textbf{\texttt{baja}} \\
     Problema dentro de alcance (BJT) & best score \textbf{0.7092} $\to$ confianza \textbf{\texttt{alta}} \\
     Abortar por fundamento débil (\texttt{--abortar-debil}) & exit \textbf{3} antes del LLM (0 créditos) \\
     Aviso al usuario & ``Confianza del retrieval BAJA (mejor score X)'' \\
     Formulador con fundamento débil & inyecta ``no cubierto por el libro'' en vez de forzar fórmula \\
+    Multi-skill (Electrónica + Física) & mejor score por skill (p. ej. \texttt{0.68} / \texttt{0.35}); \texttt{mejor\_skill} = el más afín \\
+    Confianza baja en problema difícil & señal de que \textbf{conviene añadir más PDFs/skills del dominio} \\
   \end{tabularx}
 \end{tcolorbox}
-El campo \texttt{confianza\_retrieval} \texttt{\{nivel, mejor\_score, alerta, alerta\_score\}}
+El campo \texttt{confianza\_retrieval} \texttt{\{nivel, mejor\_score, alerta, alerta\_score,
+skills\_consultados, skills\_sin\_secciones, mejor\_skill, por\_skill\}}
 se incluye en el JSON de salida, permitiendo auditar la fiabilidad de la respuesta y
 **detener el flujo (exit 3) sin gastar créditos** cuando el problema cae fuera del alcance
-del knowledge del skill.
+del knowledge de los skills. En modo multi-skill la confianza se calcula sobre el \textbf{mejor
+score combinado} de todos los skills consultados.
 
 
 % ═══════════════════════════════════════════════════════════════════════════════
@@ -657,6 +672,16 @@ python3 flujo_resolver_skill.py --problema "..." \
 
 # 5. Ajustar el umbral de confianza debil (default 0.35; mas estricto = mas alto)
 python3 flujo_resolver_skill.py --problema "..." --skill <dir> --alerta-score 0.40
+
+# 6. AMPLIAR el campo de conocimiento: varios skills del mismo dominio
+#    (Electronica + Fisica). Retrieval combinado, top-k global, 0 creditos extra.
+python3 flujo_resolver_skill.py --problema "Calcular el punto Q de un BJT..." \
+    --skill ~/.config/opencode/skills/circuitos_dispositivos_electronicos \
+    ~/.config/opencode/skills/electronica_2 ~/.config/opencode/skills/fisica_electronica
+
+# 7. Solo retrieval multi-skill: ver que aporta cada skill (0 creditos)
+python3 execution/resolver_skill.py --skill <dir1> <dir2> \
+    --problema "..." --solo-retrieval
 \end{lstlisting}
 \end{tcolorbox}
 
