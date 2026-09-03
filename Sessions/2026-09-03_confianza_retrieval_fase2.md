@@ -139,4 +139,33 @@ Cuando se retome, se probará el ciclo completo con un caso real (problema que d
    y re-resolver pasando todos los skills.
 3. (Opcional) telemetría de scores reales para afinar umbrales por skill.
 
+---
+
+## Idea registrada (pendiente de evaluar): librerías Python adicionales en el sandbox
+
+Fecha: 2026-09-03 (cierre de sesión)
+Contexto: ante un problema con respuesta poco confiable por falta de *método* (p. ej. resolver
+una determinada ecuación diferencial), el usuario plantea que, **en lugar de cargar más PDFs**,
+tal vez la solución sea **usar librerías Python adicionales** ya instaladas en el sandbox del
+oráculo. La teoría del libro aporta el *qué* (planteo); el ecosistema Python aporta el *cómo*
+numérico (ej. `scipy.integrate.solve_ivp` para EDOs).
+
+**Disponibilidad confirmada en `elect_env` (2026-09-03):**
+- ✅ `numpy` 2.2.6, `scipy` 1.15.3, `sympy` 1.14.0, `mpmath` 1.3.0, `networkx` 3.4.2
+- ❌ `pandas`, `matplotlib`, `control` (no instaladas)
+
+**Consideraciones técnicas (para cuando se evalúe):**
+- El sandbox (`resolver_skill.py` → `_oraculo`) ya ejecuta `sys.executable -c <src>` y, en
+  principio, admite cualquier librería de `elect_env`; la limitación real es qué libs están
+  instaladas y que el prompt del formulador hoy prohíbe "import de módulos no estándar".
+- Habría que: (a) decantar/declarar el set de librerías permitidas disponible al sandbox;
+  (b) ajustar el prompt del formulador para usarlas cuando el skill no da método numérico
+  directo; (c) plantear si marcar la respuesta como "usó librería externa" en el JSON.
+- Esto toca las 3 capas (directiva + orquestador + ejecución) y es una mejora distinta de la
+  ampliación multi-skill por PDFs.
+
+**Decisión del usuario:** por ahora **dejarlo como aviso** (sin implementar). Queda registrado
+para retomarlo tras la pausa, si se quiere explorar el diseño concreto.
+
+
 
