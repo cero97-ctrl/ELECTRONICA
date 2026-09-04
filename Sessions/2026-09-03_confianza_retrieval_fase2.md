@@ -169,3 +169,30 @@ para retomarlo tras la pausa, si se quiere explorar el diseño concreto.
 
 
 
+
+---
+
+## Hallazgo al resolver un caso real (2026-09-04): dilución del mejor skill en multi-skill
+
+**Problema resuelto (éxito):** Equivalente Thévenin con fuente 12V, R1=2k en serie, R2=3k y R3=6k
+en paralelo. Skills: `circuitos_dispositivos_electronicos` + `computacion_cientifica`.
+Resultado verificado por el oráculo: **Vth = 6.0 V, Rth = 1 kΩ** (0 reflexiones, ~1982 tokens,
+flag flash).
+
+**Hallazgo (robustez del retrieval multi-skill):**
+- Con skills SOLO de circuitos, `--solo-retrieval` da confianza `alta` (0.6192) y recupera la
+  sección "Cálculo del Equivalente Thévenin".
+- En modo multi-skill, el `top-k` GLOBAL (6) se llenó con las 6 mejores secciones de
+  `computacion_cientifica` (mejores ~0.35), y **las secciones de Thévenin del skill relevante
+  (0.62-0.67) quedaron desplazadas fuera del contexto del LLM**. Confianza reportada: `media`
+  (0.3519), porque computación tenía el mayor mejor-score de las realmente entregadas.
+- El problema igual se resolvió correctamente (el formulador dedujo el Thévenin del enunciado),
+  pero se perdió la evidencia más fuerte del skill de dominio.
+
+**Causa raíz:** `_combinar_retrievals` corta al `top-k` global por score puro; un skill lateral
+con muchos chunks de score medio puede desplazar al skill más afín con scores más altos.
+
+**Mejora propuesta (pendiente de aprobación):** estrategia de cuotas por skill (p. ej. reservar
+la mejor sección de cada skill consultado + completar con el resto por score global), de modo
+que el contexto del LLM nunca pierda por completo la evidencia del skill más afín.
+```
