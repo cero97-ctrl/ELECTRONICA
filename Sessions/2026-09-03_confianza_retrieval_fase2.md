@@ -238,3 +238,29 @@ que el contexto del LLM nunca pierda por completo la evidencia del skill más af
 - `directives/resolver_skill.yaml` (paso 3a: cuotas).
 - `docs/AGENTE_IA/fase2_resolver_skill.md` (§3.1 multi-skill: cuotas/dedup/mejor_score sobre todas).
 - `docs/AGENTE_IA/skill_fases_1_y_2.tex` (§9.1 ampliada) + `.pdf` recompilado (exit 0, aux limpios).
+
+---
+
+## Caso de éxito: respuesta transitoria de un circuito RC serie (2026-09-04)
+
+Problema numérico de electrónica resuelto con ambos skills tras el fix de cuotas + multi-skill.
+
+**Circuito:** R = 1 kΩ, C = 100 μF (inicialmente descargado), fuente escalón de 12 V al cerrar
+el interruptor en t=0. Se pide τ, v_c(t) durante la carga y v_c(2τ).
+
+**Retrieval (0 créditos):** confianza `alta` (0.7074), `mejor_skill: circuitos_dispositivos_electronicos`,
+reparto equitativo 3/3:
+- circuitos: Tensión de descarga (0.707), Tensión de carga del condensador (0.703),
+  Constante de tiempo (0.689).
+- computación: Álgebra lineal (0.424), FFT (0.391), EDO (0.346).
+
+**Resultado validado por el oráculo SymPy (0 reflexiones, 1477 tokens flash):**
+- τ = **0.1 s** (RC = 1000·100e-6) — coincide con el cálculo manual.
+- v_c(t) = **12 - 12·exp(-10·t)** (= 12(1 - e^(-t/0.1))) — coincide.
+- v_c(2τ) = **10.376 V** (12(1 - e^-2)) — coincide.
+
+**Observación de diseño:** este problema conecta directamente con la idea de pausa (librerías
+Python / método numérico): la teoría del skill de circuitos aporta el planteo del transitorio
+(carga del condensador, τ), y la resolución simbólica la completó SymPy en el sandbox del
+oráculo. El contexto incluyó la sección de EDO de `computacion_cientifica` junto con la teoría
+del circuito gracias a las cuotas por skill.
