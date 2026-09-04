@@ -151,7 +151,7 @@ def main() -> int:
     # ── Paso 3: resolver_skill.py ──
     print_step(3, 3, "Resolución con skill (retrieval → formulador → oráculo → reflexión)")
     cmd = [PYTHON, str(RESOLVER),
-           *[a for s in skill_dirs for a in ("--skill", str(s))],
+           "--skill", *[str(s) for s in skill_dirs],
            "--problema", problema,
            "--modelo", modelo,
            "--max-reflexion", str(max_reflexion),

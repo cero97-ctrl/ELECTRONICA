@@ -538,7 +538,13 @@ Habiendo creado los skills en la Fase 1, la \textbf{Fase 2} los utiliza para res
 \subsection{1. Retrieval Semántico Multi-Skill por Embeddings (0 créditos)}
 \begin{itemize}[leftmargin=*]
   \item Divide \texttt{SKILL.md} y referencias en secciones respetando encabezados markdown (\texttt{\# ... \#\#\#}).
-  \item \textbf{Multi-skill (Opción C):} \texttt{--skill} acepta varios directorios de skills afines. El retrieval se ejecuta sobre \emph{todos} (cada uno con su caché de embeddings) y los resultados se \textbf{combinan} cortando al $\text{top-}k$ \textbf{global}. Cada sección se etiqueta con su \texttt{fuente} (skill de origen) y se reporta el \textbf{mejor score por skill} (\texttt{confianza\_retrieval.por\_skill}).
+  \item \textbf{Multi-skill (Opción C):} \texttt{--skill} acepta varios directorios de skills afines. El retrieval se ejecuta sobre \emph{todos} (cada uno con su caché de embeddings) y los resultados se \textbf{combinan con cuotas por skill}:
+  \begin{itemize}[leftmargin=*]
+    \item \textbf{Reserva obligatoria:} se incluye siempre la mejor sección de cada skill, para que un skill de dominio con pocas secciones de score alto nunca quede desplazado por un skill lateral con muchos chunks de score medio (evita dilución).
+    \item \textbf{Cuotas equitativas:} el resto del $\text{top-}k$ se completa repartiendo lo más parejo posible entre los skills (round-robin por score desc), sin que un skill lateral sature el contexto.
+    \item \textbf{Deduplicación:} la misma sección presente en varios skills se conserva una sola vez (la de mayor score).
+    \item Cada sección se etiqueta con su \texttt{fuente} (skill de origen) y se reporta el \textbf{mejor score por skill} (\texttt{confianza\_retrieval.por\_skill}, calculado sobre todas sus secciones recuperadas, no solo las entregadas al LLM).
+  \end{itemize}
   \item Genera representaciones vectoriales mediante el modelo local \texttt{paraphrase-multilingual-MiniLM-L12-v2}.
   \item Aplica similitud coseno seleccionando el $\text{top-}k$ de secciones con $\text{score} > \text{min\_score}$ (default $k=6$, umbral $0.05$).
   \item \textbf{Confianza del fundamento} (\texttt{confianza\_retrieval}): clasifica el \textbf{mejor score combinado} en \texttt{alta} ($\ge 0.55$), \texttt{media} ($\ge \text{alerta\_score}$, default $0.35$) o \texttt{baja} ($< 0.35$). Umbrales calibrados con evidencia medida (ver §10.2). Reporta además \texttt{mejor\_skill} (el más afín) y \texttt{skills\_sin\_secciones}.

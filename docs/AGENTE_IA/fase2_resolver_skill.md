@@ -55,10 +55,19 @@ El **LLM nunca decide ni valida**: formula. La decisión de quién es el modelo 
   entre el problema y cada sección.
 - Devuelve `top-k` secciones con `score > min-score` (default k=6, score=0.05).
 - **Multi-skill (Opción C):** `--skill` acepta varios directorios. El retrieval se hace sobre
-  **todos** (cada uno con su propio caché de embeddings) y los resultados se **combinan** cortando
-  al `top-k` **global** (0 créditos). Cada sección se etiqueta con `fuente` (nombre del skill) y se
-  reporta el **mejor score por skill** (`confianza_retrieval.por_skill`): permite ver qué skill
-  aporta más y detectar si el campo de conocimiento del dominio es insuficiente.
+  **todos** (cada uno con su propio caché de embeddings) y los resultados se **combinan** con
+  **cuotas por skill** (0 créditos):
+  - **Reserva obligatoria:** se incluye siempre la mejor sección de cada skill, de modo que un
+    skill de dominio con pocas secciones de score alto nunca quede desplazado por un skill
+    lateral con muchos chunks de score medio (evita dilución).
+  - **Cuotas equitativas:** el resto del `top-k` se completa repartiendo lo más parejo posible
+    entre los skills (round-robin por score desc), sin que un skill lateral sature el contexto.
+  - **Deduplicación:** la misma sección presente en varios skills aporta una sola vez (se
+    conserva la de mayor score).
+  - Cada sección se etiqueta con `fuente` (nombre del skill) y se reporta el **mejor score por
+    skill** (`confianza_retrieval.por_skill`, calculado sobre TODAS sus secciones recuperadas,
+    no solo las del contexto entregado): permite ver qué skill aporta más y detectar si el
+    campo de conocimiento del dominio es insuficiente.
   - `mejor_skill`: el skill con el mayor mejor-score (el más afín al problema).
   - `skills_sin_secciones`: skills que no aportaron secciones (se omiten sin abortar).
 - **Confianza del fundamento** (`confianza_retrieval`): clasifica el **mejor score combinado** en

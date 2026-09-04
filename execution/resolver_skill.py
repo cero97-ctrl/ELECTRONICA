@@ -224,17 +224,32 @@ def _retrieval(dir_skill: Path, problema: str, top_k: int, min_score: float) -> 
 def _combinar_retrievals(retrievals: list[list[dict]], top_k: int) -> dict:
     """Combina los retrievals de varios skills (función pura, testable sin embeddings).
 
-    - Etiqueta cada sección con su skill de origen ('fuente' + 'skill').
-    - Combina todo, ordena por score, y corta al top_k GLOBAL.
-    - Reporta por-skill el mejor score para detectar qué skill aporta más y si
-      hace falta añadir más PDFs del dominio.
+    Estrategia de CUOTAS EQUITATIVAS + RESERVA del mejor skill, para que un skill
+    lateral con muchos chunks de score medio no desplace por completo al skill de
+    dominio más afín (que puede tener scores más altos pero en menor número):
+
+    1. Etiqueta cada sección con su skill de origen ('fuente' + 'skill').
+    2. Deduplica por texto: la misma sección en varios skills aporta solo una vez
+       (se conserva la de mayor score).
+    3. Ronda de RESERVA obligatoria: de cada skill con secciones se toma su mejor
+       sección aún no tomada. Si el número de skills supera top_k, se toman solo
+       las `top_k` mejores entre esas reservas. Garantiza que ningún skill (sobre
+       todo el más afín) quede nunca sin representación en el contexto.
+    4. Ronda de CUOTAS equitativas: se llena el resto hasta top_k repartiendo lo
+       más parejo posible entre los skills, tomando en cada ronda la mejor sección
+       aún no tomada de cada skill (round-robin por score global desc).
+    5. Orden final por score descendente (misma forma de salida que antes).
+    6. Reporte por skill: `secciones_recuperadas` = cuántas aportó al contexto
+       final, y `mejor_score` = el mejor de TODAS sus secciones recuperadas por
+       embeddings (no solo las del contexto), para no penalizar la confianza de un
+       skill cuyo mejor hallazgo quedó fuera por cuota.
 
     `retrievals`: lista de listas, una por skill; cada item es un dict de sección
     con al menos {"score", "skill": Path}. Devuelve
     {"secciones": [...], "skills": [info...], "sin_secciones": [nombres]}.
     """
     combinadas: list[dict] = []
-    info_skills: list[dict] = []
+    info_raw: list[dict] = []
     sin_secciones: list[str] = []
     for res in retrievals:
         if not res:
@@ -242,19 +257,98 @@ def _combinar_retrievals(retrievals: list[list[dict]], top_k: int) -> dict:
         nombre = str(Path(res[0]["skill"]).name or "skill")
         for s in res:
             s["fuente"] = nombre
-        info_skills.append({
+        info_raw.append({
             "skill": nombre,
             "ruta": str(Path(res[0]["skill"]).expanduser()),
-            "secciones_recuperadas": len(res),
+            "mejores": sorted(res, key=lambda x: (x.get("score") or 0.0), reverse=True),
             "mejor_score": max((x.get("score") or 0.0) for x in res),
         })
         combinadas.extend(res)
-    combinadas.sort(key=lambda s: (s.get("score") or 0.0), reverse=True)
+
+    if not combinadas:
+        return {"secciones": [], "skills": [], "sin_secciones": sin_secciones}
+
+    # Paso 2: deduplicar por texto, conservando el de mayor score.
+    vistos: dict[str, dict] = {}
+    for s in combinadas:
+        clave = (s.get("texto") or s.get("titulo") or s.get("archivo") or "").strip()
+        if not clave:
+            clave = f"__id_{id(s)}__"
+        prev = vistos.get(clave)
+        if prev is None or (s.get("score") or 0.0) > (prev.get("score") or 0.0):
+            vistos[clave] = s
+    unicas: list[dict] = list(vistos.values())
+
+    # Agrupar por skill (fuente) con las secciones únicas, ordenadas por score desc.
+    por_skill: dict[str, list[dict]] = {}
+    for s in unicas:
+        por_skill.setdefault(s["fuente"], []).append(s)
+    for lst in por_skill.values():
+        lst.sort(key=lambda x: (x.get("score") or 0.0), reverse=True)
+
+    reservadas: list[dict] = []
+    tomado: set[str] = set()
+    for nombre, lst in por_skill.items():
+        if lst:
+            cabeza = lst[0]
+            reservadas.append(cabeza)
+            tomado.add(_clave_seccion(cabeza))
+    # Nunca exceder top_k con la reserva.
+    reservadas.sort(key=lambda x: (x.get("score") or 0.0), reverse=True)
+    reservadas = reservadas[:top_k]
+
+    # Paso 4: completar con cuotas equitativas hasta llenar top_k.
+    contexto: list[dict] = list(reservadas)
+    n_skills = len(por_skill)
+    restante = top_k - len(contexto)
+    while restante > 0:
+        # Recolectar la mejor sección aún no tomada de cada skill (una por skill por ronda).
+        candidatas: list[dict] = []
+        for lst in por_skill.values():
+            for s in lst:
+                if _clave_seccion(s) not in tomado:
+                    candidatas.append(s)
+                    break
+        if not candidatas:
+            break
+        # Una ronda round-robin: tomar una sección de cada skill, ordenando por score desc.
+        # Así las cuotas quedan lo más equitativas posible sin que un skill lateral sature.
+        elegidas = candidatas[:restante]
+        for s in elegidas:
+            if _clave_seccion(s) in tomado:
+                continue
+            contexto.append(s)
+            tomado.add(_clave_seccion(s))
+            restante -= 1
+            if restante <= 0:
+                break
+
+    contexto.sort(key=lambda x: (x.get("score") or 0.0), reverse=True)
+    contexto = contexto[:top_k]
+
+    # Paso 6: reporte por skill. `secciones_recuperadas` = aporte al contexto final;
+    # `mejor_score` = mejor de todas sus secciones (no solo las del contexto).
+    info_skills: list[dict] = []
+    for info in info_raw:
+        nombre = info["skill"]
+        aportes = [s for s in contexto if s.get("fuente") == nombre]
+        info_skills.append({
+            "skill": nombre,
+            "ruta": info["ruta"],
+            "secciones_recuperadas": len(aportes),
+            "mejor_score": info["mejor_score"],
+        })
+
     return {
-        "secciones": combinadas[:top_k],
+        "secciones": contexto,
         "skills": info_skills,
         "sin_secciones": sin_secciones,
     }
+
+
+def _clave_seccion(s: dict) -> str:
+    """Clave de identidad de una sección para deduplicación (texto >> titulo >> archivo)."""
+    return (s.get("texto") or s.get("titulo") or s.get("archivo") or "").strip()
 
 
 def _retrieval_multi(skills: list[Path], problema: str, top_k: int, min_score: float) -> dict:

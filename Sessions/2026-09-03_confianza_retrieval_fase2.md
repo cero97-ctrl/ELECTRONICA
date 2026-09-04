@@ -196,3 +196,45 @@ con muchos chunks de score medio puede desplazar al skill más afín con scores 
 la mejor sección de cada skill consultado + completar con el resto por score global), de modo
 que el contexto del LLM nunca pierda por completo la evidencia del skill más afín.
 ```
+
+---
+
+## Implementación: cuotas por skill (no-dilución) + bug de multi-skill en el flujo (2026-09-04)
+
+**Estado:** la "Mejora propuesta" anterior quedó **implementada y verificado en vivo** (commit único).
+
+### 1. Cuotas por skill en `execution/resolver_skill.py` (`_combinar_retrievals`)
+- **Reserva obligatoria:** se incluye siempre la mejor sección de cada skill.
+- **Cuotas equitativas:** el resto del top-k se completa por round-robin por score desc
+  (reparto lo más parejo posible), sin que un skill lateral sature el contexto.
+- **Deduplicación** por texto entre skills (se conserva el de mayor score).
+- `secciones_recuperadas` = aporte real al contexto; `mejor_score` = mejor de TODAS las
+  secciones del skill (no solo las del contexto), para no penalizar la confianza por la cuota.
+- Orden final por score desc (misma forma de salida).
+
+### 2. Bug descubierto y corregido en `flujo_resolver_skill.py` (línea 154)
+- El flujo construía el subproceso como `--skill A --skill B`, y como `resolver_skill.py`
+  define `--skill nargs="+"`, argparse **conservaba solo el último** skill
+  (`skills_consultados` contenía únicamente `computacion_cientifica`). Por eso los runs del
+  flujo con 2 skills reportaban siempre confianza `media` (0.3519), solo con computación.
+- Corregido a `--skill A B` (un solo flag, todos los valores). Ahora ambos skills llegan al
+  resolver. **El multi-skill del flujo estaba efectivamente roto**; la verificación en vivo del
+  fix de cuotas lo expuso.
+
+### 3. Verificación (0 créditos + 1 run de ~2k tokens flash)
+- `--solo-retrieval` con ambos skills, problema Thévenin extendido → confianza `alta` (0.6192),
+  `mejor_skill: circuitos`, contexto repartido 3/3 (circuitos: Thévenin 0.619, divisor 0.613 +
+  diodo; computación: 3 secciones ~0.35).
+- Flujo E2E con ambos skills → confianza alta, por_skill 3/3, **resultado Vth=6.0 V, Rth=1000 Ω**
+  validado por el oráculo SymPy (0 reflexiones, flash).
+
+### 4. Tests
+- `test_resolver_confianza.py`: 28 → **36 tests** (0 créditos), todos pasan. Añadidos:
+  `test_cuotas_no_diluciona`, `test_cuotas_topk_menor_que_skills`, `test_cuotas_llenan_exacto`,
+  `test_cuotas_dedup_por_texto`. El test previo de `secciones_recuperadas` se ajustó al nuevo
+  comportamiento de reserva (top_k=2, 2 skills → 1 sección cada uno).
+
+### 5. Documentación actualizada (3 capas)
+- `directives/resolver_skill.yaml` (paso 3a: cuotas).
+- `docs/AGENTE_IA/fase2_resolver_skill.md` (§3.1 multi-skill: cuotas/dedup/mejor_score sobre todas).
+- `docs/AGENTE_IA/skill_fases_1_y_2.tex` (§9.1 ampliada) + `.pdf` recompilado (exit 0, aux limpios).

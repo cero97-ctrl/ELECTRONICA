@@ -70,12 +70,16 @@ steps:
     script: execution/resolver_skill.py
     description: >
       Sub-etapas internas deterministas y LLM dentro del script:
-      a) retrieval por embeddings sobre TODOS los skills → combine y corta al
-         top-k global (0 créditos); cada sección se etiqueta con su skill de
-         origen; clasifica la confianza del fundamento (alta/media/baja según el
-         mejor score vs alerta_score=0.35 y alta=0.55) y reporta el mejor score
-         por skill (detección de qué skill aporta y si hace falta añadir más
-         PDFs); con confianza baja avisa, o aborta si --abortar-debil;
+      a) retrieval por embeddings sobre TODOS los skills → se combina con CUOTAS
+         POR SKILL (0 créditos): se reserva la mejor sección de cada skill y se
+         completa el top-k con reparto equitativo, para que un skill lateral con
+         muchos chunks de score medio NO desplace al skill de dominio más afín;
+         se deduplican secciones repetidas entre skills; cada sección se etiqueta
+         con su skill de origen; clasifica la confianza del fundamento
+         (alta/media/baja según el mejor score vs alerta_score=0.35 y alta=0.55)
+         y reporta el mejor score por skill (detección de qué skill aporta y si
+         hace falta añadir más PDFs); con confianza baja avisa, o aborta si
+         --abortar-debil;
       b) formulador LLM → análisis paso a paso + bloque SymPy autocontenido;
          con fundamento débil se inyecta un aviso para no forzar fórmulas;
       c) oráculo → ejecución del bloque en sandbox aislado (0 créditos);

@@ -120,9 +120,9 @@ def test_multi_skill():
     check("reporta por-skill el mejor score",
           {s["skill"]: s["mejor_score"] for s in res["skills"]}
           == {"electronica": 0.6, "fisica": 0.9})
-    check("reporta secciones_recuperadas por skill",
+    check("reporta secciones_recuperadas por skill (reserva 1 c/u con top_k=2)",
           {s["skill"]: s["secciones_recuperadas"] for s in res["skills"]}
-          == {"electronica": 2, "fisica": 2})
+          == {"electronica": 1, "fisica": 1})
 
     # La confianza del retrieval se calcula sobre la combinación: el mejor de todos.
     comb_tags = r._nivel_confianza(res["secciones"], r.ALERTA_SCORE_DEFAULT)
@@ -152,6 +152,69 @@ def test_aviso_multiskill():
           "alcance de los" in aviso and "skills" in aviso)
 
 
+# ── Cuotas por skill: reserva del mejor skill (no-dilución) ──────────────────
+def test_cuotas_no_diluciona():
+    # Skill de dominio con pocas secciones de score alto, skill lateral con muchas medias.
+    dominio = [{"score": 0.67, "titulo": "Thevenin", "texto": "metodo thevenin",
+                "skill": "/x/circuitos"},
+               {"score": 0.62, "titulo": "divisor", "texto": "divisor tension",
+                "skill": "/x/circuitos"}]
+    lateral = [{"score": 0.36 + i * 0.01, "titulo": f"b{i}", "texto": f"lateral {i}",
+                "skill": "/y/comput"} for i in range(6)]
+    res = r._combinar_retrievals([dominio, lateral], top_k=6)
+
+    check("cuotas: skill de dominio no queda desplazado (no-dilución)",
+          "circuitos" in [s["fuente"] for s in res["secciones"]])
+    check("cuotas: se conserva la mejor sección del dominio",
+          any(s["score"] == 0.67 or s["score"] == 0.62
+              for s in res["secciones"] if s["fuente"] == "circuitos"))
+    check("cuotas: orden final descendente",
+          [s["score"] for s in res["secciones"]]
+          == sorted([s["score"] for s in res["secciones"]], reverse=True))
+    check("cuotas: mejor_score del skill usa TODAS sus secciones (no solo el contexto)",
+          {x["skill"]: x["mejor_score"] for x in res["skills"]}
+          == {"circuitos": 0.67, "comput": 0.41})
+    check("cuotas: secciones_recuperadas = aporte real al contexto",
+          {x["skill"]: x["secciones_recuperadas"] for x in res["skills"]}
+          == {"circuitos": 2, "comput": 4})
+
+
+def test_cuotas_topk_menor_que_skills():
+    skills = [[{"score": 0.9, "titulo": "a", "texto": "secc a", "skill": "/s1"}],
+              [{"score": 0.8, "titulo": "b", "texto": "secc b", "skill": "/s2"}],
+              [{"score": 0.7, "titulo": "c", "texto": "secc c", "skill": "/s3"}],
+              [{"score": 0.6, "titulo": "d", "texto": "secc d", "skill": "/s4"}]]
+    res = r._combinar_retrievals(skills, top_k=3)
+    check("cuotas: top_k menor que n_skills => solo top_k secciones",
+          len(res["secciones"]) == 3)
+    check("cuotas: se toman las 3 mejores reservas",
+          sorted(s["score"] for s in res["secciones"]) == [0.7, 0.8, 0.9])
+
+
+def test_cuotas_llenan_exacto():
+    a = [{"score": 0.9, "titulo": f"a{i}", "texto": f"aa {i}", "skill": "/s1"} for i in range(3)]
+    b = [{"score": 0.8, "titulo": f"b{i}", "texto": f"bb {i}", "skill": "/s2"} for i in range(3)]
+    res = r._combinar_retrievals([a, b], top_k=5)
+    check("cuotas: se llena el top_k exactamente (2 skills, top_k=5)",
+          len(res["secciones"]) == 5)
+    check("cuotas: reparto equitativo (3/2)",
+          {x["skill"]: x["secciones_recuperadas"] for x in res["skills"]}
+          == {"s1": 3, "s2": 2})
+
+
+def test_cuotas_dedup_por_texto():
+    mismo_texto = "V = I*R"
+    ra = [{"score": 0.9, "titulo": "Ohm A", "texto": mismo_texto, "skill": "/s1"},
+          {"score": 0.7, "titulo": "otra A", "texto": "extra A", "skill": "/s1"}]
+    rb = [{"score": 0.8, "titulo": "Ohm B", "texto": mismo_texto, "skill": "/s2"}]
+    res = r._combinar_retrievals([ra, rb], top_k=4)
+    textos = [s["texto"] for s in res["secciones"]]
+    check("cuotas: se deduplica la misma sección repetida entre skills",
+          textos.count(mismo_texto) == 1)
+    check("cuotas: se conserva el texto de mayor score al deduplicar",
+          any(s["texto"] == mismo_texto and s["score"] == 0.9 for s in res["secciones"]))
+
+
 if __name__ == "__main__":
     test_niveles()
     test_umbral()
@@ -159,6 +222,10 @@ if __name__ == "__main__":
     test_aviso_fundamento()
     test_multi_skill()
     test_aviso_multiskill()
+    test_cuotas_no_diluciona()
+    test_cuotas_topk_menor_que_skills()
+    test_cuotas_llenan_exacto()
+    test_cuotas_dedup_por_texto()
     print()
     if FALLOS:
         print(f"{len(FALLOS)} FALLOS: {FALLOS}")
