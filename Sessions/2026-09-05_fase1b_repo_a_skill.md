@@ -68,6 +68,17 @@ Fase 1 original.
 ## Pendiente
 - (Opcional) Instalar el skill `pallets_itsdangerous` en global si el usuario quiere
   usarlo (requiere reiniciar opencode; quedó en `.tmp/skill_pallets_itsdangerous/`).
-- (Opcional) Documentar la Fase 1b en el documento universitario `skill_fases_1_y_2.tex`
-  (§ por agregar).
 - (Opcional) Estimar coste de la síntesis repo grande y avisar antes (edge case ya cubierto).
+
+## Documentación universitaria (completado)
+- Se documentó la Fase 1b en `docs/AGENTE_IA/skill_fases_1_y_2.tex`:
+  - Portada: banda de título extiende con "Fase 1b: De Repositorio a Skill de API".
+  - Ficha técnica: fila de síntesis de repo (`--perfil referencia_codigo`).
+  - Sección 7 nueva dentro de la PARTE I: pipeline E2E, arquitectura 3 capas,
+    orquestador, perfil de síntesis, validación adaptativa y resultados E2E
+    (`pallets/itsdangerous`).
+  - PARTE III: bloque de comandos de la Fase 1b + fila comparativa vs Fase 1/2.
+- PDF compilado con `pdflatex` (2 pasadas, exit 0, 0 errores LaTeX; overfull menores
+  de tablas). Auxiliares `.aux/.log/.out/.toc` eliminados; solo quedan `.tex` y `.pdf`.
+- **No commitado** (espera confirmación del usuario; `.tex` y `.pdf` quedan en
+  `docs/AGENTE_IA/` para incluir en un commit posterior).

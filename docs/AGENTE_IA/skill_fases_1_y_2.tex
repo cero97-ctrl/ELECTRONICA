@@ -320,13 +320,13 @@
 \begin{document}
 
 % ── Portada Infográfica ───────────────────────────────────────────────────────
-\bandaTitulo[fondoOscuro]{Destilación y Resolución con Skills Neuro-Simbólicos}{Fase 1: Síntesis de Libro a Skill \quad|\quad Fase 2: Razonamiento y Oráculo SymPy}
+\bandaTitulo[fondoOscuro]{Destilación y Resolución con Skills Neuro-Simbólicos}{Fase 1: Síntesis de Libro a Skill \quad|\quad Fase 1b: De Repositorio a Skill de API \quad|\quad Fase 2: Razonamiento y Oráculo SymPy}
 
 \begin{tcolorbox}[tarjetaDato, title={\faIcon{info-circle}~Ficha Técnica del Documento de Estudio}]
   \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X >{\bfseries\color{azulNoche}}l X}
     \faIcon{calendar-check}~Fecha: & Septiembre 2026 & \faIcon{layer-group}~Arquitectura: & 3 Capas Deterministas \\
     \faIcon{coins}~Coste E2E (452 págs): & $\sim$\$0.75 USD (Fase 1 + Fase 2) & \faIcon{shield-alt}~Oráculo Simbólico: & SymPy 1.14.0 (Sandbox AST) \\
-    \faIcon{microchip}~Modelos Tier: & DeepSeek V4 Pro / Gemini Flash & \faIcon{check-double}~Tasa Validación: & 33/33 Bloques SymPy (100\%) \\
+    \faIcon{code-branch}~Síntesis de Repo: & Fase 1b (\texttt{--perfil referencia\_codigo}) & \faIcon{check-double}~Tasa Validación: & 33/33 Bloques SymPy (100\%) \\
   \end{tabularx}
 \end{tcolorbox}
 
@@ -476,6 +476,100 @@ Coste total de la fase & $\sim$\$0.75 USD \\
 \bottomrule
 \end{tabularx}
 \caption{Resultados del proceso de destilación neuro-simbólica E2E.}
+\end{table}
+
+% ── Sección 7: Fase 1b — Síntesis de Repositorio a Skill ───────────────────────
+\newpage
+\section[Fase 1b: Repositorio a Skill de API]{\iconotexto{code-branch}{Fase 1b: De Repositorio GitHub a un Skill de Referencia de Código}}
+
+La Fase 1 destila \emph{libros} en skills matemático-formales con fórmulas SymPy. La \textbf{Fase 1b} cubre el caso complementario: convertir un \textbf{repositorio de código} (URL de GitHub o directorio local) en un skill de \textbf{referencia de código/API}. En lugar de ecuaciones, el artefacto final documenta la interfaz real de una librería: firmas de funciones, patrones de uso, ejemplos auténticos y configuración.
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Referencias de API estructuradas:} \texttt{api.md}, \texttt{patrones.md}, \texttt{ejemplos.md}, \texttt{configuracion.md}, \texttt{prerrequisitos.md} y \texttt{glosario.md}.
+  \item \textbf{Ejemplos de código reales:} Los snippets provienen del propio repositorio (verificables contra la fuente), no inventados por el LLM.
+  \item \textbf{Validación adaptativa:} La sintaxis fallida de un snippet se marca como \texttt{observacion} (no bloquea), y solo el riesgo real de Sistema bloquea (\texttt{peligro}). Nunca se ejecuta código de la API en sandbox (los ejemplos importan el paquete, no son programas autocontenidos).
+\end{itemize}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{project-diagram}~Pipeline E2E de la Fase 1b}]
+\begin{lstlisting}
+[Repo GitHub | dir local] --> extraer_repo_github.py --> texto_completo.txt
+                                                              |
+                                     [enrutador.py (contexto_masivo)]
+                                                              |
+                                              sintetizar_skill.py --perfil referencia_codigo
+                                                              |
+                                          validar_skill_formulas.py --perfil (gate)
+                                                              |
+                                          generar_latex_skill.py + instalar_skill.py
+\end{lstlisting}
+\end{tcolorbox}
+
+\subsection{Arquitectura de 3 Capas de la Fase 1b}
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\ttfamily}p{4.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Capa} & \textbf{Archivo / Artefacto} & \textbf{Responsabilidad y Rol} \\
+\midrule
+\textbf{Directiva} & directives/repo\_a\_skill.yaml & SOP determinista: 8 pasos secuenciales, 8 edge cases (repo privado, vacío, tamaño) y política de reintentos. \\
+\midrule
+\textbf{Orquestación} & flujo\_repo\_a\_skill.py & Entrevista, orden de scripts, estados en \texttt{.tmp/}, gate de instalación y filtros \texttt{--incluir}/\texttt{--excluir}. \\
+\midrule
+\textbf{Ejecución} & execution/extraer\_repo\_github.py \newline execution/sintetizar\_skill.py \newline execution/validar\_skill\_formulas.py \newline execution/generar\_latex\_skill.py \newline execution/instalar\_skill.py & Clonado/filtrado determinista, síntesis con perfil de API, validación adaptativa y publicación. \\
+\bottomrule
+\end{tabularx}
+\caption{Matriz de responsabilidades de la arquitectura de 3 capas en la Fase 1b.}
+\end{table}
+
+\subsection{El Orquestador \texttt{flujo\_repo\_a\_skill.py}}
+Ejecuta una secuencia de 8 pasos espejo al de la Fase 1, con dos diferencias clave:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Paso 2 --- Extracción determinista (0 créditos):} \texttt{extraer\_repo\_github.py} clona con \texttt{git clone --depth 1} (o usa el directorio local), filtra por extensión y globs (\texttt{--incluir}/\texttt{--excluir}), omite \texttt{.git}, \texttt{\_\_pycache\_\_}, \texttt{node\_modules}, \texttt{.venv}, \texttt{dist}, \texttt{build}, \texttt{target}, etc., y concatena en \path{.tmp/repo_<nombre>_texto/texto_completo.txt} con cabeceras \texttt{=== ARCHIVO: <ruta> ===} y un \texttt{indice.json} con el árbol y las decisiones de inclusión.
+  \item \textbf{Paso 4 --- Síntesis con perfil de API (créditos):} \texttt{sintetizar\_skill.py --perfil referencia\_codigo}. El LLM recibe normas específicas: las firmas van literalmente como aparecen en el código (nunca reformuladas), los ejemplos se copian del repo y toda afirmación de uso debe anclarse a una función real. El resto de pasos (enrutador, validación, LaTeX, instalación, alerta) son idénticos a la Fase 1.
+\end{enumerate}
+
+\subsection{Síntesis con Perfil \texttt{referencia\_codigo}}
+El flag \texttt{--perfil} acepta \texttt{libro} (default, Fase 1) y \texttt{referencia\_codigo} (Fase 1b). El perfil de código:
+\begin{itemize}[leftmargin=*]
+  \item Usa un prompt de chunk y un ejemplo JSON distintos (\texttt{\_ejemplo\_json\_codigo}) orientados a API, no a ecuaciones.
+  \item Exige las 6 referencias de API obligatorias (ver arriba) en lugar de las 6 referencias matemáticas de la Fase 1.
+  \item Recomienda el tier \texttt{deepseek} para repositorios medianos, con \texttt{--estructura-max-tokens 32768} para el JSON de ensamblaje.
+\end{itemize}
+
+\subsection{Validación Adaptativa por Perfil}
+En \texttt{validar\_skill\_formulas.py} el perfil \texttt{libro} valida fórmulas SymPy ejecutándolas en un sandbox. En \texttt{referencia\_codigo} este enfoque es \textbf{semánticamente incorrecto}: los ejemplos de la API importan el paquete del repo y las firmas son snippets, no programas autocontenidos. Por ello el perfil de código:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Sintaxis:} Un snippet con error de sintaxis pasa a estado \texttt{observacion} (advertencia no bloqueante, se reporta pero no aborta la instalación).
+  \item \textbf{Seguridad:} Solo genera \texttt{peligro} (bloqueante, exit 3) si el bloque contiene riesgo de Sistema: \texttt{os.system}, \texttt{subprocess}, \texttt{socket}, \texttt{ctypes}, \texttt{open}, \texttt{eval}/\texttt{exec} de cadenas, etc.
+  \item \textbf{Count de errores:} En este perfil solo los bloques \texttt{peligro} cuentan como errores; los \texttt{observacion} solo quedan registrados.
+\end{itemize}
+
+\begin{cajaAlerta}
+\textbf{Decisión de diseño verificada en E2E:} Un validador que ejecutara los ejemplos de una API en sandbox convierte 74 bloques legítimos (imports del paquete, firmas parciales) en 74 falsos positivos. El perfil adaptativo reduce eso a \textbf{0 errores} conservando la protección real contra código peligroso.
+\end{cajaAlerta}
+
+\subsection{Resultados Experimentales: Repo \texttt{pallets/itsdangerous}}
+Smoke test E2E real (2026-09-05) con coste de décimas de centavo:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\raggedright\arraybackslash}X}
+\toprule
+\rowcolor{azulNoche!12}\textbf{Métrica de Evaluación} & \textbf{Valor Observado en Ejecución Real} \\
+\midrule
+Volumen de entrada & 32 archivos incluidos / 8 excluidos; 91\,396 caracteres; $\sim$22.5K tokens \\
+Modelo y Tier de enrutamiento & Tier \textbf{deepseek} (\texttt{deepseek/deepseek-v4-pro}), regla \texttt{contexto\_masivo} \\
+Perfil de síntesis & \texttt{referencia\_codigo}: \texttt{SKILL.md} + \texttt{api.md}, \texttt{patrones.md}, \texttt{ejemplos.md}, \texttt{configuracion.md}, \texttt{prerrequisitos.md}, \texttt{glosario.md} \\
+Chunks destilados & 2 chunks, re-síntesis por reflexión 0 iteraciones \\
+Validación adaptativa & \textbf{0 errores} (74 bloques: 74 \texttt{ok}, 0 \texttt{observacion}, 0 \texttt{peligro}); estructuras obligatorias 6/6 \\
+Reporte LaTeX & \path{docs/SKILL/pallets_itsdangerous/} (.tex + .pdf compilado) \\
+Instalación final & Omitida (--dry-run); skill en \path{.tmp/skill_pallets_itsdangerous/} \\
+Coste total de la fase & $\sim$\$0.01 USD \\
+\bottomrule
+\end{tabularx}
+\caption{Resultados del smoke test repo a skill \texttt{pallets/itsdangerous}.}
 \end{table}
 
 % ═══════════════════════════════════════════════════════════════════════════════
@@ -657,6 +751,33 @@ python3 execution/validar_skill_formulas.py --skill ~/.config/opencode/skills/mi
 \end{lstlisting}
 \end{tcolorbox}
 
+\begin{tcolorbox}[cajaContenido, title={\faIcon{code-branch}~Comandos para la Fase 1b (Repositorio a Skill de API)}]
+\begin{lstlisting}[style=estiloBash]
+# 1. Flujo completo desde una URL de GitHub (clona --depth 1)
+python3 flujo_repo_a_skill.py --repo "https://github.com/pallets/itsdangerous" \
+    --nombre pallets_itsdangerous --idioma es
+
+# 2. Extender el filtrado con globs especificos
+python3 flujo_repo_a_skill.py --repo "https://github.com/usuario/repo" \
+    --nombre mi_skill --tema "API de ejemplo" \
+    --incluir "src/**" "*.py" --excluir "**/tests/*"
+
+# 3. Modo Dry-Run (genera y valida, sin instalar globalmente)
+python3 flujo_repo_a_skill.py --repo "/ruta/local/al/dir" --nombre mi_skill --dry-run
+
+# 4. Extraccion determinista directa (0 creditos) para inspeccionar el corpus
+python3 execution/extraer_repo_github.py --repo "https://github.com/usuario/repo" \
+    --salida .tmp/repo_mi_skill_texto/texto_completo.txt
+
+# 5. Sintesis con perfil de API explicito y tier alto
+python3 execution/sintetizar_skill.py --texto .tmp/repo_..._texto/texto_completo.txt \
+    --entrevista .tmp/entrevista_skill_<nombre>.json --nombre mi_skill \
+    --tema "API de la libreria" --idioma es --perfil referencia_codigo \
+    --modelo deepseek/deepseek-v4-pro --salida .tmp/skill_mi_skill \
+    --estructura-max-tokens 32768
+\end{lstlisting}
+\end{tcolorbox}
+
 \begin{tcolorbox}[cajaContenido, title={\faIcon{terminal}~Comandos para la Fase 2 (Resolución de Problemas)}]
 \begin{lstlisting}[style=estiloBash]
 # 1. Resolver problema en modo produccion (calculo_formal -> Opus)
@@ -699,6 +820,8 @@ python3 execution/resolver_skill.py --skill <dir1> <dir2> \
 \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
 \rowcolor{azulNoche!12}\textbf{Eje de Comparación} & \textbf{Fase 1: Síntesis de Skill} & \textbf{Fase 2: Resolución con Skill} \\
+\midrule
+\textbf{Variante Fase 1b (Repositorio)} & Alimenta \texttt{extraer\_repo\_github.py} y el perfil \texttt{referencia\_codigo} en lugar del PDF y el perfil \texttt{libro}. & La resolución funciona igual: retrieval sobre los skills generados por ambas variantes. \\
 \midrule
 \textbf{Objetivo Primario} & Extraer y destilar el conocimiento de un libro en un skill formal. & Aplicar el conocimiento estructurado para resolver problemas. \\
 \midrule
