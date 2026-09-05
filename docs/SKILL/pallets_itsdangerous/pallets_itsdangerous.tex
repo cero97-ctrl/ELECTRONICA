@@ -1,0 +1,2074 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabecera específica del reporte del skill ──
+\renewcommand{\iconoBanda}{book}
+\fancyhead[L]{\color{azulNoche}\small\bfseries \faIcon{book}~\textcolor{cyanNeon}{pallets\_itsdangerous}}
+\fancyhead[R]{\color{grisTexto}\smallLibrería de firma y autenticación de datos}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Skill: pallets\_itsdangerous}{"Usa este skill cuando necesites firmar criptográficamente datos, generar tokens seguros, serializar objetos con firma, implementar expiración de tokens, rotar claves secretas, o manejar datos en entornos no confiables. }
+
+\section*{ItsDangerous - Firma y Autenticación de Datos}
+
+
+\subsection*{Cuándo usar este skill}
+
+
+Este skill debe usarse cuando se requiera:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Firmar datos para garantizar integridad y autenticidad en entornos no confiables (cookies, tokens de sesión, enlaces de verificación).
+  \item Serializar objetos Python (JSON) y firmarlos para su transmisión segura.
+  \item Implementar tokens con expiración temporal (enlaces de restablecimiento de contraseña, tokens de confirmación de email).
+  \item Rotar claves secretas sin invalidar tokens existentes.
+  \item Migrar algoritmos de firma manteniendo compatibilidad con tokens antiguos.
+  \item Generar tokens seguros para URLs (Base64 URL-safe).
+\end{itemize}
+
+
+\subsection*{Estructura del proyecto}
+
+
+El repositorio de ItsDangerous se organiza en los siguientes módulos principales:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{itsdangerous/\_\_init\_\_.py} - Punto de entrada, importa todas las clases públicas.
+  \item \texttt{itsdangerous/signer.py} - Clases base \texttt{Signer} y \texttt{NoneAlgorithm}.
+  \item \texttt{itsdangerous/serializer.py} - \texttt{Serializer} genérico.
+  \item \texttt{itsdangerous/timed.py} - \texttt{TimestampSigner} y \texttt{TimedSerializer}.
+  \item \texttt{itsdangerous/url\_safe.py} - \texttt{URLSafeSerializer} y \texttt{URLSafeTimedSerializer}.
+  \item \texttt{itsdangerous/exc.py} - Jerarquía de excepciones.
+  \item \texttt{itsdangerous/encoding.py} - Utilidades de codificación (base64, bytes).
+\end{itemize}
+
+
+\subsection*{API principal}
+
+
+\subsubsection*{Firmas básicas}
+
+
+\textbf{\texttt{Signer}} - Firma bytes y verifica la firma.
+
+
+\begin{lstlisting}
+class Signer:
+    def __init__(
+        self,
+        secret_key: str | bytes | Iterable[str] | Iterable[bytes],
+        salt: str | bytes | None = b"itsdangerous.Signer",
+        sep: str | bytes = b".",
+        key_derivation: str | None = None,
+        digest_method: Any | None = None,
+        algorithm: SigningAlgorithm | None = None,
+    )
+    def sign(self, value: str | bytes) -> bytes
+    def unsign(self, signed_value: str | bytes) -> bytes  # lanza BadSignature
+    def validate(self, signed_value: str | bytes) -> bool
+\end{lstlisting}
+
+
+\textbf{\texttt{SigningAlgorithm}} - Clase base para algoritmos de firma.
+
+
+\begin{lstlisting}
+class SigningAlgorithm:
+    def get_signature(self, key: bytes, value: bytes) -> bytes
+    def verify_signature(self, key: bytes, value: bytes, sig: bytes) -> bool
+\end{lstlisting}
+
+
+\textbf{\texttt{HMACAlgorithm}} - Algoritmo HMAC con hash configurable.
+
+
+\begin{lstlisting}
+class HMACAlgorithm(SigningAlgorithm):
+    default_digest_method = staticmethod(_lazy_sha1)  # hashlib.sha1
+    def __init__(self, digest_method=None)
+\end{lstlisting}
+
+
+\textbf{\texttt{NoneAlgorithm}} - Algoritmo de firma vacía (solo para pruebas).
+
+
+\begin{lstlisting}
+class NoneAlgorithm(SigningAlgorithm):
+    def get_signature(self, key: bytes, value: bytes) -> bytes
+    def verify_signature(self, key: bytes, value: bytes, sig: bytes) -> bool
+\end{lstlisting}
+
+
+\subsubsection*{Serialización}
+
+
+\textbf{\texttt{Serializer}} - Serializa objetos (por defecto JSON) y los firma.
+
+
+\begin{lstlisting}
+class Serializer(Generic[_TSerialized]):
+    default_serializer = json
+    default_signer = Signer
+    default_fallback_signers = []
+
+    def __init__(
+        self,
+        secret_key: ...,
+        salt: str | bytes | None = b"itsdangerous",
+        serializer: ... = None,
+        serializer_kwargs: dict | None = None,
+        signer: type[Signer] | None = None,
+        signer_kwargs: dict | None = None,
+        fallback_signers: list | None = None,
+    )
+    def dumps(self, obj: Any, salt: ... = None) -> _TSerialized
+    def loads(self, s: str | bytes, salt: ... = None, **kwargs) -> Any  # lanza BadSignature
+    def loads_unsafe(self, s: str | bytes, salt: ... = None) -> tuple[bool, Any]
+    def load_payload(self, payload: bytes, serializer: ... = None) -> Any
+    def dump_payload(self, obj: Any) -> bytes
+\end{lstlisting}
+
+
+\subsubsection*{Firmas con timestamp}
+
+
+\textbf{\texttt{TimestampSigner}} - Añade timestamp a la firma.
+
+
+\begin{lstlisting}
+class TimestampSigner(Signer):
+    def get_timestamp() -> int
+    def timestamp_to_datetime(ts: int) -> datetime
+    def sign(self, value: str | bytes) -> bytes
+    def unsign(self, signed_value: str | bytes, max_age: int | None = None, return_timestamp: bool = False) -> bytes | tuple[bytes, datetime]
+    def validate(self, signed_value: str | bytes, max_age: int | None = None) -> bool
+\end{lstlisting}
+
+
+\textbf{\texttt{TimedSerializer}} - Serializa y añade timestamp.
+
+
+\begin{lstlisting}
+class TimedSerializer(Serializer):
+    def loads(self, s: str | bytes, max_age: int | None = None, return_timestamp: bool = False, salt: ... = None) -> Any
+    def loads_unsafe(self, s: str | bytes, max_age: int | None = None, salt: ... = None) -> tuple[bool, Any]
+\end{lstlisting}
+
+
+\subsubsection*{Serializadores URL-safe}
+
+
+\textbf{\texttt{URLSafeSerializer}} - Serializa en formato seguro para URLs.
+
+
+\begin{lstlisting}
+class URLSafeSerializer(URLSafeSerializerMixin, Serializer[str]):
+    def load_payload(self, payload: bytes, ...) -> Any
+    def dump_payload(self, obj: Any) -> bytes
+\end{lstlisting}
+
+
+\textbf{\texttt{URLSafeTimedSerializer}} - Combina URL-safe con timestamp.
+
+
+\begin{lstlisting}
+class URLSafeTimedSerializer(URLSafeSerializerMixin, TimedSerializer[str]):
+    pass
+\end{lstlisting}
+
+
+\subsubsection*{Utilidades de encoding}
+
+
+\begin{lstlisting}
+def want_bytes(s: str | bytes, encoding="utf-8", errors="strict") -> bytes
+def base64_encode(string: str | bytes) -> bytes
+def base64_decode(string: str | bytes) -> bytes
+\end{lstlisting}
+
+
+\subsubsection*{Excepciones}
+
+
+\begin{lstlisting}
+class BadData(Exception)           # base
+class BadSignature(BadData)        # firma no coincide (payload disponible)
+class BadTimeSignature(BadSignature)  # timestamp inválido (date_signed disponible)
+class SignatureExpired(BadTimeSignature)  # expirado
+class BadHeader(BadSignature)      # cabecera malformada
+class BadPayload(BadData)          # payload no válido (original_error disponible)
+\end{lstlisting}
+
+
+\subsection*{Patrones de uso}
+
+
+\subsubsection*{1. Firma básica con serializador URL-safe}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeSerializer
+
+s = URLSafeSerializer("secret-key", salt="auth")
+token = s.dumps({"id": 5, "name": "itsdangerous"})
+data = s.loads(token)
+\end{lstlisting}
+
+
+\subsubsection*{2. Tokens con expiración temporal}
+
+
+\begin{lstlisting}
+from itsdangerous import TimestampSigner
+
+s = TimestampSigner("secret-key")
+signed = s.sign("foo")
+s.unsign(signed, max_age=5)  # lanza SignatureExpired si > 5 segundos
+\end{lstlisting}
+
+
+\subsubsection*{3. Rotación de claves secretas}
+
+
+\begin{lstlisting}
+SECRET_KEYS = ["old-key", "new-key"]
+s = Serializer(SECRET_KEYS)
+token = s.dumps({"id": 42})  # firma con "new-key"
+
+# Rotar clave
+SECRET_KEYS.append("newer-key")
+del SECRET_KEYS[0]
+s = Serializer(SECRET_KEYS)
+s.loads(token)  # válido, se prueba con todas las claves
+\end{lstlisting}
+
+
+\subsubsection*{4. Migración de algoritmo con fallback signers}
+
+
+\begin{lstlisting}
+import hashlib
+
+s = Serializer(
+    "secret-key",
+    signer_kwargs={"digest_method": hashlib.sha512},
+    fallback_signers=[{"digest_method": hashlib.sha1}]
+)
+\end{lstlisting}
+
+
+\subsubsection*{5. Manejo de errores con inspección de payload}
+
+
+\begin{lstlisting}
+from itsdangerous.exc import BadSignature, BadData
+
+try:
+    data = s.loads(token)
+except BadSignature as e:
+    if e.payload is not None:
+        try:
+            decoded = s.load_payload(e.payload)
+        except BadData:
+            pass  # payload corrupto
+\end{lstlisting}
+
+
+\subsubsection*{6. Carga insegura para debugging}
+
+
+\begin{lstlisting}
+sig_ok, payload = s.loads_unsafe(data)
+\end{lstlisting}
+
+
+\subsection*{Configuración}
+
+
+\subsubsection*{Parámetros principales}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{\texttt{secret\_key}}: Clave secreta (bytes aleatorios). Puede ser lista para rotación.
+  \item \textbf{\texttt{salt}}: Distingue contextos de firma. No necesita ser secreto.
+  \item \textbf{\texttt{key\_derivation}}: Método para derivar clave (\texttt{"django-concat"}, \texttt{"concat"}, \texttt{"hmac"}, \texttt{"none"}).
+  \item \textbf{\texttt{digest\_method}}: Función hash para HMAC (por defecto \texttt{hashlib.sha1}).
+  \item \textbf{\texttt{serializer}}: Objeto con \texttt{dumps}/\texttt{loads} (por defecto \texttt{json}).
+  \item \textbf{\texttt{fallback\_signers}}: Lista de configuraciones para verificar firmas antiguas.
+  \item \textbf{\texttt{sep}}: Separador entre valor y firma (por defecto \texttt{"."}).
+  \item \textbf{\texttt{max\_age}}: Edad máxima en segundos para tokens temporales.
+  \item \textbf{\texttt{return\_timestamp}}: Si es \texttt{True}, \texttt{unsign}/\texttt{loads} retorna también el timestamp.
+\end{itemize}
+
+
+\subsection*{Ejemplos de código reutilizable}
+
+
+\subsubsection*{Generar token de confirmación de email}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeTimedSerializer
+
+serializer = URLSafeTimedSerializer("secret-key", salt="email-confirm")
+token = serializer.dumps({"user_id": 123})
+# Enviar token por email...
+\end{lstlisting}
+
+
+\subsubsection*{Verificar token con expiración}
+
+
+\begin{lstlisting}
+from itsdangerous.exc import SignatureExpired, BadSignature
+
+try:
+    data = serializer.loads(token, max_age=3600)  # 1 hora
+except SignatureExpired:
+    print("El token ha expirado")
+except BadSignature:
+    print("Token inválido")
+\end{lstlisting}
+
+
+\subsubsection*{Rotar claves en aplicación Flask}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeTimedSerializer
+
+class TokenManager:
+    def __init__(self, secret_keys):
+        self.secret_keys = secret_keys
+        self.serializer = URLSafeTimedSerializer(secret_keys)
+    
+    def rotate_key(self, new_key):
+        self.secret_keys.insert(0, new_key)
+        self.serializer = URLSafeTimedSerializer(self.secret_keys)
+\end{lstlisting}
+
+
+\subsection*{Glosario}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Firma criptográfica}: Proceso de generar un código (HMAC) que verifica la integridad y autenticidad de los datos.
+  \item \textbf{HMAC}: Hash-based Message Authentication Code, algoritmo que combina una clave secreta con un hash.
+  \item \textbf{Salt}: Valor aleatorio que se añade a la clave para derivar claves diferentes en distintos contextos.
+  \item \textbf{Key derivation}: Proceso de generar una clave criptográfica a partir de una clave maestra y un salt.
+  \item \textbf{Timestamp}: Marca de tiempo Unix que indica cuándo se firmó el dato.
+  \item \textbf{URL-safe}: Codificación Base64 que usa caracteres seguros para URLs (\texttt{-} y \texttt{\_} en lugar de \texttt{+} y \texttt{/}).
+  \item \textbf{Fallback signers}: Configuraciones de firmantes antiguos que permiten verificar tokens firmados con algoritmos o claves anteriores.
+  \item \textbf{Rotación de claves}: Práctica de cambiar periódicamente las claves secretas manteniendo las antiguas para validar tokens existentes.
+\end{itemize}
+
+
+\subsection*{Prerrequisitos}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Python 3.8 o superior.
+  \item No tiene dependencias externas (solo stdlib).
+  \item Instalación: \texttt{pip install itsdangerous}
+\end{itemize}
+
+
+\section*{api}
+
+\section*{API de ItsDangerous}
+
+
+\subsection*{Módulo \texttt{itsdangerous.signer}}
+
+
+\subsubsection*{\texttt{Signer}}
+
+
+Firma bytes y verifica la firma usando HMAC.
+
+
+\begin{lstlisting}
+class Signer:
+    def __init__(
+        self,
+        secret_key: str | bytes | Iterable[str] | Iterable[bytes],
+        salt: str | bytes | None = b"itsdangerous.Signer",
+        sep: str | bytes = b".",
+        key_derivation: str | None = None,
+        digest_method: Any | None = None,
+        algorithm: SigningAlgorithm | None = None,
+    )
+\end{lstlisting}
+
+
+\textbf{Parámetros:}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{secret\_key}: Clave secreta. Puede ser una cadena, bytes, o iterable de claves para rotación.
+  \item \texttt{salt}: Valor para derivar claves diferentes en distintos contextos. No necesita ser secreto.
+  \item \texttt{sep}: Separador entre el valor y la firma (por defecto \texttt{"."}).
+  \item \texttt{key\_derivation}: Método de derivación de clave (\texttt{"concat"}, \texttt{"django-concat"}, \texttt{"hmac"}, \texttt{"none"}).
+  \item \texttt{digest\_method}: Función hash para HMAC (por defecto \texttt{hashlib.sha1}).
+  \item \texttt{algorithm}: Instancia de \texttt{SigningAlgorithm} (por defecto \texttt{HMACAlgorithm}).
+\end{itemize}
+
+
+\textbf{Métodos:}
+
+
+\begin{lstlisting}
+def sign(self, value: str | bytes) -> bytes
+\end{lstlisting}
+
+
+Firma un valor y retorna \texttt{valor.separador.firma}.
+
+
+\begin{lstlisting}
+def unsign(self, signed_value: str | bytes) -> bytes
+\end{lstlisting}
+
+
+Verifica la firma y retorna el valor original. Lanza \texttt{BadSignature} si la firma es inválida.
+
+
+\begin{lstlisting}
+def validate(self, signed_value: str | bytes) -> bool
+\end{lstlisting}
+
+
+Retorna \texttt{True} si la firma es válida, \texttt{False} en caso contrario.
+
+
+\textbf{Ejemplo:}
+
+
+\begin{lstlisting}
+from itsdangerous import Signer
+
+s = Signer("secret-key")
+signed = s.sign("hello")
+# b'hello.XXXXX'
+original = s.unsign(signed)
+# b'hello'
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{SigningAlgorithm}}
+
+
+Clase base abstracta para algoritmos de firma.
+
+
+\begin{lstlisting}
+class SigningAlgorithm:
+    def get_signature(self, key: bytes, value: bytes) -> bytes
+    def verify_signature(self, key: bytes, value: bytes, sig: bytes) -> bool
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{HMACAlgorithm}}
+
+
+Implementación HMAC del algoritmo de firma.
+
+
+\begin{lstlisting}
+class HMACAlgorithm(SigningAlgorithm):
+    default_digest_method = staticmethod(_lazy_sha1)
+    
+    def __init__(self, digest_method=None)
+\end{lstlisting}
+
+
+\textbf{Parámetros:}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{digest\_method}: Función hash (por defecto \texttt{hashlib.sha1}).
+\end{itemize}
+
+
+\subsubsection*{\texttt{NoneAlgorithm}}
+
+
+Algoritmo de firma vacía que no genera firma real. Solo para pruebas.
+
+
+\begin{lstlisting}
+class NoneAlgorithm(SigningAlgorithm):
+    def get_signature(self, key: bytes, value: bytes) -> bytes
+    def verify_signature(self, key: bytes, value: bytes, sig: bytes) -> bool
+\end{lstlisting}
+
+
+\subsection*{Módulo \texttt{itsdangerous.serializer}}
+
+
+\subsubsection*{\texttt{Serializer}}
+
+
+Serializa objetos Python (por defecto JSON) y los firma.
+
+
+\begin{lstlisting}
+class Serializer(Generic[_TSerialized]):
+    default_serializer = json
+    default_signer = Signer
+    default_fallback_signers = []
+
+    def __init__(
+        self,
+        secret_key: str | bytes | Iterable[str] | Iterable[bytes],
+        salt: str | bytes | None = b"itsdangerous",
+        serializer: Any = None,
+        serializer_kwargs: dict | None = None,
+        signer: type[Signer] | None = None,
+        signer_kwargs: dict | None = None,
+        fallback_signers: list | None = None,
+    )
+\end{lstlisting}
+
+
+\textbf{Parámetros:}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{secret\_key}: Clave secreta (igual que en \texttt{Signer}).
+  \item \texttt{salt}: Salt para derivación de clave.
+  \item \texttt{serializer}: Módulo u objeto con \texttt{dumps}/\texttt{loads} (por defecto \texttt{json}).
+  \item \texttt{serializer\_kwargs}: Argumentos adicionales para el serializador.
+  \item \texttt{signer}: Clase de firmante a usar (por defecto \texttt{Signer}).
+  \item \texttt{signer\_kwargs}: Argumentos para el constructor del firmante.
+  \item \texttt{fallback\_signers}: Lista de diccionarios con kwargs para firmantes de respaldo.
+\end{itemize}
+
+
+\textbf{Métodos:}
+
+
+\begin{lstlisting}
+def dumps(self, obj: Any, salt: str | bytes | None = None) -> _TSerialized
+\end{lstlisting}
+
+
+Serializa \texttt{obj} a JSON, lo firma y retorna el resultado.
+
+
+\begin{lstlisting}
+def loads(self, s: str | bytes, salt: str | bytes | None = None, **kwargs) -> Any
+\end{lstlisting}
+
+
+Verifica la firma y deserializa el payload. Lanza \texttt{BadSignature} si falla.
+
+
+\begin{lstlisting}
+def loads_unsafe(self, s: str | bytes, salt: str | bytes | None = None) -> tuple[bool, Any]
+\end{lstlisting}
+
+
+Retorna \texttt{(éxito, payload)} sin lanzar excepciones.
+
+
+\begin{lstlisting}
+def load_payload(self, payload: bytes, serializer: Any = None) -> Any
+\end{lstlisting}
+
+
+Deserializa un payload ya verificado.
+
+
+\begin{lstlisting}
+def dump_payload(self, obj: Any) -> bytes
+\end{lstlisting}
+
+
+Serializa un objeto a payload sin firmar.
+
+
+\textbf{Ejemplo:}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+s = Serializer("secret-key")
+token = s.dumps({"user": "alice"})
+# b'{"user":"alice"}.XXXXX'
+data = s.loads(token)
+# {"user": "alice"}
+\end{lstlisting}
+
+
+\subsection*{Módulo \texttt{itsdangerous.timed}}
+
+
+\subsubsection*{\texttt{TimestampSigner}}
+
+
+Firmante que añade timestamp a la firma.
+
+
+\begin{lstlisting}
+class TimestampSigner(Signer):
+    def get_timestamp() -> int
+    def timestamp_to_datetime(ts: int) -> datetime
+    def sign(self, value: str | bytes) -> bytes
+    def unsign(
+        self,
+        signed_value: str | bytes,
+        max_age: int | None = None,
+        return_timestamp: bool = False
+    ) -> bytes | tuple[bytes, datetime]
+    def validate(self, signed_value: str | bytes, max_age: int | None = None) -> bool
+\end{lstlisting}
+
+
+\textbf{Métodos:}
+
+
+\begin{lstlisting}
+def get_timestamp() -> int
+\end{lstlisting}
+
+
+Retorna la marca de tiempo Unix actual.
+
+
+\begin{lstlisting}
+def timestamp_to_datetime(ts: int) -> datetime
+\end{lstlisting}
+
+
+Convierte timestamp Unix a \texttt{datetime} UTC.
+
+
+\begin{lstlisting}
+def sign(self, value: str | bytes) -> bytes
+\end{lstlisting}
+
+
+Firma el valor con timestamp: \texttt{valor.sep.timestamp.sep.firma}.
+
+
+\begin{lstlisting}
+def unsign(
+    self,
+    signed_value: str | bytes,
+    max_age: int | None = None,
+    return_timestamp: bool = False
+) -> bytes | tuple[bytes, datetime]
+\end{lstlisting}
+
+
+Verifica firma y timestamp. Si \texttt{max\_age} se supera, lanza \texttt{SignatureExpired}. Si \texttt{return\_timestamp=True}, retorna \texttt{(valor, datetime)}.
+
+
+\begin{lstlisting}
+def validate(self, signed_value: str | bytes, max_age: int | None = None) -> bool
+\end{lstlisting}
+
+
+Retorna \texttt{True} si la firma es válida y no ha expirado.
+
+
+\textbf{Ejemplo:}
+
+
+\begin{lstlisting}
+from itsdangerous import TimestampSigner
+
+s = TimestampSigner("secret-key")
+signed = s.sign("foo")
+# b'foo.1234567890.XXXXX'
+original = s.unsign(signed, max_age=3600)
+# b'foo'
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{TimedSerializer}}
+
+
+Serializador que añade timestamp.
+
+
+\begin{lstlisting}
+class TimedSerializer(Serializer):
+    def loads(
+        self,
+        s: str | bytes,
+        max_age: int | None = None,
+        return_timestamp: bool = False,
+        salt: str | bytes | None = None
+    ) -> Any
+    def loads_unsafe(
+        self,
+        s: str | bytes,
+        max_age: int | None = None,
+        salt: str | bytes | None = None
+    ) -> tuple[bool, Any]
+\end{lstlisting}
+
+
+\textbf{Ejemplo:}
+
+
+\begin{lstlisting}
+from itsdangerous import TimedSerializer
+
+s = TimedSerializer("secret-key")
+token = s.dumps({"user": 42})
+data = s.loads(token, max_age=300)
+\end{lstlisting}
+
+
+\subsection*{Módulo \texttt{itsdangerous.url\_safe}}
+
+
+\subsubsection*{\texttt{URLSafeSerializerMixin}}
+
+
+Mixin que añade codificación Base64 URL-safe y compresión zlib.
+
+
+\begin{lstlisting}
+class URLSafeSerializerMixin:
+    def load_payload(self, payload: bytes, *args, **kwargs) -> Any
+    def dump_payload(self, obj: Any) -> bytes
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{URLSafeSerializer}}
+
+
+Serializador con salida URL-safe.
+
+
+\begin{lstlisting}
+class URLSafeSerializer(URLSafeSerializerMixin, Serializer[str]):
+    pass
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{URLSafeTimedSerializer}}
+
+
+Serializador URL-safe con timestamp.
+
+
+\begin{lstlisting}
+class URLSafeTimedSerializer(URLSafeSerializerMixin, TimedSerializer[str]):
+    pass
+\end{lstlisting}
+
+
+\textbf{Ejemplo:}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeTimedSerializer
+
+s = URLSafeTimedSerializer("secret-key")
+token = s.dumps({"session_id": "abc"})
+# 'eyJzZXNzaW9uX2lkIjoiYWJjIn0.XXXXX.XXXXX'
+data = s.loads(token, max_age=86400)
+\end{lstlisting}
+
+
+\subsection*{Módulo \texttt{itsdangerous.encoding}}
+
+
+\subsubsection*{Funciones de utilidad}
+
+
+\begin{lstlisting}
+def want_bytes(s: str | bytes, encoding="utf-8", errors="strict") -> bytes
+\end{lstlisting}
+
+
+Convierte cadena a bytes si es necesario.
+
+
+\begin{lstlisting}
+def base64_encode(string: str | bytes) -> bytes
+\end{lstlisting}
+
+
+Codifica en Base64 URL-safe.
+
+
+\begin{lstlisting}
+def base64_decode(string: str | bytes) -> bytes
+\end{lstlisting}
+
+
+Decodifica Base64 URL-safe.
+
+
+\subsection*{Módulo \texttt{itsdangerous.exc}}
+
+
+\subsubsection*{Jerarquía de excepciones}
+
+
+\begin{lstlisting}
+class BadData(Exception):
+    """Excepción base para datos inválidos."""
+
+class BadPayload(BadData):
+    """Payload no pudo ser deserializado."""
+    def __init__(self, message, original_error=None)
+
+class BadSignature(BadData):
+    """Firma no coincide."""
+    def __init__(self, message, payload=None, original_error=None)
+
+class BadTimeSignature(BadSignature):
+    """Timestamp inválido o malformado."""
+    def __init__(self, message, payload=None, date_signed=None, original_error=None)
+
+class SignatureExpired(BadTimeSignature):
+    """Firma expirada por max_age."""
+    def __init__(self, message, payload=None, date_signed=None, original_error=None)
+
+class BadHeader(BadSignature):
+    """Cabecera del payload malformada."""
+\end{lstlisting}
+
+
+\section*{configuracion}
+
+\section*{Configuración de ItsDangerous}
+
+
+\subsection*{Parámetros de configuración}
+
+
+\subsubsection*{\texttt{Signer} y derivados}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parámetro & Tipo & Default & Descripción \\
+\midrule
+\texttt{secret\_key} & `str \textbackslash{} & bytes \textbackslash{} & Iterable[str] \textbackslash{} \\
+\texttt{salt} & `str \textbackslash{} & bytes \textbackslash{} & None` \\
+\texttt{sep} & `str \textbackslash{} & bytes` & \texttt{b"."} \\
+\texttt{key\_derivation} & `str \textbackslash{} & None` & \texttt{None} (equivale a \texttt{"concat"}) \\
+\texttt{digest\_method} & `callable \textbackslash{} & None` & \texttt{hashlib.sha1} \\
+\texttt{algorithm} & `SigningAlgorithm \textbackslash{} & None` & \texttt{HMACAlgorithm()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsubsection*{\texttt{Serializer} y derivados}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parámetro & Tipo & Default & Descripción \\
+\midrule
+\texttt{secret\_key} & `str \textbackslash{} & bytes \textbackslash{} & Iterable[str] \textbackslash{} \\
+\texttt{salt} & `str \textbackslash{} & bytes \textbackslash{} & None` \\
+\texttt{serializer} & `module \textbackslash{} & object` & \texttt{json} \\
+\texttt{serializer\_kwargs} & `dict \textbackslash{} & None` & \texttt{None} \\
+\texttt{signer} & `type[Signer] \textbackslash{} & None` & \texttt{Signer} \\
+\texttt{signer\_kwargs} & `dict \textbackslash{} & None` & \texttt{None} \\
+\texttt{fallback\_signers} & `list \textbackslash{} & None` & \texttt{[]} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsubsection*{\texttt{TimestampSigner} y \texttt{TimedSerializer}}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parámetro & Tipo & Default & Descripción \\
+\midrule
+\texttt{max\_age} & `int \textbackslash{} & None` & \texttt{None} \\
+\texttt{return\_timestamp} & \texttt{bool} & \texttt{False} & Si \texttt{True}, \texttt{unsign()}/\texttt{loads()} retornan también el timestamp como \texttt{datetime} UTC. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsubsection*{\texttt{URLSafeSerializer} y \texttt{URLSafeTimedSerializer}}
+
+
+Estos serializadores aplican automáticamente:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Codificación Base64 URL-safe (caracteres \texttt{-} y \texttt{\_} en lugar de \texttt{+} y \texttt{/}).
+  \item Compresión zlib si el payload comprimido es menor que el original (indicado con prefijo \texttt{b"."}).
+\end{itemize}
+
+
+No tienen parámetros de configuración adicionales.
+
+
+\subsection*{Métodos de derivación de clave (\texttt{key\_derivation})}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{\texttt{"concat"}} (default implícito): Concatena \texttt{salt + b"signer" + secret\_key}.
+  \item \textbf{\texttt{"django-concat"}}: Concatena \texttt{salt + b"signer"} y usa \texttt{secret\_key} como clave directa (compatible con Django).
+  \item \textbf{\texttt{"hmac"}}: Deriva la clave usando HMAC con el salt como mensaje y \texttt{secret\_key} como clave.
+  \item \textbf{\texttt{"none"}}: No deriva, usa \texttt{secret\_key} directamente.
+\end{itemize}
+
+
+\subsection*{Algoritmos de firma disponibles}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{\texttt{HMACAlgorithm}}: Algoritmo por defecto. Usa HMAC con la función hash especificada en \texttt{digest\_method}.
+  \item \textbf{\texttt{NoneAlgorithm}}: No genera firma real. Solo para pruebas, nunca en producción.
+\end{itemize}
+
+
+\subsection*{Variables de entorno}
+
+
+ItsDangerous no requiere variables de entorno. La configuración se realiza programáticamente.
+
+
+\subsection*{Mejores prácticas de configuración}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Usar salts diferentes para cada contexto}: Evita que un token generado para un propósito sea válido en otro.
+\end{enumerate}
+
+
+\begin{lstlisting}
+   session_s = URLSafeSerializer(secret, salt="session")
+   email_s = URLSafeSerializer(secret, salt="email")
+\end{lstlisting}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Rotar claves periódicamente}: Mantén una lista de claves, añadiendo nuevas al inicio y eliminando antiguas.
+\end{enumerate}
+
+
+\begin{lstlisting}
+   SECRET_KEYS = ["current-key", "previous-key"]
+\end{lstlisting}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Usar \texttt{fallback\_signers} para migrar algoritmos}: Permite cambiar el algoritmo de hash sin invalidar tokens existentes.
+\end{enumerate}
+
+
+\begin{lstlisting}
+   Serializer(
+       secret,
+       signer_kwargs={"digest_method": hashlib.sha256},
+       fallback_signers=[{"digest_method": hashlib.sha1}]
+   )
+\end{lstlisting}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Elegir el serializador adecuado}:
+  \item \texttt{Serializer}: Para tokens que no van en URLs.
+  \item \texttt{URLSafeSerializer}: Para tokens en URLs o cookies.
+  \item \texttt{TimedSerializer} / \texttt{URLSafeTimedSerializer}: Cuando se necesita expiración.
+\end{enumerate}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Configurar \texttt{max\_age} según el caso de uso}:
+  \item Enlaces de restablecimiento de contraseña: 1 hora (3600).
+  \item Tokens de sesión: 1 día (86400).
+  \item Enlaces de confirmación de email: 7 días (604800).
+\end{enumerate}
+
+
+\section*{ejemplos}
+
+\section*{Ejemplos de código de ItsDangerous}
+
+
+\subsection*{Ejemplo 1: Firma básica con Signer}
+
+
+\begin{lstlisting}
+from itsdangerous import Signer
+
+s = Signer("secret-key")
+signed = s.sign(b"hello")
+print(signed)  # b'hello.XXXXX'
+
+original = s.unsign(signed)
+print(original)  # b'hello'
+
+# Validar sin excepción
+if s.validate(signed):
+    print("Firma válida")
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 2: Serialización JSON con Serializer}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+s = Serializer("secret-key")
+token = s.dumps({"user": "alice", "id": 42})
+print(token)  # b'{"user":"alice","id":42}.XXXXX'
+
+data = s.loads(token)
+print(data)  # {"user": "alice", "id": 42}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 3: Token con expiración usando TimestampSigner}
+
+
+\begin{lstlisting}
+from itsdangerous import TimestampSigner
+from itsdangerous.exc import SignatureExpired
+
+s = TimestampSigner("secret-key")
+signed = s.sign("datos-sensibles")
+print(signed)  # b'datos-sensibles.1234567890.XXXXX'
+
+try:
+    original = s.unsign(signed, max_age=5)  # 5 segundos
+except SignatureExpired:
+    print("Token expirado")
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 4: Serializador URL-safe con tiempo}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeTimedSerializer
+
+s = URLSafeTimedSerializer("secret-key", salt="email-confirm")
+token = s.dumps({"user_id": 123})
+print(token)  # 'eyJ1c2VyX2lkIjoxMjN9.XXXXX.XXXXX'
+
+data = s.loads(token, max_age=3600)  # 1 hora
+print(data)  # {"user_id": 123}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 5: Rotación de claves}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+# Claves iniciales
+SECRET_KEYS = ["old-key", "new-key"]
+s = Serializer(SECRET_KEYS)
+
+# Firmar con "new-key"
+token = s.dumps({"id": 42})
+
+# Rotar clave
+SECRET_KEYS.insert(0, "newer-key")
+SECRET_KEYS.pop()  # eliminar "old-key"
+s = Serializer(SECRET_KEYS)
+
+# Verificar token antiguo
+data = s.loads(token)  # funciona con "new-key"
+print(data)  # {"id": 42}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 6: Migración de algoritmo con fallback}
+
+
+\begin{lstlisting}
+import hashlib
+from itsdangerous import Serializer
+
+s = Serializer(
+    "secret-key",
+    signer_kwargs={"digest_method": hashlib.sha512},
+    fallback_signers=[{"digest_method": hashlib.sha1}]
+)
+
+# Firmar con SHA512
+token = s.dumps({"data": "test"})
+
+# Verificar (funciona con ambos algoritmos)
+data = s.loads(token)
+print(data)  # {"data": "test"}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 7: Manejo de errores con payload}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+from itsdangerous.exc import BadSignature, BadPayload
+
+s = Serializer("secret-key")
+token = s.dumps({"user": "bob"})
+
+# Simular token corrupto
+try:
+    data = s.loads(token + b"tampered")
+except BadSignature as e:
+    print(f"Firma inválida: {e}")
+    if e.payload:
+        try:
+            decoded = s.load_payload(e.payload)
+            print(f"Payload: {decoded}")
+        except BadPayload:
+            print("Payload corrupto")
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 8: Carga insegura}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+s = Serializer("secret-key")
+token = s.dumps({"user": "alice"})
+
+sig_ok, payload = s.loads_unsafe(token)
+print(f"Válido: {sig_ok}, Payload: {payload}")
+# Válido: True, Payload: {"user": "alice"}
+
+# Con token inválido
+sig_ok, payload = s.loads_unsafe("token-invalido")
+print(f"Válido: {sig_ok}, Payload: {payload}")
+# Válido: False, Payload: None
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 9: Uso de salt para diferentes contextos}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeSerializer
+
+# Diferentes salts para diferentes propósitos
+session_serializer = URLSafeSerializer("secret-key", salt="session")
+email_serializer = URLSafeSerializer("secret-key", salt="email")
+
+session_token = session_serializer.dumps({"user_id": 123})
+email_token = email_serializer.dumps({"action": "verify"})
+
+# No se puede usar un token en otro contexto
+try:
+    session_serializer.loads(email_token)  # Lanza BadSignature
+except BadSignature:
+    print("Token de email no válido para sesión")
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 10: Obtener timestamp de un token}
+
+
+\begin{lstlisting}
+from itsdangerous import TimestampSigner
+
+s = TimestampSigner("secret-key")
+signed = s.sign("data")
+
+# Obtener valor y timestamp
+value, timestamp = s.unsign(signed, return_timestamp=True)
+print(f"Valor: {value}")
+print(f"Firmado: {timestamp}")  # datetime UTC
+\end{lstlisting}
+
+
+\section*{glosario}
+
+\section*{Glosario de ItsDangerous}
+
+
+\subsection*{Términos técnicos}
+
+
+\subsubsection*{Firma criptográfica}
+
+
+Proceso de generar un código de autenticación (MAC) que permite verificar que los datos no han sido alterados y provienen de una fuente confiable. ItsDangerous usa HMAC para este propósito.
+
+
+\subsubsection*{HMAC (Hash-based Message Authentication Code)}
+
+
+Algoritmo que combina una clave secreta con una función hash (como SHA1, SHA256) para generar un código de autenticación. Verifica tanto la integridad como la autenticidad de los datos.
+
+
+\subsubsection*{Clave secreta (secret\_key)}
+
+
+Valor criptográfico (bytes aleatorios) usado para firmar y verificar datos. Debe mantenerse en secreto. Puede ser una lista para soportar rotación de claves.
+
+
+\subsubsection*{Salt}
+
+
+Valor aleatorio o único que se añade a la clave secreta durante la derivación para generar claves diferentes en distintos contextos. No necesita ser secreto. Ejemplo: usar salt="session" para cookies de sesión y salt="email" para tokens de email.
+
+
+\subsubsection*{Derivación de clave (key derivation)}
+
+
+Proceso de generar una clave criptográfica a partir de una clave maestra y un salt. ItsDangerous soporta varios métodos: concat, django-concat, hmac, none.
+
+
+\subsubsection*{Separador (sep)}
+
+
+Carácter o bytes que separan el valor original de la firma en el resultado firmado. Por defecto es \texttt{"."}.
+
+
+\subsubsection*{Payload}
+
+
+Los datos originales (serializados) que se firman. En \texttt{Serializer}, es el resultado de \texttt{json.dumps()}. En caso de firma inválida, el payload puede estar disponible para inspección.
+
+
+\subsubsection*{Timestamp}
+
+
+Marca de tiempo Unix (segundos desde 1970-01-01 00:00:00 UTC) que indica cuándo se firmó el dato. Usado por \texttt{TimestampSigner} para validar expiración.
+
+
+\subsubsection*{max\_age}
+
+
+Edad máxima permitida en segundos para un token con timestamp. Si el token es más antiguo, se lanza \texttt{SignatureExpired}.
+
+
+\subsubsection*{URL-safe}
+
+
+Codificación que usa caracteres seguros para incluir en URLs sin necesidad de percent-encoding. ItsDangerous usa Base64 modificada: \texttt{-} en lugar de \texttt{+}, \texttt{\_} en lugar de \texttt{/}, y omite el padding \texttt{=}.
+
+
+\subsubsection*{Base64}
+
+
+Esquema de codificación que representa datos binarios en texto ASCII. ItsDangerous usa Base64 URL-safe para tokens que van en URLs.
+
+
+\subsubsection*{Compresión zlib}
+
+
+Algoritmo de compresión sin pérdida. Los serializadores URL-safe comprimen el payload con zlib si el resultado es menor, anteponiendo \texttt{b"."} para indicar compresión.
+
+
+\subsubsection*{Fallback signers}
+
+
+Lista de configuraciones de firmantes antiguos que permiten verificar tokens firmados con algoritmos o configuraciones anteriores. Facilita la migración de algoritmos sin invalidar tokens existentes.
+
+
+\subsubsection*{Rotación de claves}
+
+
+Práctica de seguridad que consiste en cambiar periódicamente las claves secretas. ItsDangerous soporta rotación manteniendo una lista de claves: la primera se usa para firmar, todas se usan para verificar.
+
+
+\subsubsection*{BadSignature}
+
+
+Excepción lanzada cuando la firma de un token no coincide con la esperada. Indica que los datos pueden haber sido manipulados o que la clave/salt es incorrecta.
+
+
+\subsubsection*{BadTimeSignature}
+
+
+Excepción lanzada cuando el timestamp de un token está ausente o malformado. Hereda de \texttt{BadSignature}.
+
+
+\subsubsection*{SignatureExpired}
+
+
+Excepción lanzada cuando un token con timestamp ha excedido el \texttt{max\_age} especificado. Hereda de \texttt{BadTimeSignature}.
+
+
+\subsubsection*{BadPayload}
+
+
+Excepción lanzada cuando el payload no puede ser deserializado (ej. JSON inválido).
+
+
+\subsubsection*{loads\_unsafe}
+
+
+Método que retorna una tupla \texttt{(éxito, payload)} sin lanzar excepciones. Útil para debugging o cuando se necesita inspeccionar el contenido sin manejar errores.
+
+
+\subsubsection*{Serializador}
+
+
+Componente que convierte objetos Python a un formato de bytes (ej. JSON) y viceversa. En ItsDangerous, el serializador por defecto es \texttt{json}.
+
+
+\subsubsection*{Signer}
+
+
+Componente que firma bytes y verifica firmas. Es la clase base para todos los firmantes en ItsDangerous.
+
+
+\subsubsection*{Algoritmo de firma (SigningAlgorithm)}
+
+
+Clase abstracta que define cómo se genera y verifica una firma. Implementaciones: \texttt{HMACAlgorithm} (por defecto) y \texttt{NoneAlgorithm} (pruebas).
+
+
+\section*{patrones}
+
+\section*{Patrones de uso de ItsDangerous}
+
+
+\subsection*{1. Firma y verificación básica}
+
+
+\textbf{Problema:} Necesitas enviar datos a un cliente (ej. cookie) y verificar que no han sido manipulados al recibirlos de vuelta.
+
+
+\textbf{Solución:} Usar \texttt{Signer} para firmar los datos.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Crear instancia de \texttt{Signer} con clave secreta y salt único para el contexto.
+  \item Firmar los datos con \texttt{sign()}.
+  \item Enviar datos firmados al cliente.
+  \item Al recibir, verificar con \texttt{unsign()} o \texttt{validate()}.
+  \item Si \texttt{unsign()} lanza \texttt{BadSignature}, los datos fueron manipulados.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import Signer
+
+# 1. Configurar firmante
+signer = Signer("clave-secreta", salt="cookie-session")
+
+# 2. Firmar datos
+signed_data = signer.sign("user_id=123")
+
+# 3. Enviar al cliente (ej. en cookie)
+
+# 4. Verificar al recibir
+try:
+    original = signer.unsign(signed_data)
+    print(f"Datos válidos: {original}")
+except BadSignature:
+    print("Datos manipulados")
+\end{lstlisting}
+
+
+\subsection*{2. Tokens con expiración temporal}
+
+
+\textbf{Problema:} Generar tokens que expiran después de un tiempo (enlaces de restablecimiento de contraseña, confirmación de email).\textbackslash{}m \textbf{Solución:} Usar \texttt{TimestampSigner} o \texttt{TimedSerializer} con \texttt{max\_age}.
+
+
+\textbf{Flujo:}\textbackslash{}1. Crear \texttt{TimestampSigner} o \texttt{TimedSerializer}.
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Firmar/serializar datos con \texttt{sign()} o \texttt{dumps()}.
+  \item Enviar token al usuario.
+  \item Al recibir, verificar con \texttt{unsign()} o \texttt{loads()} especificando \texttt{max\_age}.
+  \item Capturar \texttt{SignatureExpired} para tokens expirados.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import TimestampSigner
+from itsdangerous.exc import SignatureExpired, BadTimeSignature
+
+# 1. Configurar
+signer = TimestampSigner("clave-secreta", salt="reset-password")
+
+# 2. Generar token
+token = signer.sign("user_id=123")
+
+# 3. Enviar por email...
+
+# 4. Verificar con expiración de 1 hora
+try:
+    user_id = signer.unsign(token, max_age=3600)
+    print(f"Token válido: {user_id}")
+except SignatureExpired:
+    print("Token expirado, solicitar nuevo")
+except BadTimeSignature:
+    print("Token inválido")
+\end{lstlisting}
+
+
+\subsection*{3. Serialización de objetos con firma}
+
+
+\textbf{Problema:} Necesitas enviar estructuras de datos complejas (dicts, listas) de forma segura.
+
+
+\textbf{Solución:} Usar \texttt{Serializer} con JSON.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Crear \texttt{Serializer} con clave secreta.
+  \item Serializar objeto con \texttt{dumps()}.
+  \item Transmitir el token.
+  \item Deserializar con \texttt{loads()}.
+  \item Manejar \texttt{BadSignature} para datos inválidos.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+# 1. Configurar
+serializer = Serializer("clave-secreta", salt="session")
+
+# 2. Serializar y firmar
+token = serializer.dumps({"user_id": 123, "role": "admin"})
+
+# 3. Enviar token...
+
+# 4. Deserializar
+try:
+    data = serializer.loads(token)
+    print(f"Datos: {data}")
+except BadSignature:
+    print("Token inválido")
+\end{lstlisting}
+
+
+\subsection*{4. Rotación de claves secretas}
+
+
+\textbf{Problema:} Necesitas cambiar la clave secreta periódicamente sin invalidar tokens existentes.
+
+
+\textbf{Solución:} Pasar una lista de claves a \texttt{Signer}/\texttt{Serializer}. La primera clave se usa para firmar, todas se prueban para verificar.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Inicializar con lista de claves (nueva primero).
+  \item Firmar con la primera clave.
+  \item Al rotar, añadir nueva clave al inicio y eliminar la más antigua.
+  \item Tokens antiguos se verifican con claves anteriores.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+# 1. Claves iniciales
+SECRET_KEYS = ["old-key", "new-key"]
+serializer = Serializer(SECRET_KEYS)
+
+# 2. Firmar con "new-key"
+token = serializer.dumps({"id": 42})
+
+# 3. Rotar clave
+SECRET_KEYS.insert(0, "newer-key")
+SECRET_KEYS.pop()  # eliminar "old-key"
+serializer = Serializer(SECRET_KEYS)
+
+# 4. Verificar token antiguo (funciona con "new-key")
+data = serializer.loads(token)  # válido
+\end{lstlisting}
+
+
+\subsection*{5. Migración de algoritmo de firma}
+
+
+\textbf{Problema:} Cambiar el algoritmo de hash (ej. SHA1 a SHA512) manteniendo compatibilidad con tokens antiguos.
+
+
+\textbf{Solución:} Usar \texttt{fallback\_signers} para definir configuraciones de firmantes antiguos.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Configurar \texttt{Serializer} con nuevo algoritmo en \texttt{signer\_kwargs}.
+  \item Pasar \texttt{fallback\_signers} con configuraciones antiguas.
+  \item Tokens nuevos se firman con algoritmo nuevo.
+  \item Tokens antiguos se verifican con fallback signers.
+\end{enumerate}
+
+
+\begin{lstlisting}
+import hashlib
+from itsdangerous import Serializer
+
+# 1. Configurar con nuevo algoritmo y fallback
+serializer = Serializer(
+    "secret-key",
+    signer_kwargs={"digest_method": hashlib.sha512},
+    fallback_signers=[{"digest_method": hashlib.sha1}]
+)
+
+# 2. Firmar nuevo token (SHA512)
+token = serializer.dumps({"data": "test"})
+
+# 3. Token antiguo (SHA1) también se verifica
+old_token = "..."  # firmado con SHA1
+data = serializer.loads(old_token)  # válido por fallback
+\end{lstlisting}
+
+
+\subsection*{6. Tokens URL-safe para enlaces}
+
+
+\textbf{Problema:} Generar tokens que puedan incluirse en URLs sin caracteres problemáticos.
+
+
+\textbf{Solución:} Usar \texttt{URLSafeSerializer} o \texttt{URLSafeTimedSerializer}.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Crear serializador URL-safe.
+  \item Serializar y firmar.
+  \item Incluir token en URL.
+  \item Al recibir, deserializar.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import URLSafeTimedSerializer
+
+# 1. Configurar
+serializer = URLSafeTimedSerializer("secret-key", salt="email-verify")
+
+# 2. Generar token
+token = serializer.dumps({"user_id": 123})
+# 'eyJ1c2VyX2lkIjoxMjN9.XXXXX.XXXXX'
+
+# 3. Construir URL
+url = f"https://example.com/verify?token={token}"
+
+# 4. Verificar al recibir
+try:
+    data = serializer.loads(token, max_age=86400)
+    print(f"Usuario verificado: {data['user_id']}")
+except SignatureExpired:
+    print("Enlace expirado")
+\end{lstlisting}
+
+
+\subsection*{7. Manejo robusto de errores con inspección de payload}
+
+
+\textbf{Problema:} Necesitas diagnosticar por qué falló la verificación (firma inválida vs payload corrupto).
+
+
+\textbf{Solución:} Capturar excepciones específicas y usar \texttt{payload} para inspeccionar.
+
+
+\textbf{Flujo:}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Intentar \texttt{loads()}.
+  \item Capturar \texttt{BadSignature} y verificar \texttt{e.payload}.
+  \item Si hay payload, intentar deserializarlo con \texttt{load\_payload()}.
+  \item Capturar \texttt{BadPayload} si el payload está corrupto.
+\end{enumerate}
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+from itsdangerous.exc import BadSignature, BadPayload
+
+serializer = Serializer("secret-key")
+
+try:
+    data = serializer.loads(token)
+except BadSignature as e:
+    if e.payload is not None:
+        try:
+            # Intentar recuperar payload aunque firma sea inválida
+            decoded = serializer.load_payload(e.payload)
+            print(f"Payload recuperado: {decoded}")
+        except BadPayload:
+            print("Payload corrupto")
+    else:
+        print("Token sin payload")
+\end{lstlisting}
+
+
+\subsection*{8. Carga insegura para debugging}
+
+
+\textbf{Problema:} Necesitas inspeccionar el contenido de un token sin que lance excepciones.
+
+
+\textbf{Solución:} Usar \texttt{loads\_unsafe()} que retorna \texttt{(éxito, payload)}.
+
+
+\begin{lstlisting}
+from itsdangerous import Serializer
+
+serializer = Serializer("secret-key")
+
+sig_ok, payload = serializer.loads_unsafe(token)
+if sig_ok:
+    print(f"Token válido: {payload}")
+else:
+    print(f"Token inválido, payload: {payload}")
+\end{lstlisting}
+
+
+\section*{prerrequisitos}
+
+\section*{Prerrequisitos de ItsDangerous}
+
+
+\subsection*{Requisitos del sistema}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Python}: 3.8 o superior.
+  \item \textbf{Sistema operativo}: Cualquier sistema que soporte Python (Windows, macOS, Linux).
+\end{itemize}
+
+
+\subsection*{Dependencias}
+
+
+ItsDangerous \textbf{no tiene dependencias externas}. Solo utiliza módulos de la biblioteca estándar de Python:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{hashlib} - Para funciones hash (SHA1, SHA256, SHA512, etc.).
+  \item \texttt{hmac} - Para HMAC (Hash-based Message Authentication Code).
+  \item \texttt{json} - Para serialización JSON (serializador por defecto).
+  \item \texttt{base64} - Para codificación Base64 URL-safe.
+  \item \texttt{zlib} - Para compresión de payloads en serializadores URL-safe.
+  \item \texttt{datetime} - Para manejo de timestamps.
+  \item \texttt{time} - Para obtener timestamps Unix.
+  \item \texttt{typing} - Para anotaciones de tipo.
+\end{itemize}
+
+
+\subsection*{Instalación}
+
+
+\subsubsection*{Desde PyPI (recomendado)}
+
+
+\begin{lstlisting}
+pip install itsdangerous
+\end{lstlisting}
+
+
+\subsubsection*{Desde el repositorio}
+
+
+\begin{lstlisting}
+git clone https://github.com/pallets/itsdangerous.git
+cd itsdangerous
+pip install -e .
+\end{lstlisting}
+
+
+\subsubsection*{Verificar instalación}
+
+
+\begin{lstlisting}
+import itsdangerous
+print(itsdangerous.__version__)
+\end{lstlisting}
+
+
+\subsection*{Compatibilidad}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Compatible con Python 3.8, 3.9, 3.10, 3.11, 3.12.
+  \item No tiene dependencias de sistema operativo.
+  \item Puede usarse en cualquier framework web (Flask, Django, FastAPI, etc.) o aplicación Python.
+\end{itemize}
+
+
+\subsection*{Testing}
+
+
+Para ejecutar los tests del proyecto:
+
+
+\begin{lstlisting}
+pip install -e ".[dev]"
+pytest
+\end{lstlisting}
+
+
+\subsection*{Licencia}
+
+
+BSD-3-Clause License. Ver archivo LICENSE en el repositorio.
+
+
+\end{document}

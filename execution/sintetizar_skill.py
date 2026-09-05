@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-sintetizar_skill.py — Destilación del texto de un libro en un skill (Layer 3: Execution).
+sintetizar_skill.py — Destilación de texto en un skill de referencia rápida
+(Layer 3: Execution).
 
-Flujo asociado: directives/libro_a_skill.yaml
+Flujo asociado: directives/libro_a_skill.yaml / directives/repo_a_skill.yaml
 
-Toma el texto extraído de un libro (ej. extraer_libro_pdf.py) más el descriptor
-de la entrevista y genera un skill de referencia rápida orientado a RAZONAR y
-resolver problemas:
-  - SKILL.md  (frontmatter válido name/description + cuerpo de referencia)
-  - references/*.md (formulas con representación formal Python/SymPy,
-    metodologías de resolución, límites de aplicabilidad, prerrequisitos,
-    tablas, glosario)
+Toma el texto extraído de una fuente (libro PDF o repositorio) más el descriptor
+de la entrevista y genera un skill de referencia rápida con dos perfiles posibles:
+
+  --perfil libro (default):
+    Skill orientado a RESOLVER problemas técnicos con fórmulas SymPy.
+    references/: formulas.md, metodologias.md, limites_aplicabilidad.md,
+    prerrequisitos.md, tablas.md, glosario.md
+
+  --perfil referencia_codigo:
+    Skill orientado a REFERENCIA de código/API de un repositorio.
+    references/: api.md, patrones.md, ejemplos.md, configuracion.md,
+    prerrequisitos.md, glosario.md
 
 Opcionalmente acepta --feedback con los errores de validación neuro-simbólica
 para corregirlos en un bucle de reflexión (re-síntesis reutilizando el corpus
@@ -27,6 +33,7 @@ Uso:
         --nombre <name> \
         --tema "<Tema>" \
         --idioma es \
+        [--perfil libro|referencia_codigo] \
         [--api-backend openrouter|gemini] \
         [--modelo <id>] \
         [--max-chunk-tokens 16000] \
@@ -231,14 +238,8 @@ def _validar_frontmatter(texto: str, nombre: str) -> list[str]:
     return errores
 
 
-def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
-    """Destila un chunk del libro en notas de referencia (texto plano markdown)."""
-    try:
-        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
-    except ImportError:
-        from llm_client import load_api_key, openrouter_chat  # type: ignore
-
-    api_key = load_api_key()
+def _prompts_chunk_libro(chunk: str, tema: str, idioma: str) -> tuple[str, str]:
+    """Prompts para destilación de chunks de libro técnico."""
     sys_prompt = (
         "Eres un asistente experto que destila libros técnicos en material de "
         "referencia rápida y conciso. No inventes: solo sintetiza lo que está en "
@@ -254,6 +255,43 @@ def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
         "nueva, devuelve solo la línea '[sin contenido relevante]'.\n\n"
         f"FRAGMENTO INICIA:\n{chunk}\nFRAGMENTO TERMINA."
     )
+    return sys_prompt, user_prompt
+
+
+def _prompts_chunk_codigo(chunk: str, tema: str, idioma: str) -> tuple[str, str]:
+    """Prompts para destilación de código/API de repositorio."""
+    sys_prompt = (
+        "Eres un asistente experto que destila código fuente y documentación de "
+        "APIs en material de referencia rápida y conciso. No inventes: solo "
+        f"sintetiza lo que está en el fragmento. Responde en {idioma}."
+    )
+    user_prompt = (
+        f"Proyecto/tema: {tema}\n\n"
+        "A partir del fragmento, produce un resumen de referencia (markdown) con: "
+        "funciones y clases públicas (firmas, parámetros, retorno), patrones de "
+        "uso, configuración relevante, y ejemplos de código que el lector pueda "
+        "copiar y adaptar. Sé denso y estructurado en secciones con encabezados "
+        "###. NO incluyas frontmatter YAML. Si el fragmento no aporta "
+        "información nueva (ej. solo imports vacíos, binarios, configs de build), "
+        "devuelve solo la línea '[sin contenido relevante]'.\n\n"
+        f"FRAGMENTO INICIA:\n{chunk}\nFRAGMENTO TERMINA."
+    )
+    return sys_prompt, user_prompt
+
+
+def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str,
+               perfil: str = "libro") -> str:
+    """Destila un chunk en notas de referencia (texto plano markdown)."""
+    try:
+        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    except ImportError:
+        from llm_client import load_api_key, openrouter_chat  # type: ignore
+
+    api_key = load_api_key()
+    if perfil == "referencia_codigo":
+        sys_prompt, user_prompt = _prompts_chunk_codigo(chunk, tema, idioma)
+    else:
+        sys_prompt, user_prompt = _prompts_chunk_libro(chunk, tema, idioma)
     ultimo_error = None
     for intento in range(1, MAX_RETRIES + 1):
         try:
@@ -281,28 +319,8 @@ def _llm_chunk(chunk: str, tema: str, idioma: str, modelo: str) -> str:
     )
 
 
-def _llm_estructura(
-    resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str,
-    feedback: Optional[list[dict]] = None,
-    estructura_max_tokens: int = 8192,
-) -> dict:
-    """Pide al LLM el SKILL.md (con frontmatter) y la lista de references."""
-    try:
-        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
-    except ImportError:
-        from llm_client import load_api_key, openrouter_chat  # type: ignore
-
-    api_key = load_api_key()
-    sys_prompt = (
-        "Eres un arquitecto de 'skills' de agente. Creas un SKILL.md de referencia "
-        "rápida para un asistente de código, más archivos auxiliares que habilitan "
-        "RAZONAR y RESOLVER problemas (no solo responder preguntas sobre el libro): "
-        "metodologías de resolución paso a paso, límites de aplicabilidad y "
-        "prerrequisitos conceptuales. Toda representación formal de fórmulas debe "
-        "usar código Python/SymPy ejecutable. Extrae TODO del libro: no inventes. "
-        f"Responde en {idioma}. Siempre devuelves un único objeto JSON válido."
-    )
-    ejemplo_json = (
+def _ejemplo_json_libro(nombre: str) -> str:
+    return (
         '{\\n'
         '  "skilL_md": "---\\nname: <NOMBRE>\\ndescription: <frase en 3a persona, '
         'cuándo usarlo, con palabras clave de disparo>\\n---\\n\\n'
@@ -317,13 +335,28 @@ def _llm_estructura(
         '{"archivo": "glosario.md", "contenido": "..."} ]\\n'
         '}'
     )
-    user_prompt = (
-        f"El skill se llamará: {nombre}\n"
-        f"Tema del libro: {tema}\n\n"
-        "Este es el resumen de referencia generado del libro:\n\n"
-        f"{resumen_chunks}\n\n"
-        "Genera un objeto JSON con esta forma EXACTA:\n"
-        f"{ejemplo_json}\n"
+
+
+def _ejemplo_json_codigo(nombre: str) -> str:
+    return (
+        '{\\n'
+        '  "skilL_md": "---\\nname: <NOMBRE>\\ndescription: <frase en 3a persona, '
+        'cuándo usarlo, con palabras clave de disparo>\\n---\\n\\n'
+        '<Cuerpo del skill: Cuando usar, Estructura del proyecto, API principal '
+        '(funciones/clases con firmas), Patrones de uso, Configuración, '
+        'Ejemplos de código reutilizable, Glosario, Prerrequisitos>",\\n'
+        '  "references": [ {"archivo": "api.md", "contenido": "..."}, '
+        '{"archivo": "patrones.md", "contenido": "..."}, '
+        '{"archivo": "ejemplos.md", "contenido": "..."}, '
+        '{"archivo": "configuracion.md", "contenido": "..."}, '
+        '{"archivo": "prerrequisitos.md", "contenido": "..."}, '
+        '{"archivo": "glosario.md", "contenido": "..."} ]\\n'
+        '}'
+    )
+
+
+def _normas_contenido_libro(nombre: str) -> str:
+    return (
         "NORMAS DE CONTENIDO:\n"
         "1. formulas.md: cada fórmula relevante con (a) notación $...$, (b) "
         "representación formal en un bloque ```python con sympy (variables "
@@ -343,6 +376,84 @@ def _llm_estructura(
         "ecuaciones, solve/simplify), sin archivos, sin red, sin os/subprocess.\n"
         "IMPORTANTE: 'name' del frontmatter debe ser exactamente: " + nombre + ".\n"
         "JSON válido, sin texto fuera del JSON."
+    )
+
+
+def _normas_contenido_codigo(nombre: str) -> str:
+    return (
+        "NORMAS DE CONTENIDO:\n"
+        "1. api.md: documenta la API principal del proyecto — funciones y clases "
+        "públicas con firma completa (parámetros tipados, valor de retorno), "
+        "breve descripción de qué hace cada una, y ejemplos de llamada.\n"
+        "2. patrones.md: patrones de uso comunes del proyecto — cómo se combinan "
+        "funciones/clases para resolver problemas típicos. Incluye diagramas de "
+        "flujo en texto o listas numeradas paso a paso.\n"
+        "3. ejemplos.md: fragmentos de código real del repositorio (no inventado) "
+        "que muestren uso típico. Marca cada ejemplo con el archivo de origen si "
+        "es posible.\n"
+        "4. configuracion.md: opciones de configuración, variables de entorno, "
+        "archivos de config relevantes, parámetros ajustables.\n"
+        "5. prerrequisitos.md: dependencias del proyecto (librerías, versiones), "
+        "requisitos del sistema, cómo instalar.\n"
+        "6. glosario.md: términos técnicos del proyecto con definiciones.\n"
+        "7. Los bloques ```python deben contener código real y funcional del "
+        "proyecto, NO código ficticio. Si el código depende de imports del "
+        "proyecto, inclúyelos.\n"
+        "IMPORTANTE: 'name' del frontmatter debe ser exactamente: " + nombre + ".\n"
+        "JSON válido, sin texto fuera del JSON."
+    )
+
+
+def _llm_estructura(
+    resumen_chunks: str, tema: str, idioma: str, nombre: str, modelo: str,
+    feedback: Optional[list[dict]] = None,
+    estructura_max_tokens: int = 8192,
+    perfil: str = "libro",
+) -> dict:
+    """Pide al LLM el SKILL.md (con frontmatter) y la lista de references."""
+    try:
+        from execution.llm_client import load_api_key, openrouter_chat  # type: ignore
+    except ImportError:
+        from llm_client import load_api_key, openrouter_chat  # type: ignore
+
+    api_key = load_api_key()
+
+    if perfil == "referencia_codigo":
+        sys_prompt = (
+            "Eres un arquitecto de 'skills' de agente. Creas un SKILL.md de "
+            "referencia rápida para un asistente de código, más archivos "
+            "auxiliares que documentan la API, patrones de uso, ejemplos de "
+            "código y configuración de un repositorio. El skill debe permitir "
+            "al asistente ENTENDER cómo el repo resuelve problemas y CÓMO "
+            "aplicar la misma metodología/código en otro contexto. "
+            "Extrae TODO del código fuente: no inventes. "
+            f"Responde en {idioma}. Siempre devuelves un único objeto JSON válido."
+        )
+    else:
+        sys_prompt = (
+            "Eres un arquitecto de 'skills' de agente. Creas un SKILL.md de referencia "
+            "rápida para un asistente de código, más archivos auxiliares que habilitan "
+            "RAZONAR y RESOLVER problemas (no solo responder preguntas sobre el libro): "
+            "metodologías de resolución paso a paso, límites de aplicabilidad y "
+            "prerrequisitos conceptuales. Toda representación formal de fórmulas debe "
+            "usar código Python/SymPy ejecutable. Extrae TODO del libro: no inventes. "
+            f"Responde en {idioma}. Siempre devuelves un único objeto JSON válido."
+        )
+
+    ejemplo = (_ejemplo_json_codigo(nombre) if perfil == "referencia_codigo"
+               else _ejemplo_json_libro(nombre))
+    normas = (_normas_contenido_codigo(nombre) if perfil == "referencia_codigo"
+              else _normas_contenido_libro(nombre))
+
+    user_prompt = (
+        f"El skill se llamará: {nombre}\n"
+        f"Tema/dominio: {tema}\n"
+        f"Perfil: {perfil}\n\n"
+        "Este es el resumen de referencia generado del contenido:\n\n"
+        f"{resumen_chunks}\n\n"
+        "Genera un objeto JSON con esta forma EXACTA:\n"
+        f"{ejemplo}\n"
+        f"{normas}"
     )
     if feedback:
         _fb: list[str] = []
@@ -383,12 +494,12 @@ def _llm_estructura(
 
 def _destilar_chunks(
     resumen_chunks: list[str], tema: str, idioma: str, modelo: str,
+    perfil: str = "libro",
 ) -> str:
     """Fase 1: destila cada chunk en notas de referencia (devuelve el corpus)."""
     resumenes: list[str] = []
     for chunk in resumen_chunks:
-        # nos interesa solo el texto devuelto; los tokens se reportan globalmente
-        texto = _llm_chunk(chunk, tema, idioma, modelo)
+        texto = _llm_chunk(chunk, tema, idioma, modelo, perfil=perfil)
         if texto and texto.strip() and texto.strip() != "[sin contenido relevante]":
             resumenes.append(texto)
     return "\n\n".join(resumenes) if resumenes else "(sin contenido extraído)"
@@ -398,6 +509,7 @@ def _ensamblar_estructura(
     cuerpo_resumen: str, nombre: str, tema: str, idioma: str, modelo: str,
     feedback: Optional[list[dict]] = None,
     estructura_max_tokens: int = 8192,
+    perfil: str = "libro",
 ) -> tuple[str, list[dict]]:
     """Fase 2: ensambla SKILL.md + references a partir del corpus destilado."""
     ultimo_error = None
@@ -405,7 +517,7 @@ def _ensamblar_estructura(
         try:
             estructura = _llm_estructura(
                 cuerpo_resumen, tema, idioma, nombre, modelo, feedback=feedback,
-                estructura_max_tokens=estructura_max_tokens,
+                estructura_max_tokens=estructura_max_tokens, perfil=perfil,
             )
             skilL = estructura.get("skilL_md") or estructura.get("skill_md") or estructura.get("SKILL.md")
             if not isinstance(skilL, str) or not skilL.strip():
@@ -453,6 +565,7 @@ def sintetizar(
     feedback: Optional[list[dict]] = None,
     estructura_max_tokens: int = 8192,
     usar_corpus: bool = False,
+    perfil: str = "libro",
 ) -> dict:
     chunks = _repartir_chunks(texto, max_chunk_tokens)
 
@@ -463,7 +576,7 @@ def sintetizar(
     if (feedback or usar_corpus) and corpus_file.is_file():
         cuerpo_resumen = corpus_file.read_text(encoding="utf-8")
     else:
-        cuerpo_resumen = _destilar_chunks(chunks, tema, idioma, modelo)
+        cuerpo_resumen = _destilar_chunks(chunks, tema, idioma, modelo, perfil=perfil)
         try:
             corpus_file.write_text(cuerpo_resumen, encoding="utf-8")
         except OSError:
@@ -472,7 +585,7 @@ def sintetizar(
     # Fase 2: estructura (SKILL.md + references) con retry budget.
     skilL_md, refs = _ensamblar_estructura(
         cuerpo_resumen, nombre, tema, idioma, modelo, feedback=feedback,
-        estructura_max_tokens=estructura_max_tokens,
+        estructura_max_tokens=estructura_max_tokens, perfil=perfil,
     )
 
     salida.mkdir(parents=True, exist_ok=True)
@@ -525,6 +638,9 @@ def main() -> None:
     parser.add_argument("--nombre", required=True, help="Nombre snake_case del skill.")
     parser.add_argument("--tema", required=True, help="Tema/dominio del libro.")
     parser.add_argument("--idioma", default="es", help="Idioma del skill (default es).")
+    parser.add_argument("--perfil", default="libro", choices=["libro", "referencia_codigo"], help=(
+        "Libro (fórmulas SymPy) o referencia de código/API de un repositorio."
+    ))
     parser.add_argument("--api-backend", default=DEFAULT_BACKEND, choices=["openrouter", "gemini"])
     parser.add_argument("--modelo", default=None, help="ID de modelo OpenRouter (override).")
     parser.add_argument("--max-chunk-tokens", type=int, default=16000)
@@ -597,6 +713,7 @@ def main() -> None:
             modelo, args.max_chunk_tokens, salida, feedback=feedback,
             estructura_max_tokens=args.estructura_max_tokens,
             usar_corpus=args.usar_corpus,
+            perfil=args.perfil,
         )
     except (ValueError, RuntimeError, KeyError) as exc:
         print(json.dumps({"status": "error", "code": 3, "message": str(exc)}, ensure_ascii=False), file=sys.stderr)

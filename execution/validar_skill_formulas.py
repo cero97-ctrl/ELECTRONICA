@@ -68,6 +68,22 @@ _FUNCS_BLOQUEADAS = {
 _ESTRUCTURAS_REQUERIDAS = (
     "metodologias.md", "limites_aplicabilidad.md", "prerrequisitos.md",
 )
+_ESTRUCTURAS_CODIGO = (
+    "api.md", "patrones.md", "ejemplos.md", "configuracion.md", "glosario.md",
+)
+# En el perfil referencia_codigo, los imports de librerías/proyecto son legítimos.
+# SOLO bloquean los módulos/funciones de sistema con riesgo real (I/O, proceso,
+# ejecución dinámica, red, ctypes, etc.).
+_MODULOS_PELIGROSOS_SISTEMA = {
+    "os", "sys", "subprocess", "pathlib", "socket", "pty", "ctypes", "shutil",
+    "builtins", "importlib", "multiprocessing", "threading", "signal",
+    "platform", "fcntl", "mmap", "tempfile", "pickle", "marshal", "shelve",
+}
+_FUNCS_PELIGROSAS_SISTEMA = {
+    "open", "eval", "exec", "compile", "input", "exit", "quit", "globals",
+    "locals", "vars", "breakpoint", "getattr", "setattr", "delattr",
+    "__import__", "memoryview", "bytearray",
+}
 
 
 class _ArgParserExit1(argparse.ArgumentParser):
@@ -175,7 +191,38 @@ def _nombre_virtual(archivo: Path, dir_skill: Path) -> str:
     return "SKILL.md" if rel.name == "SKILL.md" else str(rel)
 
 
-def validar(dir_skill: Path, timeout_s: int, solo_ast: bool) -> dict:
+def _escaneo_peligro_sistema(src: str) -> str | None:
+    """Retorna None si NO hay riesgo de sistema; si no, el motivo. Para el perfil
+    referencia_codigo: bloquea solo módulos/funciones de sistema peligrosos
+    (I/O, procesos, ejecución dinámica), NO imports de librerías/proyecto."""
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                raiz = alias.name.split(".")[0]
+                if raiz in _MODULOS_PELIGROSOS_SISTEMA:
+                    return f"import peligroso de sistema: {alias.name}"
+        elif isinstance(node, ast.ImportFrom):
+            modulo = (node.module or "").split(".")[0]
+            if modulo in _MODULOS_PELIGROSOS_SISTEMA:
+                return f"import desde módulo de sistema: {node.module or ''}"
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id in _FUNCS_PELIGROSAS_SISTEMA:
+                return f"función peligrosa: {node.func.id}()"
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr in _FUNCS_PELIGROSAS_SISTEMA or node.func.attr.startswith("__"):
+                return f"función peligrosa: .{node.func.attr}()"
+        elif isinstance(node, ast.Name):
+            if node.id in _MODULOS_PELIGROSOS_SISTEMA:
+                return f"módulo de sistema no permitido: {node.id}"
+    return None
+
+
+def validar(dir_skill: Path, timeout_s: int, solo_ast: bool,
+            perfil: str = "libro") -> dict:
     skill_md = dir_skill / "SKILL.md"
     if not skill_md.is_file():
         print(
@@ -211,6 +258,27 @@ def validar(dir_skill: Path, timeout_s: int, solo_ast: bool) -> dict:
                 "estado": "ok",
                 "error": None,
             }
+            if perfil == "referencia_codigo":
+                # El material de API son snippets ilustrativos: los fallos de
+                # sintaxis (firmas incompletas, fragmentos) y los imports de
+                # librerías/proyecto NO bloquean. SOLO vulnera si usa módulos/
+                # funciones de sistema peligrosos. No se ejecuta en sandbox (el
+                # código depende del paquete del repo, no instalado aquí).
+                try:
+                    ast.parse(src)
+                except SyntaxError as exc:
+                    ficha["estado"] = "observacion"
+                    ficha["error"] = f"snippet no autocontenido (línea {exc.lineno}: {exc.msg})"
+                    bloques.append(ficha)
+                    continue
+                motivo = _escaneo_peligro_sistema(src)
+                if motivo:
+                    ficha["estado"] = "peligro"
+                    ficha["error"] = motivo
+                bloques.append(ficha)
+                continue
+
+            # ── Rama libro ── (validación neuro-simbólica clásica) ──
             try:
                 ast.parse(src)
             except SyntaxError as exc:
@@ -234,8 +302,14 @@ def validar(dir_skill: Path, timeout_s: int, solo_ast: bool) -> dict:
             bloques.append(ficha)
 
     presentes = sorted(p.name for p in refs_dir.glob("*.md")) if refs_dir.is_dir() else []
-    faltantes = sorted(set(_ESTRUCTURAS_REQUERIDAS) - set(presentes))
-    errores = [b for b in bloques if b["estado"] != "ok"]
+    requeridas = _ESTRUCTURAS_REQUERIDAS if perfil == "libro" else _ESTRUCTURAS_CODIGO
+    faltantes = sorted(set(requeridas) - set(presentes))
+    # En referencia_codigo solo cuentan como error los riesgos de sistema
+    # (peligro); las observaciones (snippets no autocontenidos) no bloquean.
+    if perfil == "referencia_codigo":
+        errores = [b for b in bloques if b["estado"] == "peligro"]
+    else:
+        errores = [b for b in bloques if b["estado"] != "ok"]
 
     return {
         "status": "ok",
@@ -265,6 +339,8 @@ def main() -> int:
     parser.add_argument("--skill", required=True, help="Directorio del skill (SKILL.md + references/).")
     parser.add_argument("--timeout-s", type=int, default=5, help="Timeout de ejecución por bloque (segundos).")
     parser.add_argument("--solo-ast", action="store_true", help="Solo sintaxis + seguridad (sin ejecución).")
+    parser.add_argument("--perfil", default="libro", choices=["libro", "referencia_codigo"],
+                        help="Estructuras observadas (warning, no error) esperadas según el perfil.")
     args = parser.parse_args()
 
     dir_skill = Path(args.skill).expanduser()
@@ -278,7 +354,7 @@ def main() -> int:
         )
         return 1
 
-    resultado = validar(dir_skill, max(1, args.timeout_s), args.solo_ast)
+    resultado = validar(dir_skill, max(1, args.timeout_s), args.solo_ast, perfil=args.perfil)
     print(json.dumps(resultado, ensure_ascii=False))
     return 3 if resultado["resumen"]["errores"] else 0
 

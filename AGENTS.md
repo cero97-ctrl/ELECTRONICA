@@ -153,6 +153,8 @@ flujo_evaluar_examen.py    --pdf <file.pdf> [--rubrica <yaml>]
 flujo_analizar_imagen.py   "glob|file1,file2" [--prompt "..."]
 flujo_elaborar_examen.py   --tema "Semana 4: Condensadores" --output examenes/
 flujo_elaborar_ejercicios.py --tema "Semana 8: BJT" --path ejercicios/BJT
+flujo_libro_a_skill.py      --pdf <libro.pdf> [--tema ...] [--nombre <name>] [--dry-run]
+flujo_repo_a_skill.py       --repo <url-github|ruta-local> [--tema ...] [--nombre <name>] [--dry-run] [--incluir glob...] [--excluir glob...]
 flujo_imagen_a_kicad.py    circuito.png
 flujo_diagnostico.py
 flujo_curar_dataset.py     [--min-quality 0.7] [--split 80-10-10] [--dry-run] [--no-alert]
