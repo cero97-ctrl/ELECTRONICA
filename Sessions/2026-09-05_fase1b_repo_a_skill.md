@@ -65,9 +65,15 @@ Fase 1 original.
 - Síntesis de itsdangerous (~22.5K tokens entrada, 2 chunks): del saldo $21.67, coste
   real del smoke test ~centavos (deepseek $0.44/$0.87 por M). No se midió el delta exacto.
 
+## Instalación del skill pallets_itsdangerous (completado 2026-09-06)
+- Validación pre-instalación (0 créditos): exit 0, 0 errores, estructuras de API 6/6.
+  Las `observacion` son snippets no autocontenidos (esperado en este perfil, no bloquean).
+- `python3 execution/instalar_skill.py --origen .tmp/skill_pallets_itsdangerous --nombre pallets_itsdangerous`
+  → status ok, 7 archivos copiados a `~/.config/opencode/skills/pallets_itsdangerous/`.
+- Frontmatter correcto (name + description con keywords de firma/HMAC/token).
+- **Requerido:** reiniciar opencode para que cargue el skill.
+
 ## Pendiente
-- (Opcional) Instalar el skill `pallets_itsdangerous` en global si el usuario quiere
-  usarlo (requiere reiniciar opencode; quedó en `.tmp/skill_pallets_itsdangerous/`).
 - (Opcional) Estimar coste de la síntesis repo grande y avisar antes (edge case ya cubierto).
 
 ## Documentación universitaria (completado)
