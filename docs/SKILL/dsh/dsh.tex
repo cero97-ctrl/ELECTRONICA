@@ -1,0 +1,3695 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabecera específica del reporte del skill ──
+\renewcommand{\iconoBanda}{book}
+\fancyhead[L]{\color{azulNoche}\small\bfseries \faIcon{book}~\textcolor{cyanNeon}{dsh}}
+\fancyhead[R]{\color{grisTexto}\smallAgent harness: Cordis plugin kernel, 4 runtime modes, trazabilidad append-only, instalación y operación}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Skill: dsh}{"Referencia del Agent Harness DeepSeek (dsh) — kernel de plugins Cordis, 4 modos runtime, trazabilidad append-only, instalación y operación. Úsalo cuando trabajes con el harness dsh, perfiles, bundles, plugins Cordis, ev}
+
+\section*{dsh — Agent Harness: Cordis Plugin Kernel}
+
+
+\subsection*{Cuándo usar este skill}
+
+
+Usa este skill cuando necesites:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Entender la arquitectura del harness dsh (kernel Cordis, seams, servicios core).
+  \item Trabajar con perfiles (\texttt{dsh --profile}), bundles, parches y overlays.
+  \item Gestionar plugins (\texttt{dsh plugin}), subagentes (Codex, Claude Code, ACP, SDK).
+  \item Implementar servicios remotos con Typert (\texttt{@Remote}, \texttt{@RemoteScope}).
+  \item Consumir eventos del ciclo de vida del agente (\texttt{agent/\textit{}, \texttt{session/}}, \texttt{tools/*}).
+  \item Configurar plugins en \texttt{cordis.yml} con sus interfaces \texttt{Config}.
+  \item Operar los 4 modos runtime: web, headless, sdk, acp.
+\end{itemize}
+
+
+\subsection*{Estructura del proyecto}
+
+
+El harness se organiza en paquetes npm bajo el scope \texttt{@deepseek-ai/}:
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Core}: \texttt{dsh-agent}, \texttt{dsh-agent-loop}, \texttt{dsh-session}, \texttt{dsh-tools}, \texttt{dsh-system-prompt} — servicios dueños del estado.
+  \item \textbf{Seams}: \texttt{dsh-llm}, \texttt{dsh-fs}, \texttt{dsh-storage}, \texttt{dsh-subagents}, \texttt{dsh-compaction}, \texttt{dsh-sandbox} — interfaces abstractas con múltiples backends.
+  \item \textbf{Bundles}: \texttt{dsh-base}, \texttt{dsh-web-app}, \texttt{dsh-headless}, \texttt{dsh-sdk-app}, \texttt{dsh-sdk-minimal}, \texttt{dsh-acp-app} — composiciones de aplicación.
+  \item \textbf{Protocolo}: \texttt{dsh-typert-protocol} — RPC tipado entre Host y Cliente.
+  \item \textbf{Frontend}: \texttt{dsh-client-*}, \texttt{dsh-host-webserver}, \texttt{dsh-web-app}.
+\end{itemize}
+
+
+\subsection*{API principal}
+
+
+\subsubsection*{Contexto Cordis (\texttt{ctx})}
+
+
+\begin{lstlisting}
+// Ciclo de vida
+ctx.extend(meta?: {}): this
+ctx.isolate(name: string, label?: symbol): this
+ctx.intercept(name: string, config: any): this
+
+// Servicios
+ctx.get(name: string, strict?: boolean): any
+ctx.set(name: string, value: any): void
+ctx.provide(name: string, value?: any): () => void
+ctx.accessor(name: string, options: { get?, set? }): void
+ctx.mixin(name: string, mixins: string[] | Dict<string>): void
+
+// Plugins
+ctx.plugin(plugin: Plugin, ...args: any[]): Fiber & PromiseLike<Fiber>
+ctx.inject(deps: Inject, callback: Plugin.Function<void>): Fiber & PromiseLike<Fiber>
+
+// Efectos
+ctx.effect(execute: () => SyncEffect, label?: string): Disposable<Promise<void>>
+ctx.effect(execute: () => Effect, label?: string): AsyncDisposable<Promise<void>>
+\end{lstlisting}
+
+
+\subsubsection*{Eventos}
+
+
+\begin{lstlisting}
+ctx.parallel(name: string, ...args: any[]): Promise<void>  // concurrente
+ctx.emit(name: string, ...args: any[]): void                // síncrono
+ctx.serial(name: string, ...args: any[]): Promise<any>      // secuencial async
+ctx.bail(name: string, ...args: any[]): any                 // secuencial sync
+ctx.waterfall(name: string, ...args: any[]): any            // middleware encadenado
+ctx.on(name: string, listener: Function, options?: boolean | EventOptions): () => boolean
+ctx.once(name: string, listener: Function, options?: boolean | EventOptions): () => boolean
+\end{lstlisting}
+
+
+\subsubsection*{Typert Remote}
+
+
+\begin{lstlisting}
+class TypertRemoteService {
+  constructor(ctx: Context, namespace: string)
+}
+
+function bindTypertRemote(service: any, serviceKey: string): void
+
+// Decoradores
+@Remote(methodName: string)          // endpoint RPC unario
+@RemoteScope(key: string, methodName: string)  // RPC con ámbito (ej. 'agent')
+
+// Cliente
+ctx.remote.<namespace>.<method>(...)
+agentCtx.remote.<namespace>.<method>(...)
+\end{lstlisting}
+
+
+\subsubsection*{Service (clase base)}
+
+
+\begin{lstlisting}
+class Service {
+  public name!: string
+  constructor(ctx: Context, name: string)
+  static readonly init: unique symbol
+  static readonly check: unique symbol
+  static readonly config: unique symbol
+  static readonly invoke: unique symbol
+  static readonly extend: unique symbol
+  static readonly tracker: unique symbol
+  static readonly resolveConfig: unique symbol
+}
+\end{lstlisting}
+
+
+\subsubsection*{Fiber}
+
+
+\begin{lstlisting}
+fiber.uid: number | null
+fiber.ctx: Context
+fiber.config: any
+fiber.state: FiberState  // PENDING → LOADING → ACTIVE → UNLOADING → DISPOSED
+fiber.dispose(): Promise<void>
+fiber.name: string
+fiber.store: Dict<Impl> | undefined
+fiber.inertia: Promise<void> | undefined
+fiber.assertActive(): void
+fiber.getEffects(): EffectMeta[]
+fiber.await(): Promise<Fiber>
+fiber.restart(): Promise<void>
+fiber.update(config: any, noSave?: boolean): any
+\end{lstlisting}
+
+
+\subsubsection*{Herramientas}
+
+
+\begin{lstlisting}
+ctx.tools.register(toolDefinition): Disposer
+ctx.tools.restrict(scopedRegistration): void
+ctx.tools.guard(exec => boolean): void
+ctx.tools.execute(params: {
+  callId: ToolCallId
+  name: string
+  arguments: Record<string, unknown>
+  signal: AbortSignal
+}): Promise<{ content: ContentBlock[] }>
+\end{lstlisting}
+
+
+\subsection*{Patrones de uso}
+
+
+\subsubsection*{1. Registrar un servicio}
+
+
+\begin{lstlisting}
+declare module '@deepseek-ai/cordis' {
+  interface Context { greeter: GreeterService }
+}
+
+export class GreeterService extends Service {
+  constructor(ctx: Context) { super(ctx, 'greeter') }
+  greet(who: string) { return `Hello, ${who}!` }
+}
+
+export function apply(ctx: Context) { ctx.plugin(GreeterService) }
+\end{lstlisting}
+
+
+\subsubsection*{2. Consumir con dependencia dura}
+
+
+\begin{lstlisting}
+export const inject = ['greeter']
+export function apply(ctx: Context) {
+  console.log(ctx.greeter.greet('world'))
+}
+\end{lstlisting}
+
+
+\subsubsection*{3. Waterfall para decisiones}
+
+
+\begin{lstlisting}
+ctx.on('some-decision-event', function (payload, next) {
+  if (payload.blocked) return { denied: true }  // cortocircuito
+  return next()
+})
+\end{lstlisting}
+
+
+\subsubsection*{4. Servicio remoto Typert}
+
+
+\begin{lstlisting}
+export class GoalService extends TypertRemoteService {
+  constructor(ctx: Context) { super(ctx, 'goals') }
+
+  @Remote('create')
+  createForClient(agent: Agent, request: { objective: string }, signal: AbortSignal) {
+    signal.throwIfAborted()
+    return this.create(agent, request)
+  }
+
+  @RemoteScope('agent', 'current')
+  currentForClient() { return { accepted: true } }
+}
+\end{lstlisting}
+
+
+\subsubsection*{5. Consumo remoto con manejo de errores}
+
+
+\begin{lstlisting}
+export const inject = ['remote', 'remote.notes']
+
+const result = await ctx.remote.notes.list()
+if (!result.ok) {
+  if (result.error.code === 'note/not-found') return []
+  throw result.error
+}
+return result.value
+\end{lstlisting}
+
+
+\subsection*{Configuración}
+
+
+\subsubsection*{Perfiles}
+
+
+\begin{lstlisting}
+dsh --profile web          # base + web-app, parches en vivo
+dsh --profile headless     # base + headless, solo startup
+dsh --profile sdk          # base + sdk-app, solo startup
+dsh --profile sdk-minimal  # bundle independiente
+dsh --profile acp          # base + acp-app, solo startup
+\end{lstlisting}
+
+
+\subsubsection*{Capas de configuración (orden de aplicación)}
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Parches de bundles en \texttt{dsh.profile.bundles}
+  \item \texttt{cordis.patch.yml} del perfil
+  \item \texttt{$DSH\_HOME/cordis.patch.yml}
+  \item Overlays \texttt{--patch <path>} en orden
+\end{enumerate}
+
+
+\subsubsection*{Gestión de plugins}
+
+
+\begin{lstlisting}
+dsh plugin --profile <name> add <package>
+dsh plugin --profile <name> remove <package>
+dsh plugin --profile <name> add github:deepseek-harness/turtle-ui
+\end{lstlisting}
+
+
+\subsubsection*{cordis.yml}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-agent-loop':
+    config:
+      maxParallelToolCalls: 4
+      agents:
+        - id: main-agent
+          provider: deepseek
+          model: deepseek-chat
+          cwd: /home/user/project
+\end{lstlisting}
+
+
+\subsection*{Ejemplos de código reutilizable}
+
+
+Ver \texttt{references/ejemplos.md} para fragmentos completos.
+
+
+\subsection*{Glosario}
+
+
+Ver \texttt{references/glosario.md} para términos técnicos.
+
+
+\subsection*{Prerrequisitos}
+
+
+Ver \texttt{references/prerrequisitos.md} para dependencias e instalación.
+
+
+\section*{api}
+
+\section*{API principal del proyecto dsh}
+
+
+\subsection*{Contexto Cordis (\texttt{ctx})}
+
+
+Objeto central: servicios, eventos y ciclo de vida accesibles a través de \texttt{ctx}.
+
+
+\subsubsection*{Métodos de ciclo de vida}
+
+
+\begin{lstlisting}
+// Crear hijo con metadatos adicionales (herencia prototípica)
+ctx.extend(meta?: {}): this
+
+// Crear hijo con ámbito de servicio independiente para 'name'
+ctx.isolate(name: string, label?: symbol): this
+
+// Añadir configuración de interceptación para plugins bajo este contexto
+ctx.intercept(name: string, config: any): this
+\end{lstlisting}
+
+
+\subsubsection*{Propiedades}
+
+
+\begin{lstlisting}
+ctx.root        // Contexto raíz de la aplicación (@experimental)
+ctx.baseUrl     // URL base para resolver especificadores relativos
+ctx.events      // Servicio de bus de eventos
+ctx.logger      // Servicio de logging; usar ctx.logger(name) para logger nombrado
+ctx.reflect     // Capa de reflexión (ctx.get, ctx.provide, ...)
+ctx.registry    // Registro de plugins (ctx.plugin, ctx.inject)
+\end{lstlisting}
+
+
+\subsubsection*{Miembros estáticos}
+
+
+\begin{lstlisting}
+Context.effect    // Symbol para árbol de diagnóstico EffectMeta en disposer
+Context.filter    // Symbol para filtro de escucha del contexto
+Context.isolate   // Symbol del mapa de aislamiento
+Context.intercept // Symbol del mapa de interceptación
+Context.is(value) // Type guard: true si value es un contexto Cordis
+\end{lstlisting}
+
+
+\subsubsection*{Almacén de servicios y mixins}
+
+
+\begin{lstlisting}
+ctx.get(name: string, strict?: boolean): any
+ctx.set(name: string, value: any): void
+ctx.provide(name: string, value?: any): () => void
+ctx.accessor(name: string, options: { get?, set? }): void
+ctx.mixin(name: string, mixins: string[] | Dict<string>): void
+\end{lstlisting}
+
+
+\subsection*{API de Eventos}
+
+
+\subsubsection*{Métodos de despacho}
+
+
+\begin{lstlisting}
+ctx.parallel(name: string, ...args: any[]): Promise<void>  // concurrente
+ctx.emit(name: string, ...args: any[]): void                // síncrono, ignora retorno
+ctx.serial(name: string, ...args: any[]): Promise<any>      // secuencial async hasta bail
+ctx.bail(name: string, ...args: any[]): any                 // secuencial sync hasta bail
+ctx.waterfall(name: string, ...args: any[]): any            // middleware encadenado
+\end{lstlisting}
+
+
+\subsubsection*{Registro de listeners}
+
+
+\begin{lstlisting}
+ctx.on(name: string, listener: Function, options?: boolean | EventOptions): () => boolean
+ctx.once(name: string, listener: Function, options?: boolean | EventOptions): () => boolean
+\end{lstlisting}
+
+
+\subsubsection*{Tipos}
+
+
+\begin{lstlisting}
+interface EventOptions {
+  prepend?: boolean  // Añadir antes de listeners existentes
+  global?: boolean   // Recibir evento ignorando filtros de contexto
+}
+
+type DispatchMode = 'emit' | 'parallel' | 'serial' | 'bail' | 'waterfall'
+\end{lstlisting}
+
+
+\subsection*{Typert Remote Service}
+
+
+\subsubsection*{\texttt{TypertRemoteService}}
+
+
+Clase base para servicios de negocio expuestos al cliente. El constructor enlaza explícitamente la clave de servicio Cordis y el namespace Remoto por defecto.
+
+
+\begin{lstlisting}
+constructor(ctx: Context, namespace: string)
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{bindTypertRemote(service, serviceKey)}}
+
+
+Alternativa para servicios con otra clase base. Declara un binding público inspeccionable.
+
+
+\subsubsection*{Decoradores}
+
+
+\begin{lstlisting}
+@Remote(methodName: string)
+// Decorador para exponer un método de instancia público y no estático como endpoint RPC unario.
+
+@RemoteScope(key: string, methodName: string)
+// Decorador para métodos que operan sobre un contexto resuelto por ámbito (ej. 'agent'),
+// sin recibir el objeto explícitamente.
+\end{lstlisting}
+
+
+\subsubsection*{Interfaces de cliente}
+
+
+\begin{lstlisting}
+ctx.remote.<namespace>.<method>(...)       // llamadas RPC directas
+agentCtx.remote.<namespace>.<method>(...)  // llamadas RPC con ámbito de agente
+\end{lstlisting}
+
+
+\subsubsection*{Manejo de errores remotos}
+
+
+\begin{lstlisting}
+// Verificar result.ok; si es false, ramificar por result.error.code (no instanceof)
+// Lanzar result.error para propagar errores remotos
+// Usar isRemoteFailure(error) para distinguir fallos remotos de defectos locales
+// Un aborto resulta en error con código gateway/cancelled
+\end{lstlisting}
+
+
+\subsection*{Service (clase base)}
+
+
+\begin{lstlisting}
+class Service {
+  public name!: string
+  constructor(ctx: Context, name: string) // Registra la instancia en ctx.<name>
+
+  static readonly init: unique symbol           // Método post-constructor (class plugins)
+  static readonly check: unique symbol          // Predicado de disponibilidad para ctx.provide()
+  static readonly config: unique symbol         // Phantom type para intercept-config
+  static readonly invoke: unique symbol         // Cuerpo de llamada (ej. ctx.logger())
+  static readonly extend: unique symbol         // Helper para derivar instancia extendida
+  static readonly tracker: unique symbol        // Metadata de rastreo de contexto
+  static readonly resolveConfig: unique symbol  // Helper de resolución de intercept-config
+}
+\end{lstlisting}
+
+
+\subsection*{Fiber}
+
+
+Instancia de plugin en runtime.
+
+
+\begin{lstlisting}
+fiber.uid: number | null          // ID único; 0 root, null si disposed
+fiber.ctx: Context                // Contexto de ejecución del plugin
+fiber.config: any                 // Configuración validada
+fiber.state                       // Estado del ciclo de vida (emite 'internal/status')
+fiber.dispose(): Promise<void>    // Descargar plugin y ejecutar cleanup
+fiber.name: string                // Nombre display (hereda del ancestro, o 'root')
+fiber.store: Dict<Impl> | undefined // Snapshot de servicios requeridos (mientras cargado)
+fiber.inertia: Promise<void> | undefined // Transición load/unload en vuelo
+\end{lstlisting}
+
+
+\subsubsection*{Máquina de estados}
+
+
+\begin{lstlisting}
+PENDING → LOADING → ACTIVE → UNLOADING → DISPOSED
+                 ↘ FAILED
+\end{lstlisting}
+
+
+\subsubsection*{Métodos adicionales}
+
+
+\begin{lstlisting}
+fiber.assertActive()              // Lanza CordisError si ya disposed
+fiber.getEffects(): EffectMeta[]  // Árbol de efectos activos etiquetados
+fiber.await(): Promise<Fiber>     // Espera fin de trabajo lifecycle; relanza errores de startup
+fiber.restart(): Promise<void>    // Dispose + recarga inmediata con la config actual
+fiber.update(config: any, noSave?: boolean): any // Valida, aplica y reinicia
+\end{lstlisting}
+
+
+\subsection*{Efectos}
+
+
+\begin{lstlisting}
+ctx.effect(execute: () => SyncEffect, label?: string): Disposable<Promise<void>>
+ctx.effect(execute: () => Effect, label?: string): AsyncDisposable<Promise<void>>
+
+// Tipos
+type Effect<T = any> = SyncEffect<T> | AsyncEffect<T>
+type Disposable<T = any> = () => T
+
+// EffectMeta (diagnóstico)
+interface EffectMeta { label: string, children: EffectMeta[] }
+\end{lstlisting}
+
+
+\subsection*{Manejo de errores}
+
+
+\begin{lstlisting}
+class CordisError extends Error {
+  constructor(public code: CordisError.Code, message?: string)
+}
+// Códigos: { INACTIVE_EFFECT: 'cannot create effect on inactive context' }
+
+class ValidationError extends TypeError {
+  name = 'ValidationError'
+  constructor(issues: readonly StandardSchemaV1.Issue[])
+}
+\end{lstlisting}
+
+
+\subsection*{Plugin}
+
+
+\begin{lstlisting}
+ctx.plugin<P extends Plugin>(plugin: P, ...args: Spread<GetPluginConfig<P>>): Fiber & PromiseLike<Fiber>
+ctx.inject(deps: Inject, callback: Plugin.Function<void>): Fiber & PromiseLike<Fiber>
+
+// Formas de Plugin
+type Plugin<T> = Plugin.Function<T> | Plugin.Constructor<T> | Plugin.Object<T>
+// Plugin.Function<T>: (ctx: Context, config: T) => any  (con metadata Base)
+// Plugin.Constructor<T>: new (ctx: Context, config: T) => any
+// Plugin.Object<T>: { apply(ctx: Context, config: T): any }
+// Base: { name?, Config?, inject?, provide?, intercept? }
+
+// Inject
+type Inject = (keyof M)[] | { [K in keyof M]?: M[K] }
+\end{lstlisting}
+
+
+\subsection*{Herramientas (harness)}
+
+
+\begin{lstlisting}
+ctx.tools.register(toolDefinition): Disposer
+ctx.tools.restrict(scopedRegistration): void
+ctx.tools.guard(exec => boolean): void
+ctx.tools.execute(params: {
+  callId: ToolCallId
+  name: string
+  arguments: Record<string, unknown>
+  signal: AbortSignal
+}): Promise<{ content: ContentBlock[] }>
+\end{lstlisting}
+
+
+\subsection*{Servicios core principales}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Servicio & Dueño & Rol \\
+\midrule
+\texttt{ctx.sessions} & \texttt{session} & Almacén de sesiones en memoria, feed de eventos append-only \\
+\texttt{ctx.tools} & \texttt{tools} & Registro de herramientas + pipeline de ejecución custodiado \\
+\texttt{ctx.agents} & \texttt{agent} & Fábrica de agentes (create/resume), handles vivos \\
+\texttt{ctx.systemPrompt} & \texttt{system-prompt} & Ensamblador de system prompt por paso \\
+\texttt{ctx.agentLoop} & \texttt{agent-loop} & Driver concreto del bucle agente \\
+\texttt{ctx.storageDomain} & \texttt{storage-domain} & Instalación tipada sobre backends de almacenamiento \\
+\texttt{ctx.workspaceRegistry} & \texttt{workspace} & Registro de entidades Workspace con ID de marca \\
+\texttt{ctx.invariants} & \texttt{invariants} & Checks invariantes con atribución de paquete \\
+\texttt{ctx.planMode} & \texttt{plan-mode} & Estado de colaboración plan/mode plegado del log \\
+\texttt{ctx.commands} & \texttt{commands} & Comandos directos del usuario sin pasar por modelo \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Seams reemplazables}
+
+
+\begin{lstlisting}
+// Seam ctx.llm — backends múltiples
+// Dueño: llm
+// Implementaciones: llm-deepseek, llm-pi-ai, llm-replay
+// Consumidores: agent-loop, compaction-basic
+
+// Seam ctx.fs — proveedor de filesystem
+// Dueño: fs
+// Implementaciones: fs-local, fs-sandbox, fs-e2b
+// Consumidores: tool-fs (+ fs-observation-policy vía gate de eventos)
+\end{lstlisting}
+
+
+\subsection*{Eventos clave del ciclo de vida del agente}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Evento & Modo & Dispatcher & Listeners principales \\
+\midrule
+\texttt{agent/created} & \texttt{emit} & \texttt{agent} & \texttt{agent-presets}, \texttt{file-reference-local}, \texttt{goal-round-driver}, \texttt{schedule}, \texttt{tool-agent-team}, \texttt{tool-subagent} \\
+\texttt{agent/disposed} & \texttt{emit} & \texttt{agent} & \texttt{agent-loop}, \texttt{file-reference-local}, \texttt{goal-round-driver}, \texttt{session-controller}, \texttt{subagent}, \texttt{tool-agent-team}, \texttt{tool-subagent} \\
+\texttt{agent/session-start} & \texttt{emit} & \texttt{agent-loop} & \texttt{agent-team}, \texttt{goal}, \texttt{goal-round-driver}, \texttt{hooks-claude-code}, \texttt{hooks-codex} \\
+\texttt{agent/status} & \texttt{emit} & \texttt{agent-loop} & \texttt{agent}, \texttt{agent-team}, \texttt{compaction-basic}, \texttt{goal-round-driver}, \texttt{schedule}, \texttt{server}, \texttt{session-controller} \\
+\texttt{agent/pre-step} & \texttt{waterfall} & \texttt{agent-loop} & \texttt{agent}, \texttt{agent-instructions}, \texttt{compaction-basic}, \texttt{goal-round-driver}, \texttt{hooks-claude-code}, \texttt{hooks-codex}, \texttt{plan-mode}, \texttt{repeat-tool-reminder}, \texttt{session-checkpoint-policy}, \texttt{session-reference}, \texttt{subagent-in-process-driver}, \texttt{time-context}, \texttt{tmux-context}, \texttt{tool-cordis}, \texttt{tool-skill}, \texttt{tool-subagent} \\
+\texttt{agent/request} & \texttt{waterfall} & \texttt{agent-loop} & \texttt{agent}, \texttt{webhook} \\
+\texttt{agent/request-error} & \texttt{waterfall} & \texttt{agent-loop} & \texttt{compaction-basic}, \texttt{llm-retry} \\
+\texttt{agent/turn-stopping} & \texttt{serial} & \texttt{agent-loop} & \texttt{hooks-claude-code}, \texttt{hooks-codex} \\
+\texttt{agent/error} & \texttt{emit} & \texttt{agent-loop} & \texttt{acp}, \texttt{goal-round-driver}, \texttt{session-controller}, \texttt{session-telemetry} \\
+\texttt{agent/assistant-stream} & \texttt{emit} & \texttt{agent-loop} & \texttt{headless}, \texttt{session-controller} \\
+\texttt{agent/inbox/inserted} & \texttt{emit} & \texttt{agent-loop} & \texttt{goal-round-driver} \\
+\texttt{agent/inbox/claimed} & \texttt{emit} & \texttt{agent-loop} & \texttt{acp}, \texttt{goal-round-driver}, \texttt{subagent}, \texttt{tool-jobs} \\
+\texttt{agent/inbox/discarded} & \texttt{emit} & \texttt{agent-loop} & \texttt{goal-round-driver}, \texttt{subagent} \\
+\texttt{agent-loop/config-start-failed} & \texttt{emit} & \texttt{agent-loop} & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Eventos de sesión}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Evento & Modo & Dispatcher & Listeners principales \\
+\midrule
+\texttt{session/created} & \texttt{emit} & \texttt{session} & \texttt{compaction}, \texttt{goal}, \texttt{hook-protocol}, \texttt{llm-retry}, \texttt{permission-presets}, \texttt{plan-mode}, \texttt{schedule}, \texttt{server}, \texttt{session}, \texttt{session-controller}, \texttt{session-log-deepseek}, \texttt{session-projection}, \texttt{session-projection-cache}, \texttt{session-telemetry}, \texttt{session-title}, \texttt{time-context}, \texttt{tool-todo}, \texttt{tool-workflow}, \texttt{tools}, \texttt{user-approval} \\
+\texttt{session/disposed} & \texttt{emit} & \texttt{session} & \texttt{agent-loop}, \texttt{agent-team}, \texttt{file-upload}, \texttt{session-controller}, \texttt{session-persistence-jsonl}, \texttt{session-projection-cache}, \texttt{session-telemetry}, \texttt{session-title} \\
+\texttt{session/event} & \texttt{emit} & \texttt{session} & \texttt{acp}, \texttt{agent-instructions}, \texttt{agent-loop}, \texttt{agent-presets}, \texttt{agent-team}, \texttt{compaction}, \texttt{compaction-basic}, \texttt{file-reference-local}, \texttt{file-upload}, \texttt{goal}, \texttt{goal-round-driver}, \texttt{hook-protocol}, \texttt{loader-smoke}, \texttt{server}, \texttt{session}, \texttt{session-controller}, \texttt{session-persistence-jsonl}, \texttt{session-projection}, \texttt{session-projection-cache}, \texttt{session-telemetry}, \texttt{session-telemetry-otel}, \texttt{session-title}, \texttt{token-meter}, \texttt{tool-todo}, \texttt{tool-workflow}, \texttt{tools}, \texttt{user-approval} \\
+\texttt{session/flush} & \texttt{parallel} & \texttt{session} & \texttt{session-persistence-jsonl}, \texttt{session-telemetry} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Eventos de herramientas}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Evento & Modo & Dispatcher & Listeners principales \\
+\midrule
+\texttt{tools/pre-execute} & \texttt{waterfall} & \texttt{tools} & \texttt{hooks-claude-code}, \texttt{hooks-codex}, \texttt{tool-jobs} \\
+\texttt{tools/execute} & \texttt{waterfall} & \texttt{tools} & \texttt{session-checkpoint-policy}, \texttt{timeout-policy} \\
+\texttt{tools/post-execute} & \texttt{waterfall} & \texttt{tools} & \texttt{hooks-claude-code}, \texttt{hooks-codex}, \texttt{repeat-tool-reminder}, \texttt{spill-policy}, \texttt{tool-fs-search} \\
+\texttt{tools/ptc-dispatch-log} & \texttt{waterfall} & \texttt{tools} & \texttt{spill-policy} \\
+\texttt{tools/result} & \texttt{emit} & \texttt{tools} & \texttt{agent-instructions}, \texttt{subagent-in-process-driver} \\
+\texttt{tools/change} & \texttt{emit} & \texttt{agent-presets}, \texttt{tools} & \texttt{tool-subagent} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Eventos de subagente}
+
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Evento & Modo & Dispatcher & Listeners \\
+\midrule
+\texttt{subagent/start} & \texttt{emit} & \texttt{subagent} & \texttt{hooks-claude-code}, \texttt{subagent} \\
+\texttt{subagent/end} & \texttt{emit} & \texttt{subagent} & \texttt{hooks-claude-code}, \texttt{server}, \texttt{subagent} \\
+\texttt{subagent/provider-added} & \texttt{emit} & \texttt{subagent} & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsection*{Eventos internos no declarados}
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Event string & Dispatchers & Listeners \\
+\midrule
+\texttt{internal/dispatch} & - & \texttt{agent-team}, \texttt{commands}, \texttt{compaction}, \texttt{fs}, \texttt{goal}, \texttt{goal-round-driver}, \texttt{hook-protocol}, \texttt{llm-retry}, \texttt{permission-presets}, \texttt{plan-mode}, \texttt{sandbox-policy}, \texttt{schedule}, \texttt{scope}, \texttt{session}, \texttt{session-log-deepseek}, \texttt{session-title}, \texttt{subagent}, \texttt{terminal-bash}, \texttt{time-context}, \texttt{tool-todo}, \texttt{tool-workflow}, \texttt{tools}, \texttt{user-approval}, \texttt{webhook}, \texttt{workflow} \\
+\texttt{internal/plugin} & - & \texttt{inspector}, \texttt{loader}, \texttt{lsp-stdio}, \texttt{modules} \\
+\texttt{internal/service} & - & \texttt{agent-presets}, \texttt{gateway} \\
+\texttt{internal/status} & - & \texttt{agent}, \texttt{inspector} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\section*{configuracion}
+
+\section*{Configuración del proyecto dsh}
+
+
+\subsection*{Perfiles y arranque}
+
+
+\subsubsection*{Composición de la configuración}
+
+
+La configuración efectiva se construye aplicando capas en orden:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Parches de los bundles listados en \texttt{dsh.profile.bundles} del manifiesto del perfil.
+  \item \texttt{cordis.patch.yml} del propio perfil.
+  \item \texttt{$DSH\_HOME/cordis.patch.yml} (preferencias locales de máquina, mayor prioridad que el perfil).
+  \item Cada overlay \texttt{--patch <path>} en orden de aparición.
+\end{enumerate}
+
+
+Las capas posteriores sobrescriben filas completas (no se hace merge profundo de \texttt{config}). Se pueden insertar nuevas filas.
+
+
+\subsubsection*{Recarga de parches}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{dsh.profile.patchReload: "live"} (por defecto en perfiles personalizados): observa cambios en archivos y reaplica.
+  \item \texttt{dsh.profile.patchReload: "startup"}: carga única al iniciar.
+\end{itemize}
+
+
+\subsubsection*{Resolución de bundles y plugins}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Bundles internos (\texttt{@deepseek-ai/dsh-base}, \texttt{-web-app}, \texttt{-headless}, \texttt{-sdk-app}, \texttt{-sdk-minimal}, \texttt{-acp-app}) se resuelven desde la instalación de \texttt{dsh}.
+  \item Bundles externos desde \texttt{node\_modules} del perfil (gestionado por pnpm).
+  \item Plugins con nombre simple se resuelven recorriendo directorios padre hasta \texttt{$DSH\_HOME/profiles/node\_modules}.
+\end{itemize}
+
+
+\subsubsection*{Perfiles predefinidos}
+
+
+Se autoinicializan desde plantillas en el primer uso:
+
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Perfil & Composición & patchReload \\
+\midrule
+\texttt{web} & base + web-app & live \\
+\texttt{headless} & base + headless & startup \\
+\texttt{sdk} & base + sdk-app & startup \\
+\texttt{sdk-minimal} & bundle independiente & startup \\
+\texttt{acp} & base + acp-app & startup \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+Perfil faltante no predefinido → error con sugerencia: \texttt{dsh plugin --profile <name> add <package>}.
+
+
+\subsubsection*{Argumentos de aplicación}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Flags del launcher terminan en el primer token no reconocido.
+  \item El resto se pasa a \texttt{ctx.cmdlineArgs} para que los plugins de la app lo parseen.
+  \item \texttt{dsh --profile web --port 8080} → \texttt{--port} va a la app web.
+  \item \texttt{dsh --profile web --help} → imprime ayuda de la app y no arranca.
+  \item \texttt{dsh --help} → ayuda del launcher.
+  \item \texttt{-V}/\texttt{--version} antes de args de app → versión del launcher.
+\end{itemize}
+
+
+\subsubsection*{Precedencia de flags vs. configuración}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Un plugin inyecta \texttt{cmdlineArgs}, parsea argumentos y expone un servicio.
+  \item Las filas de configuración usan expresiones como \texttt{port: !!js ctx.webStartup.port ?? 3080}.
+  \item El flag tiene prioridad sobre el valor literal en la config.
+  \item Si un parche de usuario reemplaza \texttt{config} con literales, se pierde la lectura en runtime.
+  \item En modo \texttt{live}, editar un archivo de parche reevalúa expresiones pero no reinicia servicios (no puede cambiar un puerto ya servido).
+\end{itemize}
+
+
+\subsubsection*{Límite de argumentos}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{--} es consumido por el parser del launcher. Para pasar \texttt{--} literal a la app: \texttt{-- --}.
+  \item Si el primer argumento de app es \texttt{web} o \texttt{plugin}, se selecciona ese subcomando.
+  \item \texttt{ctx.cmdlineArgs.get()} es lectura inmutable compartida.
+\end{itemize}
+
+
+\subsubsection*{Apps embarcadas y sus argumentos}
+
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Perfil & Argumentos \\
+\midrule
+\texttt{web} & \texttt{--host}, \texttt{--port}, \texttt{--trusted-host} (repetible), \texttt{--no-open} \\
+\texttt{headless} & texto de la tarea como argumento posicional \\
+\texttt{sdk} & sin opciones; protocolo JSON-RPC por stdio \\
+\texttt{sdk-minimal} & sin opciones; mismo protocolo JSON-RPC \\
+\texttt{acp} & sin opciones; Agent Client Protocol por stdio \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+
+\subsubsection*{Modo headless (one-shot)}
+
+
+\begin{lstlisting}
+dsh --profile headless "run the tests"
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Crea un Agent persistente, envía la tarea, espera quiescencia, flushea la sesión.
+  \item Último texto no vacío del asistente → stdout.
+  \item Razón final \texttt{turn/end} y deltas de razonamiento no vacíos → stderr (con encabezado \texttt{dsh: reasoning:}).
+  \item Exit 0 si \texttt{completed}, 1 en otro caso.
+  \item Sin tarea → error de uso.
+  \item No monta servidor HTTP, WebSocket, ni navegador; no abre puertos.
+\end{itemize}
+
+
+\subsubsection*{Volcado de configuración}
+
+
+\begin{lstlisting}
+dsh --profile web --dump-default-config   # solo capas de bundles
+dsh --profile web --patch ./extra.yml --dump-config  # incluye parches
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Imprime comentarios con archivo de origen y overlays que modificaron cada fila.
+  \item Expresiones \texttt{!!js} sin evaluar.
+  \item Nombres de plugin relativos se resuelven junto al archivo de parche.
+  \item Destinos de parche no encontrados → stderr.
+  \item No ejecuta providers de línea de comandos de la app; rechaza si hay argumentos de app.
+\end{itemize}
+
+
+\subsection*{Gestión de plugins (\texttt{dsh plugin})}
+
+
+\begin{lstlisting}
+dsh plugin --profile <name> <args...>
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Si el perfil no existe, lo inicializa (plantilla predefinida o solo \texttt{@deepseek-ai/dsh-base}).
+  \item Reenvía \texttt{<args...>} a \texttt{pnpm} con el directorio del perfil como working directory.
+  \item pnpm debe estar en el PATH.
+  \item Especificaciones de ruta relativas (\texttt{.}, \texttt{../plugin}, \texttt{file:}, \texttt{link:}) se anclan al directorio de invocación.
+  \item Tras cada ejecución exitosa, reconcilia \texttt{dsh.profile.bundles}:
+  \item Dependencia con \texttt{"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }} → se añade a la pila de capas.
+  \item Dependencia sin declaración de bundle → warning único.
+  \item Dependencia eliminada → se quita de la pila.
+\end{itemize}
+
+
+\subsubsection*{Subagents Codex y Claude Code (bundles opcionales)}
+
+
+\begin{lstlisting}
+dsh plugin --profile <name> add @deepseek-ai/dsh-subagent-codex
+dsh plugin --profile <name> add @deepseek-ai/dsh-subagent-claude-code
+dsh plugin --profile <name> add @deepseek-ai/dsh-subagent-codex @deepseek-ai/dsh-subagent-claude-code
+dsh plugin --profile <name> remove @deepseek-ai/dsh-subagent-codex
+dsh plugin --profile <name> remove @deepseek-ai/dsh-subagent-claude-code
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item La operación de pnpm cambia manifiesto y lista de bundles en disco.
+  \item Un perfil en ejecución mantiene el conjunto de bundles de su inicio actual.
+  \item \textbf{Reiniciar el perfil} después de añadir/quitar/actualizar bundles.
+  \item Ediciones en \texttt{cordis.patch.yml} del perfil o home se aplican por hot reload.
+\end{itemize}
+
+
+\subsubsection*{Plugins desde Git}
+
+
+\begin{lstlisting}
+dsh plugin --profile tui add github:deepseek-harness/turtle-ui
+dsh plugin --profile tui remove turtle-ui
+dsh --profile tui
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Plugins con fuentes necesitan \texttt{prepare} script → pnpm ≥10 bloquea hasta permitir en \texttt{pnpm-workspace.yaml}.
+  \item Primera ejecución de \texttt{add} falla con hint; copiar la clave impresa en \texttt{pnpm-workspace.yaml} y re-ejecutar.
+  \item Tarballs preconstruidos o checkouts locales no requieren permisos.
+\end{itemize}
+
+
+\subsection*{Alias web (\texttt{dsh web})}
+
+
+Alias fijo para \texttt{--profile web}. Los flags después de \texttt{web} pertenecen a la app web.
+
+
+\begin{lstlisting}
+dsh web
+dsh web --no-open
+dsh web --patch ./extra.cordis.yml
+dsh web --dump-config
+dsh web --help
+\end{lstlisting}
+
+
+\subsubsection*{Flags de la app web}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{--host}, \texttt{--port}: sobrescriben valores compuestos.
+  \item \texttt{--trusted-host} (repetible): añade autoridades a \texttt{ctx.webRuntime.trustedHosts}.
+  \item \texttt{--no-open}: deshabilita apertura de navegador.
+\end{itemize}
+
+
+\subsubsection*{Comportamiento del servidor}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Por defecto sirve en \texttt{http://127.0.0.1:3080}.
+  \item Solo abre navegador tras asentarse el árbol Loader completo.
+  \item \texttt{SSH\_CONNECTION} o \texttt{SSH\_TTY} no vacíos → suprime handoff del navegador (imprime URL).
+  \item No soporta \texttt{--host 0.0.0.0} (error de uso).
+  \item HMR de cliente siempre montado, inactivo hasta que \texttt{pnpm run dev:web} reconstruya bundles.
+\end{itemize}
+
+
+\subsection*{cordis.yml}
+
+
+\begin{lstlisting}
+# cordis.yml: lista de entradas. Cada entrada acepta:
+- id: identidad estable para diff del loader
+- name: ruta al módulo o nombre de paquete
+- disabled: true  # conserva la entrada pero no monta el plugin
+- config: bloque validado por el schema del plugin
+- !!js: solo dentro de config y disabled; evalúa expresión JS en tiempo de carga
+\end{lstlisting}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Grupos}: anidan sub-listas de entradas; \texttt{isolate} da a un grupo su propia instancia de un servicio.
+  \item \textbf{HMR}: \texttt{@deepseek-ai/cordis-plugin-hmr} vigila archivos y recarga plugins al guardar. Requiere \texttt{@deepseek-ai/cordis-plugin-logger-console} y \texttt{@deepseek-ai/cordis-plugin-timer} como dependencias.
+\end{itemize}
+
+
+\subsection*{Interfaces de configuración de plugins}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-settings-file}}
+
+
+\begin{lstlisting}
+interface Config {
+  path?: string;       // Ruta al archivo. Default: `settings.yaml` en `dshHome`.
+  dshHome?: string;    // Directorio home del harness. Default: `$DSH_HOME` o `~/.dsh`.
+  watch?: boolean;     // Observar cambios y recargar. Default: `true`.
+  debounceMs?: number; // Ventana de estabilización del watcher (ms). Default: `100`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-shell-env}}
+
+
+\begin{lstlisting}
+interface Config {
+  dshHome?: string; // Default: `$DSH_HOME` o `~/.dsh`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-skill}}
+
+
+\begin{lstlisting}
+interface Config {
+  collectCacheMaxEntries?: number; // Máximo de catálogos completados en memoria.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-skill-filesystem}}
+
+
+\textbf{Requiere:} \texttt{skills}
+
+
+\begin{lstlisting}
+interface Config {
+  providerName?: string;            // Default: `filesystem`.
+  includeDefaultRoots?: boolean;
+  dshHome?: string;                 // Default: `$DSH_HOME` o `~/.dsh`.
+  agentsHome?: string;              // Default: `$DSH_AGENTS_HOME` o `~/.agents`.
+  customSkillDirs?: string[];
+  watch?: boolean;
+  watchUsePolling?: boolean;
+  watchStabilityThresholdMs?: number;
+  watchPollIntervalMs?: number;
+  watchMaxProjects?: number;
+  watchFollowSymlinks?: boolean;
+  bundledSkillDir?: string;         // Default: `$DSH_BUNDLED_SKILL_DIR`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-spill-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  root?: string;             // Directorio raíz. Default: directorio temporal privado (0700).
+  cleanupPeriodDays?: number; // Días para limpieza de archivos viejos. Default: `30`. `0` desactiva.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-spill-policy}}
+
+
+\textbf{Requiere:} \texttt{tools}
+
+
+\begin{lstlisting}
+interface Config {
+  maxInlineBytes?: number; // Bytes máx. en texto plano antes de spill. Omitir desactiva la política.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-storage-domain}}
+
+
+\textbf{Requiere:} \texttt{storage}
+
+
+\begin{lstlisting}
+interface Config {
+  backend: string;                  // Backend por defecto (requerido).
+  routes?: Record<string, string>;  // Overrides por dominio: nombre -> backend.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-storage-json}}
+
+
+\textbf{Requiere:} \texttt{storage}
+
+
+\begin{lstlisting}
+interface Config {
+  root: string; // Directorio con archivos `<unit>.json` (requerido, sin default).
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-storage-sqlite}}
+
+
+\textbf{Requiere:} \texttt{storage}
+
+
+\begin{lstlisting}
+type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist';
+
+interface Config {
+  path: string;                // Ruta al archivo de BD. Usar `:memory:` para tests.
+  journalMode?: JournalMode;   // Default: `wal`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-acp}}
+
+
+\textbf{Requiere:} \texttt{subagents}, \texttt{subprocess}
+
+
+\begin{lstlisting}
+type PermissionPolicy = 'allow' | 'reject';
+
+interface Config {
+  providerName: string;           // Default: `acp`.
+  command: string;                // Ejecutable del proceso hijo.
+  args: string[];                 // Argumentos para el comando.
+  cwd?: string;                   // Directorio de trabajo. Default: hereda del padre.
+  permission: PermissionPolicy;   // `reject` (default) o `allow`.
+  env: Record<string, string>;    // Variables de entorno extra.
+  disposeEofGraceMs?: number;
+  disposeGraceMs?: number;
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-claude-code}}
+
+
+\textbf{Requiere:} \texttt{subagents}, \texttt{subprocess}
+
+
+\begin{lstlisting}
+interface Config {
+  providerName?: string;          // Default: `claude-code`.
+  model?: string;
+  env?: Record<string, string>;
+  permissionMode?: ClaudeCodePermissionMode;
+  disposeGraceMs?: number;
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-codex}}
+
+
+\textbf{Requiere:} \texttt{subagents}, \texttt{subprocess}
+
+
+\begin{lstlisting}
+type CodexPermissionMode = 'never' | 'approve-for-me' | 'dangerously-bypass-approvals-and-sandbox';
+
+interface Config {
+  providerName?: string;  // Default: `codex`.
+  model?: string;
+  env?: Record<string, string>;
+  permissionMode?: CodexPermissionMode;
+  disposeGraceMs?: number;
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-dsh-sdk}}
+
+
+\textbf{Requiere:} \texttt{subagents}
+
+
+\begin{lstlisting}
+interface Config {
+  providerName: string;       // Default: `dsh-sdk`.
+  dshBin?: string;
+  profile: string;            // Perfil del hijo (default: `sdk`).
+  patches: string[];
+  dshHome: string;            // Home aislado para el hijo.
+  cwd?: string;
+  provider: string;           // Default: `deepseek-official`.
+  model: string;              // Default: `deepseek-v4-flash`.
+  maxTokens?: number;
+  env: Record<string, string>;
+  shutdownTimeoutMs?: number;
+  disposeEofGraceMs?: number;
+  disposeGraceMs?: number;
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-fork-in-process}}
+
+
+\textbf{Requiere:} \texttt{subagents}
+
+
+\begin{lstlisting}
+interface Config {
+  providerName: string; // Default: `fork`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subagent-spawn-in-process}}
+
+
+\textbf{Requiere:} \texttt{subagents}
+
+
+\begin{lstlisting}
+interface Config {
+  providerName: string; // Default: `spawn`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-subprocess-e2b}}
+
+
+\textbf{Requiere:} \texttt{e2b}
+
+
+\begin{lstlisting}
+interface Config {
+  pollMs?: number; // Cadencia de sondeo de estado (ms).
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-system-prompt}}
+
+
+\begin{lstlisting}
+interface Config {
+  includeHarnessIdentity?: boolean; // Default: `true`.
+  includeRuntimeContext?: boolean;  // Default: `true`.
+  personaPrefix?: string;           // Plantilla de prefijo de persona.
+  personaSuffix?: string;           // Plantilla de sufijo de persona.
+  toolOrder?: string[];             // Orden de herramientas. Default: lexicográfico.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-terminal-bash}}
+
+
+\textbf{Requiere:} \texttt{terminals}, \texttt{sandboxPolicy}, \texttt{sessionProjections}, \texttt{subprocess}
+
+
+\begin{lstlisting}
+type ShellDialect = 'bash' | 'pwsh';
+
+interface Config {
+  backendType?: string;       // Default: `shell`.
+  shellDialect?: ShellDialect; // Default: `bash`.
+  shellPath?: string;         // Default: `/bin/bash`.
+  shellArgs?: string[];       // Default: `--noprofile --norc -i`.
+  rows?: number;
+  cols?: number;
+  scrollbackLines?: number;
+  scrollbackMaxBytes?: number;
+  maxReadBytes?: number;
+  pollIntervalMs?: number;
+  exactProbeAfterMs?: number;
+  idleSilenceMs?: number;
+  handoffGraceMs?: number;
+  timeoutMs?: number;
+  disposeGraceMs?: number;
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-time-context}}
+
+
+\textbf{Requiere:} \texttt{agents}, \texttt{sessionProjections}
+
+
+\begin{lstlisting}
+interface Config {
+  timeZone?: string;            // Zona horaria. Default: zona del proceso.
+  refreshIntervalMs?: number;   // Mínimo ms entre inyecciones. `0` = cada paso.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-typert-loader}}
+
+
+\begin{lstlisting}
+interface Config {
+  packages?: string[]; // Paquetes npm adicionales que deben resolver y exportar `./typert`.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-user-approval}}
+
+
+\begin{lstlisting}
+type ApprovalPolicy = 'ask' | 'never'
+
+interface Config {
+  readonly policy?: ApprovalPolicy
+  // 'ask' delega en los answerers compuestos (fail-closed si no hay).
+  // 'never' rechaza automáticamente sin preguntar (CI/unattended).
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web}}
+
+
+\begin{lstlisting}
+interface WebRuntimeConfig {
+  readonly searchProvider?: string  // ID explícito del proveedor de búsqueda.
+  readonly fetchProvider?: string   // ID explícito del proveedor de fetch.
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web-app}}
+
+
+\begin{lstlisting}
+interface Config {
+  openBrowser: boolean
+  printUrl: boolean
+  surfaceContext: boolean
+  trustedHosts: string[]
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web-fetch-http}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxResponseBytes?: number
+  maxBodyChars?: number
+  timeoutMs?: number
+  maxRedirects?: number
+  userAgent?: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web-search-deepseek}}
+
+
+\begin{lstlisting}
+interface Config {
+  apiKey?: string
+  apiKeyEnv?: string       // Default: `DEEPSEEK_API_KEY`
+  baseURL?: string
+  model?: string           // Default: `deepseek-v4-flash`
+  apiVersion?: string      // Default: `2023-06-01`
+  maxTokens?: number       // Default: 4096
+  maxUses?: number         // Default: 5
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web-search-exa}}
+
+
+\begin{lstlisting}
+interface Config {
+  apiKey?: string
+  baseURL?: string
+  searchType?: 'auto' | 'keyword' | 'neural'  // Default: `auto`
+  numResults?: number
+  highlightsPerResult?: number  // Default: 1
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-web-search-perplexity}}
+
+
+\begin{lstlisting}
+interface Config {
+  apiKey?: string
+  baseURL?: string
+  model?: string           // Default: `sonar`
+  maxTokens?: number       // Default: 1024
+  searchRecency?: 'day' | 'week' | 'month' | 'year'
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-webhook-github}}
+
+
+\begin{lstlisting}
+interface Config {
+  readonly source: string
+  readonly path: string
+  readonly secretEnv: string
+  readonly maxBodyBytes: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-workflow-worker-thread}}
+
+
+\begin{lstlisting}
+interface Config {
+  provider?: string              // Default: `spawn`
+  maxConcurrentAgents?: number   // `0` auto-resuelve a `min(16, max(1, cores - 2))`
+  maxTotalAgents?: number        // Default: 1000
+  maxItemsPerCall?: number       // Default: 4096
+  syncTimeoutMs?: number         // Default: 5000 ms
+  disposeGraceMs?: number        // Default: 5000 ms
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-experimental-agent-team}}
+
+
+\begin{lstlisting}
+interface Config {
+  readonly maxMembers?: number
+  readonly maxTasks?: number
+  readonly maxPendingMessagesPerMember?: number
+  readonly maxMessageBytes?: number
+  readonly disposalTimeoutMs?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-experimental-code-runtime-python}}
+
+
+\begin{lstlisting}
+interface Config {
+  cpuSeconds?: number
+  maxWallMs?: number
+  addressSpaceMb?: number
+  maxLogBytes?: number
+  maxValueBytes?: number
+  graceMs?: number
+  pythonBin?: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-experimental-inspector}}
+
+
+\begin{lstlisting}
+interface Config extends Omit<InspectorOptions, 'clientOrigins'> {
+  clientOrigins?: string[]
+}
+
+interface InspectorOptions {
+  readonly host?: '127.0.0.1'
+  readonly port?: number
+  readonly clientOrigins?: readonly string[]
+  readonly captureFetch?: boolean
+  readonly maxRequestBodyBytes?: number
+  readonly maxResponseBodyBytes?: number
+  readonly maxBodyChunkBytes?: number
+  readonly maxJournalBytes?: number
+  readonly maxRetainedRequests?: number
+  readonly maxSourceFrameBytes?: number
+  readonly maxSourceRecordsPerFrame?: number
+  readonly maxQueuedRecords?: number
+  readonly maxQueuedBytes?: number
+  readonly startupTimeoutMs?: number
+  readonly stopTimeoutMs?: number
+  readonly clientReconnectBaseMs?: number
+  readonly clientReconnectMaxMs?: number
+  readonly clientRuntimeTimeoutMs?: number
+  readonly queryTimeoutMs?: number
+  readonly maxClientRuntimeObjects?: number
+  readonly maxClientRuntimeProperties?: number
+  readonly maxClientSourceBytes?: number
+  readonly maxCordisNodes?: number
+  readonly maxDisconnectedCordisTrees?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-experimental-tool-agent-team}}
+
+
+\begin{lstlisting}
+interface Config {
+  readonly freshProvider?: string
+  readonly forkProvider?: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-file-reference-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxResults?: number
+  maxEntries?: number
+  excludedDirectories?: string[]
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-fs-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  cwd?: string
+  diffBasisMaxBytes?: number  // Default: 10 MiB
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-fs-sandbox}}
+
+
+\begin{lstlisting}
+type Config = LocalConfig; // Misma configuración que fs-local
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-goal}}
+
+
+\begin{lstlisting}
+interface Config {
+  defaultMaxGoalRounds?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-headless}}
+
+
+\begin{lstlisting}
+interface Config {
+  task: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-hooks-claude-code}}
+
+
+\begin{lstlisting}
+interface Config {
+  configPath: string
+  pluginRoot?: string
+  projectDir?: string
+  defaultTimeoutMs?: number        // Default: 600000
+  stderrSummaryMaxChars?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-hooks-codex}}
+
+
+\begin{lstlisting}
+interface Config {
+  configPath: string
+  model?: string
+  defaultTimeoutMs?: number        // Default: 600000
+  stderrSummaryMaxChars?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-host-directory-picker-browse}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxEntries: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-host-frontend-static}}
+
+
+\begin{lstlisting}
+interface Config {
+  distIndex: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-host-open-in-app}}
+
+
+\begin{lstlisting}
+interface Config {
+  readonly probeTimeoutMs: number
+  readonly iconTimeoutMs: number
+  readonly launchWatchMs: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-host-webserver}}
+
+
+\begin{lstlisting}
+interface Config {
+  host: '127.0.0.1' | '0.0.0.0'
+  port: number
+  compression?: 'none' | 'gzip'    // Default: 'none'
+  compressionLevel?: number        // Default: 1
+  compressionThresholdBytes?: number // Default: 1024
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-invariants}}
+
+
+\begin{lstlisting}
+interface Config {
+  readonly enabled?: boolean           // Default: true
+  readonly package_allowlist?: string[]
+  readonly package_blocklist?: string[]
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-jobs-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxConcurrentJobsPerOwner?: number  // Default: 10
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-agent-loop}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxParallelToolCalls?: number
+  agents?: Array<{
+    id: string
+    provider: string
+    model: string
+    cwd?: string
+    sessionId?: string
+    resumeSessionId?: string
+  }>
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-compaction-basic}}
+
+
+\begin{lstlisting}
+interface Config {
+  thresholdRatio?: number
+  retainRatio?: number
+  summarizationProvider?: string
+  summarizationModel?: string
+  maxTokens?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-bash-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  timeoutMs?: number
+  maxOutputBytes?: number
+  graceMs?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-code-runtime-worker-thread}}
+
+
+\begin{lstlisting}
+interface Config {
+  computeMs?: number
+  maxWallMs?: number
+  maxOldGenerationSizeMb?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-attachment-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  maxImageBytes?: number
+  maxImagePixels?: number
+  normalizedImageMaxBytes?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{@deepseek-ai/dsh-credentials-local}}
+
+
+\begin{lstlisting}
+interface Config {
+  path?: string
+  dshHome?: string
+  watch?: boolean
+  debounceMs?: number
+}
+\end{lstlisting}
+
+
+\subsection*{Interfaces de configuración adicionales}
+
+
+\subsubsection*{\texttt{ReplayProviderConfig}}
+
+
+\begin{lstlisting}
+interface ReplayProviderConfig {
+  id: string
+  name?: string
+  models?: ReplayModelConfig[]
+  retryPolicy?: RetryPolicyConfig
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{ReplayModelConfig}}
+
+
+\begin{lstlisting}
+interface ReplayModelConfig {
+  id: string
+  name?: string
+  description?: string
+  contextWindow?: number
+  inputModalities?: readonly ModelModality[]
+  defaultMaxTokens?: number
+  imageRequestTokens?: number
+  reasoningEfforts?: string[]
+  defaultReasoningEffort?: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{LspLocalServerConfig}}
+
+
+\begin{lstlisting}
+interface LspLocalServerConfig {
+  command: string
+  extensionToLanguage: Record<string, string>
+  args?: string[]
+  env?: Record<string, string>
+  initializationOptions?: unknown
+  configuration?: unknown
+  maxMessageBytes?: number
+  maxStderrBytes?: number
+  maxDocumentBytes?: number
+  shutdownTimeoutMs?: number
+  killGraceMs?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{StdioConfig}}
+
+
+\begin{lstlisting}
+interface StdioConfig {
+  transport: 'stdio'
+  serverName: string
+  command: string
+  args: string[]
+  env: Record<string, string>
+  cwd: string
+  toolCallTimeoutMs: number
+  failOnStartupError: boolean
+  reconnect?: ReconnectConfig
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{StreamableHttpConfig}}
+
+
+\begin{lstlisting}
+interface StreamableHttpConfig {
+  transport: 'streamable-http'
+  serverName: string
+  url: string
+  headers: Record<string, string>
+  toolCallTimeoutMs: number
+  failOnStartupError: boolean
+  reconnect?: ReconnectConfig
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{ReconnectConfig}}
+
+
+\begin{lstlisting}
+interface ReconnectConfig {
+  enabled?: boolean
+  initialDelayMs?: number
+  maxDelayMs?: number
+  maxAttempts?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{PresetSpec}}
+
+
+\begin{lstlisting}
+interface PresetSpec {
+  sandbox: SandboxMode
+  approval: ApprovalPolicy
+  name?: string
+  description?: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{PlanModeConfig}}
+
+
+\begin{lstlisting}
+interface PlanModeConfig {
+  section: string
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{JsonRpcConfig}}
+
+
+\begin{lstlisting}
+interface JsonRpcConfig {
+  maxTokensAsSuccess?: boolean
+  input?: Readable
+  output?: Writable
+  exit?: (code: number) => void
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{SessionQueryConfig}}
+
+
+\begin{lstlisting}
+interface Config extends SessionQueryConfig {
+  path: string
+  openAt?: OpenAt
+  journalMode?: JournalMode
+  defaultLimit?: number
+  maxLimit?: number
+  snippetChars?: number
+  persistedReadConcurrency?: number
+  preparedSessionCacheSize?: number
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{SessionTelemetryMode}}
+
+
+\begin{lstlisting}
+enum SessionTelemetryMode {
+  FEEDBACK_ONLY = 'FEEDBACK_ONLY',
+  DISABLED = 'DISABLED',
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{ToolSubagentConfig}}
+
+
+\begin{lstlisting}
+interface Config {
+  provider: string
+  toolName?: string
+  modelSelectionSettings?: boolean
+  enableRunInBackground?: boolean
+  backgroundMode?: 'one-shot' | 'continuable'
+  agentOptions?: AgentOptions
+  persona?: string
+  toolFilter?: { allow?: string[]; deny?: string[] }
+  maxDepth?: number | 'provider-managed'
+}
+\end{lstlisting}
+
+
+\subsubsection*{\texttt{ToolPresentationMode}}
+
+
+\begin{lstlisting}
+type ToolPresentationMode = 'native' | 'ptc' | 'both'
+\end{lstlisting}
+
+
+\subsection*{Variables de entorno}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{$DSH\_HOME}: directorio home del harness. Default: \texttt{\textasciitilde{}/.dsh}.
+  \item \texttt{$DSH\_AGENTS\_HOME}: directorio de agentes. Default: \texttt{\textasciitilde{}/.agents}.
+  \item \texttt{$DSH\_BUNDLED\_SKILL\_DIR}: directorio de skills empaquetados.
+  \item \texttt{SSH\_CONNECTION} / \texttt{SSH\_TTY}: si no están vacíos, suprime handoff del navegador en modo web.
+  \item \texttt{DEEPSEEK\_API\_KEY}: clave de API para el proveedor DeepSeek.
+  \item \texttt{CLAUDE\_PLUGIN\_ROOT}: reemplazado en cadenas de comando de hooks Claude Code.
+  \item \texttt{CLAUDE\_PROJECT\_DIR}: reemplazado en cadenas de comando de hooks Claude Code.
+\end{itemize}
+
+
+\subsection*{Comandos de desarrollo}
+
+
+\begin{lstlisting}
+pnpm dsh web              # Inicia el host desde fuente (usa el fallback SRC)
+pnpm run dev:web          # Inicia el watcher de plugins del cliente
+pnpm run build:lib        # Reconstruye los contratos estrictos de Typert (Host y Cliente)
+pnpm run build:lib:host   # Genera artefactos estrictos del Host
+pnpm run build:lib:client # Genera artefactos estrictos del Cliente
+\end{lstlisting}
+
+
+\section*{ejemplos}
+
+\section*{Ejemplos de código real del repositorio}
+
+
+\subsection*{Ejemplo 1: Declaración de un servicio remoto (Host)}
+
+
+\textbf{Fuente}: patrón de \texttt{TypertRemoteService} en el repo
+
+
+\begin{lstlisting}
+import type { Agent } from '@deepseek-ai/dsh-agent'
+import { TypertRemoteService, Remote, RemoteScope } from '@deepseek-ai/dsh-typert-protocol'
+import type { Context } from '@deepseek-ai/cordis'
+
+export class GoalService extends TypertRemoteService {
+  constructor(ctx: Context) {
+    super(ctx, 'goals')
+  }
+
+  @Remote('create')
+  createForClient(
+    agent: Agent,
+    request: { objective: string },
+    signal: AbortSignal,
+  ): { accepted: boolean } {
+    signal.throwIfAborted()
+    return this.create(agent, request)
+  }
+
+  @RemoteScope('agent', 'current')
+  currentForClient(): { accepted: boolean } {
+    return { accepted: true }
+  }
+
+  private create(_agent: Agent, request: { objective: string }): { accepted: boolean } {
+    return { accepted: request.objective.length > 0 }
+  }
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 2: Consumo de un servicio remoto (Cliente)}
+
+
+\textbf{Fuente}: patrón de consumo remoto en el repo
+
+
+\begin{lstlisting}
+import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
+
+export const inject = ['remote', 'remote.goals']
+
+declare const ctx: Context
+declare const agentId: string
+
+// Llamada directa
+await ctx.remote.goals.create(agentId, { objective: 'ship it' })
+
+// Llamada con ámbito de agente
+declare const agentCtx: any
+await agentCtx.remote.goals.create({ objective: 'ship it' })
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 3: Llamada remota con manejo de errores}
+
+
+\textbf{Fuente}: patrón de manejo de errores remotos en el repo
+
+
+\begin{lstlisting}
+import type { Context } from '@deepseek-ai/cordis'
+import { isRemoteFailure } from '@deepseek-ai/dsh-api-gateway/client'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
+
+export const inject = ['remote', 'remote.notes']
+
+declare const ctx: Context
+
+export async function noteTitles(): Promise<readonly string[]> {
+  const result = await ctx.remote.notes.list()
+  if (!result.ok) {
+    if (result.error.code === 'note/not-found') return []
+    throw result.error
+  }
+  return result.value.map(row => row.title)
+}
+
+export async function renderTitles(): Promise<string> {
+  try {
+    return (await noteTitles()).join(', ')
+  } catch (error: unknown) {
+    if (!isRemoteFailure(error)) throw error
+    return `unavailable (${error.code})`
+  }
+}
+
+export function hostLabel(): string {
+  const { home, isLoopback } = ctx.remote.$host
+  return home ?? (isLoopback ? 'local host' : 'remote host')
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 4: Prueba de Owner con remoteErrorOf}
+
+
+\textbf{Fuente}: patrón de pruebas de owner en el repo
+
+
+\begin{lstlisting}
+import { remoteErrorOf } from '@deepseek-ai/dsh-typert-protocol'
+import { expect, it } from 'vitest'
+
+declare function rename(noteId: string, title: string): Promise<void>
+
+it('refuses an unknown note before writing', async () => {
+  const failure = await rename('n-404', 'fresh title').catch((error: unknown) => error)
+  expect(remoteErrorOf(failure)).toMatchObject({
+    code: 'note/not-found',
+    details: { noteId: 'n-404' },
+  })
+})
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 5: Prueba de Cliente con TestRemote}
+
+
+\textbf{Fuente}: patrón de pruebas de cliente en el repo
+
+
+\begin{lstlisting}
+import { Context } from '@deepseek-ai/cordis'
+import { RemoteError, TestRemote } from '@deepseek-ai/dsh-client-test-runtime'
+import { expect, it } from 'vitest'
+
+it('renders the failure code the Host reported', async () => {
+  const ctx = new Context()
+  const remote = new TestRemote(ctx, {
+    notes: {
+      list: () => Promise.resolve({
+        ok: false as const,
+        error: new RemoteError('note/not-found', 'no note "n-404"', { noteId: 'n-404' }),
+      }),
+    },
+  })
+  remote.$host = { home: '/home/fixture', isLoopback: true }
+  await expect(ctx.remote.notes.list()).resolves.toMatchObject({ error: { code: 'note/not-found' } })
+})
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 6: Herramienta del harness}
+
+
+\textbf{Fuente}: patrón de herramienta en el repo
+
+
+\begin{lstlisting}
+// greet-tool.ts
+import type { Context } from '@deepseek-ai/cordis'
+import { brandString } from '@deepseek-ai/dsh-brand'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { ToolCallId } from '@deepseek-ai/dsh-llm'
+
+export const name = 'greet-tool'
+export const inject = ['tools']
+
+export function apply(ctx: Context) {
+  ctx.tools.register(defineTool({
+    name: 'greet',
+    description: 'Greet the named person.',
+    parameters: {
+      name: { type: 'string', required: true, description: 'Who to greet' },
+    },
+    output: {
+      schema: { type: 'string' },
+      render: (_args, value) => [{ type: 'text', text: value }],
+    },
+    async execute(args) {
+      return `Hello, ${args.name}!`
+    },
+  }))
+
+  void (async () => {
+    const result = await ctx.tools.execute({
+      callId: brandString<ToolCallId>('demo-1'),
+      name: 'greet',
+      arguments: { name: 'Cordis' },
+      signal: new AbortController().signal,
+    })
+    console.log('tool replied:', JSON.stringify(result.content))
+  })()
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}
+# cordis.yml
+- name: '@deepseek-ai/dsh-system-prompt'
+- name: '@deepseek-ai/dsh-tools'
+- name: './tool-logger.ts'
+- name: './greet-tool.ts'
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 7: Configuración de agente en cordis.yml}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-agent-loop}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-agent-loop':
+    config:
+      maxParallelToolCalls: 4
+      agents:
+        - id: main-agent
+          provider: deepseek
+          model: deepseek-chat
+          cwd: /home/user/project
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 8: Configuración de compactación básica}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-compaction-basic}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-compaction-basic':
+    config:
+      thresholdRatio: 0.8
+      retainRatio: 0.2
+      summarizationProvider: deepseek
+      summarizationModel: deepseek-chat
+      maxTokens: 4096
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 9: Servidor MCP por stdio}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-mcp-client}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-mcp-client':
+    transport: stdio
+    serverName: my-server
+    command: node
+    args: ['server.js']
+    env: {}
+    cwd: /app
+    toolCallTimeoutMs: 30000
+    failOnStartupError: true
+    reconnect:
+      enabled: true
+      initialDelayMs: 500
+      maxDelayMs: 30000
+      maxAttempts: 10
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 10: Subagente ACP}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-subagent-acp}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-subagent-acp':
+    providerName: acp
+    command: /usr/local/bin/acp-agent
+    args: ['--config', 'agent.yaml']
+    permission: allow
+    env:
+      DEEPSEEK_API_KEY: sk-...
+    disposeEofGraceMs: 5000
+    disposeGraceMs: 2000
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 11: Herramienta subagente con filtro}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-tool-subagent}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-tool-subagent':
+    provider: spawn
+    toolName: my-subagent
+    enableRunInBackground: true
+    backgroundMode: continuable
+    agentOptions:
+      model: deepseek-v4-flash
+    toolFilter:
+      allow: ['read_file', 'write_file']
+      deny: ['shell']
+    maxDepth: 2
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 12: Presentación de herramientas en modo PTC}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-tools}
+
+
+\begin{lstlisting}
+plugins:
+  '@deepseek-ai/dsh-tools':
+    mode: ptc
+    maxParallelSubCalls: 5
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 13: Configuración de Python runtime}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-experimental-code-runtime-python}
+
+
+\begin{lstlisting}
+# cordis.yml
+'@deepseek-ai/dsh-experimental-code-runtime-python':
+  cpuSeconds: 10
+  maxWallMs: 30000
+  addressSpaceMb: 512
+  maxLogBytes: 1048576
+  maxValueBytes: 524288
+  pythonBin: /usr/bin/python3
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 14: Configuración de headless}
+
+
+\textbf{Fuente}: configuración de \texttt{@deepseek-ai/dsh-headless}
+
+
+\begin{lstlisting}
+'@deepseek-ai/dsh-headless':
+  task: "Analiza el archivo README.md y sugiere mejoras"
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 15: package.json para Remote}
+
+
+\textbf{Fuente}: patrón de package.json para servicios remotos
+
+
+\begin{lstlisting}
+{
+  "exports": {
+    "./typert": { "types": "./lib/typert.host.d.ts", "default": "./lib/typert.host.js" },
+    "./remote": { "types": "./lib/typert.remote-client.d.ts", "default": "./lib/typert.remote-client.js" }
+  },
+  "peerDependencies": { "@deepseek-ai/dsh-typert-protocol": "workspace:^" },
+  "devDependencies": { "@deepseek-ai/dsh-typert-protocol": "workspace:^" }
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 16: Hook de permission gate}
+
+
+\textbf{Fuente}: patrón de hooks en el repo
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('tools/pre-execute', async (exec, next): Promise<PreToolDecision> => {
+    if (!(await isAllowed(exec))) {
+      return { kind: 'deny', reason: 'Denied by policy.' }
+    }
+    return next()
+  })
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 17: UI — streaming en tiempo real}
+
+
+\textbf{Fuente}: patrón de UI en el repo
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('agent/assistant-stream', ({ frame }) => {
+    if (frame.type === 'chunk' && frame.chunk.type === 'text-delta') {
+      render(frame.chunk.text)
+    }
+  })
+
+  onUserInput(text => ctx.agents.get(sessionId)?.followup(createUserMessage({
+    content: [{ type: 'text', text }],
+    source: { kind: 'user' },
+  })))
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 18: Protocol driver (stdio)}
+
+
+\textbf{Fuente}: patrón de protocol driver en el repo
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('session/event', (_session, event) => {
+    if (event.type === 'assistant/message' || event.type === 'assistant/attempt') {
+      for (const { chunk } of expandAssistantStream(event.data.stream)) {
+        if (chunk.type === 'text-delta') { /* enviar a cliente */ }
+      }
+    }
+  })
+  // Entrada: crear/recuperar agente, alimentar con followup(), devolver recibo de encolado
+  // Desmontaje: AgentHandle.dispose() (stop + await exit)
+}
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 19: Waterfall para decisiones}
+
+
+\textbf{Fuente}: patrón de waterfall en el repo
+
+
+\begin{lstlisting}
+// Listener que envuelve:
+ctx.on('internal/update', function (config, next) {
+  console.log('antes:', config)
+  const result = next(config)   // delega al siguiente listener / built-in
+  console.log('después:', result)
+  return result                 // propaga (posiblemente modificado)
+})
+
+// Política que veta:
+ctx.on('some-decision-event', function (payload, next) {
+  if (payload.blocked) {
+    return { denied: true }     // cortocircuito – no llama a next()
+  }
+  return next()
+})
+\end{lstlisting}
+
+
+\subsection*{Ejemplo 20: Configuración validada con Schemastery}
+
+
+\textbf{Fuente}: patrón de configuración en el repo
+
+
+\begin{lstlisting}
+import Schema from '@deepseek-ai/schemastery'
+
+export interface Config {
+  greeting: string
+  targets: string[]
+}
+
+export const Config: Schema<Config> = Schema.object({
+  greeting: Schema.string().default('Hello'),
+  targets: Schema.array(String).default(['world']),
+})
+
+export function apply(ctx: Context, config: Config) {
+  for (const target of config.targets) {
+    console.log(`${config.greeting}, ${target}!`)
+  }
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}
+# cordis.yml
+- name: './config-demo.ts'
+  config:
+    targets: ['alpha', 'beta']
+\end{lstlisting}
+
+
+\section*{glosario}
+
+\section*{Glosario técnico del proyecto dsh}
+
+
+\subsection*{A}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Append-only}: Propiedad de los logs de sesión: son inmutables y solo crecen. Los eventos durables (\texttt{turn/\textit{}, \texttt{step/}}, \texttt{user/message}, \texttt{assistant/message}, \texttt{assistant/attempt}, \texttt{tool/*}) no se modifican ni eliminan.
+  \item \textbf{Agent Client Protocol (ACP)}: Protocolo de comunicación con agentes por stdio.
+  \item \textbf{AgentHandle}: Handle vivo de un agente. Métodos: \texttt{followup()}, \texttt{steer()}, \texttt{inject()}, \texttt{dispose()}.
+\end{itemize}
+
+
+\subsection*{B}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Bundle}: Paquete que compone una aplicación concreta (ej. \texttt{ctx.agentLoop}). Los bundles internos son \texttt{dsh-base}, \texttt{dsh-web-app}, \texttt{dsh-headless}, \texttt{dsh-sdk-app}, \texttt{dsh-sdk-minimal}, \texttt{dsh-acp-app}.
+  \item \textbf{Bail}: Modo de dispatch de eventos: secuencial síncrono, se detiene en el primer listener que retorna un valor.
+\end{itemize}
+
+
+\subsection*{C}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Cordis}: Kernel de plugins del harness. Proporciona \texttt{Context}, \texttt{Service}, \texttt{Fiber}, eventos y ciclo de vida.
+  \item \textbf{Core}: Servicio único, dueño del estado (ej. \texttt{ctx.sessions}, \texttt{ctx.tools}).
+  \item \textbf{ctx}: Objeto central de Cordis: servicios, eventos y ciclo de vida accesibles a través de \texttt{ctx}.
+\end{itemize}
+
+
+\subsection*{D}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Driver}: Orquestador del bucle del agente. Opera en 4 modos de ejecución en tiempo real.
+  \item \textbf{Disposer}: Función cleanup retornada por un efecto. Se ejecuta en orden inverso de registro.
+  \item \textbf{DispatchMode}: Tipo de dispatch de eventos: \texttt{'emit' | 'parallel' | 'serial' | 'bail' | 'waterfall'}.
+\end{itemize}
+
+
+\subsection*{E}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Emit}: Modo de dispatch de eventos: broadcast sin retorno, sin orden garantizado.
+  \item \textbf{Effect}: Recurso externo registrado con \texttt{ctx.effect()}. El disposer se ejecuta al descargar el fiber.
+  \item \textbf{EffectMeta}: Metadatos de diagnóstico de efectos: \texttt{{ label: string, children: EffectMeta[] }}.
+\end{itemize}
+
+
+\subsection*{F}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Fiber}: Instancia de plugin en runtime. Estados: \texttt{PENDING → LOADING → ACTIVE → UNLOADING → DISPOSED} (o \texttt{FAILED}).
+  \item \textbf{FiberState}: Enum de estados del fiber.
+\end{itemize}
+
+
+\subsection*{G}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Gateway}: Resuelve objetos complejos del Host (ej. \texttt{Agent}) usando \texttt{ctx.typert.lookups}.
+\end{itemize}
+
+
+\subsection*{H}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{HMR (Hot Module Reload)}: Recarga de plugins al guardar archivos. Requiere \texttt{cordis-plugin-hmr}.
+  \item \textbf{Headless}: Modo de ejecución one-shot sin interfaz. \texttt{dsh --profile headless "task"}.
+\end{itemize}
+
+
+\subsection*{I}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Inject}: Declaración de dependencias duras de un plugin. \texttt{inject: ['servicio1', 'servicio2']}.
+  \item \textbf{Isolate}: Crear un hijo con ámbito de servicio independiente para un nombre.
+\end{itemize}
+
+
+\subsection*{J}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{JSON-RPC}: Protocolo RPC por stdio usado por los perfiles \texttt{sdk} y \texttt{sdk-minimal}.
+\end{itemize}
+
+
+\subsection*{L}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Loader}: Cargador de plugins. Resuelve bundles y plugins desde la instalación de \texttt{dsh} o \texttt{node\_modules} del perfil.
+  \item \textbf{Live reload}: Modo de recarga de parches que observa cambios en archivos y reaplica (\texttt{patchReload: "live"}).
+\end{itemize}
+
+
+\subsection*{M}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{MCP (Model Context Protocol)}: Protocolo para conectar servidores de herramientas. Transportes: \texttt{stdio} y \texttt{streamable-http}.
+  \item \textbf{Monotonic guard}: Guardia monotónica para denegación final en el pipeline de herramientas.
+\end{itemize}
+
+
+\subsection*{O}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Overlay}: Capa de parche aplicada con \texttt{--patch <path>}. Las capas posteriores sobrescriben filas completas.
+\end{itemize}
+
+
+\subsection*{P}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Parallel}: Modo de dispatch de eventos: ejecución concurrente de todos los listeners.
+  \item \textbf{Patch}: Archivo YAML que modifica la configuración. Capas: bundles → perfil → home → overlays.
+  \item \textbf{Perfil}: Composición de bundles y parches. Se inicia con \texttt{dsh --profile <nombre>}.
+  \item \textbf{PTC (Prompt-to-Code)}: Modo de presentación de herramientas donde el código se genera como herramienta.
+  \item \textbf{Plugin}: Unidad de extensión Cordis. Formas: función, clase con \texttt{apply}, u objeto \texttt{{ apply }}.
+\end{itemize}
+
+
+\subsection*{R}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Remote}: Decorador para exponer un método como endpoint RPC unario.
+  \item \textbf{RemoteScope}: Decorador para métodos que operan sobre un contexto resuelto por ámbito (ej. \texttt{'agent'}).
+  \item \textbf{RemoteError}: Error tipado para el cliente remoto. Códigos declarados en \texttt{RemoteErrorDetailsMap}.
+\end{itemize}
+
+
+\subsection*{S}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Seam}: Interfaz abstracta (ej. \texttt{ctx.llm}, \texttt{ctx.fs}). Varios backends pueden registrarse.
+  \item \textbf{Serial}: Modo de dispatch de eventos: ejecución uno a uno, espera cada listener.
+  \item \textbf{Service}: Clase base para servicios en \texttt{ctx.<name>}. Registra la instancia en el contexto.
+  \item \textbf{Schemastery}: Librería de validación de esquemas de configuración.
+  \item \textbf{Settlement}: Frame de fin confirmado que consolida un stream como \texttt{assistant/message} o \texttt{assistant/attempt}.
+  \item \textbf{Spill}: Desbordamiento de resultados de herramientas a archivos cuando exceden \texttt{maxInlineBytes}.
+  \item \textbf{Subagent}: Agente hijo delegado. Proveedores: \texttt{spawn}, \texttt{fork}, \texttt{acp}, \texttt{codex}, \texttt{claude-code}, \texttt{dsh-sdk}.
+\end{itemize}
+
+
+\subsection*{T}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Typert}: Protocolo RPC tipado entre Host y Cliente. Artefactos: \texttt{typert.host.js}, \texttt{typert.remote-client.js}.
+  \item \textbf{TypertRemoteService}: Clase base para servicios de negocio expuestos al cliente.
+  \item \textbf{Tool}: Herramienta registrada en \texttt{ctx.tools}. Pipeline: pre-policy → monotonic guards → dispatch → post-policy → final-result.
+  \item \textbf{ToolCallId}: Identificador de llamada a herramienta con marca de tipo.
+\end{itemize}
+
+
+\subsection*{W}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Waterfall}: Modo de dispatch de eventos: middleware encadenado. Cada listener recibe \texttt{(...args, next)}.
+  \item \textbf{Workspace}: Entidad de espacio de trabajo con ID de marca, registrada en \texttt{ctx.workspaceRegistry}.
+\end{itemize}
+
+
+\subsection*{Y}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{YAML \texttt{!!js}}: Expresión JavaScript evaluada en tiempo de carga dentro de \texttt{config} y \texttt{disabled}.
+\end{itemize}
+
+
+\section*{patrones}
+
+\section*{Patrones de uso comunes}
+
+
+\subsection*{1. Envolver recurso externo en un efecto}
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.effect(() => {
+    const timer = setInterval(() => console.log('tick'), 200)
+    return () => clearInterval(timer)   // disposer
+  })
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{apply} se ejecuta al cargar el plugin.
+  \item \texttt{ctx.effect} ejecuta el callback inmediatamente.
+  \item El disposer retornado se registra para cleanup.
+  \item Al descargar el fiber, el disposer se ejecuta en orden inverso.
+\end{enumerate}
+
+
+\subsection*{2. Montar un sub-plugin y desmontarlo luego}
+
+
+\begin{lstlisting}
+const fiber = ctx.plugin(heartbeat)
+// ... más tarde
+await fiber.dispose()
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{ctx.plugin} carga el plugin y retorna un Fiber awaitable.
+  \item El fiber pasa por estados: PENDING → LOADING → ACTIVE.
+  \item \texttt{dispose()} ejecuta cleanup y pasa a DISPOSED.
+\end{enumerate}
+
+
+\subsection*{3. Proveer un servicio}
+
+
+\begin{lstlisting}
+declare module '@deepseek-ai/cordis' {
+  interface Context { greeter: GreeterService }
+}
+
+export class GreeterService extends Service {
+  constructor(ctx: Context) { super(ctx, 'greeter') }
+  greet(who: string) { return `Hello, ${who}!` }
+}
+
+export function apply(ctx: Context) { ctx.plugin(GreeterService) }
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Declarar el servicio en la interfaz \texttt{Context} (module augmentation).
+  \item Extender \texttt{Service} y llamar \texttt{super(ctx, 'greeter')} en el constructor.
+  \item Registrar con \texttt{ctx.plugin(GreeterService)}.
+  \item Otros plugins pueden consumir con \texttt{inject: ['greeter']}.
+\end{enumerate}
+
+
+\subsection*{4. Consumir un servicio con dependencia dura}
+
+
+\begin{lstlisting}
+export const inject = ['greeter']
+export function apply(ctx: Context) {
+  console.log(ctx.greeter.greet('world'))
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Declarar \texttt{inject} con los nombres de servicios requeridos.
+  \item El plugin espera a que los servicios estén disponibles.
+  \item Si un servicio requerido cambia, el plugin se recarga automáticamente.
+\end{enumerate}
+
+
+\subsection*{5. Consumir un servicio opcional}
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  const greeter = ctx.get('greeter')
+  console.log(greeter?.greet('maybe') ?? 'no greeter available')
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Usar \texttt{ctx.get('greeter')} sin declarar \texttt{inject}.
+  \item Si el servicio no existe, retorna \texttt{undefined}.
+  \item Manejar el caso con optional chaining y fallback.
+\end{enumerate}
+
+
+\subsection*{6. Declarar y emitir eventos tipados}
+
+
+\begin{lstlisting}
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    'stats/report'(name: string, count: number): void
+  }
+}
+
+// Emisión
+this.ctx.emit('stats/report', name, next)
+
+// Escucha (efecto automático)
+ctx.on('stats/report', (name, count) => {
+  console.log(`[stats] ${name} -> ${count}`)
+})
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Declarar el evento en la interfaz \texttt{Events} (module augmentation).
+  \item Emitir con \texttt{ctx.emit}.
+  \item Escuchar con \texttt{ctx.on} — el listener se registra como efecto y se limpia automáticamente.
+\end{enumerate}
+
+
+\subsection*{7. Waterfall: transformar o cortocircuitar}
+
+
+\begin{lstlisting}
+declare module '@deepseek-ai/cordis' {
+  interface Events {
+    'demo/transform'(input: string, next: () => Promise<string>): Promise<string>
+  }
+}
+
+// Listener que transforma
+ctx.on('demo/transform', async (input, next) => {
+  const downstream = await next()
+  return downstream.toUpperCase()
+})
+
+// Listener que cortocircuita
+ctx.on('demo/transform', async (input, next) => {
+  if (input.includes('blocked')) return '** blocked **'
+  return next()
+})
+
+// Invocación
+const result = await ctx.waterfall('demo/transform', 'hello', async () => 'hello')
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Cada listener recibe \texttt{(input, next)}.
+  \item \texttt{next()} invoca el siguiente listener en la cadena.
+  \item No llamar a \texttt{next()} cortocircuita la cadena.
+  \item El valor de retorno se propaga hacia afuera.
+\end{enumerate}
+
+
+\subsection*{8. Configuración validada con Schemastery}
+
+
+\begin{lstlisting}
+import Schema from '@deepseek-ai/schemastery'
+
+export interface Config {
+  greeting: string
+  targets: string[]
+}
+
+export const Config: Schema<Config> = Schema.object({
+  greeting: Schema.string().default('Hello'),
+  targets: Schema.array(String).default(['world']),
+})
+
+export function apply(ctx: Context, config: Config) {
+  for (const target of config.targets) {
+    console.log(`${config.greeting}, ${target}!`)
+  }
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}
+# cordis.yml
+- name: './config-demo.ts'
+  config:
+    targets: ['alpha', 'beta']
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Definir interfaz \texttt{Config} y schema Schemastery.
+  \item El loader valida la config del YAML contra el schema.
+  \item \texttt{apply} recibe la config validada.
+\end{enumerate}
+
+
+\subsection*{9. Valores computados en YAML (\texttt{!!js})}
+
+
+\begin{lstlisting}
+- name: './config-demo.ts'
+  config:
+    greeting: !!js process.env.DEMO_GREETING ?? 'Hello'
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{!!js} evalúa la expresión JavaScript en tiempo de carga.
+  \item Solo permitido dentro de \texttt{config} y \texttt{disabled}.
+  \item En modo \texttt{live}, editar el archivo reevalúa expresiones.
+\end{enumerate}
+
+
+\subsection*{10. Diagnóstico de plugins en PENDING}
+
+
+\begin{lstlisting}
+import { FiberState, type Context } from '@deepseek-ai/cordis'
+
+export function apply(ctx: Context) {
+  setTimeout(() => {
+    for (const runtime of ctx.registry.values()) {
+      for (const fiber of runtime.fibers) {
+        if (fiber.state === FiberState.PENDING) {
+          console.log(`${fiber.name} is PENDING — a required service is missing`)
+        }
+      }
+    }
+  }, 500)
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Iterar \texttt{ctx.registry.values()} para obtener runtimes.
+  \item Iterar \texttt{runtime.fibers} para obtener fibers.
+  \item Verificar \texttt{fiber.state === FiberState.PENDING}.
+\end{enumerate}
+
+
+\subsection*{11. Servicio remoto Typert (Host)}
+
+
+\begin{lstlisting}
+import type { Agent } from '@deepseek-ai/dsh-agent'
+import { TypertRemoteService, Remote, RemoteScope } from '@deepseek-ai/dsh-typert-protocol'
+import type { Context } from '@deepseek-ai/cordis'
+
+export class GoalService extends TypertRemoteService {
+  constructor(ctx: Context) {
+    super(ctx, 'goals')
+  }
+
+  @Remote('create')
+  createForClient(
+    agent: Agent,
+    request: { objective: string },
+    signal: AbortSignal,
+  ): { accepted: boolean } {
+    signal.throwIfAborted()
+    return this.create(agent, request)
+  }
+
+  @RemoteScope('agent', 'current')
+  currentForClient(): { accepted: boolean } {
+    return { accepted: true }
+  }
+
+  private create(_agent: Agent, request: { objective: string }): { accepted: boolean } {
+    return { accepted: request.objective.length > 0 }
+  }
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Extender \texttt{TypertRemoteService} con namespace \texttt{'goals'}.
+  \item Decorar métodos públicos con \texttt{@Remote} o \texttt{@RemoteScope}.
+  \item El Gateway resuelve objetos complejos (ej. \texttt{Agent}) usando \texttt{ctx.typert.lookups}.
+\end{enumerate}
+
+
+\subsection*{12. Consumo remoto con manejo de errores (Cliente)}
+
+
+\begin{lstlisting}
+import type { Context } from '@deepseek-ai/cordis'
+import { isRemoteFailure } from '@deepseek-ai/dsh-api-gateway/client'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
+
+export const inject = ['remote', 'remote.notes']
+
+declare const ctx: Context
+
+export async function noteTitles(): Promise<readonly string[]> {
+  const result = await ctx.remote.notes.list()
+  if (!result.ok) {
+    if (result.error.code === 'note/not-found') return []
+    throw result.error
+  }
+  return result.value.map(row => row.title)
+}
+
+export async function renderTitles(): Promise<string> {
+  try {
+    return (await noteTitles()).join(', ')
+  } catch (error: unknown) {
+    if (!isRemoteFailure(error)) throw error
+    return `unavailable (${error.code})`
+  }
+}
+
+export function hostLabel(): string {
+  const { home, isLoopback } = ctx.remote.$host
+  return home ?? (isLoopback ? 'local host' : 'remote host')
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Declarar \texttt{inject: ['remote', 'remote.notes']}.
+  \item Llamar \texttt{ctx.remote.notes.list()}.
+  \item Verificar \texttt{result.ok}; si es \texttt{false}, ramificar por \texttt{result.error.code}.
+  \item Usar \texttt{isRemoteFailure(error)} para distinguir fallos remotos de defectos locales.
+\end{enumerate}
+
+
+\subsection*{13. Hook de permission gate}
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('tools/pre-execute', async (exec, next): Promise<PreToolDecision> => {
+    if (!(await isAllowed(exec))) {
+      return { kind: 'deny', reason: 'Denied by policy.' }
+    }
+    return next()
+  })
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Escuchar \texttt{tools/pre-execute} (waterfall).
+  \item Si la política deniega, retornar \texttt{{ kind: 'deny', reason }} sin llamar a \texttt{next()}.
+  \item Si permite, llamar a \texttt{next()} para continuar la cadena.
+\end{enumerate}
+
+
+\subsection*{14. UI: streaming en tiempo real}
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('agent/assistant-stream', ({ frame }) => {
+    if (frame.type === 'chunk' && frame.chunk.type === 'text-delta') {
+      render(frame.chunk.text)
+    }
+  })
+
+  onUserInput(text => ctx.agents.get(sessionId)?.followup(createUserMessage({
+    content: [{ type: 'text', text }],
+    source: { kind: 'user' },
+  })))
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Escuchar \texttt{agent/assistant-stream} para chunks transitorios.
+  \item Enviar entrada de usuario con \texttt{ctx.agents.get(sessionId)?.followup(...)}.
+\end{enumerate}
+
+
+\subsection*{15. Protocol driver (stdio)}
+
+
+\begin{lstlisting}
+export function apply(ctx: Context) {
+  ctx.on('session/event', (_session, event) => {
+    if (event.type === 'assistant/message' || event.type === 'assistant/attempt') {
+      for (const { chunk } of expandAssistantStream(event.data.stream)) {
+        if (chunk.type === 'text-delta') { /* enviar a cliente */ }
+      }
+    }
+  })
+  // Entrada: crear/recuperar agente, alimentar con followup(), devolver recibo de encolado
+  // Desmontaje: AgentHandle.dispose() (stop + await exit)
+}
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Escuchar \texttt{session/event} para eventos durables.
+  \item Expandir el stream del asistente y enviar deltas de texto al cliente.
+  \item Para entrada, crear/recuperar agente y usar \texttt{followup()}.
+\end{enumerate}
+
+
+\subsection*{16. Pipeline de herramientas}
+
+
+\begin{lstlisting}
+// ctx.tools expone:
+//   - Registro de capacidades
+//   - Transporte PTC mode
+//   - Ruteo con pre-policy → monotonic guards → dispatch → post-policy → final-result
+
+// Herramientas registradas:
+ctx.tools.register(toolBash)     // usa ctx.shell, ctx.approval, ctx.jobs
+ctx.tools.register(toolFs)       // usa ctx.fs
+ctx.tools.register(toolWeb)      // usa ctx.web
+ctx.tools.register(toolSubagent) // usa ctx.subagents
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Registrar herramientas con \texttt{ctx.tools.register}.
+  \item El pipeline ejecuta: pre-policy → monotonic guards → dispatch → post-policy → final-result.
+  \item Eventos: \texttt{tools/pre-execute} → \texttt{tools/execute} → \texttt{tools/post-execute} → \texttt{tools/result}.
+\end{enumerate}
+
+
+\subsection*{17. Flujo del turno del agente}
+
+
+\begin{lstlisting}
+turn/start → (pasos) → agent/turn-stopping → turn/end
+\end{lstlisting}
+
+
+\textbf{Modos de ejecución}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Inbox/Cola}: El \texttt{Driver} se activa con trabajo en cola. Reclama mensajes de entrada (\texttt{agent/inbox/claimed}).
+  \item \textbf{Pre-paso (Waterfall)}: Emite \texttt{agent/pre-step}. Los hooks pueden rechazar autoritativamente o ingresar (\texttt{enter(messages)}) el lote propuesto. Un rechazo cierra el turno sin ejecutar paso.
+  \item \textbf{Paso de ejecución}: Si se ingresa, inicia \texttt{step/start}. Ensambla el prompt del sistema (\texttt{system-prompt/assemble}), realiza la solicitud al LLM (\texttt{agent/request} → \texttt{llm/stream}), y transmite los chunks de vuelta (\texttt{agent/assistant-stream}). El resultado exitoso se registra como \texttt{assistant/message}; los fallos/errores como \texttt{assistant/attempt}.
+  \item \textbf{Ejecución de herramientas}: Clasifica y ejecuta llamadas a herramientas en un pool rodante con barreras. Emite \texttt{tool/call} y \texttt{tool/result}. Si las herramientas generan más trabajo, se inicia un nuevo paso.
+\end{enumerate}
+
+
+\subsection*{18. Trazabilidad append-only}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Eventos de sesión}: \texttt{turn/\textit{}, \texttt{step/}}, \texttt{user/message}, \texttt{assistant/message}, \texttt{assistant/attempt}, y \texttt{tool/*} son eventos durables e inmutables en el log de sesión.
+  \item \textbf{Transmisión en tiempo real}: \texttt{agent/assistant-stream} publica chunks transitorios. El loop consolida el stream completo como un \texttt{assistant/message} o \texttt{assistant/attempt} antes de un frame de fin confirmado.
+  \item \textbf{Recuperabilidad}: Todo lo que el modelo ve debe ser reconstruible desde el log. Si un proceso se interrumpe antes de un \texttt{settlement}, no queda un stream de intento persistente. Los consumidores de transcripciones deben usar \texttt{session/event}.
+\end{itemize}
+
+
+\subsection*{19. Almacenamiento con backends múltiples}
+
+
+\begin{lstlisting}
+// Backends nombrados bajo ctx.storage
+storage.register('json', storageJson)
+storage.register('sqlite', storageSqlite)
+
+// ctx.storageDomain espera a cada backend configurado y publica
+// un único servicio tipado para estado duradero
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Registrar backends con \texttt{storage.register(nombre, implementación)}.
+  \item \texttt{ctx.storageDomain} enruta dominios a backends específicos.
+  \item Configuración: \texttt{backend} (default) y \texttt{routes} (overrides por dominio).
+\end{enumerate}
+
+
+\subsection*{20. Sesiones y persistencia}
+
+
+\begin{lstlisting}
+// ctx.sessions: append-only, in-memory
+// Emite feed de eventos durables
+
+// ctx.sessionPersistence (seam) → backends reales
+// Implementación JSONL: un artifact por Session con SessionEvent vocabulary
+// Consumidores: agent-loop, tool-bash, hooks, session-query, message-feedback
+
+// ctx.sessionProjectionCache: checkpoint cache + cold-read ladder
+// Puntos mandatorios: throttled + turn/end/detach
+\end{lstlisting}
+
+
+\textbf{Flujo}:
+
+
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{ctx.sessions} mantiene el log en memoria.
+  \item \texttt{ctx.sessionPersistence} persiste a JSONL.
+  \item \texttt{ctx.sessionProjectionCache} mantiene checkpoints para cold-read.
+\end{enumerate}
+
+
+\section*{prerrequisitos}
+
+\section*{Prerrequisitos del proyecto dsh}
+
+
+\subsection*{Dependencias del sistema}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \textbf{Node.js}: runtime JavaScript/TypeScript.
+  \item \textbf{pnpm}: gestor de paquetes. Debe estar en el PATH para \texttt{dsh plugin}.
+  \item \textbf{pnpm ≥10}: para plugins desde Git con \texttt{prepare} script, bloquea hasta permitir en \texttt{pnpm-workspace.yaml}.
+  \item \textbf{CPython 3.10+}: requerido por \texttt{@deepseek-ai/dsh-experimental-code-runtime-python}.
+\end{itemize}
+
+
+\subsection*{Paquetes npm principales}
+
+
+\subsubsection*{Core}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/cordis} — kernel de plugins (Context, Service, Fiber, eventos).
+  \item \texttt{@deepseek-ai/dsh-agent} — fábrica de agentes.
+  \item \texttt{@deepseek-ai/dsh-agent-loop} — driver del bucle agente.
+  \item \texttt{@deepseek-ai/dsh-session} — almacén de sesiones append-only.
+  \item \texttt{@deepseek-ai/dsh-tools} — registro de herramientas y pipeline.
+  \item \texttt{@deepseek-ai/dsh-system-prompt} — ensamblador de system prompt.
+\end{itemize}
+
+
+\subsubsection*{Protocolo}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-typert-protocol} — RPC tipado entre Host y Cliente.
+  \item \texttt{@deepseek-ai/dsh-api-gateway} — gateway de API.
+  \item \texttt{@deepseek-ai/dsh-api-remotes} — remotes de API.
+\end{itemize}
+
+
+\subsubsection*{Bundles}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-base}
+  \item \texttt{@deepseek-ai/dsh-web-app}
+  \item \texttt{@deepseek-ai/dsh-headless}
+  \item \texttt{@deepseek-ai/dsh-sdk-app}
+  \item \texttt{@deepseek-ai/dsh-sdk-minimal}
+  \item \texttt{@deepseek-ai/dsh-acp-app}
+\end{itemize}
+
+
+\subsubsection*{Seams y backends}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-llm} + \texttt{dsh-llm-deepseek}, \texttt{dsh-llm-pi-ai}, \texttt{dsh-llm-replay}
+  \item \texttt{@deepseek-ai/dsh-fs} + \texttt{dsh-fs-local}, \texttt{dsh-fs-sandbox}, \texttt{dsh-fs-e2b}
+  \item \texttt{@deepseek-ai/dsh-storage} + \texttt{dsh-storage-json}, \texttt{dsh-storage-sqlite}
+  \item \texttt{@deepseek-ai/dsh-subagents} + \texttt{dsh-subagent-spawn-in-process}, \texttt{dsh-subagent-fork-in-process}, \texttt{dsh-subagent-acp}, \texttt{dsh-subagent-codex}, \texttt{dsh-subagent-claude-code}, \texttt{dsh-subagent-dsh-sdk}
+  \item \texttt{@deepseek-ai/dsh-compaction} + \texttt{dsh-compaction-basic}
+  \item \texttt{@deepseek-ai/dsh-sandbox} + \texttt{dsh-sandbox-local}
+  \item \texttt{@deepseek-ai/dsh-shell} + \texttt{dsh-bash-local}, \texttt{dsh-bash-sandbox}, \texttt{dsh-pwsh-local}
+  \item \texttt{@deepseek-ai/dsh-web} + \texttt{dsh-web-search-exa}, \texttt{dsh-web-search-perplexity}, \texttt{dsh-web-search-deepseek}, \texttt{dsh-web-fetch-http}
+\end{itemize}
+
+
+\subsubsection*{Herramientas}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-tool-bash}
+  \item \texttt{@deepseek-ai/dsh-tool-fs}
+  \item \texttt{@deepseek-ai/dsh-tool-web}
+  \item \texttt{@deepseek-ai/dsh-tool-subagent}
+  \item \texttt{@deepseek-ai/dsh-tool-terminal}
+  \item \texttt{@deepseek-ai/dsh-tool-jobs}
+  \item \texttt{@deepseek-ai/dsh-tool-workflow}
+  \item \texttt{@deepseek-ai/dsh-tool-lsp}
+  \item \texttt{@deepseek-ai/dsh-tool-skill}
+  \item \texttt{@deepseek-ai/dsh-tool-cordis}
+  \item \texttt{@deepseek-ai/dsh-tool-ralph}
+  \item \texttt{@deepseek-ai/dsh-tool-todo}
+\end{itemize}
+
+
+\subsubsection*{Frontend}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-host-webserver}
+  \item \texttt{@deepseek-ai/dsh-client-connection}
+  \item \texttt{@deepseek-ai/dsh-client-modules}
+  \item \texttt{@deepseek-ai/dsh-client-hmr}
+  \item \texttt{@deepseek-ai/dsh-client-ui-*} (múltiples paquetes UI)
+\end{itemize}
+
+
+\subsubsection*{Testing}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/dsh-client-test-runtime} — \texttt{TestRemote}, \texttt{RemoteError} para pruebas de cliente.
+  \item \texttt{vitest} — framework de pruebas.
+\end{itemize}
+
+
+\subsubsection*{Utilidades}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{@deepseek-ai/schemastery} — validación de esquemas de configuración.
+  \item \texttt{@deepseek-ai/dsh-brand} — utilidades de branding (ej. \texttt{brandString}).
+\end{itemize}
+
+
+\subsection*{Instalación}
+
+
+\begin{lstlisting}
+# Instalar dsh globalmente (o usar pnpm dlx)
+pnpm add -g @deepseek-ai/dsh
+
+# Verificar instalación
+dsh --version
+
+# Inicializar un perfil
+dsh --profile web
+
+# Añadir plugins a un perfil
+dsh plugin --profile <name> add <package>
+\end{lstlisting}
+
+
+\subsection*{Requisitos de configuración}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item \texttt{$DSH\_HOME}: directorio home del harness (default: \texttt{\textasciitilde{}/.dsh}).
+  \item \texttt{$DSH\_AGENTS\_HOME}: directorio de agentes (default: \texttt{\textasciitilde{}/.agents}).
+  \item \texttt{pnpm-workspace.yaml}: necesario para plugins desde Git con \texttt{prepare} script.
+  \item \texttt{cordis.patch.yml}: archivo de parches del perfil o home.
+\end{itemize}
+
+
+\subsection*{Notas importantes}
+
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+  \item Todas las configuraciones son validadas al inicio; los errores de configuración provocan fallos ruidosos.
+  \item Los tiempos de gracia (\texttt{disposeGraceMs}, \texttt{shutdownTimeoutMs}) están acotados por \texttt{MAX\_TIMER\_DELAY\_MS}.
+  \item Las claves de entorno en subagentes se superponen a un entorno padre limpio de credenciales.
+  \item El fallback SRC para desarrollo en fuente es más débil y no genera artefactos estrictos de Typert.
+  \item Solo los paquetes que llaman a \texttt{ctx.remote.<namespace>} deben declarar la dependencia \texttt{'remote.<namespace>'} en su array \texttt{inject}.
+\end{itemize}
+
+
+\end{document}
