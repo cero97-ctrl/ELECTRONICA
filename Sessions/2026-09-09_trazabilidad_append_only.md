@@ -40,8 +40,31 @@ Integración en el flujo piloto, sin romper su checkpoint:
 - `run_id` malicioso (`../etc/evil`) rechazado (exit 1).
 - `resume` correcto en los 3 estados: fin (no reanudable), error (reanudable
   desde el paso del último error), en curso.
-- Integración orquestador verificada con simulación (no se ejecutó la síntesis:
-  consume créditos y el usuario no lo pidió).
+- Integración orquestador verificada con simulación.
+
+### Prueba de extremo a extremo (solicitada por el usuario, 2026-09-09)
+Fuente más económica del workspace para acotar el gasto:
+`--repo Proyectos/RuView_Rescue` (12K, 1 archivo README, ~175 tokens),
+`--nombre ruview_rescue --dry-run --no-alert`, stdin cerrado (`</dev/null`
+hace que `confirmar("¿Instalar?")` tome el default "s", pero al ser `--dry-run`
+se salta la instalación física).
+
+Resultado:
+- **Saldo inicial $21.08 → final $21.06** — consumo neto **≈ $0.015** (usage
+  OpenRouter 3.6936 → 3.7068). La síntesis fue barata porque la fuente era
+  mínima (175 tokens) y el tier deepseek resultó barato como esperado.
+- **Exit 0**, traza append-only íntegra (6 eventos, cadena de hashes OK):
+  1. `flujo/inicio` → 2. paso 1 (extracción, 1 archivo) → 3. paso 4 (validación
+  neuro-simbólica OK, 0 bloques) → 4. paso 5 (LaTeX generado, **PDF falló**) →
+  5. paso 6 (dry-run) → 6. `flujo/fin`.
+- **Hallazgo**: el reporte LaTeX no compiló — "Invalid UTF-8 byte sequence"
+  dentro del `lstlisting` (el README fuente contiene caracteres de árbol
+  `├──`/`└──`). Es el pitfall #15 de `.agent/latex.md` (listings + pdflatex).
+  El flujo NO aborta (avisa y sigue, comportamiento documentado en
+  `directives/repo_a_skill.yaml` edge case). Si el PDF es necesario, usar
+  `xelatex`/`lualatex` o limpiar los caracteres de árbol de la fuente.
+- Se eliminaron los artefactos del dry-run (`.tmp/skill_ruview_rescue`,
+  `docs/SKILL/ruview_rescue`) — eran solo de prueba.
 
 ## Decisiones
 - `.gitignore`: se añaden `.tmp/session_log_*.jsonl` y `.tmp/run_state_*.json`
@@ -53,8 +76,9 @@ Integración en el flujo piloto, sin romper su checkpoint:
   directiva sin abandonar su `save_state`.
 
 ## Pendientes
-- Probar `flujo_repo_a_skill.py` de extremo a extremo con la traza (consume
-  créditos OpenRouter: solicitarlo explícitamente).
+- Probar el reporte LaTeX con generadores para fuentes con caracteres de árbol
+  (pitfall #15); decidir si `generar_latex_skill.py` debe sanitizar o el flujo
+  usar `xelatex`.
 - Migrar otros flujos (`flujo_libro_a_skill`, `flujo_diagnostico`, etc.) al patrón
   `registrar_evento` cuando aporte valor.
 - Hands-on de los 4 modos de dsh (postergado de la sesión previa).
