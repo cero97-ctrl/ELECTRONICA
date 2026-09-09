@@ -15,8 +15,16 @@ Uso:
     python3 execution/enrutador.py --task contexto_masivo --archivos a.txt b.tex
     python3 execution/enrutador.py --task rag --critico
     python3 execution/enrutador.py --task debug --modelo-explicito moonshotai/kimi-k3
+    python3 execution/enrutador.py --task formateo --tokens 1000 --delegacion
 
 Salida (stdout, JSON): {"tier", "model", "fallback", "reason", "tokens"}
+Con --delegacion incluye además {"subagent", "delegacion_reason"}: el subagente
+opencode al que delegar el trabajo según el tier decidido (visión multi-proveedor,
+inspirada en el seam ctx.subagents + tool-subagent de dsh). El subagente es un
+agente opencode SIN modelo fijo: hereda el motor rotativo del asistente (0 créditos
+OpenRouter); SOLO la persona/capacidades las fija el tier. Con --modelo-explicito el
+subagente es null → la elección queda a criterio del orquestador (override total del
+modelo, no del destino).
 Códigos de salida: 0 = ok, 1 = tipo de tarea inválido, 2 = sin archivos ni tokens.
 """
 
@@ -65,6 +73,23 @@ FALLBACK_CHAINS = {
     "flash":    ["flash", "deepseek", "glm"],
     "deepseek": ["deepseek", "glm", "opus"],
     "opus":     ["opus", "deepseek", "glm"],
+}
+
+# Mapeo determinista tier -> subagente opencode (visión multi-proveedor estilo dsh:
+# un contrato de delegación, muchos destinos). Los subagentes NO fijan modelo: heredan
+# el motor rotativo del asistente (0 créditos OpenRouter). Solo cambia la persona y
+# las capacidades del agente destino según el tier ya decidido. Con --modelo-explicito
+# el subagente es null (el orquestador elige el destino; solo el modelo es override).
+SUBAGENTS = {
+    "flash":    "sub-rutina",   # parsing, formateo, validación, resúmenes, conversión
+    "deepseek": "sub-sintesis", # contexto masivo, multi-archivo, destilación, logs
+    "opus":     "sub-critico",  # diseño, cálculo formal, debugging, revisión crítica
+}
+DELEGACION_REASON = {
+    "flash":    "Tier flash: subagente sub-rutina (parsing, formateo, validación, resúmenes).",
+    "deepseek": "Tier deepseek: subagente sub-sintesis (contexto masivo, destilación, logs).",
+    "opus":     "Tier opus: subagente sub-critico (diseño, cálculo formal, debugging).",
+    "explicito": "Modelo explícito: subagente a elección del orquestador (solo el modelo es override).",
 }
 
 # Telemetría: log por decisión (tier, tokens, modelo) para poder tunear la política.
@@ -176,6 +201,8 @@ def main() -> int:
                         help="Requiere visión (imágenes/PDF). Solo informativo: todos los tiers la soportan.")
     parser.add_argument("--modelo-explicito", default=None,
                         help="Modelo indicado por el usuario: override total.")
+    parser.add_argument("--delegacion", action="store_true",
+                        help="Incluye el subagente destino (multi-proveedor estilo dsh).")
     parser.add_argument("--no-log", action="store_true", help="No escribir telemetría.")
     args = parser.parse_args()
 
@@ -191,6 +218,14 @@ def main() -> int:
     if result["tier"] == "desconocido":
         print(json.dumps({"status": "error", "code": 1, **result}, ensure_ascii=False))
         return 1
+
+    if args.delegacion:
+        if result["tier"] == "explicito":
+            result["subagent"] = None
+            result["delegacion_reason"] = DELEGACION_REASON["explicito"]
+        else:
+            result["subagent"] = SUBAGENTS[result["tier"]]
+            result["delegacion_reason"] = DELEGACION_REASON[result["tier"]]
 
     result = {"status": "ok", "code": 0, "vision": args.vision, **result}
     if not args.no_log:

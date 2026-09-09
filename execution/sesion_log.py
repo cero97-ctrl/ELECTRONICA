@@ -27,6 +27,9 @@ Tipos de evento (vocabulario):
   flujo/error   - fallo ({paso, script, mensaje})
   tool/call     - invocación de herramienta/script ({script, args})
   tool/result   - resultado de herramienta ({status, exit_code})
+  delegacion/decidida  - enrutamiento determinista de delegación a subagente
+                         ({task, tier, subagent|null, tokens, critico, vision})
+  delegacion/resultado - resultado del subagente delegado ({subagent, status, exit_code})
 
 Códigos de salida:
   0 -> éxito
@@ -55,6 +58,8 @@ TIPOS_EVENTO = {
     "flujo/error",
     "tool/call",
     "tool/result",
+    "delegacion/decidida",
+    "delegacion/resultado",
 }
 
 

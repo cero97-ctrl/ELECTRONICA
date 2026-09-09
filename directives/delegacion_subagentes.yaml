@@ -1,0 +1,183 @@
+goal: >
+  Delegar subtareas a subagentes opencode especializados según un descriptor
+  estructurado, de forma DETERMINISTA (inspirado en el seam ctx.subagents +
+  tool-subagent del Agent Harness DeepSeek). El orquestador extrae el descriptor,
+  execution/enrutador.py --delegacion decide el subagente destino por reglas
+  puras, y el orquestador invoca ese subagente con el Task tool. Los subagentes
+  NO fijan modelo: heredan el motor rotativo del asistente (0 créditos
+  OpenRouter); la especialización (persona + capacidades) viene del tier.
+
+required_inputs:
+  - name: subtarea
+    description: >
+      La tarea concreta que se quiere delegar a un subagente. Debe traducirse a
+      un descriptor estructurado (parsing de intención, no decisión).
+    example: "Resumir el contenido de docs/ARQUITECTURA_ENRUTAMIENTO_LLM/"
+  - name: descriptor
+    description: >
+      {task (vocabulario controlado), tokens|archivos, critico, vision,
+      modelo_explicito} — el mismo descriptor que alimenta el enrutamiento LLM.
+    example: '{task: "resumen", archivos: ["docs/ARQUITECTURA_ENRUTAMIENTO_LLM/*.md"]}'
+
+optional_inputs:
+  - name: contexto
+    description: Contexto adicional de la sesión (resultados previos en .tmp/, etc.).
+    default: ""
+
+steps:
+  - step: 1
+    description: >
+      Extraer el descriptor estructurado de la subtarea (--task del vocabulario
+      controlado, --tokens o --archivos medidos, --critico, --vision, y
+      --modelo-explicito si el usuario nombró modelo).
+    script: "N/A (extracción del orquestador)"
+    inputs:
+      subtarea: "{{subtarea}}"
+    expected_output: >
+      Descriptor: {task, tokens|archivos, critico, vision, modelo_explicito}.
+
+  - step: 2
+    description: >
+      Invocar el router determinista con --delegacion. Reglas puras en el script:
+      modelo explícito > umbral de tokens (>50k) > tipo de tarea > criticidad.
+      Con --modelo-explicito el subagente sale null (elección del orquestador).
+    script: "execution/enrutador.py"
+    inputs:
+      "--task": "{{task}}"
+      "--tokens": "{{tokens}}"
+      "--archivos": "{{archivos}}"
+      "--critico": "{{critico}}"
+      "--vision": "{{vision}}"
+      "--modelo-explicito": "{{modelo_explicito}}"
+      "--delegacion": "true"
+    expected_output: >
+      JSON: {status, tier, model, fallback, reason, tokens, subagent,
+      delegacion_reason}. subagent ∈ {sub-rutina, sub-sintesis, sub-critico}
+      o null con modelo explícito.
+
+  - step: 3
+    description: >
+      Registrar la decisión de delegación en la trazabilidad append-only
+      (sesion_log.py add --tipo delegacion/decidida) con {task, tier,
+      subagent, tokens, critico, vision}.
+    script: "execution/sesion_log.py"
+    inputs:
+      "--run": "{{run_id}}"
+      "--tipo": "delegacion/decidida"
+      "--datos": "{{json_decidida}}"
+    expected_output: >
+      Evento append-only con seq + hash encadenado.
+
+  - step: 4
+    description: >
+      Invocar el subagente destino con el Task tool (subagent_type =
+      <subagent>), pasando la subtarea concreta, el contexto y las restricciones
+      de salida. Según el tier:
+        sub-rutina  -> tareas mecánicas (parsing, formateo, validación, resumen)
+        sub-sintesis-> contexto masivo / multi-archivo / destilación
+        sub-critico -> diseño, cálculo formal, debugging, revisión
+      Si subagent es null (modelo explícito), elegir el subagente al criterio
+      del orquestador según la naturaleza de la subtarea.
+    script: "Task tool (orquestador opencode)"
+    inputs:
+      subagent: "{{subagent}}"
+      subtarea: "{{subtarea}}"
+      contexto: "{{contexto}}"
+    expected_output: >
+      Salida del subagente (resumen ejecutivo + artefactos si aplica).
+
+  - step: 5
+    description: >
+      Validar la salida del subagente contra lo solicitado. Si falla, reintentar
+      con la misma elección (retry budget máx 3); si persiste el error de
+      servicio, escalar por la cadena 'fallback' del enrutador (flash->deepseek->
+      glm; deepseek->glm->opus; opus->deepseek->glm) re-invocando enrutador.py.
+    script: "N/A (validación del orquestador)"
+    expected_output: >
+      Confirmación de salida válida o causa raíz diagnosticada.
+
+  - step: 6
+    description: >
+      Registrar el resultado de la delegación (sesion_log.py add --tipo
+      delegacion/resultado) con {subagent, status, exit_code}.
+    script: "execution/sesion_log.py"
+    inputs:
+      "--run": "{{run_id}}"
+      "--tipo": "delegacion/resultado"
+      "--datos": "{{json_resultado}}"
+    expected_output: >
+      Evento append-only cerrando el ciclo de delegación.
+
+expected_outputs:
+  - name: subagente_elegido
+    description: >
+      El subagente destino decidido por execution/enrutador.py --delegacion,
+      nunca por criterio subjetivo del orquestador (salvo subagent null con
+      modelo explícito).
+  - name: trabajo_delegado
+    description: >
+      La subtarea ejecutada por el subagente especializado y devuelta al
+      orquestador (resumen + artefactos cuando aplique).
+  - name: trazabilidad
+    description: >
+      Cada delegación queda registrada en el log append-only: delegacion/decidida
+      (antes de invocar) y delegacion/resultado (después).
+  - name: resultado_validado
+    description: >
+      Salida del subagente verificada contra lo solicitado (y compilada/validada
+      cuando el artefacto es .tex, netlist, examen, etc.).
+
+edge_cases:
+  - case: "El usuario nombró un modelo explícito (--modelo-explicito)"
+    recovery: >
+      El enrutador devuelve subagent: null. El orquestador elige el subagente por
+      la naturaleza de la subtarea (rutina/síntesis/crítico); el modelo indicado
+      se respeta como override total en la ejecución.
+
+  - case: "El tipo de tarea no está en el vocabulario controlado"
+    recovery: >
+      El router devuelve código 1 con tier 'desconocido'. Revisar el descriptor
+      extraído (posible error de parsing) o añadir el tipo nuevo al vocabulario
+      en execution/enrutador.py (nunca decidir el subagente a mano).
+
+  - case: "El subagente no devuelve resultado válido"
+    recovery: >
+      Reintentar el mismo subagente (máx 3 intentos). Si el fallo es de servicio
+      (429/error repetido), escalar por la cadena 'fallback' del enrutador
+      re-invocando enrutador.py --delegacion; no cambiar de subagente por mera
+      calidad de la salida.
+
+  - case: "Subtarea genera LaTeX derechamente"
+    recovery: >
+      Antes de modificar artefactos .tex, leer .agent/latex.md (16 pitfalls
+      documentados). Los subagentes lo aplican por su prompt; el orquestador lo
+      verifica al validar la salida.
+
+  - case: "Subagente intenta decidir modelo/tier"
+    recovery: >
+      Está prohibido: la elección ya la hizo execution/enrutador.py. El
+      subagente debe reportar la ambigüedad al orquestador, no elegir.
+
+metadata:
+  version: "1.0"
+  created: "2026-09-09"
+  author: "opencode"
+  referencias:
+    - "execution/enrutador.py"
+    - "execution/sesion_log.py"
+    - "execution/llm_client.py"
+    - ".opencode/agents/sub-rutina.md"
+    - ".opencode/agents/sub-sintesis.md"
+    - ".opencode/agents/sub-critico.md"
+    - ".agent/enrutamiento.md"
+    - "directives/enrutamiento_llm.yaml"
+  env_vars_requeridas: []
+  notas: >
+    La inspiración es dsh: un solo contrato de delegación (Service Definition,
+    Provider, Consumer) con MÚLTIPLES proveedores (subagentes) y una herramienta
+    por destino (toolName distinto). En ELECTRONICA el equivalente es: el
+    enrutador decide el destino (determinista), el orquestador invoca el Task
+    tool, y los subagentes son agentes opencode con permisos/persona por tier.
+    Los subagentes NO consumen créditos OpenRouter: heredan el motor rotativo
+    del asistente (0 créditos). Solo la elección de modelo para scripts de
+    execution/ con --api-backend openrouter consume créditos.

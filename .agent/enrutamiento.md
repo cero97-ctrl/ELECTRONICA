@@ -115,6 +115,28 @@ enrutadas (no gasto real) en `.tmp/routing_log.jsonl`.
 - **Saldo OpenRouter:** vigilar con `python execution/monitor_saldo_openrouter.py`; cerca
   del auto top-up de $5 (cuando el saldo baja de $3), priorizar tiers baratos (flash/deepseek) y evitar opus para no agotar saldo.
 
+## Delegación a subagentes (multi-proveedor estilo dsh)
+
+Inspirado en el seam `ctx.subagents` + `tool-subagent` de dsh (un contrato, muchos
+proveedores), ELECTRONICA puede delegar subtareas a subagentes opencode especializados:
+
+- **Decisión determinista:** `python3 execution/enrutador.py --delegacion <descriptor>`
+  devuelve además `subagent` y `delegacion_reason`. Mapeo fijo en código (`SUBAGENTS`):
+  `flash → sub-rutina`, `deepseek → sub-sintesis`, `opus → sub-critico`. Con
+  `--modelo-explicito` el subagente sale `null` (elección del orquestador; solo el
+  modelo es override).
+- **Subagentes (`.opencode/agents/`):** agentes opencode SIN modelo fijo → heredan el
+  motor rotativo del asistente y **no consumen créditos OpenRouter**. La especialización
+  es por persona y permisos: `sub-rutina` (lectura, sin edición), `sub-sintesis`
+  (lectura masiva + edición), `sub-critico` (razonamiento + edición). Requieren
+  reinicio de opencode tras crearlos/editarlos.
+- **Flujo:** extraer descriptor → `enrutador.py --delegacion` → registrar
+  `delegacion/decidida` (sesion_log.py) → Task tool (`subagent_type = <subagent>`) →
+  validar → registrar `delegacion/resultado`. SOP completo:
+  `directives/delegacion_subagentes.yaml`.
+- **Fallback:** mismo retry budget (máx 3) y mismas cadenas cost-aware del router; no
+  se cambia de subagente por calidad de salida, solo por fallo de servicio.
+
 ## Refinamiento (ver `directives/enrutamiento_llm.yaml` → `refinement_protocol`)
 
 Al resolver problemas reales, perfecciona el flujo así: hallazgo → Sessions/ + telemetría
