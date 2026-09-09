@@ -473,6 +473,105 @@ continuación (secuencias 1--4, cada evento con su hash \texttt{prev} encadenado
 (seq 4) flujo/fin            {status: ok, exit_code: 0}
 \end{lstlisting}
 
+\section{Los logs append-only en profundidad}
+
+\iconotexto{stream}{Trazabilidad} La trazabilidad que acompaña a la delegación reposa en
+\texttt{execution/sesion\_log.py}, la pieza de trazabilidad append-only incorporada a
+ELECTRONICA (ideal adaptado de dsh: \emph{append-only event log como fuente de verdad}).
+Esta sección explica el mecanismo, porque es la base sobre la que se apoyan los eventos
+\texttt{delegacion/*}.
+
+\subsection{Principio: el log nunca se modifica ni se borra}
+
+La idea central es que cada evento se \textbf{ACUMULA} en un archivo JSONL
+(\texttt{.tmp/session\_log\_<run>.jsonl}) y \textbf{jamás se altera ni elimina}. El log
+es la \emph{fuente de verdad}; cualquier estado que necesites (checkpoints, reanudación,
+métricas) es una \textbf{vista derivada} que se calcula leyéndolo. Esto hace que la
+historia completa sea auditable y recuperable aunque un paso intermedio falle.
+
+\subsection{Estructura de cada evento}
+
+Cada línea del log es un evento JSON con esta forma:
+
+\begin{lstlisting}[style=estiloPython]
+{
+  "seq": 3,                  # numero de secuencia (crece con cada evento)
+  "ts": "2026-09-09T13:46:24.473272+00:00",  # marca de tiempo UTC
+  "run": "test_vivo",        # identificador de sesion/ejecucion
+  "tipo": "delegacion/resultado",  # vocabulario controlado
+  "datos": {"subagent": "sub-rutina", "status": "ok", "exit_code": 0},
+  "prev": "8c3ee112...62ba", # hash SHA-256 de la linea anterior (cadena)
+  "append_only": true        # sello de inmutabilidad
+}
+\end{lstlisting}
+
+\subsection{Cadena de hashes: la garantía de integridad}
+
+El campo \texttt{prev} contiene el \textbf{SHA-256 de la línea anterior completa}. Al
+leer el log, cada evento debe cumplir: su \texttt{seq} es el consecutivo correcto y su
+\texttt{prev} coincide con el hash de la línea previa real. Cualquier edición, borrado o
+reordenamiento (por ejemplo, cambiar \texttt{"seq": 1} a \texttt{"seq": 99}) rompe la
+cadena en el punto alterado. El subcomando:
+
+\begin{lstlisting}
+python3 execution/sesion_log.py integrity --run test_vivo
+\end{lstlisting}
+
+recorre toda la cadena y devuelve \texttt{ok: true} si está íntegra, o \textbf{código de
+salida 2} con el evento conflictivo si detecta manipulación. Este fue el mecanismo
+verificado en la prueba en vivo (4 eventos, cadena íntegra) y en el banco de pruebas
+(manipulación simulada detectada con exit 2).
+
+\subsection{Vocabulario controlado de tipos de evento}
+
+Los tipos no son libres: se validan contra \texttt{TIPOS\_EVENTO} en
+\texttt{sesion\_log.py}. Invocar \texttt{add} con un tipo fuera del vocabulario falla con
+código 1. El vocabulario actual es:
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{tags}~TIPOS\_EVENTO}]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Tipo} & \textbf{Qué registra} \\
+\midrule
+\texttt{flujo/inicio} & Arranque de un flujo multi-paso \\
+\texttt{flujo/paso} & Paso completado (\{paso, script, status\}) \\
+\texttt{flujo/fin} & Flujo terminado correctamente \\
+\texttt{flujo/error} & Fallo (\{paso, script, mensaje\}) \\
+\texttt{tool/call} & Invocación de herramienta/script (\{script, args\}) \\
+\texttt{tool/result} & Resultado de herramienta (\{status, exit\_code\}) \\
+\texttt{delegacion/decidida} & Decisión del enrutador (\{task, tier, subagent, tokens, critico, vision\}) \\
+\texttt{delegacion/resultado} & Resultado del subagente (\{subagent, status, exit\_code\}) \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\subsection{Checkpoints y reanudación como vistas derivadas}
+
+\texttt{sesion\_log.py state} deriva el checkpoint \texttt{current\_step},
+\texttt{pasos\_completados} y \texttt{errores} a partir del log (nunca al revés);
+\texttt{resume} informa si un run es reanudable y desde qué paso según su último
+evento (\texttt{fin} $\rightarrow$ no reanudable; \texttt{error} $\rightarrow$ reanudable
+desde el paso fallido; \texttt{en\_curso} $\rightarrow$ siguiente paso pendiente).
+
+\subsection{Defensas adicionales}
+
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+  \item \textbf{run\_id sanitizado}: solo \texttt{[A-Za-z0-9.\_-]}, máx 120 caracteres;
+        un \texttt{run\_id} malicioso (p. ej. \texttt{../etc/evil}) es rechazado.
+  \item \textbf{Cierre de línea}: si el archivo no termina en salto de línea, se
+        sospecha una escritura interrumpida y \texttt{add} falla avisando de ejecutar
+        \texttt{integrity}.
+  \item \textbf{Serialización canónica}: cada evento se escribe con claves ordenadas
+        (\texttt{sort\_keys}), lo que hace la cadena de hashes reproducible.
+\end{itemize}
+
+\begin{tcolorbox}[cajaRecuerda]
+En resumen: \emph{append-only + hash chain + vocabulario controlado + run\_id
+sanitizado}. Los eventos \texttt{delegacion/decidida} y \texttt{delegacion/resultado}
+quedan así protegidos por el mismo mecanismo que el resto de la trazabilidad: una vez
+escritos, son inmutables y cualquier manipulación posterior es detectable.
+\end{tcolorbox}
+
 \section{Decisiones de diseño (aprobadas por el usuario)}
 
 \iconotexto{check-double}{Decisiones} Cuatro acuerdos tomados antes de implementar:
