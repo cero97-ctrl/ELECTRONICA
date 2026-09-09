@@ -38,3 +38,7 @@ datasets/
 
 # Telemetría del router LLM (log de decisiones en runtime, crece indefinidamente)
 .tmp/routing_log.jsonl
+
+# Trazas append-only de sesiones/flujos (ejecución en runtime, no se versionan)
+.tmp/session_log_*.jsonl
+.tmp/run_state_*.json

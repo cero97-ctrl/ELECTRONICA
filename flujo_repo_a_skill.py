@@ -45,6 +45,7 @@ VALIDAR_FORMULAS = SCRIPT_DIR / "execution" / "validar_skill_formulas.py"
 INSTALAR = SCRIPT_DIR / "execution" / "instalar_skill.py"
 GENERAR_LATEX = SCRIPT_DIR / "execution" / "generar_latex_skill.py"
 ALERTAR = SCRIPT_DIR / "execution" / "alert_user.py"
+SESION_LOG = SCRIPT_DIR / "execution" / "sesion_log.py"
 
 TMP_DIR = SCRIPT_DIR / ".tmp"
 STATE_FILE = TMP_DIR / "run_state.json"
@@ -61,6 +62,28 @@ def now_iso() -> str:
 def save_state(state: dict) -> None:
     TMP_DIR.mkdir(exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def registrar_evento(state: dict, tipo: str, datos: dict | None = None) -> None:
+    """Trazabilidad append-only (directives/trazabilidad_sesiones.yaml).
+
+    El log JSONL en .tmp/session_log_<run_id>.jsonl es la fuente de verdad; el
+    run_state.json derivado (save_state) es una vista. La escritura del evento no
+    debe romper el flujo: falla blanda con warning si el helper falla.
+    """
+    run_id = state.get("run_id")
+    if not run_id:
+        return
+    cmd = [PYTHON, str(SESION_LOG), "add", "--run", run_id, "--tipo", tipo]
+    if datos:
+        try:
+            cmd += ["--datos", json.dumps(datos, ensure_ascii=False)]
+        except (TypeError, ValueError):
+            pass
+    code, out = run_script(cmd, capture_json=True)
+    if code != 0:
+        msg = out.get("message") if isinstance(out, dict) else "error desconocido"
+        print(f"  ⚠  (trazabilidad) no se registró {tipo}: {msg}", file=sys.stderr)
 
 
 def run_script(cmd: list[str], capture_json: bool = False) -> tuple[int, dict | str]:
@@ -225,6 +248,10 @@ def main() -> int:
     save_state(state)
 
     total = 5 + (0 if args.no_latex else 1) + (0 if args.dry_run else 1)
+    registrar_evento(state, "flujo/inicio", {
+        "flujo": "repo_a_skill", "fuente": fuente, "nombre": nombre,
+        "dry_run": args.dry_run, "total_pasos": total,
+    })
 
     # ── Paso 1: extracción ──
     print("\n" + "─" * 56)
@@ -241,6 +268,9 @@ def main() -> int:
         print(f"  ❌ Extracción: {msg}", file=sys.stderr)
         state.update(current_step=1, steps_failed=["extraccion"], last_updated=now_iso())
         save_state(state)
+        registrar_evento(state, "flujo/error", {
+            "paso": 1, "script": "execution/extraer_repo_github.py", "mensaje": msg,
+        })
         return 1
     print(f"  ✅ {extraccion['num_archivos']} archivos, {extraccion['caracteres']} chars, "
           f"~{extraccion['tokens_estimados']} tokens ({extraccion['num_excluidos']} excluidos)")
@@ -302,6 +332,9 @@ def main() -> int:
         print(f"  ❌ Síntesis: {msg}", file=sys.stderr)
         state.update(current_step=3, steps_failed=["sintesis"], last_updated=now_iso())
         save_state(state)
+        registrar_evento(state, "flujo/error", {
+            "paso": 3, "script": "execution/sintetizar_skill.py", "mensaje": msg,
+        })
         run_script([PYTHON, str(ALERTAR), "error"])
         return 1
     print(f"  ✅ Generados {len(sint['archivos'])} archivos")
@@ -382,6 +415,10 @@ def main() -> int:
         save_state(state)
         if args.validar_estricto and not _validacion_ok(val):
             print("  ❌ --validar-estricto: hay bloques inválidos; se aborta.", file=sys.stderr)
+            registrar_evento(state, "flujo/error", {
+                "paso": 4, "script": "execution/validar_skill_formulas.py",
+                "mensaje": "--validar-estricto: bloques inválidos",
+            })
             run_script([PYTHON, str(ALERTAR), "error"])
             return 1
         estado_ok(state, 4)
@@ -439,6 +476,10 @@ def main() -> int:
                 print(f"  ❌ Instalación: {msg}", file=sys.stderr)
                 state.update(current_step=n_pasos_hasta_aqui + 1, steps_failed=["instalacion"], last_updated=now_iso())
                 save_state(state)
+                registrar_evento(state, "flujo/error", {
+                    "paso": n_pasos_hasta_aqui + 1,
+                    "script": "execution/instalar_skill.py", "mensaje": msg,
+                })
                 run_script([PYTHON, str(ALERTAR), "error"])
                 return 1
             print(f"  ✅ Instalado en {inst['destino']}")
@@ -446,6 +487,8 @@ def main() -> int:
     elif args.dry_run:
         print(f"\n  (dry-run) Skill listo en {salida_local}, no instalado en global.")
         estado_ok(state, total)
+
+    registrar_evento(state, "flujo/fin", {"exit_code": 0, "pasos": total})
 
     if not args.no_alert:
         run_script([PYTHON, str(ALERTAR), "success"])
@@ -460,6 +503,12 @@ def estado_ok(state: dict, paso: int) -> None:
     state["steps_completed"] = sorted(set(state["steps_completed"] + [paso]))
     state["last_updated"] = now_iso()
     save_state(state)
+    registrar_evento(state, "flujo/paso", {
+        "paso": paso,
+        "script": "flujo_repo_a_skill.py",
+        "status": "ok",
+        "current_step": paso,
+    })
 
 
 def _commit_entrevista(datos: dict) -> Path:

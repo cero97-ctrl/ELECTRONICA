@@ -1,0 +1,156 @@
+goal: >
+  Documentar la trazabilidad {append-only} de sesiones y flujos multi-paso del
+  workspace. Cada ejecución escribe un log de eventos inmutable en formato JSONL
+  (.tmp/session_log_<run_id>.jsonl) con hash encadenado por línea (prev): el log
+  es la fuente de verdad y cualquier edición o eliminación posterior es
+  detectable. Los checkpoints de estado (ej. run_state.json) pasan a ser vistas
+  DERIVADAS del log, no la fuente primaria. Permite reanudar un flujo
+  interrumpido (resume), inspeccionar la secuencia real de eventos (ver) y
+  auditar la integridad de la traza (integrity). Inspirado en la trazabilidad
+  append-only del Agent Harness DeepSeek (dsh): "cada run es totalmente traceable:
+  el log de eventos crece en un solo sentido y documenta todo lo que el modelo vio".
+
+required_inputs:
+  - name: run_id
+    description: >
+      Identificador único de la ejecución. Convención: <flujo>-<YYYY-MM-DDTHH-MM-SS>.
+      Solo [A-Za-z0-9._-], máx 120 chars (sanitizado por sesion_log.py).
+    example: "flujo-repo-a-skill-2026-09-08T15-24-59"
+  - name: comando
+    description: >
+      Subcomando del helper de trazabilidad:
+        add        — añade un evento (append-only) con --tipo y --datos JSON
+        ver        — lee eventos del log (--ultimos N, --tipo X)
+        state      — deriva un checkpoint (run_state.json) desde el log
+        resume     — informa si el run es reanudable y desde qué paso
+        integrity  — verifica la cadena de hashes (append-only intacto)
+    example: "add"
+
+steps:
+  - step: 1
+    description: >
+      Al iniciar cualquier flujo multi-paso, registrar el evento flujo/inicio
+      con la fuente de verdad de la ejecución (nombre del flujo, fuente de
+      entrada, parámetros relevantes). El helper asigna seq y el hash prev por sí
+      solo; NUNCA se editan ni eliminan líneas ya escritas.
+    script: "execution/sesion_log.py"
+    inputs:
+      add: ""
+      --run: "{{run_id}}"
+      --tipo: "flujo/inicio"
+      --datos: '{"flujo":"repo_a_skill","fuente":"...","perfil":"referencia_codigo"}'
+
+  - step: 2
+    description: >
+      Por cada paso completado exitosamente, registrar flujo/paso con el número de
+      paso, el script ejecutado y su status. Refleja la secuencia real de la
+      ejecución (steps_completed del estado derivado).
+    script: "execution/sesion_log.py"
+    inputs:
+      add: ""
+      --run: "{{run_id}}"
+      --tipo: "flujo/paso"
+      --datos: '{"paso":4,"script":"execution/sintetizar_skill.py","status":"ok"}'
+
+  - step: 3
+    description: >
+      Si un paso falla, registrar flujo/error con paso, script y mensaje antes de
+      abortar. Esto permite a `resume` indicar el paso exacto a reanudar.
+    script: "execution/sesion_log.py"
+    inputs:
+      add: ""
+      --run: "{{run_id}}"
+      --tipo: "flujo/error"
+      --datos: '{"paso":2,"script":"execution/extraer_repo_github.py","mensaje":"..."}'
+
+  - step: 4
+    description: >
+      Al terminar correctamente, registrar flujo/fin con exit_code. Un log con
+      flujo/fin no es reanudable (la ejecución concluyó).
+    script: "execution/sesion_log.py"
+    inputs:
+      add: ""
+      --run: "{{run_id}}"
+      --tipo: "flujo/fin"
+      --datos: '{"exit_code":0}'
+
+  - step: 5
+    description: >
+      Para auditar o auditar trazabilidad de una corrida previa:
+      integrity valida la cadena de hashes y la secuencia seq (detección de
+      manipulación); ver permite inspeccionar la secuencia real de eventos; state
+      deriva el checkpoint (vista). resume decide si la corrida es reanudable.
+    script: "execution/sesion_log.py"
+    inputs:
+      --run: "{{run_id}}"
+    expected_output: >
+      add → JSON {status ok, archivo, seq, tipo}. integrity → JSON {ok:true,
+      eventos, cadena_hashes:true} o exit 2 si se detectó manipulación. state →
+      JSON con run_id, current_step, pasos_completados, errores, last_updated.
+
+expected_outputs:
+  - name: log_append_only
+    description: >
+      .tmp/session_log_<run_id>.jsonl — cada línea un evento JSON
+      {seq, ts, run, tipo, datos, prev, append_only:true}. Crece solo hacia
+      adelante; inmutable por convención y por detección criptográfica.
+  - name: checkpoint_derivado
+    description: >
+      Vista opcional del log (run_state.json o .tmp/run_state_<run_id>.json) que
+      resume current_step, pasos completados y errores. Es derivable en cualquier
+      momento con `state`; si se borra, se regenera desde el log.
+
+edge_cases:
+  - case: "Alguien modifica o elimina una línea del log (manipulación)"
+    recovery: >
+      integrity devuelve exit 2 al detectar que el hash prev de un evento no
+      coincide con la línea anterior o que seq no es contiguo. El log se considera
+      corrupto; ante la duda, descartarlo y regenerar con nueva corrida. Nunca
+      intentar 'arreglar' el log editándolo (viola append-only).
+  - case: "La última línea no termina en salto de línea (escritura interrumpida)"
+    recovery: >
+      add devuelve exit 2 avisando del log no terminado. Ejecutar integrity para
+      confirmar el alcance; si solo afecta a la última línea, la cadena de eventos
+      anteriores sigue siendo válida. La línea final incompleta no se tiene en
+      cuenta como evento previo (se ignora a efectos de seq/prev).
+  - case: "--tipo fuera del vocabulario o run_id malicioso"
+    recovery: >
+      add devuelve exit 1 con mensaje claro. El vocabulario controlado y la regex
+      de run_id (solo [A-Za-z0-9._-]) impiden inyección de rutas o tipos inventados.
+  - case: "El flujo se reanuda tras un error"
+    recovery: >
+      resume informa siguiente_paso = paso del último flujo/error (o max(pasos)+1
+      si no hay error). El orquestador reinicia SUBSECUENTES scripts sin re-escribir
+      los eventos previos; añade flujo/inicio (comentario de reanudación) en el log
+      de la misma corrida o de una nueva.
+
+metadata:
+  version: "1.0"
+  created: "2026-09-09"
+  author: "agente"
+  activacion: >
+    Cualquier flujo repetible de 3 capas que necesite trazabilidad de ejecución,
+    reanudación tras fallo o auditoría de lo que realmente se ejecutó. Frase
+    típica: "registra paso a paso esta ejecución", "¿por qué paso puedo retomar?",
+    "verifica que la traza no fue manipulada".
+  script_principal: "execution/sesion_log.py"
+  scripts_ejecucion:
+    - "execution/sesion_log.py"
+  enrutamiento:
+    task: "rutina"
+    notas: >
+      Helper 100% local y determinista: NO consume créditos OpenRouter. No pasa
+      por el enrutador.
+  consumo_creditos: false
+  env_vars_requeridas: []
+  dependencias_python: []
+  dependencias_sistema: []
+  reiniciar_opencode: false
+  notas: >
+    Inspirado en la trazabilidad append-only de dsh (eventos turn/*, step/*,
+    user/message, tool/*). Adaptado: vocabulario reducido (flujo/*, tool/*) y
+    hash encadenado por línea para detección de manipulación. La relación
+    run_state.json ↔ log: run_state.json deja de ser la fuente primaria y pasa a
+    ser una vista derivada (comando state). Los flujos existentes que solo usan
+    save_state() pueden migrarse de forma gradual: añadir los eventos
+    flujo/inicio, flujo/paso, flujo/fin sin romper su checkpoint actual.
