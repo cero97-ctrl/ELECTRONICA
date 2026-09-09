@@ -1,0 +1,620 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Sesión 09-09-2026: Delegación multi-proveedor}{Trazabilidad append-only + delegación determinista a subagentes, inspirada en el DeepSeek Harness}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{clipboard-list}~Resumen ejecutivo}]
+Durante esta mañana se incorporó a ELECTRONICA la capacidad de \textbf{delegar
+subtareas a subagentes especializados con proveedor distinto}, replicando el seam
+\emph{``un contrato, muchos proveedores''} del Agent Harness DeepSeek (dsh) pero
+manteniendo el control determinista del proyecto:
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+  \item \textbf{Decisión determinista}: \texttt{execution/enrutador.py --delegacion} decide el subagente destino por reglas puras (\texttt{SUBAGENTS}: flash$\rightarrow$sub-rutina, deepseek$\rightarrow$sub-sintesis, opus$\rightarrow$sub-critico).
+  \item \textbf{Subagentes opencode}: tres agentes en \texttt{.opencode/agents/} SIN modelo fijo
+        (Opción A): heredan el motor rotativo del asistente y no consumen créditos OpenRouter.
+  \item \textbf{Trazabilidad append-only}: vocabulario de \texttt{execution/sesion\_log.py}
+        ampliado con \texttt{delegacion/decidida} y \texttt{delegacion/resultado}.
+  \item \textbf{Prueba en vivo}: delegación real de un resumen a \texttt{sub-rutina} vía Task
+        tool, validada y trazada de punta a punta (4 eventos, cadena de hashes íntegra).
+\end{itemize}
+Se respetó el guardrail de determinismo: ninguna decisión de tier/subagente se tomó
+razonando en el chat; solo se extrajo el descriptor y se ejecutó el enrutador.
+\end{tcolorbox}
+
+\section{Contexto y motivación}
+
+\iconotexto{eye}{Contexto} Al examinar el DeepSeek Harness como parte de la evaluación
+de sus características (sesiones previas: \texttt{Sessions/2026-09-08\_exploracion\_dsh.md},
+memo \texttt{docs/AGENTE\_IA/dsh\_evaluacion\_incorporacion.tex}), se detectó que dsh
+\textbf{delega trabajo a subagentes de distintos proveedores} mediante un punto de
+extensión único. Esa observación motivó esta sesión: entender el mecanismo a fondo,
+mapearlo a lo que opencode/ELECTRONICA ya ofrece y decidir cómo incorporarlo sin romper
+la arquitectura de 3 capas.
+
+\textbf{Por qué es relevante}: el proyecto ya incorporó la trazabilidad append-only de dsh
+(commit \texttt{45eaf64}), el siguiente candidato natural era la delegación. La diferencia
+clave es que ELECTRONICA es un espacio determinista: el mismo descriptor debe producir
+siempre la misma elección de tier y de subagente, mientras que en dsh la elección del
+proveedor/modelo puede quedar en manos del modelo.
+
+\section{Cómo delega dsh: el seam ctx.subagents}
+
+\iconotexto{sitemap}{Mecanismo en dsh} El harness expone un servicio de registro de
+proveedores bajo el nombre \texttt{ctx.subagents}, siguiendo un contrato
+\textbf{Service Definition / Provider / Consumer}. Cualquier plugin puede registrar un
+proveedor de subagentes; la herramienta model-facing \texttt{tool-subagent} queda
+disponible \emph{una por proveedor}, cada una con su propio \texttt{toolName}.
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{cubes}~Backends de proveedor en dsh}]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Backend} & \textbf{Tipo / cómo se ejecuta} \\
+\midrule
+\texttt{subagent-spawn-in-process} & in-process; hijo nuevo que hereda el historial del padre \\
+\texttt{subagent-fork-in-process} & in-process; hijo sembrado desde el historial completado \\
+\texttt{subagent-acp} & out-of-process; hijo con su propio runtime vía protocolo ACP \\
+\texttt{subagent-codex} & out-of-process; Codex real (app-server) \\
+\texttt{subagent-claude-code} & out-of-process; Claude Code real (Agent SDK) \\
+\texttt{subagent-dsh-sdk} & out-of-process; harness completo vía SDK \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaConcepto, title={One contract, many providers}]
+El diseño de dsh separa \textbf{el contrato de delegación} (cómo se invoca y se
+devuelve el resultado) de \textbf{los proveedores concretos}. Esto permite componer un
+harness que mezcla subagentes in-process con herramientas externas reales (Codex,
+Claude Code), sin que el modelo ni la capa de orquestación dependan del backend.
+Además \texttt{tool-subagent-control} ofrece \texttt{send\_message},
+\texttt{interrupt\_agent} y \texttt{list\_agents} para hijos \emph{continuables}
+(durables por id y reanudables).
+\end{tcolorbox}
+
+\textbf{Traducción a ELECTRONICA}: en nuestro caso el rol del \texttt{tool-subagent}
+lo cumple el \textbf{Task tool} de opencode (subagentes natives: \texttt{general},
+\texttt{explore}, etc.\ más los nuestros). La selección del destino, en vez de quedar en
+manos del modelo, la decide \textbf{un script determinista} (el enrutador). Los
+\emph{providers} de opencode no se registran en un seam: se definen como agentes
+en \texttt{.opencode/agents/}, con permisos y persona por tier. No se incorporó mensajería
+de hijos continuables (no necesario hoy); sí se trazó cada delegación en el log
+append-only.
+
+\section{Diseño en ELECTRONICA: tres capas}
+
+\iconotexto{layer-group}{Arquitectura} Como exige el marco del proyecto, la nueva
+capacidad se distribuyó en las 3 capas: Directiva (SOP), Orquestación (opencode) y
+Ejecución (scripts deterministas).
+
+\subsection{Capa 1 -- Directiva: directives/delegacion\_subagentes.yaml}
+
+\iconotexto{file-alt}{SOP} Define el \emph{qué}: delegar subtareas a subagentes
+especializados según un descriptor estructurado, de forma determinista. Contiene:
+
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+  \item \textbf{Goal}: la decisión del subagente destino vive en \texttt{enrutador.py},
+        nunca en el chat.
+  \item \textbf{6 pasos}: extraer descriptor $\rightarrow$ invocar \texttt{enrutador.py
+        --delegacion} $\rightarrow$ registrar \texttt{delegacion/decidida} $\rightarrow$
+        invocar el Task tool con \texttt{subagent\_type = <subagent>} $\rightarrow$
+        validar salida (retry máx 3, fallback por cadena) $\rightarrow$ registrar
+        \texttt{delegacion/resultado}.
+  \item \textbf{Tabla tier$\rightarrow$subagente}: flash$\rightarrow$sub-rutina (mecánico),
+        deepseek$\rightarrow$sub-sintesis (contexto masivo), opus$\rightarrow$sub-critico.
+  \item \textbf{Edge cases}: modelo explícito (subagent null), tipo fuera del vocabulario
+        (código 1), subagente que no devuelve resultado válido, subagente que intenta
+        decidir el tier (prohibido), LaTeX con pitfalls documentados.
+\end{itemize}
+
+\subsection{Capa 2 -- Orquestación (opencode)}
+
+\iconotexto{cogs}{Orquestador} La capa de decisión sigue siendo abierta (no determinista
+en su naturaleza probabilística), pero su \emph{relación} con la elección de subagente es
+estricta: el orquestador \textbf{extrae el descriptor} de la petición (parsing de
+intención) y delega la decisión en el enrutador. Luego invoca el subagente con el
+\textbf{Task tool} pasándole la subtarea, contexto y restricciones de salida. No elige
+modelo ni subagente por criterio subjetivo.
+
+\subsection{Capa 3 -- Ejecución (scripts deterministas)}
+
+\iconotexto{code}{Cambios} Tres piezas de código cambian:
+
+\begin{enumerate}[leftmargin=20pt, itemsep=3pt, topsep=2pt]
+  \item \textbf{execution/enrutador.py}: constante \texttt{SUBAGENTS}
+        (\texttt{\{"flash": "sub-rutina", "deepseek": "sub-sintesis", "opus":
+        "sub-critico"\}}), \texttt{DELEGACION\_REASON} y el flag \texttt{--delegacion},
+        que añade al JSON de salida \texttt{subagent} y \texttt{delegacion\_reason}.
+        Con \texttt{--modelo-explicito} el subagente sale \texttt{null} (elección del
+        orquestador; solo el modelo es override).
+  \item \textbf{execution/sesion\_log.py}: vocabulario ampliado con
+        \texttt{delegacion/decidida} y \texttt{delegacion/resultado}.
+  \item \textbf{.opencode/agents/\{sub-rutina, sub-sintesis, sub-critico\}.md}: tres
+        subagentes opencode (mode: subagent) sin modelo fijo.
+\end{enumerate}
+
+Una traza mínima de la cadena append-only registrada en la prueba en vivo se muestra a
+continuación (secuencias 1--4, cada evento con su hash \texttt{prev} encadenado):
+
+\begin{lstlisting}
+(seq 1) flujo/inicio         {flujo: delegacion_subagentes, subtarea: resumen}
+(seq 2) delegacion/decidida  {task: resumen, tier: flash, subagent: sub-rutina,
+                               tokens: 1957, critico: false, vision: false}
+(seq 3) delegacion/resultado {subagent: sub-rutina, status: ok, exit_code: 0}
+(seq 4) flujo/fin            {status: ok, exit_code: 0}
+\end{lstlisting}
+
+\section{Decisiones de diseño (aprobadas por el usuario)}
+
+\iconotexto{check-double}{Decisiones} Cuatro acuerdos tomados antes de implementar:
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{clipboard-check}~Decisiones de la sesión}]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+\textbf{Tema} & \textbf{Decisión} \\
+\midrule
+Modelo de los subagentes & \textbf{Opción A}: sin modelo fijo; heredan el motor
+rotativo del asistente (0 créditos OpenRouter). La especialización es por persona y
+permisos. \\
+\texttt{--modelo-explicito} & El subagente sale \texttt{null}; la elección del destino
+queda a criterio del orquestador (solo el modelo es override). \\
+Trazabilidad & Ampliar el vocabulario de \texttt{sesion\_log.py} con tipos
+\texttt{delegacion/*}. \\
+Artefactos \texttt{.tmp/} & No tocar los pendientes de sesiones anteriores
+(\texttt{run\_state.json}, clones, etc.). \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaRecuerda]
+El motivo de la \textbf{Opción A} es mantener el espíritu económico del proyecto: el
+motor del asistente rota entre modelos Free (Zen/OpenRouter) y \textbf{nunca consume}
+\texttt{OPENROUTER\_API\_KEY}. Si en el futuro se quisiera fijar modelo por tier
+(Opción B), cada invocación del subagente consumiría créditos (especialmente opus,
+\$5/\$25 por millón de tokens), por lo que se evaluaría el saldo antes de activarlo.
+\end{tcolorbox}
+
+\section{Verificación (0 créditos)}
+
+\iconotexto{flask}{Pruebas} La verificación se hizo sin coste alguno de API:
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{terminal}~Salidas reales del enrutador}]
+Al ejecutar \texttt{execution/enrutador.py} con distintos descriptores y
+\texttt{--delegacion --no-log}:
+\begin{itemize}[leftmargin=16pt, itemsep=1pt]
+  \item \texttt{--task formateo --tokens 1000} $\rightarrow$ tier \texttt{flash},
+        \texttt{subagent: sub-rutina}
+  \item \texttt{--task contexto\_masivo --tokens 60000} $\rightarrow$ tier \texttt{deepseek},
+        \texttt{subagent: sub-sintesis}
+  \item \texttt{--task examen\_complejo --critico --tokens 9000} $\rightarrow$ tier
+        \texttt{opus}, \texttt{subagent: sub-critico}
+  \item \texttt{--task debug --modelo-explicito moonshotai/kimi-k3} $\rightarrow$ tier
+        \texttt{explicito}, \texttt{subagent: null}
+  \item \texttt{--task nodo\_inventado --tokens 5} $\rightarrow$ error código 1 (vocabulario)
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Determinismo}: se ejecutó el mismo descriptor dos veces y ambas salidas fueron
+idénticas (compare \texttt{[A = B]}). \textbf{sesion\_log}: cadena completa
+(inicio $\rightarrow$ decidida $\rightarrow$ paso $\rightarrow$ resultado $\rightarrow$ fin)
+con \texttt{integrity} OK; la manipulación de la secuencia (\texttt{seq} 1$\rightarrow$22)
+fue detectada con código de salida 2.
+
+\section{Prueba en vivo (tras reinicio de opencode)}
+
+\iconotexto{bolt}{End-to-end} El usuario reinició opencode para cargar los 3 subagentes
+y se ejecutó la prueba completa siguiendo la directiva:
+
+\begin{enumerate}[leftmargin=20pt, itemsep=3pt, topsep=2pt]
+  \item Descriptor: \texttt{--task resumen --archivos
+        directives/delegacion\_subagentes.yaml} (1\,957 tokens estimados).
+  \item \texttt{enrutador.py --delegacion} $\rightarrow$ tier \texttt{flash},
+        \texttt{subagent: sub-rutina}.
+  \item \texttt{sesion\_log.py add} $\rightarrow$ \texttt{flujo/inicio} (seq 1) y
+        \texttt{delegacion/decidida} (seq 2).
+  \item \textbf{Task tool} con \texttt{subagent\_type: sub-rutina}: el subagente leyó el
+        archivo y devolvió un \textbf{resumen JSON válido} (título, propósito, 6 pasos,
+        3 subagentes, 5 edge cases) sin editar archivos (su permiso de edición es
+        \texttt{deny}).
+  \item Validación del JSON contra lo solicitado: OK.
+  \item \texttt{sesion\_log.py add} $\rightarrow$ \texttt{delegacion/resultado} (seq 3,
+        exit 0) y \texttt{flujo/fin} (seq 4).
+  \item \texttt{integrity} $\rightarrow$ cadena de hashes íntegra en los 4 eventos.
+\end{enumerate}
+
+\begin{tcolorbox}[cajaFortaleza]
+Resultado: la delegación determinista funciona de punta a punta y queda trazada en el
+log append-only. Se emitió la alerta audible de completado
+(\texttt{execution/alert\_user.py success}) y el log de prueba fue eliminado
+(\texttt{.tmp/session\_log\_test\_vivo.jsonl}).
+\end{tcolorbox}
+
+\section{Comandos de referencia}
+
+\iconotexto{terminal}{CLI} Los comandos clave utilizados:
+
+\begin{lstlisting}[style=estiloPython]
+# 1. Decidir el subagente (determinista, 0 creditos, sin log para pruebas)
+python3 execution/enrutador.py --task resumen \
+  --archivos directives/delegacion_subagentes.yaml --delegacion --no-log
+
+# 2. Trazar inicio y decision de delegacion
+python3 execution/sesion_log.py add --run test_vivo --tipo flujo/inicio \
+  --datos '{"flujo":"delegacion_subagentes","subtarea":"resumen"}'
+python3 execution/sesion_log.py add --run test_vivo --tipo delegacion/decidida \
+  --datos '{"task":"resumen","tier":"flash","subagent":"sub-rutina","tokens":1957}'
+
+# 3. (Orquestador) Task tool -> subagent_type: sub-rutina  (delegacion)
+
+# 4. Trazar resultado y cierre
+python3 execution/sesion_log.py add --run test_vivo --tipo delegacion/resultado \
+  --datos '{"subagent":"sub-rutina","status":"ok","exit_code":0}'
+python3 execution/sesion_log.py add --run test_vivo --tipo flujo/fin \
+  --datos '{"status":"ok","exit_code":0}'
+
+# 5. Verificar integridad de la cadena
+python3 execution/sesion_log.py integrity --run test_vivo
+\end{lstlisting}
+
+\section{Pendientes y líneas siguientes}
+
+\iconotexto{road}{Siguiente} Quedan anotados como pendientes:
+
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+  \item Ampliar \texttt{SUBAGENTS} con más subagentes si aparece un nuevo rol
+        (editar solo el mapa de \texttt{execution/enrutador.py} + re-test).
+  \item Opcional (futuro): fijar modelo por tier (Opción B) previa evaluación de saldo,
+        dado el consumo de créditos que implicaría.
+  \item Instalar en la práctica: probar una delegación de tarea \emph{crítica}
+        (\texttt{opus}) a \texttt{sub-critico} para cubrir ese camino de la matriz.
+\end{itemize}
+
+\begin{tcolorbox}[cajaConcepto]
+\textbf{Guardrail respetado}: en ninguna decisión de esta sesión se eligió tier o
+subagente razonando en el chat. La política vive en \texttt{execution/enrutador.py}
+(matriz \texttt{SUBAGENTS}) y en la directiva \texttt{delegacion\_subagentes.yaml};
+afinar umbrales se hace con telemetría (`.tmp/routing\_log.jsonl`), no a ojo.
+\end{tcolorbox}
+
+\section*{Referencias}
+
+\begin{itemize}[leftmargin=16pt, itemsep=2pt, topsep=2pt]
+  \item \texttt{directives/delegacion\_subagentes.yaml} (SOP de la capacidad)
+  \item \texttt{execution/enrutador.py} (decisión determinista de tier/subagente)
+  \item \texttt{execution/sesion\_log.py} (trazabilidad append-only)
+  \item \texttt{.opencode/agents/sub-rutina.md}, \texttt{sub-sintesis.md}, \texttt{sub-critico.md}
+  \item \texttt{Sessions/2026-09-09\_delegacion\_subagentes.md} (bitácora de la sesión)
+  \item \texttt{.agent/enrutamiento.md} (sección ``Delegación a subagentes'')
+  \item Repo clonado de dsh: \texttt{.tmp/repo\_clone\_deepseek-ai-deepseek-harness/packages/subagent/}
+\end{itemize}
+
+\end{document}
