@@ -46,12 +46,24 @@ incorporar un equivalente DETERMINISTA en ELECTRONICA.
   (1→22) detectada (exit 2). SQL: ninguno (tamper test limpio tras verificar).
 
 ## Pendientes
-- Reiniciar opencode para que cargue los 3 subagentes (`opencode` los lee de
-  `.opencode/agents/` al arrancar).
-- Test de delegación real en vivo (p. ej. que el orquestador delegue un resumen a
-  `sub-rutina` vía Task tool y quede trazado en sesion_log).
+- ~~Reiniciar opencode para que cargue los 3 subagentes~~ **HECHO** (usuario reinició).
+- ~~Test de delegación real en vivo~~ **HECHO** (ver abajo).
 - Opcional: ampliar `SUBAGENTS` con más subagentes si aparece un nuevo rol
   (editar solo el mapa de `execution/enrutador.py` + re-test).
+
+## Prueba en vivo (2026-09-09, tras reinicio de opencode) — exitosa
+Flujo completo siguiendo `directives/delegacion_subagentes.yaml`:
+- Descriptor: `--task resumen --archivos directives/delegacion_subagentes.yaml`.
+- `enrutador.py --delegacion` → `tier flash`, `subagent sub-rutina`, 1957 tokens.
+- `sesion_log.py`: `flujo/inicio` (seq 1) + `delegacion/decidida` (seq 2).
+- **Task tool** con `subagent_type: sub-rutina` → devolvió resumen JSON válido
+  (título, propósito, 6 pasos, 3 subagentes, 5 edge cases) sin editar archivos.
+- Validación del JSON OK; `delegacion/resultado` (seq 3, exit 0) + `flujo/fin`
+  (seq 4); `integrity` OK (cadena de hashes integra en los 4 eventos).
+- Log de prueba eliminado (`.tmp/session_log_test_vivo.jsonl`).
+
+Conclusión: los subagentes cargaron correctamente tras el reinicio, la delegación
+determinista funciona de punta a punta y queda trazada en el log append-only.
 
 ## Commit
 `feat: delegación multi-proveedor determinista a subagentes (estilo dsh)`
