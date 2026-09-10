@@ -259,7 +259,7 @@ edge_cases:
       Paso 1 valida existencia/legibilidad. extraer retorna código 1; el flujo
       reporta el error y se detiene sin intentar instalar nada.
 
-  - case: "deepseek-v4-pro devuelve content=None (razonamiento agota max_tokens)"
+  - case: "deepseek/deepseek-v4.1-flash devuelve content=None (razonamiento agota max_tokens)"
     recovery: >
       El modelo razonador consume todo el budget de salida en razonamiento interno
       (finish_reason=length, reasoning_tokens=2048, content=None) con prompts largos.

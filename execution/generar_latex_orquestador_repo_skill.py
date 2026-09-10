@@ -70,7 +70,7 @@ BODY = r"""
   \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X >{\bfseries\color{azulNoche}}l X}
     \faIcon{layer-group}~Capa: & Orquestación (Layer 2) & \faIcon{project-diagram}~Directiva: & \texttt{directives/repo\_a\_skill.yaml} \\
     \faIcon{terminal}~Invocación: & \texttt{python3 flujo\_repo\_a\_skill.py --repo <url|dir>} & \faIcon{coins}~Créditos: & Paso 3 (síntesis) \texttt{openrouter\_chat} \\
-    \faIcon{file-code}~Perfil de salida: & \texttt{referencia\_codigo} & \faIcon{check-double}~Modelo default: & \texttt{deepseek/deepseek-v4-pro} \\
+    \faIcon{file-code}~Perfil de salida: & \texttt{referencia\_codigo} & \faIcon{check-double}~Modelo default: & \texttt{deepseek/deepseek-v4.1-flash} \\
   \end{tabularx}
 \end{tcolorbox}
 
@@ -293,7 +293,7 @@ Pallets, ~32 archivos de código y documentación):
 \begin{tcolorbox}[tarjetaDato, title={\faIcon{check-circle}~Resultados de la ejecución real}]
   \begin{tabularx}{\linewidth}{>{\bfseries\color{azulNoche}}l X}
     Volumen de entrada: & 32 archivos incluidos / 8 excluidos, 91\,396 caracteres, $\sim$22.5K tokens \\
-    Tier enrutado (determinista): & \textbf{deepseek} (\texttt{deepseek/deepseek-v4-pro}) \\
+    Tier enrutado (determinista): & \textbf{deepseek} (\texttt{deepseek/deepseek-v4.1-flash}) \\
     Chunks destilados: & 2 \\
     Validación neuro-simbólica: & \textbf{0 errores} (74 bloques; 0 \texttt{peligro}, el resto \texttt{ok}/\texttt{observacion}) \\
     Estructuras de referencia: & 6/6 presentes (api, patrones, ejemplos, configuracion, prerrequisitos, glosario) \\

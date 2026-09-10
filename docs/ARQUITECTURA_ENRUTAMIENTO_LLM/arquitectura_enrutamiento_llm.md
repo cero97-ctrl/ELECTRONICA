@@ -8,7 +8,7 @@ Este documento resume la estrategia de enrutamiento por niveles (Model Routing /
 
 El agente de IA (opencode, capa de orquestación) interactúa con múltiples LLMs según la complejidad de la tarea:
 - **Tareas rutinarias:** Asignadas a **Gemini Flash** (`google/gemini-3.7-flash`).
-- **Contexto extenso / razonamiento intermedio:** Asignadas a **DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`), con **GLM-5.2** de respaldo.
+- **Contexto extenso / razonamiento intermedio:** Asignadas a **DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`), con **GLM-5.2** de respaldo.
 - **Tareas complejas:** Asignadas a **Claude Opus** (`anthropic/claude-opus-5`).
 - **Pasarela de integración:** **OpenRouter**.
 - **Orquestador:** **opencode** (agente local, capa de orquestación — este asistente).
@@ -65,12 +65,14 @@ La decisión es una función pura implementada en `execution/enrutador.py`:
 
 ---
 
-## 3. Tier Medio: DeepSeek V4 Pro (+ GLM-5.2 de respaldo)
+## 3. Tier Medio: DeepSeek V4.1 Flash (+ GLM-5.2 de respaldo)
 
 El tier de **contexto extenso / razonamiento intermedio** lo ocupa
-**DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`, $0.44/$0.87 por M tokens, 1M de
-contexto, razonamiento, JSON mode, pesos abiertos, ~18 providers en OpenRouter con
-uptime alto). Su respaldo es **GLM-5.2** (`z-ai/glm-5.2`, 1M de contexto, ~25 providers).
+**DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`, $0.15/$0.60 por M tokens,
+1M de contexto, razonamiento, JSON mode). **V4 Pro fue discontinuado por DeepSeek el
+2026-09-14** y sus peticiones se redirigen a V4.1 Flash, que lo supera en rendimiento,
+costo y velocidad con la mitad del precio. Su respaldo es **GLM-5.2**
+(`z-ai/glm-5.2`, 1M de contexto, ~25 providers).
 
 > **Kimi K3 (`moonshotai/kimi-k3`) quedó fuera del enrutamiento automático.**
 > Razones: propenso a `429` de capacidad (upstream Moonshot, sin mitigación desde
@@ -84,7 +86,7 @@ uptime alto). Su respaldo es **GLM-5.2** (`z-ai/glm-5.2`, 1M de contexto, ~25 pr
 | Nivel | LLM | Rol Principal y Casos de Uso |
 | :--- | :--- | :--- |
 | **Nivel 1: Rápido / Rutinario** | **Gemini Flash** (`google/gemini-3.7-flash`) | Formateo, parsing JSON/YAML, llamadas a herramientas simples, validación sintáctica rápida y bajo costo. RAG de rutina. |
-| **Nivel 2: Contexto Extenso / Razonamiento Intermedio** | **DeepSeek V4 Pro** (`deepseek/deepseek-v4-pro`), respaldo **GLM-5.2** (`z-ai/glm-5.2`) | Ingesta de documentación técnica masiva, lectura completa de múltiples archivos/código fuente, RAG extenso, destilación de logs, síntesis de datasheets. Razonamiento complejo a costo intermedio. |
+| **Nivel 2: Contexto Extenso / Razonamiento Intermedio** | **DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`), respaldo **GLM-5.2** (`z-ai/glm-5.2`) | Ingesta de documentación técnica masiva, lectura completa de múltiples archivos/código fuente, RAG extenso, destilación de logs, síntesis de datasheets. Razonamiento complejo a costo intermedio. |
 | **Nivel 3: Razonamiento Crítico** | **Claude Opus** (`anthropic/claude-opus-5`) | Diseño arquitectónico, resolución de dependencias complejas, cálculos físicos/matemáticos avanzados y debugging profundo. |
 
 ### Disponibilidad y Fallback
@@ -157,7 +159,7 @@ usan el cliente centralizado `execution/llm_client.py` (ver sesión
 ```python
 # ---- Decisión (determinista) ----
 # python3 execution/enrutador.py --task contexto_masivo --archivos a.tex b.md
-# -> {"status": "ok", "tier": "deepseek", "model": "deepseek/deepseek-v4-pro",
+# -> {"status": "ok", "tier": "deepseek", "model": "deepseek/deepseek-v4.1-flash",
 #     "fallback": ["deepseek", "glm", "opus"], "reason": "...", "tokens": N}
 
 # ---- Ejecución (cliente centralizado) ----
@@ -166,7 +168,7 @@ from execution.llm_client import openrouter_chat, load_api_key, get_max_tokens
 # Fuente única de IDs por nivel (definida en execution/llm_client.py)
 MODEL_TIERS = {
     "flash":    "google/gemini-3.7-flash",  # Tareas rápidas y atómicas
-    "deepseek": "deepseek/deepseek-v4-pro", # Contexto masivo / razonamiento intermedio
+    "deepseek": "deepseek/deepseek-v4.1-flash", # Contexto masivo / razonamiento intermedio
     "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio
     "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico
 }

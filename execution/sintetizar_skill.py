@@ -73,7 +73,7 @@ MAX_RETRIES = 3
 
 
 def _razonamiento_para(modelo: str) -> Optional[dict]:
-    """Desactiva el thinking de modelos razonadores (deepseek-v4-pro consume
+    """Desactiva el thinking de modelos razonadores (deepseek consume
     todo el budget de salida en razonamiento y deja content=None). None = sin
     control (modelos no-razonadores: openai/gpt-oss, gemini, etc.)."""
     return {"enabled": False} if "deepseek" in modelo else None
@@ -691,7 +691,7 @@ def main() -> None:
     modelo = args.modelo
     if not modelo:
         # Decision determinista: contexto masivo por defecto (destilación de libros).
-        MODEL_TIERS = {"deepseek": "deepseek/deepseek-v4-pro"}
+        MODEL_TIERS = {"deepseek": "deepseek/deepseek-v4.1-flash"}
         modelo = MODEL_TIERS["deepseek"]
 
     salida = Path(args.salida) if args.salida else Path(".tmp") / f"skill_{args.nombre}"

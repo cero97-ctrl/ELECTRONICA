@@ -44,7 +44,7 @@ _APP_URL = "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
 
 MODEL_TIERS = {
     "flash":    "google/gemini-3.7-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
-    "deepseek": "deepseek/deepseek-v4-pro", # Tier medio: contexto masivo (>50k tok) / razonamiento (1M ctx, JSON mode)
+    "deepseek": "deepseek/deepseek-v4.1-flash", # Tier medio: contexto masivo (>50k tok) / razonamiento (1M ctx, JSON mode)
     "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio (1M ctx, razonamiento)
     "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico: diseño, cálculo formal, debugging
 }
@@ -136,7 +136,7 @@ def openrouter_chat(
               (ver build_multimodal_content).
     reasoning: control de razonamiento del modelo (solo vía extra_body del SDK
                OpenAI). Ej. {"enabled": False} desactiva el thinking de modelos
-               razonadores (deepseek-v4-pro, etc.), evitando que consuman todo
+               razonadores (deepseek, etc.), evitando que consuman todo
                max_tokens y devuelvan content=None. None = sin control.
     """
     client = get_openai_client(api_key)

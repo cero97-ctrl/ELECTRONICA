@@ -51,7 +51,7 @@ TMP_DIR = SCRIPT_DIR / ".tmp"
 STATE_FILE = TMP_DIR / "run_state.json"
 DESTINO_GLOBAL = Path.home() / ".config" / "opencode" / "skills"
 
-DEFAULT_MODEL = "deepseek/deepseek-v4-pro"
+DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash"
 PERFIL = "referencia_codigo"
 
 

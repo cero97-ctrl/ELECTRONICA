@@ -143,7 +143,7 @@ Pasos (total depende de flags):
     \item Concatena a \path{.tmp/repo_<nombre>_texto/texto_completo.txt} con cabeceras \texttt{=== ARCHIVO: <ruta> ===} y genera \texttt{indice.json} con árbol de estructura.
     \item E2E real: \texttt{pallets/itsdangerous} $\to$ 32 archivos, $\sim$22.5K tokens.
   \end{itemize}
-  \item \textbf{Enrutamiento determinista} --- \path{execution/enrutador.py --task contexto_masivo}: mide tokens y decide tier. Para un repo grande $\to$ \textbf{deepseek} (\texttt{deepseek/deepseek-v4-pro}).
+  \item \textbf{Enrutamiento determinista} --- \path{execution/enrutador.py --task contexto_masivo}: mide tokens y decide tier. Para un repo grande $\to$ \textbf{deepseek} (\texttt{deepseek/deepseek-v4.1-flash}).
   \item \textbf{Síntesis (créditos)} --- \path{execution/sintetizar_skill.py --perfil referencia_codigo} $\to$ 7 archivos (SKILL.md + 6 references de API). Prompts adaptados: NO fuerzan SymPy.
   \item \textbf{Validación (0 créditos)} --- \path{execution/validar_skill_formulas.py --perfil referencia_codigo}. Solo bloquea riesgos de Sistema; los snippets de API (firmas incompletas, imports del paquete) se marcan \texttt{ok}/\texttt{observacion}, nunca errores.
   \item \textbf{Reporte LaTeX (0 créditos)} --- \path{execution/generar_latex_skill.py} $\to$ PDF en \path{docs/SKILL/<nombre>/}.

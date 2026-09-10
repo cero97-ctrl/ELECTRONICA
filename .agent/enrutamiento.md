@@ -38,7 +38,7 @@ Del requerimiento del usuario identifica:
 | Nivel | ID OpenRouter | Costo (USD/M tok) | Uso típico |
 | :--- | :--- | :--- | :--- |
 | **flash** | `google/gemini-3.7-flash` | bajo | Rutina: parsing/formatting JSON-YAML, resúmenes, RAG, validación sintáctica, multimodal rápido |
-| **deepseek** | `deepseek/deepseek-v4-pro` | $0.44 / $0.87 | Contexto masivo (>50k tok), lectura multi-archivo/repositorio, síntesis de datasheets/logs, razonamiento intermedio (1M ctx, JSON mode) |
+| **deepseek** | `deepseek/deepseek-v4.1-flash` | $0.15 / $0.60 | Contexto masivo (>50k tok), lectura multi-archivo/repositorio, síntesis de datasheets/logs, razonamiento intermedio (1M ctx, JSON mode). V4 Pro discontinuado (2026-09-14) sustituido por V4.1 Flash |
 | **glm** | `z-ai/glm-5.2` | ~$1 / $3 | Respaldo del tier medio (1M ctx, razonamiento) |
 | **opus** | `anthropic/claude-opus-5` | $5 / $25 | Diseño arquitectónico, cálculo formal, debugging profundo, exámenes/evaluación compleja, netlists/EasyEDA |
 
