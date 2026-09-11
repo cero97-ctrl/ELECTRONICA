@@ -59,6 +59,8 @@ def analizar_imagenes_circuito(
         
     print(f"Ejecutando análisis de imágenes: {' '.join(cmd)}")
     
+    state_file = os.path.join(project_root, ".tmp", "run_state.json")
+    mtime_before = os.path.getmtime(state_file) if os.path.exists(state_file) else None
     try:
         resultado = subprocess.run(
             cmd,
@@ -68,15 +70,20 @@ def analizar_imagenes_circuito(
             cwd=project_root
         )
         
-        # Intentar leer el estado final en .tmp/run_state.json para dar una respuesta rica
-        state_file = os.path.join(project_root, ".tmp", "run_state.json")
+        # Leer el estado final SOLO si el run_state.json fue reescrito por ESTA
+        # corrida (si el flujo salió antes de escribir o falló sin llegar, el
+        # archivo conserva un mtime viejo de otra corrida → vista HUÉRFANA que
+        # no debe reportarse como resultado actual; ver execution/estado_sesion.py).
         state_data = {}
         if os.path.exists(state_file):
             try:
-                with open(state_file, "r", encoding="utf-8") as f:
-                    state_data = json.load(f)
+                if mtime_before is not None and os.path.getmtime(state_file) <= mtime_before:
+                    pass  # archivo no modificado por esta corrida: no usar
+                else:
+                    with open(state_file, "r", encoding="utf-8") as f:
+                        state_data = json.load(f)
             except Exception:
-                pass
+                state_data = {}
                 
         if resultado.returncode == 0:
             descripcion = state_data.get("context", {}).get("descripcion", "N/A")

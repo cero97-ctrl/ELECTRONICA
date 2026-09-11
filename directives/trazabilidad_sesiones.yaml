@@ -123,6 +123,17 @@ edge_cases:
       si no hay error). El orquestador reinicia SUBSECUENTES scripts sin re-escribir
       los eventos previos; añade flujo/inicio (comentario de reanudación) en el log
       de la misma corrida o de una nueva.
+  - case: "run_state.json obsoleto o huérfano al inicio de una sesión/consulta MCP"
+    recovery: >
+      El log append-only es la fuente de verdad; run_state*.json son vistas derivadas
+      que pueden SOBREVIVIR a su corrida (p. ej. quedó de un dry-run terminado con
+      flujo/fin, o referencia un modelo ya discontinuado). Antes de usar el estado
+      global de .tmp/run_state.json, ejecutar execution/estado_sesion.py check y,
+      si marca algo como huerfano/corrupto, purgarlo con clean (borra SOLO vistas
+      cuya corrida terminó; nunca toca los logs, fuente inmutable). Los flujos que
+      solo usan save_state() (sin trazabilidad) no son verificables y NO se borran.
+      Escanear periódicamente con check es higiene de contexto: evita responder con
+      estado de OTRA corrida.
 
 metadata:
   version: "1.0"

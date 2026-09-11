@@ -35,6 +35,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 - **Session logs (continuity):** the `Sessions/` folder (repo root) records one `.md` per session, named by topic (`Sessions/<fecha>_<tema>.md`).
   - **At the start of each new session**, before investigating anything, check `Sessions/` for the most recent log matching the topic the user brings up (glob `Sessions/*<tema>*.md`, fallback to the newest file). Read it to recover what was decided/pending — avoid re-investigating from scratch and burning tokens.
   - **Then create** this session's own log in `Sessions/<fecha>_<tema>.md` recording date, topic, activities, decisions and pending items, and commit it with the rest of the session's work.
+- **State hygiene (freshness):** `run_state*.json` are *derived views* of the append-only `session_log_*.jsonl`; a view can outlive its run (orphan) and poison MCP responses. **At the start of each session** (or before resuming any multi-step flow), run `python3 execution/estado_sesion.py check`; purge confirmed orphans with `... clean` (never touches the immutable logs).
 - **Before modifying any `.tex` file**, read `.agent/latex.md` (16 documented LaTeX pitfalls specific to this project)
 - **Before modifying scripts that use LangChain or parse LLM JSON**, read `.agent/python.md` (PromptTemplate jinja2 mode, raw strings, trailing commas, balanced-brace JSON extraction)
 - **`requirements.txt` contains only `psutil` and `PyYAML`** — real dependencies live in the conda environment; don't trust it as canonical
