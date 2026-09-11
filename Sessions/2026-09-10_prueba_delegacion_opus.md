@@ -35,10 +35,29 @@ solo había cubierto `flash → sub-rutina`. Esta sesión valida `opus → sub-c
 - Log de prueba eliminado del `.tmp/` tras la verificación.
 
 ## Pendientes
-- Opcional: probar un caso de `subagent: null` con `--modelo-explicito` en vivo
-  (el camino restante del mapa; la elección recaería en el orquestador).
+- ~~Opcional: probar un caso de `subagent: null` con `--modelo-explicito` en vivo
+  (el camino restante del mapa; la elección recaería en el orquestador).~~ **HECHO**
+  (ver prueba extra abajo).
 - Opcional: extender `SUBAGENTS` si aparece un rol nuevo (solo el mapa en
   `execution/enrutador.py` + re-test).
 
+## Prueba extra (2026-09-10) — `--modelo-explicito` → `subagent: null` en vivo
+Camino restante del edge case 1 de `directives/delegacion_subagentes.yaml`:
+- Descriptor: `--task resumen --archivos directives/delegacion_subagentes.yaml
+  --modelo-explicito openai/gpt-oss-20b --delegacion --no-log`.
+- Enrutador: `{tier: explicito, model: openai/gpt-oss-20b, subagent: null,
+  fallback: [], reason: "Modelo explícito solicitado por el usuario"}`
+  (sin telemetría de routing; salida esperada del edge case).
+- **Elección del orquestador** (subagent null): naturaleza rutina → `sub-rutina`;
+  el modelo explícito se respeta como override total.
+- Trazabilidad: run `test_explicito_vivo` — `flujo/inicio` (seq 1),
+  `delegacion/decidida` (seq 2, subagent null en datos), `delegacion/resultado`
+  (seq 3), `flujo/fin` (seq 4); `integrity` OK (cadena de hashes íntegra).
+- Subagente devolvió JSON válido (6 pasos, 3 subagentes, 5 edge cases).
+- Saldo sin variación: $21.06. Log de prueba eliminado.
+- Con esto quedan cubiertos los 3 caminos del mapa: flash→sub-rutina (2026-09-09),
+  opus→sub-critico (arriba), modelo-explicito→null (elección orquestador).
+
 ## Commit
-`feat(delegacion): prueba en vivo tier opus → sub-critico (revisión de ejercicios.tex)`
+- `feat(delegacion): prueba en vivo tier opus → sub-critico (revisión de ejercicios.tex)`
+- `feat(delegacion): prueba en vivo modelo-explicito → subagent null (elección orquestador)`
