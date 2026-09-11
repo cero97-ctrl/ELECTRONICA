@@ -134,6 +134,18 @@ edge_cases:
       solo usan save_state() (sin trazabilidad) no son verificables y NO se borran.
       Escanear periódicamente con check es higiene de contexto: evita responder con
       estado de OTRA corrida.
+  - case: "No se escribió la bitácora semántica de la sesión (contexto de ALTO nivel)"
+    recovery: >
+      El bajo nivel (logs append-only + estado) registra qué se ejecutó; el ALTO
+      nivel (por QUÉ se decidió, qué se descartó, intenciones del usuario) solo vive
+      en Sessions/YYYY-MM-DD_<tema>.md. CONVENCIÓN: al iniciar sesión, si no existe
+      bitácora del día, crearla con `python3 execution/bitacoras.py nueva --tema
+      "<tema>"` (genera la plantilla canónica, no sobrescribe nunca); al cerrar,
+      rellenarla y validar con `... check`. Si check reporta falta de bitácora del día
+      o secciones vacías (hoy/reciente), corrige el defecto antes de cerrar. Las
+      bitácoras anteriores a 2026-09-11 son legado transicional: se listan
+      informativas, no se reescriben. Sin bitácora, la próxima sesión pierde el
+      contexto semántico y volvería a investigar/decidir sin él.
 
 metadata:
   version: "1.0"
@@ -147,6 +159,8 @@ metadata:
   script_principal: "execution/sesion_log.py"
   scripts_ejecucion:
     - "execution/sesion_log.py"
+    - "execution/estado_sesion.py"
+    - "execution/bitacoras.py"
   enrutamiento:
     task: "rutina"
     notas: >
