@@ -1,0 +1,743 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabeceras específicas del documento ────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{ELECTRÓNICA} --- Higiene de Estado de Sesión}
+\fancyhead[R]{\small\color{grisTexto}11/09/2026}
+\renewcommand{\headrulewidth}{0pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ PORTADA INFográfica ════════════════════════════════════════════════════════
+\renewcommand{\iconoBanda}{shield-alt}
+\bandaTitulo[fondoOscuro]{Higiene de Estado de Sesión}{run\_state.json como vista derivada, guards en los servidores MCP, limpieza determinista y eslabón semántico de bitácoras}
+
+\vspace{4pt}
+\begin{tcolorbox}[cajaTitulo, title=Resumen ejecutivo]
+\textbf{Problema:} \texttt{run\_state*.json} son \emph{vistas derivadas} de los logs
+append-only \texttt{session\_log\_*.jsonl} (la fuente de verdad). Una vista puede
+\emph{sobrevivir a su corrida} y quedar huérfana, contaminando las respuestas de los
+servidores MCP con el estado de \emph{otra} ejecución. Además, la memoria semántica
+del proyecto (por QUÉ se decidió, qué se descartó) vive \emph{exclusivamente} en
+las bitácoras de sesión \texttt{Sessions/}, y no había mecanismo determinista para
+asegurar que existieran ni que tuvieran la estructura mínima.
+
+\textbf{Solución (aprobada por el usuario):} dos pillars de higiene, ambos a
+\textbf{0 créditos} OpenRouter:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Bajo nivel (estado de ejecución):} script determinista
+        (\texttt{execution/estado\_sesion.py}) con \texttt{check} + \texttt{clean},
+        una guardia por mtime en los 5 servidores MCP, edge case documentado en la
+        directiva, y regla de \emph{state hygiene} en \texttt{AGENTS.md}.
+  \item \textbf{Alto nivel (contexto semántico):} script determinista
+        (\texttt{execution/bitacoras.py}) con \texttt{nueva --tema} (plantilla
+        canónica que nunca sobrescribe) y \texttt{check [--today]} (valida nombre,
+        fecha y secciones mínimas de las bitácoras recientes), edge case de ``bitácora
+        no escrita'' en la directiva, y regla de cierre en \texttt{AGENTS.md}.
+\end{enumerate}
+\end{tcolorbox}
+
+% ══ SECCIÓN 1: EL PROBLEMA ═════════════════════════════════════════════════════
+\section{\iconotexto{bullseye}{El problema: vistas que sobreviven al run}}
+
+\subsection{Modelo de estado en ELECTRONICA}
+El rastreo de flujos multi-paso sigue una separación estricta entre \emph{fuente de
+verdad} y \emph{vista}:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.30\linewidth} p{0.30\linewidth} X}
+\toprule
+\textbf{Artefacto} & \textbf{Rol} & \textbf{Naturaleza} \\
+\midrule
+\texttt{session\_log\_<run>.jsonl} & Fuente de verdad & Append-only, inmutable \\
+\texttt{run\_state.json} & Vista global del último flujo & Sobrescribible \\
+\texttt{run\_state\_<run>.json} & Vista de un run concreto & Regenerable \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{cajaConcepto}
+\faIcon{lightbulb}~\textbf{Concepto clave:} un \texttt{run\_state.json} puede
+\emph{quedar huérfano}. Si el flujo termina (evento \texttt{flujo/fin} en su log) pero
+la vista no se limpia, el archivo sigue existiendo en \texttt{.tmp/} apuntando a un run
+que ya no está activo. Cualquier consumidor que lo lea \emph{sin verificar} reportará
+estado de una corrida terminada — o peor, de una corrida distinta.
+\end{cajaConcepto}
+
+\subsection{Caso real detectado}
+Durante la auditoría de continuidad se encontró exactamente este caso:
+
+\begin{tcolorbox}[cajaMejora, title=Caso de estudio --- vista huérfana de un dry-run]
+\begin{itemize}%[leftmargin=*]
+  \item \textbf{\texttt{.tmp/run\_state.json}} apuntaba a
+        \texttt{flujo-repo-a-skill-2026-09-09T12-29-54} (un dry-run de prueba de
+        trazabilidad).
+  \item Su log \texttt{session\_log\_...jsonl} tenía \textbf{6 eventos} y terminaba con
+        \texttt{flujo/fin}: la corrida \emph{ya había terminado}.
+  \item El estado referenciaba \texttt{deepseek/deepseek-v4-pro}, modelo
+        \textbf{discontinuado} (sustituido por \texttt{deepseek-v4.1-flash}).
+  \item Los servidores MCP leen \texttt{run\_state.json} \emph{global} como
+        ``estado del flujo recién lanzado'' → riesgo real de responder con el contexto
+        de otra corrida.
+\end{itemize}
+\end{tcolorbox}
+
+La trazabilidad append-only estaba íntegra: la cadena de hashes del log era válida
+(\texttt{integrity} OK). El fallo no era del log, sino de \emph{confiar en la vista sin
+cruzar contra la fuente}.
+
+% ══ SECCIÓN 2: LA SOLUCIÓN ═════════════════════════════════════════════════════
+\section{\iconotexto{layer-group}{La solución en tres capas}}
+
+Siguiendo la arquitectura determinista, el refuerzo cubrió las tres capas:
+
+\begin{table}[h]
+\centering
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.20\linewidth} p{0.36\linewidth} X}
+\toprule
+\textbf{Capa} & \textbf{Artefacto} & \textbf{Aporte} \\
+\midrule
+L3 Ejecución & \texttt{execution/estado\_sesion.py} & Diagnóstico y purga de vistas huérfanas (\texttt{check}/\texttt{clean}) \\
+L3 Ejecución & \texttt{execution/bitacoras.py} & Plantilla (\texttt{nueva}) y validación de bitácoras semánticas (\texttt{check}) \\
+L1 Directiva & \texttt{directives/trazabilidad\_sesiones.yaml} & Edge cases ``run\_state huérfano'' y ``bitácora sin escribir'' \\
+L2 Orquestación & \texttt{AGENTS.md} + guards en MCP & Higiene de bajo nivel al arrancar; cierre de bitácora al finalizar \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Capa de ejecución: execution/estado\_sesion.py}
+
+\subsubsection{check --- diagnóstico, nunca borra}
+Escanea \texttt{run\_state.json} y \texttt{run\_state\_*.json}, cruza cada vista contra
+su log y emite un veredicto por artefacto:
+
+\begin{lstlisting}[style=estiloPython]
+$ python3 execution/estado_sesion.py check
+{
+  "checks": [ { "archivo": "..../.tmp/run_state.json",
+                "run_id": "flujo-repo-a-skill-...",
+                "veredicto": "huerfano",
+                "razon": "la corrida termino (flujo/fin); la vista sobrevivio.",
+                "modelo_obsoleto": "deepseek-v4-pro" } ],
+  "veredicto_global": "atencion", "anomalias": 1
+}
+\end{lstlisting}
+
+Veredictos posibles y significado:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.14\linewidth} X}
+\toprule
+\textbf{Veredicto} & \textbf{Significado} \\
+\midrule
+\texttt{huerfano} & El log existe y su último evento es \texttt{flujo/fin}: la vista sobrevivió a la corrida terminada \\
+\texttt{vigente} & Log sin \texttt{flujo/fin}: corrida en curso o reanudable \\
+\texttt{no\_verificable} & No hay log (flujo sin trazabilidad): \textbf{no} se borra por falta de certeza \\
+\texttt{corrupto} & JSON inválido o sin \texttt{run\_id} (escritura a medias) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Además detecta \textbf{modelos obsoletos} por substring (\texttt{deepseek-v4-pro}) y lo
+reporta como \texttt{advertencia} (no justifica borrado por sí solo).
+
+\subsubsection{clean --- borra solo con certeza}
+\begin{lstlisting}[style=estiloPython]
+$ python3 execution/estado_sesion.py clean            # purga vistas huerfanas
+$ python3 execution/estado_sesion.py clean --dry-run  # lista sin borrar
+$ python3 execution/estado_sesion.py check --run <id> # acotar a un run
+\end{lstlisting}
+
+Regla de oro del \texttt{--clean}: \textbf{borra únicamente} las vistas cuya corrida
+terminó con \texttt{flujo/fin} (certeza absoluta). \textbf{Nunca} borra los logs
+append-only (fuente de verdad inmutable), y \textbf{no} toca los
+\texttt{no\_verificable}.
+
+\begin{cajaRecuerda}
+\faIcon{info-circle}~\textbf{Recuerda:} \texttt{check} solo diagnostica. El borrado es
+intencional, vía \texttt{clean}, y está restringido a lo que el criterio anterior puede
+confirmar. Un flujo sin trazabilidad (\texttt{no\_verificable}) se advierte pero jamás
+se purga automáticamente.
+\end{cajaRecuerda}
+
+\subsection{Capa de directiva: trazabilidad\_sesiones.yaml}
+Se amplió la directiva con dos edge cases específicos (protocolos de recuperación):
+
+\begin{lstlisting}
+- case: "run_state.json obsoleto o huerfano al inicio de una sesion/consulta MCP"
+  recovery: >
+    Ejecutar execution/estado_sesion.py check y purgar con clean si marca
+    huerfano/corrupto. Nunca tocar los logs (fuente inmutable).
+
+- case: "No se escribio la bitacora semantica de la sesion"
+  recovery: >
+    Al iniciar: si no existe bitacora del dia, crearla con
+      python3 execution/bitacoras.py nueva --tema "<tema>".
+    Al cerrar: rellenarla y validar con bitacoras.py check.
+    El contexto de ALTO nivel (por que se decidio, que se descarto) vive
+    EXCLUSIVAMENTE en Sessions/. Sin bitacora, la proxima sesion pierde
+    contexto y volveria a investigar desde cero.
+\end{lstlisting}
+
+\texttt{bitacoras.py} está referenciado en la lista de scripts de la directiva
+y el edge case cubre la continuidad semántica entre sesiones.
+
+\subsection{Capa de orquestación: guards en los MCP y AGENTS.md}
+
+\subsubsection{Guardia por mtime en los 5 servidores MCP}
+Los servidores \texttt{mcp\_evaluar}, \texttt{mcp\_diagnostico}, \texttt{mcp\_analizar},
+\texttt{mcp\_elaborar} y \texttt{mcp\_docs} siguen el mismo patrón: lanzan el flujo con
+\texttt{subprocess.run} y, si termina OK, leen \texttt{run\_state.json} para dar una
+respuesta \emph{rica}. La corrección captura el mtime \emph{antes} de lanzar y solo lee
+la vista si el archivo fue \textbf{reescrito durante esta corrida}:
+
+\begin{lstlisting}[style=estiloPython]
+state_file = os.path.join(project_root, ".tmp", "run_state.json")
+mtime_before = (os.path.getmtime(state_file)
+                if os.path.exists(state_file) else None)
+try:
+    resultado = subprocess.run(cmd, capture_output=True, text=True,
+                               encoding="utf-8", cwd=project_root)
+    state_data = {}
+    if os.path.exists(state_file):
+        try:
+            if mtime_before is not None and \
+               os.path.getmtime(state_file) <= mtime_before:
+                pass  # vista de OTRA corrida: no reportar
+            else:
+                with open(state_file, "r", encoding="utf-8") as f:
+                    state_data = json.load(f)
+        except Exception:
+            state_data = {}
+\end{lstlisting}
+
+\begin{cajaRecuerda}
+\faIcon{exclamation-triangle}~\textbf{Corrección de diseño importante:} la primera
+versión del guard comprobaba \texttt{"flujo/fin"} en el log para descartar la vista.
+\textbf{Ese criterio era inválido}: un flujo que corre \emph{bien} también emite
+\texttt{flujo/fin}, así que se habría descartado el estado legítimo de la corrida que
+acaba de terminar con éxito. El criterio correcto para el MCP es temporal:
+``¿el \texttt{run\_state.json} fue reescrito \emph{durante} este lanzamiento?''
+→ comparación de mtime. Se corrigió en los 5 servers antes del commit.
+\end{cajaRecuerda}
+
+\subsubsection{Regla de arranque y cierre en AGENTS.md}
+\begin{lstlisting}
+- **State hygiene (freshness):** run_state*.json are *derived views* of the
+  append-only session_log_*.jsonl; a view can outlive its run (orphan) and poison
+  MCP responses. At the start of each session, run `python3 execution/estado_sesion.py
+  check`; purge confirmed orphans with `... clean` (never touches the immutable logs).
+
+- **Session logs (continuity):** ...
+  - At the start: create bitácora via `python3 execution/bitacoras.py nueva --tema "<tema>"`
+  - At session close: run `... check` and fix any missing day-log or empty sections
+\end{lstlisting}
+
+\begin{cajaConcepto}
+\faIcon{lightbulb}~\textbf{Dos niveles de memoria, dos instrumentos:}
+el \emph{bajo nivel} (datos reproducibles: log + run\_state) se gestiona con
+\texttt{estado\_sesion.py}. El \emph{alto nivel} (semántica: por qué se decidió,
+qué se descartó) se gestiona con \texttt{bitacoras.py}. Sin ninguno de los dos, la
+próxima sesión re-investiga desde cero (tokens/créditos quemados).
+\end{cajaConcepto}
+
+% ══ SECCIÓN 5: EL ESLABÓN SEMÁNTICO — BITÁCORAS ═════════════════════════════
+\section{\iconotexto{book}{Eslabón semántico: bitácoras de sesión}}
+
+\begin{cajaConcepto}
+\faIcon{lightbulb}~\textbf{El problema:} la salud de ejecución (sección anterior) blinda
+el \emph{bajo nivel}: datos reproducibles, deterministas, verificables. Pero el
+\emph{contexto de alto nivel} — por qué se decidió algo, qué se descartó, las
+intenciones del usuario, los matices que no caben en un log JSON — vive
+\textbf{exclusivamente} en las bitácoras markdown de \texttt{Sessions/}. Si no se
+escriben, la siguiente sesión \emph{no puede recuperar} ese razonamiento y volvería
+a investigar desde cero, quemando tokens y tomando decisiones sin contexto.
+\end{cajaConcepto}
+
+\subsection{execution/bitacoras.py}
+
+Script determinista (0 créditos) con dos subcomandos:
+
+\subsubsection{nueva --tema \textless{}tema\textgreater{}}
+Genera la plantilla canónica de la sesión de HOY (nunca sobrescribe un archivo
+existente). Formato del nombre: \texttt{YYYY-MM-DD\_\textless{}tema\textgreater{}.md}
+(slug ASCII con transliteración de acentos). Plantilla:
+
+\begin{lstlisting}
+# 2026-09-11 — Tema de la sesión
+
+## Tema
+(1 frase sobre qué se abordó)
+
+## Contexto
+(Por qué se aborda, eventos detectados)
+
+## Decisiones (usuario)
+(Acuerdos explícitos del usuario — NO inventar)
+
+## Actividades
+(Pasos, scripts, salidas, veredictos)
+
+## Pendientes
+(Queda abierto, pendientes acordados de otras sesiones)
+\end{lstlisting}
+
+\subsubsection{check [--today]}
+Diagnostica la estructura de las bitácoras existentes: valida nombre
+(\texttt{YYYY-MM-DD\_\textless{}tema\textgreater{}.md}), fecha parseable (sin
+futuros) y las cuatro secciones mínimas. Clasifica cada bitácora en tres periodos:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{0.16\linewidth} X}
+\toprule
+\textbf{Periodo} & \textbf{Significado} \\
+\midrule
+\texttt{hoy} & Sesión del día en curso — \textbf{debe} existir y cumplir plantilla \\
+\texttt{reciente} & Desde la adopción de la plantilla — debe cumplir estructura \\
+\texttt{legado} & Antes de la plantilla — formato heredado, informativo, no penaliza \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Solo las anomalías en \texttt{hoy}/\texttt{reciente} cuentan para
+\texttt{veredicto\_global} y el exit code. El check también reporta si la sesión
+del día ya dejó bitácora (\texttt{sesion\_hoy.hay\_bitacora}).
+
+\begin{lstlisting}[style=estiloPython]
+$ python3 execution/bitacoras.py check
+{
+  "bitacoras": [...],
+  "sesion_hoy": {"fecha": "2026-09-11",
+                 "hay_bitacora": true,
+                 "archivos": ["Sessions/2026-09-11_....md"]},
+  "anomalias": 0, "accionables": 0,
+  "veredicto_global": "ok"
+}
+\end{lstlisting}
+
+\subsection{Hábito codificado en AGENTS.md}
+La regla en \texttt{AGENTS.md} vincula el uso del script al flujo de trabajo:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Al inicio:} buscar bitácora previa del tema → crear la nueva con
+        \texttt{bitacoras.py nueva --tema}.
+  \item \textbf{Al cerrar:} rellenar las secciones y ejecutar
+        \texttt{bitacoras.py check}; si reporta anomalía, corregir antes de terminar.
+\end{itemize}
+
+\begin{cajaRecuerda}
+\faIcon{info-circle}~\textbf{Las bitácoras legado no se reescriben:} las sesiones
+anteriores a la adopción de la plantilla (2026-09-11) usaban otro formato. Se listan
+informativas para mantener trazabilidad histórica; solo las nuevas (desde hoy) deben
+seguir la plantilla canónica.
+\end{cajaRecuerda}
+
+% ══ SECCIÓN 6: VERIFICACIÓN ═══════════════════════════════════════════════════
+\section{\iconotexto{flask}{Verificación (0 créditos)}}
+
+\subsection{Guardia MCP: dos casos controlados}
+Se replicó la lógica exacta del server contra dos escenarios:
+
+\begin{tcolorbox}[cajaFortaleza, title=Caso A --- vista huérfana (no reescrita)]
+\begin{lstlisting}[style=estiloPython]
+run_state.json escrito hace 1h (mtime viejo).
+mtime_before = getmtime()  # la corrida NO reescribe el archivo
+resultado: state_data == {}       # << no se reporta estado ajeno
+\end{lstlisting}
+Resultado: \textbf{se descarta} la vista de otra corrida. \faIcon{check-circle}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaFortaleza, title=Caso B --- estado reescrito por la corrida]
+\begin{lstlisting}[style=estiloPython]
+mtime_before = getmtime()
+el flujo reescribe run_state.json  # mtime > mtime_before
+resultado: state_data == {"run_id": "...", "context": {...}}  # << se usa
+\end{lstlisting}
+Resultado: \textbf{se conserva} el estado legítimo. \faIcon{check-circle}
+\end{tcolorbox}
+
+\subsection{Limpieza real del caso detectado}
+\begin{lstlisting}[style=estiloPython]
+$ python3 execution/estado_sesion.py check
+  # -> veredicto "huerfano" + advertencia deepseek-v4-pro
+$ python3 execution/estado_sesion.py clean
+  # -> eliminado: .tmp/run_state.json
+$ python3 execution/estado_sesion.py check
+  # -> checks: []  veredicto_global: ok   (log immutable intacto)
+\end{lstlisting}
+
+El log append-only \texttt{session\_log\_flujo-repo-a-skill-2026-09-09T12-29-54.jsonl}
+permaneció \textbf{intacto} (fuente de verdad intacta).
+
+% ══ SECCIÓN 7: ALINEACIÓN CON LA ARQUITECTURA ═════════════════════════════════
+\section{\iconotexto{sitemap}{Alineación con la arquitectura}}
+
+\begin{itemize}%[leftmargin=*]
+  \item \textbf{Determinismo:} mismo estado de \texttt{.tmp/} → mismo veredicto. El
+        script no razona ni consume créditos.
+  \item \textbf{Separación de responsabilidades:} la decisión de \emph{cuándo} una
+        vista es obsoleta o una bitácora está incompleta vive en código (capas 1 y 3),
+        no en el chat del orquestador.
+  \item \textbf{Autocuración:} la guardia de mtime evita que un MCP ``recupere''
+        contexto basura tras un flujo que no llegó a escribir estado; el
+        \texttt{bitacoras.py check} evita cerrar una sesión sin dejar rastro semántico.
+  \item \textbf{Retry budget respetado:} sin reintentos infinitos; el criterio es
+        binario y verificable.
+\end{itemize}
+
+\begin{cajaEjemplo}
+\faIcon{code}~\textbf{Ejemplo de uso cotidiano:} tras el reinicio de una sesión (o
+antes de reanudar un flujo multi-paso), basta con
+\begin{center}
+\texttt{python3 execution/estado\_sesion.py check}
+\end{center}
+para saber si \texttt{run\_state.json} es fiable. Si reporta \texttt{huerfano}, un
+\texttt{clean} lo purga en un paso.
+\end{cajaEjemplo}
+
+% ══ SECCIÓN 8: PENDIENTES ═════════════════════════════════════════════════════
+\section{\iconotexto{list}{Pendientes y líneas siguientes}}
+
+\begin{itemize}[leftmargin=*]
+  \item Considerar que los flujos emitan su \texttt{run\_id} al final del stdout
+        (permitiría validación robusta sin depender de mtime).
+  \item Extender \texttt{check} para limpiar \texttt{run\_state\_*.json} \emph{por
+        run} de forma aún más agresiva solo si el usuario lo solicita.
+  \item Integrar \texttt{bitacoras.py check} como recordatorio automático de cierre
+        de sesión (en flujo de arranque o directiva).
+  \item El pendiente de \texttt{docs/AGENTE\_IA/orquestador\_repo\_a\_skill.mp4}
+        permanece en manos del usuario (fuera del alcance de esta sesión).
+\end{itemize}
+
+\end{document}
