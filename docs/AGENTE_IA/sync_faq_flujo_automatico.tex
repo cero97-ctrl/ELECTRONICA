@@ -1,0 +1,801 @@
+% ======================================================================
+%  Documento técnico: flujo_sync_faq_flujo.py
+%  Explicación detallada del mecanismo de sincronización automática
+%  FAQ markdown -> diagramas de flujo (.tex/.pdf)
+%  Estilo infográfico replicado de docs/AGENTE_IA/*.tex
+% ======================================================================
+\documentclass[11pt,a4paper]{article}
+
+% -- Codificación, fuentes y lenguaje -----------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% -- Geometría y espaciado ----------------------------------------------
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{parskip}
+
+% -- Matemáticas --------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% -- TikZ (símbolos ISO 5807 / ANSI X3.5) -------------------------------
+\usepackage{tikz}
+\usetikzlibrary{babel}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.symbols,
+                decorations.pathmorphing, calc}
+
+% -- Tablas y listas ----------------------------------------------------
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% -- Código fuente ------------------------------------------------------
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  showstringspaces=false,
+  frame=single,
+  rulecolor=\color{grisLinea},
+  backgroundcolor=\color{grisPapel},
+  language=Python,
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {¿}{{?`}}1 {¡}{{!`}}1,
+}
+
+% -- Rutas de archivo con quiebre de línea ------------------------------
+\usepackage{url}
+
+% -- Colores, cajas e iconos ---------------------------------------------
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% -- Secciones con barra de color (infografía) ---------------------------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% -- Cabeceras y pies de página ------------------------------------------
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% -- Hiperenlaces ---------------------------------------------------------
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% -- Paleta de colores ----------------------------------------------------
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{verdeTurquesa}{HTML}{004D40}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{azulMedio}{HTML}{2A5298}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{naranjaVivo}{HTML}{FF7043}
+\definecolor{rojoAlerta}{HTML}{E53935}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{amarilloNota}{HTML}{FFB300}
+
+% -- Banda de título ------------------------------------------------------
+\newcommand{\iconoBanda}{sync-alt}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% -- Tarjetas --------------------------------------------------------------
+\tcbset{
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, colframe=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaConcepto/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% -- Estilos de flujo (ISO 5807 / ANSI X3.5) ------------------------------
+\tikzset{
+  flujo/.style={
+    >=Stealth,
+    font=\footnotesize\sffamily,
+  },
+  terminador/.style={
+    draw=azulNoche, fill=azulNoche!8!white, rounded corners=3pt,
+    text width=1.6cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  proceso/.style={
+    draw=azulNoche, fill=cyanNeon!10!white,
+    text width=1.6cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  entradasalida/.style={
+    draw=azulNoche, fill=verdeSignal!10!white,
+    trapezium, trapezium left angle=75, trapezium right angle=105,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  decision/.style={
+    draw=azulNoche, fill=amarilloNota!20!white,
+    diamond, aspect=1.6, text width=1.5cm, align=center, inner sep=1pt,
+    font=\footnotesize\sffamily,
+  },
+  almacenamiento/.style={
+    draw=azulNoche, fill=grisPapel,
+    cylinder, shape border rotate=90, aspect=0.3,
+    text width=1.7cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  documento/.style={
+    draw=azulNoche, fill=azulMedio!8!white,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  nota/.style={
+    draw=grisLinea, dashed, fill=grisPapel,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\scriptsize\sffamily,
+  },
+  etiqueta/.style={font=\scriptsize\sffamily, fill=white, fill opacity=0.75,
+                   text opacity=1, inner sep=1pt},
+}
+
+% -- Cabecera específica del documento -------------------------------------
+\fancyhead[L]{\small\color{azulNoche}\textbf{ELECTRÓNICA} --- Sincronización automática FAQ$\rightarrow$Flujo}
+\fancyhead[R]{\small\color{grisTexto}12/09/2026}
+\renewcommand{\headrulewidth}{0pt}
+
+% ======================================================================
+\begin{document}
+
+\bandaTitulo{Sincronización Automática FAQ $\rightarrow$ Diagramas de Flujo}{Ficha técnica del mecanismo de 3 capas que mantiene \texttt{faq\_higiene\_estado\_sesion\_flujo.\{tex,pdf\}} alineados con \texttt{faq\_higiene\_estado\_sesion.md}, sin intervención manual}
+
+% ======================================================================
+\section{Objetivo y motivación}
+
+El documento \texttt{docs/AGENTE\_IA/faq\_higiene\_estado\_sesion\_flujo.tex} es una
+\textbf{traducción semántica} (no mecánica ni 1:1) del FAQ
+\texttt{faq\_higiene\_estado\_sesion.md}. Los cinco diagramas ISO 5807 que contiene
+resumen la cadena de integridad, la guardia MCP por \texttt{mtime}, los veredictos de
+\texttt{estado\_sesion.py check/clean} y el eslabón semántico de \texttt{bitacoras.py}.
+
+El problema que motiva este flujo es de \emph{consistencia}: si alguien edita el FAQ
+(añade un veredicto, cambia una fecha, corrige una frase), el diagrama queda obsoleto.
+Hacer la traducción a mano es lento, y la traducción ``desde cero'' por un LLM rompe la
+geometría de los diagramas (coordenadas, estilos y número de nodos son frágiles).
+
+\begin{tcolorbox}[cajaConcepto]
+\faIcon{bullseye}~Objetivo: cuando se edite el \texttt{.md}, el flujo detecta el cambio
+por \textbf{hash SHA-256}, decide \emph{qué} hay que traducir, lo traduce de forma
+\textbf{híbrida} (campos deterministas por script, semántica vía LLM quirúrgico),
+recompila el PDF y \textbf{verifica} el resultado sin necesidad de visión humana.
+\end{tcolorbox}
+
+El resultado es un bucle de auto-curación determinista: la misma entrada (mismo \texttt{.md}
+en el mismo estado) produce siempre el mismo comportamiento, y la única parte probabilística
+(el LLM) se mantiene acotada y \emph{validada} antes de tocar el documento.
+
+% ======================================================================
+\section{Arquitectura de 3 capas}
+
+El proyecto ELECTRONICA impone una separación estricta de responsabilidades. Este flujo la
+respeta al pie de la letra:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.4cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Capa & Artefacto & Rol (qu\'e / c\'omo) \\
+\midrule
+1. Directiva & \path{directives/sync_faq_a_flujo.yaml} & SOP de nivel medio: qu\'e hacer, paso a paso, y qu\'e hacer ante cada caso l\'imite (edge case). \\
+2. Orquestaci\'on & \path{flujo_sync_faq_flujo.py} & Toma de decisiones: comparar hash, planear, encadenar ejecuci\'on, avisar de coste, compilar, copiar, alertar. \\
+3. Ejecuci\'on & \path{execution/regenerar_faq_flujo.py} \newline \path{execution/verificar_pdf.py} & C\'omo: scripts deterministas con CLI, salidas JSON y c\'odigos de salida categorizados. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A esta tr\'iada se suma un cambio \emph{aditivo} en la pieza compartida
+\texttt{execution/compile\_latex.py}: un par\'ametro nuevo \texttt{clean=False} que permite al
+orquestador conservar el log compilaci\'on hasta despu\'es de la verificaci\'on (ver
+Secci\'on~\ref{sec:compile}).
+
+\begin{tcolorbox}[cajaMejora]
+\faIcon{handshake}~\textbf{Reutilización antes que construcción.} El flujo no reimplementa
+nada: reutiliza \texttt{execution/enrutador.py} (decisión de tier), \texttt{execution/llm\_client.py}
+(chat por OpenRouter), \texttt{execution/compile\_latex.py} (compilación), \texttt{execution/alert\_user.py}
+(notificación audible) y los patrones JSON ya documentados en \texttt{.agent/python.md}.
+\end{tcolorbox}
+
+% ======================================================================
+\section{Visión general del flujo completo}
+
+\subsection{La cadena, de principio a fin}
+
+Cada ejecución del orquestador recorre esta secuencia (fases E1--E5 del SOP):
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.66, transform shape, x=1cm, y=1cm]
+  % Nodo inicial
+  \node[terminador] (inicio) at (0,0) {Orquesta\\ \texttt{--once}};
+  \node[proceso] (f1) at (0,-1.6) {SHA-256\\ del .md};
+  \node[almacenamiento, text width=3cm, align=center] (estado) at (3,-1.6) {Estado\\ \texttt{faq\_flujo\_sync.json}};
+  \node[decision] (f2) at (0,-3.3) {¿Cambió?};
+  \node[terminador] (fin0) at (3,-3.3) {Fin\\ sin cambios};
+  \node[proceso] (p1) at (0,-5.0) {Clasificar plan};
+  \node[decision] (f3) at (0,-6.7) {¿Cambio\\ estructural?};
+  \node[proceso] (det) at (-3,-6.7) {Inyectar\\ campos};
+  \node[proceso] (llm1) at (0,-8.4) {LLM quirúrgico\\ (enrutador)};
+  \node[nota] (notallm) at (3.2,-7.6) {Aviso previo\\ de créditos\\ OpenRouter};
+  \node[proceso] (c1) at (0,-10.2) {Reescribir .tex};
+  \node[proceso] (c2) at (0,-11.9) {pdflatex $\times$\\ 2 pasadas};
+  \node[proceso] (c3) at (0,-13.6) {Copiar PDF};
+  \node[proceso] (c4) at (0,-15.3) {Verificar\\ PDF};
+  \node[proceso] (c5) at (0,-17.0) {Estado +\\ snapshot};
+  \node[terminador] (fin) at (0,-18.7) {Fin\\ sincronizado};
+
+  % Aristas
+  \draw[->] (inicio.south) -- (f1.north);
+  \draw[<->, dashed] (f1.east) -- (estado.west);
+  \draw[->] (f1.south) -- (f2.north);
+  \draw[->] (f2.east) -- node[etiqueta, right, pos=0.5]{No} (fin0.west);
+  \draw[->] (f2.south) -- node[etiqueta, left, pos=0.5]{Sí} (p1.north);
+  \draw[->] (p1.south) -- (f3.north);
+  \draw[->] (f3.west) -- node[etiqueta, left, pos=0.5]{No} (det.east);
+  \draw[->] (f3.south) -- node[etiqueta, left, pos=0.5]{Sí} (llm1.north);
+  \draw[dashed] (llm1.east) -- (notallm.west);
+  \draw[->] (det.south) |- (c1.west);
+  \draw[->] (llm1.south) -- (c1.north);
+  \draw[->] (c1.south) -- (c2.north);
+  \draw[->] (c2.south) -- (c3.north);
+  \draw[->] (c3.south) -- (c4.north);
+  \draw[->] (c4.south) -- (c5.north);
+  \draw[->] (c5.south) -- (fin.north);
+\end{tikzpicture}
+\end{center}
+
+\emph{Nota: la decisión central ``¿cambio estructural?'' la toma \texttt{regenerar\_faq\_flujo.py}
+comparando el \texttt{.md} con su snapshot (Sección~\ref{sec:clasific}), no el chat del agente.}
+
+\subsection{Geografía de archivos}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{8.2cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Archivo & Papel \\
+\midrule
+\path{docs/AGENTE_IA/faq_higiene_estado_sesion.md} & Fuente de verdad del FAQ (se edita). \\
+\path{docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex} & Plantilla de diagramas; se edita \emph{in situ}; nunca se genera desde cero. \\
+\path{docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.pdf} & Entregable compilado (entrada del usuario). \\
+\path{.tmp/faq_flujo_sync.json} & Estado del flujo: hashes md/tex, marca temporal, v\'ia, secciones, edits. \\
+\path{.tmp/faq_flujo_md_snapshot.md} & Copia del \texttt{.md} en el \'ultimo arranque (base del diff de clasificaci\'on). \\
+\path{.tmp/faq_flujo_sync.log} & Log append-only (hora UTC) de cada corrida. \\
+\path{.tmp/latex_build/} & Directorio de compilaci\'on (auxiliares + \texttt{.pdf} de build). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El estado en \texttt{.tmp/} es \emph{derivado}: cualquiera de esos ficheros puede eliminarse y
+el flujo lo regenera en el siguiente arranque (la l\'inea base se establece sola).
+
+% ======================================================================
+\section{Detección de cambios por hash}
+
+\label{sec:hash}
+El disparador no depende de \texttt{inotify} ni de watchers del RAG: es un \textbf{polling por
+hash} que también funciona con una sola ejecución puntual.
+
+\begin{lstlisting}
+def _sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+estado = _leer_estado()                      # .tmp/faq_flujo_sync.json
+md_sha = _sha256(md)
+if not args.force and estado.get("md_sha256") == md_sha:
+    return {..., "cambio": False, "message": "Sin cambios en el markdown (hash idén-tico)."}
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{--force} salta la comparación y fuerza la cadena completa (equivalentemente,
+        la primera ejecución sin estado previo también entra).
+  \item \texttt{--watch [--interval N]} repite la comprobación cada $N$ segundos (mínimo 5) en
+        un bucle hasta Ctrl-C; cada corrida imprime su propio JSON y log.
+  \item El hash también se guarda en el estado tras sincronizar, de modo que la siguiente
+        corrida detecta \emph{el próximo} cambio (no el mismo).
+\end{itemize}
+
+\begin{tcolorbox}[cajaConcepto]
+\faIcon{balance-scale}~La detección por hash es \textbf{determinista} (función pura de los
+bytes del archivo) y \textbf{barata}: sin cambio no hay llm, ni compilación, ni créditos.
+\end{tcolorbox}
+
+% ======================================================================
+\section{Clasificación del cambio: determinista vs. semántico}
+
+\label{sec:clasific}
+Antes de llamar a ningún LLM, el script \texttt{regenerar\_faq\_flujo.py} responde a la
+pregunta: \emph{¿este cambio necesita traducción semántica o basta con una sustitución?}
+
+\subsection{Campos conocidos (inyección determinista)}
+
+Hay tres cosas del FAQ que se traducen por \textbf{regex exactas}, sin LLM:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{2.9cm}p{5.4cm}X@{}}
+\toprule
+Campo & Regex & Efecto en el .tex \\
+\midrule
+Fecha de la plantilla & \texttt{FECHA\_PLANTILLA\ (YYYY-MM-DD)} & Actualiza la fecha ISO y el encabezado día/mes/año (DD/MM/AAAA). \\
+Modelo obsoleto & \texttt{deepseek-[\textbackslash{}w.-]+} & Sustituye el identificador del modelo (\texttt{deepseek-v4-pro} $\rightarrow$ el vigente). \\
+Bitácoras antiguas & \texttt{\textbackslash{}d+\textbackslash{}s+antiguas} & Ajusta el número ``N antiguas'' en la sección de bitácoras. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Estas dejan de tocar el LLM y devuelven \texttt{via: "determinista"}. El script aplica la
+sustitución en memoria y solo la escribe si hubo cambio real (\texttt{tex\_cambiado}).
+
+\subsection{El diff contra el snapshot}
+
+Para lo demás se usa \texttt{difflib.SequenceMatcher} entre el \texttt{.md} actual y la copia
+\texttt{.tmp/faq\_flujo\_md\_snapshot.md} del último arranque. Los \emph{opcodes} de cambio se
+agrupan por sección del FAQ:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Las cabeceras \texttt{\#\# N. ...} se indexan con una regex y cada línea del diff se
+        asigna a su sección (\texttt{\_seccion\_de\_linea}).
+  \item Una sección se marca \texttt{semantico=True} si alguna línea cambia después de
+        \emph{normalizar} los campos conocidos (\texttt{\_scrub\_line} reemplaza fecha/modelo/N
+        por marcadores de posición), o si el número de líneas viejo $\neq$ nuevo.
+  \item Las secciones ``front'' (metadatos) y ``Referencias cruzadas'' se marcan ignoradas.
+\end{itemize}
+
+\begin{lstlisting}
+def _scrub_line(line):
+    line = re.sub(_RE_FECHA, "<FECHA>", line)
+    line = re.sub(_RE_MODELO, "<MODELO>", line)
+    line = re.sub(_RE_ANTIGUAS, "<N> antiguas", line)
+    return line
+
+for o, n in zip(old_lines, new_lines):
+    if _scrub_line(o) != _scrub_line(n):
+        entry["semantico"] = True        # cambio real de contenido
+\end{lstlisting}
+
+\subsection{Mapeo sección del FAQ $\rightarrow$ bloque del .tex}
+
+El \texttt{.tex} se divide en 4 bloques usando marcadores de comentario propios
+(\texttt{\%} seguido de dos líneas de caja, \texttt{U+2550}, y ``Sección N:''), El bloque 4
+termina en \texttt{\textbackslash end\{document\}}:
+
+\begin{lstlisting}
+_MARKERS = {n: "% \u2550\u2550 Secci\u00f3n " + str(n) + ":" for n in (1,2,3,4)}
+def _blocks_tex(tex):
+    pos = {n: tex.find(S) for n, S in _MARKERS.items()}
+    end = tex.find("\\end{document}")
+    return {1: (pos[1], pos[2]), 2: (pos[2], pos[3]),
+            3: (pos[3], pos[4]), 4: (pos[4], end)}
+\end{lstlisting}
+
+Así, un cambio en la sección 2 del FAQ solo dispara evaluación sobre el bloque 2 del \texttt{.tex};
+el resto del documento queda intacto por construcción. Esta es una divergencia \emph{consciente}
+entre la numeración de Markdown y la de bloques: los diagramas no siguen 1:1 los encabezados.
+
+\subsection{La salida del plan}
+
+Con \texttt{--plan} el script no llama al LLM ni escribe: devuelve el mapa de decisión. Ejemplo
+real tras un cambio en la sección 2:
+
+\begin{lstlisting}
+{ "status": "ok", "tex_cambiado": false, "via": "plan",
+  "known_fields": {},
+  "cambios": [ {"seccion": "2", "via": "llm", "hunks": 1} ],
+  "llm_necesario": true,
+  "nota": "La sincronizacion real invocara el LLM via OpenRouter (consume creditos)." }
+\end{lstlisting}
+
+El orquestador usa este veredicto para \textbf{avisar al usuario del coste antes} de consumir
+créditos, y para abortar limpiamente si se pasa \texttt{--no-llm} y el cambio es estructural.
+
+% ======================================================================
+\section{Re-traducción semántica (LLM quirúrgico)}
+
+\label{sec:llmquirc}
+
+Cuando hay cambios estructurales, el flujo no regenera el bloque: lo \emph{edita por
+parches}. El LLM recibe como plantilla el bloque \texttt{.tex} actual y produce un JSON de
+edits; el script valida y aplica. Así se preserva la geometría dibujada y ajustada
+manualmente.
+
+\subsection{Routing determinista (sin decisión en el chat)}
+
+\label{sec:routing}
+El tier se decide con \texttt{execution/enrutador.py} a partir del descriptor
+\texttt{--task conversion} y los \textbf{tokens medidos} del corpus (markdown afectado +
+bloque \texttt{.tex} + inventario del diff):
+
+\begin{lstlisting}
+task = "conversion"
+decision = decide(task, tokens, critico, False, None)   # funcion pura
+candidates = [decision["model"]] + (decision.get("fallback") or [])[:2]
+if model:                                                # --modelo explicito
+    candidates = [model] + [c for c in candidates if c != model]
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item Por defecto el tier es \texttt{flash} (\texttt{google/gemini-3.7-flash}, barato y
+        suficiente para edición de tablas/texto).
+  \item \texttt{--critico} escala a \texttt{opus}; el fallback cost-aware de la cadena
+        (\texttt{flash $\rightarrow$ deepseek $\rightarrow$ glm}) solo se usa ante 429/errores,
+        con retry budget máximo 3 intentos.
+  \item Cada decisión se registra en \texttt{.tmp/routing\_log.jsonl} (telemetría), y la
+        llamada consume créditos de \texttt{OPENROUTER\_API\_KEY} vía
+        \texttt{execution/llm\_client.openrouter\_chat}.
+\end{itemize}
+
+\subsection{El prompt de editor quirúrgico}
+
+El \texttt{system} prompt fija reglas invariables; la más importante es \emph{no tocar la
+geometría}. El \texttt{user} prompt entrega el cambio detectado (fragmentos \texttt{ANTES/
+AHORA}) y el bloque actual entre marcadores.
+
+\begin{lstlisting}
+system = (
+ "Eres un editor quirurgico de codigo LaTeX ...\n"
+ "1. NO modifiques la geometria: ni coordenadas, ni estilos \node[...], ni el numero de "
+ "nodos, ni las etiquetas internas (T1, P1, D1, E1, A1, N1...).\n"
+ "2. Solo edita textos: filas de la tabla 'Leyenda de etiquetas', parrafos explicativos...\n"
+ "3. Puedes anadir filas a la tabla (minimas) o reescribir significados. "
+ "PROHIBIDO anadir nodos o secciones.\n"
+ "4. Manten el LaTeX valido: en tablas escapa & como \& y _ como \_ dentro de \texttt.\n"
+ "5. Devuelve SOLO JSON: {\"edits\":[{\"old\":\"subcadena unica\",\"new\":\"texto\"}]}. "
+ "Si no hay nada que cambiar, {\"edits\":[]}.\n"
+ "6. No escribas nada fuera del JSON."
+)
+\end{lstlisting}
+
+\subsection{De la respuesta cruda a edits seguros}
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \texttt{\_parse\_edits}: extrae el primer objeto JSON balanceado
+        (\texttt{\_find\_balanced\_json}, que respeta strings y escapes -- ver
+        \texttt{.agent/python.md}), elimina trailing commas y hace \texttt{json.loads}.
+  \item \texttt{\_edits\_validos}: exige que cada \texttt{old} sea una subcadena \textbf{única}
+        del bloque y que el \texttt{new} no contenga tokens estructurales prohibidos
+        (\texttt{\textbackslash begin\{tikzpicture\}}, \texttt{\textbackslash section},
+        \texttt{\textbackslash documentclass}, \dots). Cualquier incumplimiento aborta con error.
+  \item \texttt{\_aplicar\_edits}: sustitución estricta (re-valida unicidad antes de cada
+        \texttt{replace}).
+  \item \textbf{Invariante geométrico}: tras aplicar todos los edits de un bloque, se cuenta
+        \texttt{\textbackslash node[} antes y después; si difieren, el script aborta \emph{sin
+        escribir} (código 5).
+\end{enumerate}
+
+\begin{lstlisting}
+n_antes   = block.count("\\node[")
+n_despues = nuevo_block.count("\\node[")
+if n_antes != n_despues:
+    raise RuntimeError("El LLM altero la geometria del bloque ... Abortando sin escribir.")
+\end{lstlisting}
+
+\subsection{Escritura atómica}
+
+Solo después de validar todos los bloques se escribe el fichero, y se hace de forma atómica
+(archivo temporal + \texttt{os.replace}) para no dejar nunca un \texttt{.tex} a medias:
+
+\begin{lstlisting}
+if not (args.dry_run or not resultado["tex_cambiado"]):
+    fd, tmp = tempfile.mkstemp(dir=str(tex_path.parent), suffix=".tmp")
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(tex)
+    os.replace(tmp, tex_path)
+\end{lstlisting}
+
+Un LLM que devuelva \texttt{\{"edits":[]\}} (porque el bloque ya está al día) es un
+\emph{resultado correcto}: la cadena valida el JSON vacío y continúa con
+\texttt{tex\_cambiado: False}, sin recompilar.
+
+% ======================================================================
+\section{Compilación y el parámetro \texttt{clean=False}}
+
+\label{sec:compile}
+El orquestador compila el \texttt{.tex} regenerado con la pieza compartida
+\texttt{compile\_latex\_code} (2 pasadas de \texttt{pdflatex} para resolver referencias) al
+directorio \texttt{.tmp/latex\_build/}:
+
+\begin{lstlisting}
+res = compile_latex_code(contenido, job_name=JOB_NAME,
+                         output_dir=str(BUILD_DIR), clean=False)
+...
+pdf_build = BUILD_DIR / (JOB_NAME + ".pdf")
+shutil.copyfile(pdf_build, pdf)        # publica el entregable en docs/AGENTE_IA/
+\end{lstlisting}
+
+El parámetro nuevo \texttt{clean=False} es el único cambio tocado en la pieza compartida. ¿Por
+qué? Por defecto \texttt{compile\_latex\_code} borra los auxiliares (incluido el \texttt{.log})
+al terminar -- perfecto para el MCP de LaTeX, que solo necesita el PDF. Pero el guardrail de
+verificación necesita leer el \texttt{.log} (errores \texttt{!} y Overfull). Con
+\texttt{clean=False} el orquestador conserva el log, ejecuta \texttt{verificar\_pdf.py},
+y \textbf{luego} limpia él mismo con \texttt{clean\_latex\_aux\_files(BUILD\_DIR)}.
+
+\begin{tcolorbox}[cajaMejora]
+\faIcon{plug}~\textbf{Compatibilidad asegurada:} el cambio es aditivo con valor por defecto
+\texttt{True}. Ningún llamante existente (\texttt{mcp\_latex\_server.py} y los demás flujos)
+cambia de comportamiento.
+\end{tcolorbox}
+
+% ======================================================================
+\section{Guardrail de verificación (sin visión humana)}
+
+\label{sec:verificar}
+\texttt{execution/verificar\_pdf.py} es la validación determinista post-compilación. Tiene
+tres frentes:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Errores de compilación}: líneas del \texttt{.log} que empiezan por \texttt{!}.
+        Su presencia vuelve la salida \texttt{status: "error"} y código 1.
+  \item \textbf{Overfull \textbackslash hbox}: se reportan (informativos, cosméticos) pero no
+        bloquean.
+  \item \textbf{Solapes de texto}: parsea \texttt{pdftotext -bbox} (caja por palabra) y
+        detecta pares de palabras cuyos rectángulos se solapan más de un umbral.
+\end{enumerate}
+
+\subsection{Cálculo del solape}
+
+\begin{lstlisting}
+SOLAPE_FRACCION = 0.35
+
+def _solapa(r1, r2):
+    dx = min(x2,u2) - max(x1,u1); dy = min(y2,v2) - max(y1,v1)
+    if dx <= 0 or dy <= 0: return 0.0
+    inter = dx * dy
+    menor = min(area(r1), area(r2))
+    return inter / menor          # fraccion del rectangulo MENOR que queda tapada
+\end{lstlisting}
+
+El umbral \texttt{0.35} significa que solo se reporta un solape cuando más del 35\,\% del
+rectángulo de la palabra menor queda cubierto por otra palabra -- tolera ligeros contactos
+de caja (típicos en \texttt{TiKZ} con \texttt{\textbackslash ttk}) y captura colisiones reales
+(como la que se corrigió en el diagrama 1 durante el diseño). Con esto el orquestador puede
+\emph{verificar sin visión}: reporta ``6 páginas, 0 errores, 1 Overfull, 0 solapes'' en el log
+y en el estado.
+
+% ======================================================================
+\section{Estado, log y salida JSON}
+
+\subsection{Códigos de salida}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}lp{2.6cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Código & Origen & Significado \\
+\midrule
+0 & orquestador & OK: sincronizado o sin cambios. \\
+1 & orquestador & Error de cadena (falta archivo, compilación fallida, LLM falló). \\
+2 & regenerar & Error de entrada (\texttt{.md}/\texttt{.tex}/\texttt{snapshot} inexistentes). \\
+3 & regenerar & Cambio estructural detectado con \texttt{--no-llm}: \texttt{.tex} intacto. \\
+4 & regenerar & \texttt{.tex} inexistente: el flujo \emph{sincroniza}, no crea diagramas desde cero. \\
+5 & regenerar & Fallo LLM o edits inválidos tras el retry budget (nada escrito). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Ejemplos de salidas reales}
+
+Ejecución sin cambios:
+\begin{lstlisting}
+{"status":"ok","cambio":false,"message":"Sin cambios en el markdown (hash idéntico)."}
+\end{lstlisting}
+
+Ejecución con cambio estructural atendido (del test E2E):
+\begin{lstlisting}
+{"status":"ok","cambio":true,"via":"llm","tex_cambiado":true,
+ "secciones":[{"seccion":"2","via":"llm","hunks":1,"edits":1}],
+ "edits":1,
+ "verificacion":{"status":"ok","paginas":6,"errores":[],
+                 "overfull":["Overfull \\hbox (6.79pt too wide) ..."],
+                 "solapes":[],"solapes_total":0}}
+\end{lstlisting}
+
+El estado persistido tras sincronizar (\texttt{.tmp/faq\_flujo\_sync.json}) contiene los
+hashes md/tex, la marca temporal UTC, la vía (determinista/llm/sin\_cambios), las secciones
+atendidas, los campos conocidos inyectados y el número total de edits.
+
+% ======================================================================
+\section{La directiva (Layer 1)}
+
+La fase 1 del SOP define las entradas requeridas y los 7 pasos; la fase de \emph{edge cases}
+es la que hace robusto al flujo. Resumen de los casos límite documentados:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}p{5cm}X@{}}
+\toprule
+Caso límite & Protocolo \\
+\midrule
+Sin snapshot previo (primer arranque) & Se toma línea base: campos deterministas + snapshot; NO se llama al LLM (no hay diff que interpretar). \\
+Cambio solo de metadatos (tabla de commits, referencias cruzadas) & Se ignora; el hash queda marcado como atendido sin tocar el \texttt{.tex}. \\
+Fallo LLM o edits inválidos & Retry por la cadena de fallback del router (máx 3); si se agota, código 5 sin escribir. \\
+El LLM intenta alterar geometría & La validación ``mismo número de \texttt{\textbackslash node[}'' rechaza y aborta. \\
+\texttt{--no-llm} con cambio estructural & Código 3; el \texttt{.tex} queda intacto y se reportan las secciones afectadas. \\
+\texttt{.tex} inexistente & Código 4 (sincroniza, no crea desde cero). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ======================================================================
+\section{Cómo se validó}
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Sanidad estática:} \texttt{py\_compile} de los tres scripts nuevos (se depuró
+        un fallo de f-string con barra invertida en el conteo de \texttt{\textbackslash node[}).
+  \item \textbf{Pruebas unitarias deterministas} sobre \texttt{\_edits\_validos} /
+        \texttt{\_aplicar\_edits}: edit válido preserva el invariante de nodos; \texttt{old}
+        no único es rechazado; token estructural prohibido es rechazado; y
+        \texttt{aplicar\_campos\_conocidos} inyecta fecha/modelo/N correctos.
+  \item \textbf{Línea base real:} un primer arranque crea snapshot + estado; un segundo
+        arranque con el \texttt{.md} intacto responde ``hash idéntico'' (sin LLM, sin
+        compilación).
+  \item \textbf{E2E con LLM real} sobre copias en \texttt{/tmp} (sin tocar el entregable): un
+        cambio semántico en la sección 2 fue clasificado como \texttt{llm}, el LLM devolvió
+        \texttt{1 edit} quirúrgico correcto (amplió la nota \texttt{N1} con la resolución
+        temporal de \texttt{time}, LaTeX válido), la compilación fue exitosa y el verificador
+        reportó \texttt{6 páginas, 0 errores, 0 solapes}. El estado real se restauró tras la
+        prueba.
+\end{enumerate}
+
+\begin{tcolorbox}[cajaConcepto]
+\faIcon{check-circle}~El E2E confirmó también el caso \emph{``edits vacíos es correcto''}: el
+LLM devolvió \texttt{\{"edits":[]\}} cuando el bloque ya estaba al día, lo que validó el
+parseo del JSON vacío y la continuación sin recompilar.
+\end{tcolorbox}
+
+% ======================================================================
+\section{Uso}
+
+\begin{lstlisting}
+python3 flujo_sync_faq_flujo.py                  # sincronización puntual
+python3 flujo_sync_faq_flujo.py --watch --interval 60   # bucle en segundo plano
+python3 flujo_sync_faq_flujo.py --force          # re-sincronizar ignorando el hash
+python3 flujo_sync_faq_flujo.py --no-llm         # solo parte determinista (aborta ante
+                                                 #  cambios estructurales, código 3)
+python3 flujo_sync_faq_flujo.py --dry-run        # muestra el plan sin escribir/compilar
+python3 flujo_sync_faq_flujo.py --critico        # re-traducción LLM en tier opus
+python3 execution/regenerar_faq_flujo.py --plan  # solo clasificar (sin LLM, sin escribir)
+python3 execution/verificar_pdf.py --pdf build.pdf --log build.log   # guardrail standalone
+\end{lstlisting}
+
+\textbf{Coste:} la parte determinista y la detección por hash no consumen créditos. Solo la
+re-traducción semántica consume \texttt{OPENROUTER\_API\_KEY} (el orquestador lo avisa antes
+de ejecutarla). Con \texttt{--api-backend} no hay opción de backend: \texttt{regenerar} usa
+\texttt{openrouter\_chat} por diseño (tier decidido por el enrutador).
+
+% ======================================================================
+\section{Limitaciones y trabajo pendiente}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item El flujo \textbf{no crea diagramas desde cero} (código 4): la plantilla del diagrama
+        es la base; el diseño de un diagrama nuevo sigue siendo tarea del orquestador con
+        revisión visual del usuario.
+  \item La verificación por bbox detecta solapes de \emph{texto}, no de elementos gráficos
+        puros (líneas, flechas); el invariante de nodos y la regla ``solo edita textos''
+        protegen la geometría, pero una revisión visual humana del PDF sigue siendo la
+        garantía final.
+  \item El Overfull cosmético (\texttt{6.79 pt}) pre-existente se reporta y se mantiene;
+        no bloquea la cadena.
+  \item \emph{Mejora futura sugerida}: usar la telemetría de \texttt{.tmp/routing\_log.jsonl}
+        para afinar los umbrales de tokens de la re-traducción (p. ej. cuando una sección
+        devuelve consistentemente \texttt{edits:[]}).
+\end{itemize}
+
+\begin{tcolorbox}[cajaMejora]
+\faIcon{route}~\textbf{En una línea:} editas el FAQ $\rightarrow$ el orquestador detecta el
+cambio por hash $\rightarrow$ decide si es determinista o semántico $\rightarrow$ el LLM solo
+parchea lo necesario con validación estricta $\rightarrow$ recompila y verifica $\rightarrow$
+el PDF queda publicado y el próximo cambio queda armado.
+\end{tcolorbox}
+
+\vspace{6pt}
+\begin{center}
+\small\color{grisTexto}
+Documento generado el 12/09/2026. Ficheros fuente: \texttt{flujo\_sync\_faq\_flujo.py},
+\texttt{execution/regenerar\_faq\_flujo.py}, \texttt{execution/verificar\_pdf.py},
+\texttt{execution/compile\_latex.py} y \texttt{directives/sync\_faq\_a\_flujo.yaml}.
+\end{center}
+
+\end{document}

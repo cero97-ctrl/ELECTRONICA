@@ -36,7 +36,18 @@ sesión `2026-09-11_faq_diagramas_flujo.md` (ver su Anexo 2026-09-12 para el det
   y comando nuevo en `AGENTS.md`; restaurados artefactos trackeados de `.tmp/latex_build`
   que un `rm` de limpieza había borrado.
 
+## Actividades (continuación)
+- Generado documento técnico `docs/AGENTE_IA/sync_faq_flujo_automatico.{tex,pdf}` (11 páginas)
+  que explica el mecanismo de sincronización para estudio: arquitectura de 3 capas,
+  cadena E2E TiKZ, clasificación hash/dif/bloques, LLM quirúrgico (routing, prompt system,
+  parse/validate/invariante nodos), `clean=False`, guardrail bbox, códigos de salida,
+  edge cases, validación, limitaciones. Estilo infográfico replicado (sourcesanspro,
+  cajas tcolorbox, TiKZ ISO 5807, listings con `literate` para acentos UTF-8).
+- Compilación: 0 errores, 0 solapes, 1 overfull cosmético (4.4 pt); PDF publicado vía
+  `cp` a `docs/AGENTE_IA/`. Auxiliares de `.tmp/latex_build` limpiados.
+
 ## Pendientes
 - Commit del trabajo de la sesión (bitácoras, flujos/scripts/directiva, AGENTS.md,
-  `.agent/enrutamiento.md`, `compile_latex.py`) — no commitado porque el usuario no lo pidió.
+  `.agent/enrutamiento.md`, `compile_latex.py`, doc nuevo) — no commitado porque el usuario
+  no lo pidió.
 - Inspección visual humana del PDF (el modelo no tiene visión) sigue pendiente.
