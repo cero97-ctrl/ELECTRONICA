@@ -1,0 +1,58 @@
+{
+  "status": "ok",
+  "code": 0,
+  "problema": "Calcular el punto de operación Q de un BJT NPN en emisor común con divisor de tensión de base. Datos: Vcc=12V, R1=100k, R2=50k, Re=1k, Rc=2k, beta=100, Vbe=0.7V.",
+  "skill": "/home/cero/.config/opencode/skills/circuitos_dispositivos_electronicos",
+  "modelo": "google/gemini-3.7-flash",
+  "secciones_usadas": [
+    {
+      "archivo": "references/metodologias.md",
+      "titulo": "7. Análisis de Circuitos con Transistores BJT en DC",
+      "score": 0.6805
+    },
+    {
+      "archivo": "references/metodologias.md",
+      "titulo": "11. Análisis en Pequeña Señal de Amplificadores con BJT",
+      "score": 0.6476
+    },
+    {
+      "archivo": "references/formulas.md",
+      "titulo": "o bien",
+      "score": 0.5786
+    },
+    {
+      "archivo": "references/metodologias.md",
+      "titulo": "12. Análisis en Pequeña Señal de Amplificadores con MOSFET",
+      "score": 0.5477
+    },
+    {
+      "archivo": "references/metodologias.md",
+      "titulo": "8. Análisis de Circuitos con Transistores MOSFET en DC",
+      "score": 0.537
+    },
+    {
+      "archivo": "references/formulas.md",
+      "titulo": "Transconductancia",
+      "score": 0.5368
+    }
+  ],
+  "analisis": "Se aplica la Metodología 7 para el análisis de BJT en DC. Primero se calcula el equivalente Thévenin del divisor de tensión en la base (Vth, Rth). Suponiendo que el BJT opera en región activa con Vbe = 0.7 V, se resuelve la malla de base para hallar IBQ y se calcula ICQ = beta * IBQ. Con la malla de colector-emisor se obtiene VCEQ y se verifica la condición de región activa (VCEQ > 0.2 V).",
+  "codigo_sympy": "from sympy import symbols, Eq, solve\n\nVcc = 12\nR1 = 100e3\nR2 = 50e3\nRe = 1e3\nRc = 2e3\nbeta = 100\nVbe = 0.7\n\nVth = Vcc * (R2 / (R1 + R2))\nRth = (R1 * R2) / (R1 + R2)\n\nIb, Ic, Ie, Vce = symbols('Ib Ic Ie Vce', real=True)\n\neq1 = Eq(Vth - Ib * Rth - Vbe - Ie * Re, 0)\neq2 = Eq(Ic, beta * Ib)\neq3 = Eq(Ie, (beta + 1) * Ib)\neq4 = Eq(Vcc - Ic * Rc - Vce - Ie * Re, 0)\n\nsol = solve((eq1, eq2, eq3, eq4), (Ib, Ic, Ie, Vce))\n\nIcq_mA = float(sol[Ic] * 1e3)\nVceq_V = float(sol[Vce])\n\nprint(f\"ICQ = {Icq_mA:.4f} mA, VCEQ = {Vceq_V:.4f} V\")",
+  "resultado_esperado": "ICQ = 2.4566 mA, VCEQ = 4.6057 V",
+  "resultado_oraculo": {
+    "exit_code": 0,
+    "stdout": "ICQ = 2.4566 mA, VCEQ = 4.6057 V",
+    "stderr": "",
+    "timeout": false,
+    "inseguro": false
+  },
+  "resultado_final": "ICQ = 2.4566 mA, VCEQ = 4.6057 V",
+  "reflexiones_usadas": 0,
+  "tokens": {
+    "prompt": 1613,
+    "respuesta": 1183,
+    "total": 2796
+  },
+  "enrutamiento": null,
+  "resuelto": true
+}

@@ -1,0 +1,58 @@
+{
+  "status": "ok",
+  "code": 0,
+  "problema": "Calcular el punto de operación Q de un BJT NPN en emisor común con divisor de tensión de base. Datos: Vcc=12V, R1=100k, R2=50k, Re=1k, Rc=2k, beta=100, Vbe=0.7V.",
+  "skill": "/home/cero/.config/opencode/skills/circuitos_dispositivos_electronicos",
+  "modelo": "google/gemini-3.7-flash",
+  "secciones_usadas": [
+    {
+      "archivo": "SKILL.md",
+      "titulo": "Fórmulas fundamentales",
+      "score": 0.5476
+    },
+    {
+      "archivo": "references/formulas.md",
+      "titulo": "Máxima Transferencia de Potencia",
+      "score": 0.5342
+    },
+    {
+      "archivo": "references/formulas.md",
+      "titulo": "MOSFET (Saturación)",
+      "score": 0.5276
+    },
+    {
+      "archivo": "SKILL.md",
+      "titulo": "Conceptos clave",
+      "score": 0.5053
+    },
+    {
+      "archivo": "references/formulas.md",
+      "titulo": "Diodo",
+      "score": 0.5016
+    },
+    {
+      "archivo": "references/tablas.md",
+      "titulo": "Modelos Equivalentes",
+      "score": 0.5014
+    }
+  ],
+  "analisis": "Para calcular el punto de operación Q (I_CQ, V_CEQ) de un BJT NPN en configuración de emisor común con polarización por divisor de tensión:\n1. Aplicamos el Teorema de Thévenin en la base para simplificar el divisor de tensión formado por R1 y R2:\n   - V_th = V_cc * (R2 / (R1 + R2))\n   - R_th = R1 || R2 = (R1 * R2) / (R1 + R2)\n2. Asumiendo que el transistor opera en región activa directa (V_BE = 0.7V, I_C = beta * I_B, I_E = (beta + 1) * I_B), aplicamos la Ley de Tensiones de Kirchhoff (KVL) en la malla de entrada (base-emisor):\n   - V_th - I_B * R_th - V_BE - I_E * R_e = 0\n   - I_B = (V_th - V_BE) / (R_th + (beta + 1) * R_e)\n   - I_C = beta * I_B\n   - I_E = (beta + 1) * I_B\n3. Aplicamos KVL en la malla de salida (colector-emisor) para obtener V_CE:\n   - V_cc - I_C * R_c - V_CE - I_E * R_e = 0\n   - V_CE = V_cc - I_C * R_c - I_E * R_e\n4. Verificamos que V_CE > V_CE(sat) ~ 0.2V para confirmar que el BJT está efectivamente en la región activa.",
+  "codigo_sympy": "from sympy import symbols, Eq, solve\n\n# Definir variables y parámetros\nVcc = 12.0\nR1 = 100e3\nR2 = 50e3\nRe = 1e3\nRc = 2e3\nbeta = 100.0\nVbe = 0.7\n\n# Equivalente de Thévenin en la base\nVth = Vcc * (R2 / (R1 + R2))\nRth = (R1 * R2) / (R1 + R2)\n\n# Corrientes\nIb = (Vth - Vbe) / (Rth + (beta + 1) * Re)\nIc = beta * Ib\nIe = (beta + 1) * Ib\n\n# Tensión Colector-Emisor\nVce = Vcc - Ic * Rc - Ie * Re\n\n# Formato de salida\nprint(f\"Q = (Vce = {Vce:.2f} V, Ic = {Ic*1e3:.2f} mA)\")",
+  "resultado_esperado": "Q = (Vce = 4.61 V, Ic = 2.46 mA)",
+  "resultado_oraculo": {
+    "exit_code": 0,
+    "stdout": "Q = (Vce = 4.61 V, Ic = 2.46 mA)",
+    "stderr": "",
+    "timeout": false,
+    "inseguro": false
+  },
+  "resultado_final": "Q = (Vce = 4.61 V, Ic = 2.46 mA)",
+  "reflexiones_usadas": 0,
+  "tokens": {
+    "prompt": 1420,
+    "respuesta": 1957,
+    "total": 3377
+  },
+  "enrutamiento": null,
+  "resuelto": true
+}

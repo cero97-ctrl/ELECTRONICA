@@ -1,0 +1,11 @@
+{
+  "nombre": "circuitos_dispositivos_electronicos",
+  "tema": "Circuitos y Dispositivos Electrónicos",
+  "tema_provisto": true,
+  "idioma": "es",
+  "alcance": {
+    "tipo": "completo"
+  },
+  "objetivo": "Referencia rápida: conceptos clave, fórmulas, tablas e índices del libro.",
+  "instalar_global": true
+}

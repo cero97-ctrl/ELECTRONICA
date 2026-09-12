@@ -1,0 +1,19 @@
+{
+  "nombre": "dsh",
+  "tema": "Agent harness: Cordis plugin kernel, 4 runtime modes, trazabilidad append-only, instalación y operación",
+  "idioma": "es",
+  "alcance": {
+    "tipo": "completo",
+    "incluir": [
+      "*.md",
+      "*.yaml"
+    ],
+    "excluir": [
+      "node_modules",
+      "*.lock"
+    ]
+  },
+  "objetivo": "Referencia rápida de código/API del repositorio.",
+  "instalar_global": true,
+  "perfil": "referencia_codigo"
+}
