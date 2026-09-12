@@ -470,7 +470,116 @@ Alternativa: \url{https://pcpartpicker.com/products/case/}
 \end{itemize}
 \end{tcolorbox}
 
-% ══ 5. VEREDICTO ════════════════════════════════════════════════════════════
+% ══ 5. EJEMPLOS DE USO ══════════════════════════════════════════════════════
+\section[Ejemplos de uso]{\iconotexto{flask}{Ejemplos de Uso del Workspace}}
+
+Los siguientes ejemplos muestran c\'omo esta estaci\'on de trabajo ejecuta el flujo
+real del workspace \texttt{ELECTRONICA}, siempre bajo la arquitectura de 3 capas:
+directiva (qu\'e hacer) $\rightarrow$ orquestaci\'on (decidir cu\'a) $\rightarrow$
+script determinista (c\'omo). Todos los comandos se ejecutan desde la ra\'iz del repositorio.
+
+\subsection{Ejemplo 1: Verificaci\'on de compilaci\'on LaTeX}
+Genera el PDF con el compilador del proyecto y valida que el resultado no tenga
+errores, \texttt{overfull} ni solapamientos:
+
+\begin{lstlisting}[language=bash]
+python3 execution/compile_latex.py docs/PC_PARA_IA/PC_IA_B650_WORKSTATION.tex --clean
+python3 execution/verificar_pdf.py --pdf PC_IA_B650_WORKSTATION.pdf
+\end{lstlisting}
+
+\begin{cajaEjemplo}
+\textbf{Resultado esperado.} La compilaci\'on termina en \texttt{exit 0} y el verificador reporta
+\texttt{0 errores / 0 overfull / 0 solapes}. El artefacto se publica en
+\texttt{docs/PC\_PARA\_IA/}.
+\end{cajaEjemplo}
+
+\subsection{Ejemplo 2: Enrutamiento multi-LLM determinista}
+La elecci\'on del modelo no la hace el agente ``a ojo'': la decide
+\texttt{enrutador.py} con reglas puras (tipo de tarea, tokens medidos, criticidad):
+
+\begin{lstlisting}[language=bash]
+python3 execution/enrutador.py --task examen_complejo --tokens 12000 --critico
+\end{lstlisting}
+
+\begin{cajaEjemplo}
+\textbf{Salida tipo.} Devuelve un JSON \texttt{\{tier, model, fallback\}} (p.\ ej.
+\texttt{opus} $\rightarrow$ \texttt{anthropic/claude-opus-5}). El mismo descriptor
+SIEMPRE produce el mismo resultado. La decisi\'on es 100\,\% local y no consume
+cr\'editos OpenRouter.
+\end{cajaEjemplo}
+
+\subsection{Ejemplo 3: Generaci\'on de material acad\'emico}
+Un flujo de 3 capas elabora un examen con su solucionario LaTeX a partir de un tema:
+
+\begin{lstlisting}[language=bash]
+python3 flujo_elaborar_examen.py --tema "Semana 4: Condensadores" --output examenes/
+\end{lstlisting}
+
+\begin{cajaEjemplo}
+\textbf{Flujo.} La elaboraci\'on consume cr\'editos OpenRouter (tier opus). La orquestaci\'on
+registra el progreso en \texttt{.tmp/run\_state.json} para poder retomarla tras un fallo.
+\end{cajaEjemplo}
+
+\subsection{Ejemplo 4: Reparaci\'on de LaTeX con \texttt{\textbackslash text\{\}}}
+Script determinista que extrae comandos matem\'aticos de \texttt{\textbackslash text\{\}}
+(errores cl\'asicos de autogeneraci\'on):
+
+\begin{lstlisting}[language=bash]
+python3 fix_latex.py documento.tex
+\end{lstlisting}
+
+\subsection{Ejemplo 5: RAG sobre los documentos del workspace}
+Reconstruye los \'indices vectoriales (ChromaDB) y luego consulta el asistente RAG:
+
+\begin{lstlisting}[language=bash]
+python3 rag_system.py --update   # reconstruir embeddings
+python3 rag_system.py            # chat sobre el corpus
+\end{lstlisting}
+
+\begin{cajaEjemplo}
+\textbf{Nota de I/O.} Los embeddings residen en \texttt{chroma\_db/} (excluido de Git por superar los 100\,MB)
+y su estado vive en \texttt{db\_state.json}. La memoria RAM amplia de esta build
+(64\,GB) permite cargar el corpus completo sin fricci\'on.
+\end{cajaEjemplo}
+
+\subsection{Ejemplo 6: Control de versiones sem\'antico}
+El flujo \texttt{git} aplica versionado sem\'antico y sincroniza con el remoto:
+
+\begin{lstlisting}[language=bash]
+./update_repo.sh -m "feat(x): mejora documentada" --push
+\end{lstlisting}
+
+\begin{cajaEjemplo}
+\textbf{Alternativa.} \texttt{./git-update.sh} es el atajo r\'apido: commit WIP + pull + push en un paso.
+\end{cajaEjemplo}
+
+\subsection{Ejemplo 7: Vigilancia del saldo OpenRouter}
+Chequeo puntual o bucle en segundo plano con alerta audible cerca del auto top-up
+de \$5 (saldo por debajo de \$3):
+
+\begin{lstlisting}[language=bash]
+python3 execution/monitor_saldo_openrouter.py
+python3 execution/monitor_saldo_openrouter.py --watch --interval 300
+\end{lstlisting}
+
+\subsection{Ejemplo 8: Higiene del estado de sesi\'on}
+Verifica la frescura de los estados derivados (elimina orfanatos antes de reanudar
+flujos multi-paso) y registra el eslab\'on sem\'antico en las bit\'acoras:
+
+\begin{lstlisting}[language=bash]
+python3 execution/estado_sesion.py check
+python3 execution/bitacoras.py  nueva --tema "<tema de la sesion>"
+\end{lstlisting}
+
+\begin{cajaRecuerda}
+\textbf{Regla de oro.}
+Antes de modificar cualquier \texttt{.tex}, leer \texttt{.agent/latex.md} (16
+pitfalls documentados); antes de scripts con LangChain o parsing de JSON de LLM,
+leer \texttt{.agent/python.md}. Esta m\'aquina est\'a dise\~nada para sostener
+estos flujos en paralelo sin cuellos de botella.
+\end{cajaRecuerda}
+
+% ══ 6. VEREDICTO ════════════════════════════════════════════════════════════
 \section[Veredicto]{\iconotexto{flag-checkered}{Veredicto Final}}
 
 \begin{tcolorbox}[cajaFortaleza, title={\faIcon{thumbs-up}~Conclusi\'on}]
