@@ -26,12 +26,16 @@ except ImportError:
                         except Exception:
                             pass
 
-def compile_latex_code(latex_content: str, job_name: str = "document", output_dir: str = None) -> Dict[str, Any]:
+def compile_latex_code(latex_content: str, job_name: str = "document", output_dir: str = None,
+                       clean: bool = True) -> Dict[str, Any]:
     """
     Toma un string con código LaTeX, lo escribe en un archivo temporal,
     lo compila usando pdflatex (2 pasadas para referencias) y limpia auxiliares.
     
     Retorna un diccionario con el estado, ruta del PDF y los logs.
+    
+    clean: si False, NO elimina los auxiliares del output_dir (útil para que el
+           llamante inspeccione el .log tras compilar, p. ej. el flujo de verificación).
     """
     if not output_dir:
         # Usar un directorio temporal dentro del proyecto .tmp/latex_build/
@@ -98,7 +102,8 @@ def compile_latex_code(latex_content: str, job_name: str = "document", output_di
             error_summary = f"No se pudo leer el archivo de log: {e}"
             
     # Limpiar archivos auxiliares generados en el directorio de salida
-    clean_latex_aux_files(output_dir)
+    if clean:
+        clean_latex_aux_files(output_dir)
     
     # Si todo salió bien, retornar los detalles del PDF
     all_logs = "\n".join(logs)

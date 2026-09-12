@@ -1,0 +1,96 @@
+name: sync_faq_a_flujo
+description: >-
+  Mantiene faq_higiene_estado_sesion_flujo.{tex,pdf} sincronizados con el FAQ fuente
+  faq_higiene_estado_sesion.md de forma automática (detección por hash + regeneración
+  híbrida: campos deterministas por script, semántica vía LLM con enrutador determinista).
+version: 1.0
+
+goal: >-
+  Cuando el usuario edite docs/AGENTE_IA/faq_higiene_estado_sesion.md, actualizar
+  automáticamente docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex y su .pdf, sin
+  degradar la calidad ni romper la geometría de los diagramas (ISO 5807 / ANSI X3.5).
+
+required_inputs:
+  - name: md
+    description: Fuente del FAQ (default: docs/AGENTE_IA/faq_higiene_estado_sesion.md)
+  - name: tex
+    description: Plantilla .tex de diagramas a actualizar (default: docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex). Se edita in situ; nunca se genera desde cero.
+
+steps:
+  - action: detect_cambio
+    script: flujo_sync_faq_flujo.py  # orquestador (Layer 2)
+    description: >-
+      Compara el hash SHA-256 del .md contra el estado en .tmp/faq_flujo_sync.json.
+      Sin cambios -> termina. Con cambios -> continúa la cadena.
+
+  - action: plan_clasificacion
+    script: execution/regenerar_faq_flujo.py --plan
+    description: >-
+      Clasifica el diff del .md contra el snapshot (.tmp/faq_flujo_md_snapshot.md):
+      cambios solo de campos conocidos (fecha FECHA_PLANTILLA, modelo obsoleto, nº de
+      bitácoras antiguas) -> determinista; cualquier otro cambio -> semántico (requiere LLM).
+      Si requiere LLM, advierte del consumo de créditos OpenRouter antes de ejecutar.
+
+  - action: inyectar_campos
+    script: execution/regenerar_faq_flujo.py
+    description: >-
+      Sustitución directa de campos conocidos en el .tex (regex deterministas sobre la
+      fecha, el modelo y el nº de antiguas). No consume créditos ni toca el LLM.
+
+  - action: retraducir_semantico
+    script: execution/regenerar_faq_flujo.py  # llama a execution/llm_client.py vía enrutador
+    description: >-
+      Solo si hay cambios estructurales: por cada sección del FAQ afectada se invoca el
+      LLM (tier decidido por execution/enrutador.py, descriptor `--task conversion`,
+      tokens medidos); el LLM recibe el bloque .tex actual como plantilla y devuelve edits
+      JSON quirúrgicos {"edits":[{"old","new"}]} que el script valida (substring único,
+      geometría invariable en número de nodos, tokens estructurales prohibidos) y aplica
+      solo dentro del bloque mapeado. Retry budget: máx 3 (fallback cost-aware del router).
+
+  - action: compilar
+    script: execution/compile_latex.py (importado desde el orquestador)
+    description: 2 pasadas de pdflatex a .tmp/latex_build y copia del .pdf a docs/AGENTE_IA/.
+
+  - action: verificar
+    script: execution/verificar_pdf.py
+    description: >-
+      Guardrail post-compilación: 0 errores '!' en el .log, overfull y solapes de texto
+      (pdftotext -bbox) reportados. No bloquea por overfull/solapes informativos pero los
+      registra en el estado y el log del flujo.
+
+  - action: estado
+    description: >-
+      Actualiza .tmp/faq_flujo_sync.json (hashes md/tex, marca temporal, vía, secciones,
+      edits) y reescribe el snapshot del .md con el contenido sincronizado. Alerta audible
+      de éxito o error (execution/alert_user.py).
+
+expected_outputs:
+  - docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex actualizado (si aplicaba)
+  - docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.pdf actualizado (si cambió el .tex)
+  - .tmp/faq_flujo_sync.json y .tmp/faq_flujo_md_snapshot.md con el estado consistente
+
+edge_cases:
+  - caso: Sin snapshot previo (primer arranque del flujo)
+    protocolo: >-
+      Se toma como línea base: se sincronizan los campos deterministas y se crea el
+      snapshot; NO se invoca el LLM (no hay diff qué interpretar).
+
+  - caso: Cambio solo de metadatos (tabla de commits, artefactos, referencias cruzadas)
+    protocolo: Se ignoran (no alimentan los diagramas); el hash se marca como atendido
+      sin tocar el .tex.
+
+  - caso: Fallo del LLM o edits inválidos
+    protocolo: Reintentar con el fallback cost-aware del enrutador (máx 3 intentos);
+      si se agota, terminar con código 5 sin escribir el .tex (nunca dejar el .tex a medias).
+
+  - caso: El LLM intenta alterar geometría/número de nodos
+    protocolo: Validación "mismo nº de \\node[ por bloque" rechaza los edits y aborta
+      sin escribir.
+
+  - caso: --no-llm con cambio estructural
+    protocolo: Abortar con código 3 (el .tex queda intacto) y reportar qué secciones lo
+      requieren, para que el orquestador humano decida (revisión manual o relanzar con LLM).
+
+  - caso: .tex inexistente
+    protocolo: Terminar con código 4. Este flujo sincroniza; NO crea diagramas desde cero
+      (eso es tarea del orquestador con revisión visual del usuario).

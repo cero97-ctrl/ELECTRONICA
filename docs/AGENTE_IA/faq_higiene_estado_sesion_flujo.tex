@@ -1,0 +1,593 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas ───────────────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ── TikZ (simbolos ISO 5807 / ANSI X3.5) ──────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{babel}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.symbols,
+                decorations.pathmorphing, calc}
+
+% ── Tablas y listas ───────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% ── Secciones con barra de color (infografia) ─────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores ─────────────────────────────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{verdeTurquesa}{HTML}{004D40}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{azulMedio}{HTML}{2A5298}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{naranjaVivo}{HTML}{FF7043}
+\definecolor{rojoAlerta}{HTML}{E53935}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{amarilloNota}{HTML}{FFB300}
+
+% ── Banda de título ───────────────────────────────────────────────────────────
+\newcommand{\iconoBanda}{project-diagram}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas ──────────────────────────────────────────────────────────────────
+\tcbset{
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, colframe=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaConcepto/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Estilos de flujo (ISO 5807 / ANSI X3.5) ───────────────────────────────────
+\tikzset{
+  flujo/.style={
+    >=Stealth,
+    font=\footnotesize\sffamily,
+  },
+  terminador/.style={
+    draw=azulNoche, fill=azulNoche!8!white, rounded corners=3pt,
+    text width=1.6cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  proceso/.style={
+    draw=azulNoche, fill=cyanNeon!10!white,
+    text width=1.6cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  entradasalida/.style={
+    draw=azulNoche, fill=verdeSignal!10!white,
+    trapezium, trapezium left angle=75, trapezium right angle=105,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  decision/.style={
+    draw=azulNoche, fill=amarilloNota!20!white,
+    diamond, aspect=1.6, text width=1.5cm, align=center, inner sep=1pt,
+    font=\footnotesize\sffamily,
+  },
+  almacenamiento/.style={
+    draw=azulNoche, fill=grisPapel,
+    cylinder, shape border rotate=90, aspect=0.3,
+    text width=1.7cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  documento/.style={
+    draw=azulNoche, fill=azulMedio!8!white,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+  },
+  nota/.style={
+    draw=grisLinea, dashed, fill=grisPapel,
+    text width=1.8cm, align=center, inner sep=2mm,
+    font=\scriptsize\sffamily,
+  },
+  etiqueta/.style={font=\scriptsize\sffamily, fill=white, fill opacity=0.75, text opacity=1, inner sep=1pt},
+}
+
+% Onda inferior para el simbolo de documento (ISO 5807)
+\newcommand{\ondasDoc}[1]{%
+  \draw[azulNoche, line width=0.6pt, decorate,
+        decoration={snake, amplitude=0.8pt, segment length=2.4mm}]
+    ([yshift=-2pt]#1.south west) -- ([yshift=-2pt]#1.south east);
+}
+
+% ── Cabecera específica del documento ─────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{ELECTRÓNICA} --- FAQ Higiene de Estado (Diagramas de Flujo)}
+\fancyhead[R]{\small\color{grisTexto}11/09/2026}
+\renewcommand{\headrulewidth}{0pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\bandaTitulo{FAQ Higiene de Estado de Sesión --- Diagramas de Flujo}{Traducción de \texttt{faq\_higiene\_estado\_sesion.md} a simbología ISO 5807 / ANSI X3.5: cadena de integridad, guardia MCP, veredictos de \texttt{check}/\texttt{clean} y eslabón semántico de bitácoras}
+
+\vspace{4pt}
+\begin{center}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{map-signs}~Leyenda de símbolos---ISO 5807 / ANSI X3.5}]
+\small
+Óvalo = \textbf{terminador} (inicio/fin) $\cdot$
+Rectángulo = \textbf{proceso} (acción determinista) $\cdot$
+Rombo = \textbf{decisión} (ramas Sí/No) $\cdot$
+Paralelogramo = \textbf{entrada/salida} (lectura/escritura de archivos) $\cdot$
+Cilindro = \textbf{almacenamiento online} (\texttt{session\_log\_*.jsonl}, \texttt{run\_state.json}) $\cdot$
+Rectángulo con base ondulada = \textbf{documento} (\texttt{Sessions/*.md}) $\cdot$
+Rectángulo punteado gris = \textbf{nota explicativa} (sin acción). Flujo: arriba$\rightarrow$abajo, izquierda$\rightarrow$derecha.
+
+\faIcon{tags}~Cada símbolo lleva una \textbf{etiqueta} ({T/P/D/E/A/N} + número, según su tipo); su significado se expande en la tabla \emph{Leyenda de etiquetas} inmediatamente bajo cada diagrama.
+\end{tcolorbox}
+\end{center}
+
+% ══ Sección 1: Cadena de integridad ═══════════════════════════════════════════
+\section{\iconotexto{link}{Cadena de integridad del log append-only}}
+
+El log \texttt{session\_log\_<run>.jsonl} es la fuente de verdad inmutable: cada evento
+encadena (\texttt{prev}) el hash SHA-256 de la línea anterior, la secuencia \texttt{seq}
+debe ser contigua y la marca \texttt{"append\_only": true} es exigida por
+\texttt{integrity}. Cualquier edición, borrado o reordenamiento rompe la cadena.
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.72, transform shape]
+  \node[almacenamiento] (e1) at (0,0) {A1};
+  \node[almacenamiento] (e2) at (4.6,0) {A2};
+  \node[almacenamiento] (e3) at (9.2,0) {A3};
+  \draw[->] (e1) -- (e2);
+  \draw[->] (e2) -- (e3);
+
+  \node[decision] (chk) at (4.6,-2.7) {D1};
+  \node[terminador] (ok) at (9.0,-2.7) {T1};
+  \node[proceso] (roto) at (0.3,-2.7) {P1};
+  \draw[->] (e2.south) -- (chk.north);
+  \draw[->] (chk.east) -- node[etiqueta, above]{Sí} (ok.west);
+  \draw[->] (chk.west) -- node[etiqueta, above]{No} (roto.east);
+
+  \node[nota] (nota) at (4.6,-5.6) {N1};
+  \draw[dashed, grisLinea] (chk.south) -- (nota.north);
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+A1 & Evento 1: primer evento del log, \texttt{seq=1} y sin \texttt{prev}. \\
+A2 & Evento 2: \texttt{seq=2}, \texttt{prev} = hash SHA-256 del evento anterior. \\
+A3 & Evento n (último): \texttt{seq=n}, \texttt{prev} = hash del evento n--1 (encadenamiento). \\
+D1 & ¿\texttt{integrity} OK? Verifica \texttt{prev}=hash, \texttt{seq} contigua y \texttt{append\_only}. \\
+T1 & Log íntegro (tamper-evident): ninguna edición pasó desapercibida. \\
+P1 & Manipulación detectable: un desajuste de hash o de secuencia delata edición, borrado o reordenamiento. \\
+N1 & Es el primitivo de \emph{hash-chain}, pero sin merkle trees, sin consenso, sin descentralización ni incentivos: tamper-evident sí; blockchain propiamente, no. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+\end{center}
+
+\faIcon{arrow-right}~\textbf{Contraste con \texttt{run\_state.json}:} el log es
+\emph{criptográficamente encadenado} (toda edición es detectable), mientras que la vista
+es un JSON plano que se sobrescribe sin rastro. Por eso el log es \textbf{fuente de
+verdad} y \texttt{run\_state*.json} una \textbf{vista derivada}.
+
+% ══ Sección 2: Guardia MCP ═══════════════════════════════════════════════════
+\section{\iconotexto{shield-alt}{Guardia MCP: ¿el estado leído pertenece a la corrida actual?}}
+
+La guardia usa la comparación de \emph{mtime antes/después} de la corrida. Es la única
+señal que vincula temporalmente el archivo al subproceso sin conocer el \texttt{run\_id}
+de antemano.
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.72, transform shape]
+  \node[terminador] (inicio) at (0,0) {T1};
+  \node[proceso] (mb) at (0,-1.4) {P1};
+  \node[proceso] (run) at (0,-2.9) {P2};
+  \node[decision] (existe) at (0,-4.6) {D1};
+  \node[terminador] (nada) at (4.8,-4.6) {T2};
+  \draw[->] (inicio) -- (mb);
+  \draw[->] (mb) -- (run);
+  \draw[->] (run) -- (existe);
+  \draw[->] (existe.east) -- node[etiqueta, above]{No} (nada.west);
+
+  \node[decision] (nunca) at (0,-6.6) {D2};
+  \draw[->] (existe.south) -- node[etiqueta, pos=0.6]{Sí} (nunca.north);
+
+  \node[entradasalida] (leer1) at (0,-8.2) {E1};
+  \node[terminador] (fin1) at (0,-9.7) {T3};
+  \draw[->] (nunca.south) -- node[etiqueta, pos=0.6]{Sí} (leer1.north);
+  \draw[->] (leer1) -- (fin1);
+
+  \node[decision] (mt) at (4.8,-6.6) {D3};
+  \draw[->] (nunca.east) -- node[etiqueta, above]{No} (mt.west);
+
+  \node[proceso] (huerfana) at (9.6,-6.6) {P3};
+  \draw[->] (mt.east) -- node[etiqueta, above]{No} (huerfana.west);
+
+  \node[entradasalida] (leer2) at (4.8,-8.2) {E2};
+  \node[terminador] (fin2) at (4.8,-9.7) {T4};
+  \draw[->] (mt.south) -- node[etiqueta, pos=0.6]{Sí} (leer2.north);
+  \draw[->] (leer2) -- (fin2);
+
+  \node[nota] (nf) at (9.6,-2.6) {N1};
+  \draw[dashed, grisLinea] (run.east) -- (nf.west);
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+T1 & Corrida MCP lanzada. \\
+P1 & Toma \texttt{mtime\_before} = \texttt{mtime(run\_state.json)} antes de la corrida (\texttt{None} si el archivo no existe). \\
+P2 & Ejecutar el flujo (\texttt{subprocess}). \\
+D1 & ¿Existe \texttt{run\_state.json} al término de la corrida? \\
+T2 & \texttt{state\_data = \{\}} (sin vista): el flujo no escribió estado. \\
+D2 & ¿\texttt{mtime\_before} = \texttt{None}? (el archivo no existía antes de la corrida). \\
+E1 & Leer el estado: fue \emph{creado} durante esta corrida. \\
+T3 & Vista pertenece a la corrida. \\
+D3 & ¿\texttt{mtime\_ahora} > \texttt{mtime\_before}? (el estado sí fue reescrito en esta corrida). \\
+P3 & No usar: vista huérfana (\texttt{mtime} de otra corrida). \\
+E2 & Leer el estado: fue \emph{reescrito} durante esta corrida. \\
+T4 & Vista pertenece a la corrida. \\
+N1 & \texttt{flujo/fin} \textbf{no} sirve de guardia: es un evento de \emph{ciclo de vida} que aparece en los dos casos opuestos (huérfano: el run de hace 1\,h terminó y dejó su estado; legítimo: el flujo recién lanzado terminó bien). Con el criterio ``¿hay flujo/fin?$\rightarrow$descartar'' se descartaría el estado legítimo que el MCP lee \emph{después} de que el flujo termina. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+\end{center}
+
+% ══ Sección 3: check / clean ═════════════════════════════════════════════════
+\section{\iconotexto{stethoscope}{estado\_sesion.py: veredictos y limpieza de la vista}}
+
+Principio conservador: \textbf{``borro solo con certeza''}. \texttt{huerfano}
+$\rightarrow$ borra; \texttt{vigente} y \texttt{no\_verificable} $\rightarrow$ conserva;
+\texttt{corrupto} $\rightarrow$ conserva y reporta.
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.72, transform shape]
+  \node[terminador] (inicio) at (0,0) {T1};
+  \node[entradasalida] (busca) at (0,-1.4) {E1};
+  \node[decision] (existe) at (0,-3.1) {D1};
+  \draw[->] (inicio) -- (busca);
+  \draw[->] (busca) -- (existe);
+
+  \node[proceso] (nv) at (4.6,-3.1) {P1};
+  \node[nota] (nv2) at (4.6,-4.5) {N1};
+  \draw[->] (existe.east) -- node[etiqueta, above]{No} (nv.west);
+  \draw[dashed, grisLinea] (nv.south) -- (nv2.north);
+
+  \node[proceso] (integ) at (0,-5.2) {P2};
+  \draw[->] (existe.south) -- node[etiqueta, pos=0.6]{Sí} (integ.north);
+
+  \node[decision] (integral) at (0,-6.9) {D2};
+  \draw[->] (integ) -- (integral);
+
+  \node[proceso] (corrupto) at (4.6,-6.9) {P3};
+  \node[nota] (cor2) at (7.8,-6.9) {N2};
+  \draw[->] (integral.east) -- node[etiqueta, above]{No} (corrupto.west);
+  \draw[dashed, grisLinea] (corrupto.east) -- (cor2.west);
+
+  \node[decision] (ffin) at (0,-8.6) {D3};
+  \draw[->] (integral.south) -- node[etiqueta, pos=0.6]{Sí} (ffin.north);
+
+  \node[proceso] (vigente) at (4.6,-8.6) {P4};
+  \node[nota] (vig2) at (4.6,-10.0) {N3};
+  \draw[->] (ffin.east) -- node[etiqueta, above]{No} (vigente.west);
+  \draw[dashed, grisLinea] (vigente.south) -- (vig2.north);
+
+  \node[proceso] (huerfano) at (0,-10.2) {P5};
+  \node[nota] (hue2) at (0,-11.6) {N4};
+  \node[terminador] (fin) at (0,-13.0) {T2};
+  \draw[->] (ffin.south) -- node[etiqueta, pos=0.6]{Sí} (huerfano.north);
+  \draw[dashed, grisLinea] (huerfano.south) -- (hue2.north);
+  \draw[->] (hue2.south) -- (fin.north);
+
+  \node[nota] (model) at (9.4,-4.4) {N5};
+  \draw[dashed, grisLinea] (integ.east) -- (model.west);
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+T1 & \texttt{check(run\_id)}: inicia la verificación de la vista derivada. \\
+E1 & Buscar el log \texttt{session\_log\_<run>.jsonl} del \texttt{run\_id}. \\
+D1 & ¿Existe el log para el \texttt{run\_id}? \\
+P1 & Veredicto: \texttt{no\_verificable}. \\
+N1 & Sin log $\rightarrow$ sin certeza de si la corrida terminó. \texttt{clean} \textbf{NO} actúa (ni lo lista). \\
+P2 & \texttt{integrity}: \texttt{prev} = hash $\wedge$ \texttt{seq} contigua $\wedge$ \texttt{append\_only}. \\
+D2 & ¿La cadena está íntegra? \\
+P3 & Veredicto: \texttt{corrupto}. \\
+N2 & Conservar y reportar (incrementa anomalías). \\
+D3 & ¿El último evento es \texttt{flujo/fin}? \\
+P4 & Veredicto: \texttt{vigente}. \\
+N3 & Conservar (en curso, error o vacío). \\
+P5 & Veredicto: \texttt{huérfano}. \\
+N4 & Único caso que \texttt{clean} borra (\texttt{unlink}). \\
+T2 & Vista eliminada. \\
+N5 & \texttt{modelo\_obsoleto}: solo \emph{advertencia} informativa (\texttt{deepseek-v4-pro}); \textbf{no} altera veredicto ni incrementa anomalías. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+\end{center}
+
+El modelo obsoleto es una señal de atención (``reanudar con este modelo fallaría''), no
+un criterio de limpieza: en el caso real detectado se borró por \texttt{huerfano}, no por
+el modelo.
+
+% ══ Sección 4: bitacoras.py ══════════════════════════════════════════════════
+\section{\iconotexto{book}{Eslabón semántico: bitacoras.py (\texttt{nueva} y \texttt{check})}}
+
+El subcomando \texttt{nueva} crea la bitácora canónica (nunca sobrescribe); \texttt{check}
+clasifica cada bitácora por su fecha relativa a \texttt{FECHA\_PLANTILLA} (2026-09-11).
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.72, transform shape]
+  % Columna A: nueva
+  \node[terminador] (nt) at (0,0) {T1};
+  \node[proceso] (n1) at (0,-1.5) {P1};
+  \node[decision] (n2) at (0,-3.3) {D1};
+  \draw[->] (nt) -- (n1);
+  \draw[->] (n1) -- (n2);
+
+  \node[terminador] (n3) at (4.2,-3.3) {T2};
+  \draw[->] (n2.east) -- node[etiqueta, above]{Sí} (n3.west);
+
+  \node[proceso] (n4) at (0,-5.6) {P2};
+  \draw[->] (n2.south) -- node[etiqueta, pos=0.6]{No} (n4.north);
+  \node[terminador] (n5) at (0,-7.4) {T3};
+  \draw[->] (n4) -- (n5);
+
+  % Columna B: check
+  \node[terminador] (ct) at (7.4,0) {T4};
+  \node[entradasalida] (c1) at (7.4,-1.5) {E1};
+  \node[decision] (c2) at (7.4,-3.3) {D2};
+  \draw[->] (ct) -- (c1);
+  \draw[->] (c1) -- (c2);
+
+  \node[proceso] (c3) at (11.2,-3.3) {P3};
+  \draw[->] (c2.east) -- node[etiqueta, above]{Sí} (c3.west);
+
+  \node[decision] (c4) at (7.4,-5.0) {D3};
+  \draw[->] (c2.south) -- node[etiqueta, pos=0.6]{No} (c4.north);
+
+  \node[proceso] (c5) at (11.2,-5.3) {P4};
+  \draw[->] (c4.east) -- node[etiqueta, above]{No} (c5.west);
+
+  \node[decision] (c6) at (7.4,-6.8) {D4};
+  \draw[->] (c4.south) -- node[etiqueta, pos=0.6]{Sí} (c6.north);
+
+  \node[proceso] (c7) at (11.2,-6.8) {P5};
+  \draw[->] (c6.east) -- node[etiqueta, above]{No} (c7.west);
+
+  \node[proceso] (c8) at (7.4,-8.6) {P6};
+  \draw[->] (c6.south) -- node[etiqueta, pos=0.6]{Sí} (c8.north);
+
+  \node[nota] (nleg) at (7.4,-10.6) {N1};
+  \draw[dashed, grisLinea] (c8.south) -- (nleg.north);
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+\multicolumn{2}{@{}l}{\textit{Columna A --- ``nueva''}} \\ \midrule
+T1 & \texttt{nueva --tema}: crea la bitácora canónica de la sesión. \\
+P1 & Slug ASCII del tema $\rightarrow$ archivo \texttt{Sessions/YYYY-MM-DD\_<slug>.md}. \\
+D1 & ¿Ya existe el archivo? \\
+T2 & \texttt{ya\_existia} (nunca sobrescribe). \\
+P2 & Escribir las 5 secciones: Tema $\cdot$ Contexto $\cdot$ Decisiones (usuario) $\cdot$ Actividades $\cdot$ Pendientes. \\
+T3 & Lista para \texttt{check}. \\ \midrule
+\multicolumn{2}{@{}l}{\textit{Columna B --- ``check''}} \\ \midrule
+T4 & \texttt{check}: clasifica cada bitácora según su fecha relativa a \texttt{FECHA\_PLANTILLA}. \\
+E1 & Listar \texttt{Sessions/*.md}. \\
+D2 & ¿Fecha del nombre < \texttt{FECHA\_PLANTILLA} (2026-09-11)? \\
+P3 & Legado: \texttt{ok} forzado \texttt{True} (informativo, no se reescribe). \\
+D3 & ¿Secciones completas (hoy/reciente)? \\
+P4 & Anomalía accionable: afecta veredicto y \texttt{exit code}. \\
+D4 & ¿\texttt{hay\_bitacora} para hoy? \\
+P5 & Veredicto: ``atencion'' (día sin bitácora). \\
+P6 & Veredicto: \texttt{ok}. \\
+N1 & Legado (antes de 2026-09-11): escritas con otra convención (ej. las 33 antiguas sin \texttt{Decisiones (usuario)}). Reescribirlas sería falsificar historia. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+\end{center}
+
+En la columna derecha, ``hoy'' o ``reciente'' sin secciones completas es una anomalía
+real a corregir \emph{antes} de cerrar; la salida cruza con \texttt{sesion\_hoy},
+booleano que \texttt{check} obtiene filtrando por el prefijo del nombre
+(\texttt{startswith("YYYY-MM-DD")}).
+
+% ══ Sección 5: cierre de sesión ══════════════════════════════════════════════
+\section{\iconotexto{door-closed}{Cierre de sesión: remediación obligatoria (edge case de la directiva)}}
+
+Si al cierre \texttt{check} reporta \emph{falta de bitácora del día} o \emph{secciones
+vacías} (hoy/reciente), la sesión no debe cerrar así: la recuperación es correctiva y el
+defecto no es cosmético, porque el contexto semántico es irrecuperable una vez cerrada la
+sesión (no se regenera desde ningún log).
+
+\begin{center}
+\begin{tikzpicture}[flujo, scale=0.72, transform shape]
+  \node[terminador] (inicio) at (0,0) {T1};
+  \node[proceso] (p1) at (0,-1.5) {P1};
+  \node[decision] (d1) at (0,-3.3) {D1};
+  \draw[->] (inicio) -- (p1);
+  \draw[->] (p1) -- (d1);
+
+  \node[terminador] (fin) at (0,-5.2) {T2};
+  \draw[->] (d1.south) -- node[etiqueta, pos=0.7]{No} (fin.north);
+
+  \node[proceso] (r1) at (5.6,-3.3) {P2};
+  \node[proceso] (r2) at (5.6,-4.6) {P3};
+  \node[proceso] (r3) at (5.6,-5.9) {P4};
+  \draw[->] (d1.east) -- node[etiqueta, above]{Sí} (r1.west);
+  \draw[->] (r1) -- (r2);
+  \draw[->] (r2) -- (r3);
+  \draw[->] (r3.west) -- ++(-1.8,0) |- ([xshift=8pt]d1.east) node[etiqueta, pos=0.35, right=6pt]{revalidar};
+
+  \node[nota] (nleg) at (5.6,-8.6) {N1};
+\end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+T1 & Cierre de sesión. \\
+P1 & Ejecutar \texttt{bitacoras.py check}: verifica la bitácora del día y el llenado de secciones. \\
+D1 & ¿Falta la bitácora del día o hay secciones vacías (hoy/reciente)? \\
+T2 & Cerrar sesión (sin defectos de bitácora). \\
+P2 & \texttt{nueva --tema} (si falta la bitácora del día). \\
+P3 & Rellenar las secciones semánticas. \\
+P4 & Revalidar con \texttt{check}. \\
+N1 & \textbf{Exento:} las bitácoras legado (antes de 2026-09-11) son informativas y no se reescriben. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+\end{center}
+
+\begin{cajaConcepto}
+\faIcon{lightbulb}~\textbf{Información que reside \emph{exclusivamente} en \texttt{Sessions/}:}
+el \textbf{contexto semántico}---el POR QUÉ de las decisiones (sobre todo las del usuario),
+lo que se descartó y por qué, intenciones y matices, reglas y aprendizajes derivados, y
+pendientes acordados con su contexto. Bajo nivel = datos reproducibles (log + run\_state);
+alto nivel = significado (\texttt{Sessions/}). Sin bitácora, esa información se pierde
+\emph{definitivamente}.
+\end{cajaConcepto}
+
+\end{document}

@@ -165,6 +165,7 @@ flujo_publicar_hf.py        <dataset> [--repo <id>] [--private] [--dry-run] [--n
 flujo_ruview_rescue.py      (UDP listener :5005 — datos CSI/acelerómetro; config en directives/ruview_rescue.yaml)
 flujo_telegram.py           (Telegram gateway polling — config en directives/telegram_gateway.yaml)
 flujo_consultar_docs.py     <tech> [--topic ...] [--url ...] [--max-chars N]
+flujo_sync_faq_flujo.py     [--watch] [--force] [--no-llm] [--critico] (auto-sincroniza faq_higiene_estado_sesion.md → flujo.{tex,pdf} por hash; SOP en directives/sync_faq_a_flujo.yaml)
 ```
 
 ### MCP servers (`mcp_*_server.py`, FastMCP)

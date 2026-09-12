@@ -90,6 +90,7 @@ Principio: el **chat del orquestador es gratis** — tu motor rota entre modelos
 | `flujo_elaborar_examen.py` / `flujo_elaborar_ejercicios.py` | **Sí** | Default openrouter + tier opus ($5/$25 M tok) — la combinación más cara |
 | `flujo_evaluar_examen.py`, `rag_system.py`, `agent_eda.py`, `extraer_netlist_imagen.py`, `generar_kicad_llm.py` | **Sí** | Llamadas vía `openrouter_chat` |
 | `flujo_analizar_imagen.py` | Solo con `--api-backend openrouter` | Default es Gemini free tier (20 req/día/modelo); con openrouter consume créditos |
+| `flujo_sync_faq_flujo.py` | Solo con cambios estructurales (re-traducción LLM quirúrgica) | Campos deterministas/hash → **No**; re-traducción semántica → **Sí** vía enrutador (flash default, `--critico` → opus). `--no-llm` evita créditos y aborta si el cambio es estructural |
 | Cualquier flujo LLM con `--api-backend gemini` | **No** | Corre dentro de la cuota free de Gemini (20 req/día/modelo), con menor calidad/estabilidad en tareas críticas |
 
 Regla práctica para decidir si avisar al usuario sobre costo: mira el comando que vas a
