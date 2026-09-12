@@ -192,6 +192,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 - Datasets de entrenamiento LLM: raw capture en `datasets/*.jsonl` (`execution/data_capture.py`, pasivo, gitignored); curado/particionado en `datasets/curated/` (`execution/curar_datasets.py` o `flujo_curar_dataset.py`); paquetes HF (Parquet+LICENSE+README) en `datasets/paquetes/` (`execution/empaquetar_dataset.py` o `flujo_empaquetar_dataset.py`); publicación HF Hub (`execution/publicar_hf.py` o `flujo_publicar_hf.py`, requiere `HF_TOKEN` en `.env`)
 - LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
 - LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)
+- **Diagramas de flujo (convención):** todo flujo grande del repo (flujo_*, mcp_* con sus 3 capas: directiva + orquestador + script) entregado al usuario debe incluir un diagrama de flujo ISO 5807 estilo infográfico en `docs/<tema>/<proceso>_flujo.{tex,pdf}`, generado de forma determinista con `execution/generar_diagrama_flujo.py` a partir de un descriptor JSON (`--descriptor .tmp/descriptor_<proceso>.json --output docs/<tema>/<proceso>_flujo`). El descriptor modela nodos (terminador/proceso/decisión/almacenamiento/entrada-salida/documento/nota) y conexiones con col/fila (tronco en col 0, ramas a la derecha). SOP: `directives/diagrama_flujo.yaml`. Proceso enorme → dividir en secciones del descriptor (una por página).
 
 ## Git quirks
 

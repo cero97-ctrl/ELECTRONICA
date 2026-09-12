@@ -1,0 +1,84 @@
+name: diagrama_flujo
+description: >-
+  Genera un diagrama de flujo ISO 5807 / ANSI X3.5 en estilo infográfico (bandaTitulo,
+  cajas tcolorbox, iconos FontAwesome) a partir de un descriptor JSON con nodos y
+  conexiones. El resultado es determinista: mismo descriptor -> mismo .tex -> mismo PDF.
+version: 1.0
+
+goal: >-
+  Al cerrar cualquier flujo grande del repo (flujo_*, mcp_* con sus 3 capas:
+  directiva + orquestador + execution), el orquestador entrega un diagrama de flujo
+  bajo docs/<tema>/<proceso>_flujo.{tex,pdf} generado con execution/generar_diagrama_flujo.py.
+
+required_inputs:
+  - name: descriptor
+    description: >-
+      Archivo JSON con la estructura del proceso. Campos:
+      titulo (str), subtitulo (str), cabecera_izq/der (str), icono_banda (str, FontAwesome),
+      notas (opcional, lista de str), secciones (lista): cada sección tiene nombre, icono,
+      nodos (id, tipo, texto, significado, col, fila) y conexiones (from, to, etiqueta).
+      Tipos de nodo válidos: terminador, proceso, decision, almacenamiento, entradasalida,
+      documento, nota. Se ubica en .tmp/descriptor_<proceso>.json.
+  - name: output
+    description: >-
+      Prefijo de salida sin extensión, p. ej. docs/AGENTE_IA/sync_faq_flujo_flujo.
+      Si se omite, el PDF queda solo en .tmp/latex_build/.
+
+steps:
+  - action: extraer_estructura
+    script: orquestador (Layer 2)
+    description: >-
+      El orquestador modela el proceso terminado como JSON: lee la directiva y el flujo
+      real, identifica nodos (terminadores T, procesos P, decisiones D, almacenamiento A,
+      entrada/salida E, documento N) y conexiones con sus etiquetas (Sí/No u otras).
+      Es parsing de intención, no decisión probabilística: la geometría (col, fila) se elige
+      de forma predecible (tronco principal en col 0 hacia abajo, ramas a la derecha
+      col+1/+2, evitando que las flechas crucen nodos). El descriptor se guarda en .tmp/.
+
+  - action: generar
+    script: execution/generar_diagrama_flujo.py --descriptor .tmp/descriptor_<proceso>.json
+    description: >-
+      Valida el descriptor (tipos de nodo, ids únicos, conexiones consistentes), genera el
+      .tex con PREAMBULO+bloque ISO (estilos TikZ) definidos en el propio script, compila 2
+      pasadas con compile_latex.py y verifica con verificar_pdf.py. Salida JSON por stdout.
+      --dry-run genera solo el .tex sin compilar; --output copia PDF+tex al destino final.
+
+  - action: verificar
+    script: execution/verificar_pdf.py (invocado por el generador)
+    description: >-
+      0 errores '!' en el .log; overfull y solapes de texto (pdftotext -bbox) reportados.
+      Si hay errores de compilación -> ajustar descriptor y reintentar (máx 3); nunca
+      publicar un PDF defectuoso.
+
+  - action: publicar
+    script: execution/generar_diagrama_flujo.py --output <prefijo>
+    description: Copia el .pdf y el .tex al destino docs/<tema>/<proceso>_flujo.{tex,pdf}.
+      Alerta audible de éxito (execution/alert_user.py success).
+
+expected_outputs:
+  - .tmp/descriptor_<proceso>.json (intermedio, regenerable)
+  - docs/<tema>/<proceso>_flujo.tex con diagrama ISO 5807 estilo infográfico
+  - docs/<tema>/<proceso>_flujo.pdf validado (0 errores, 0 solapes críticos)
+
+edge_cases:
+  - caso: Tipo de nodo inválido en el descriptor
+    protocolo: El generador rechaza con código 1 y lista los tipos válidos; corregir el
+      descriptor (no relajar la validación).
+
+  - caso: Diagrama que no cabe en una página (muchos nodos)
+    protocolo: Se parte en varias páginas (longtable/tikzpicture grande); el generador
+      ya produce secciones y el PDF fluye. Si un diagrama requiere varias páginas, dividir
+      el proceso en secciones conceptuales del descriptor.
+
+  - caso: Conexión que cruza un nodo (layout mal elegido)
+    protocolo: La verificación de solapes de texto lo detecta parcialmente; el orquestador
+      debe reposicionar (cambiar col/fila) para que las flechas no crucen nodos. Reintentar
+      con layout ajustado (máx 3).
+
+  - caso: Proceso lineal sin decisiones
+    protocolo: Válido; el diagrama resulta en una cadena vertical (terminador -> procesos ->
+      entrada/salida -> terminador). No se requiere rombo.
+
+  - caso: Compilación falla tras 3 intentos
+    protocolo: Detener, reportar el último error y NO publicar PDF. Escalar al usuario con
+      el .tex generado en .tmp/latex_build/ para diagnóstico.
