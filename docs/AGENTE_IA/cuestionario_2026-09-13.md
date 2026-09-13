@@ -427,3 +427,381 @@ Si `clean=True` se ejecutara dentro de `compile_latex_code`, el `.log` desaparec
 Referencias: `flujo_sync_faq_flujo.py:144-170`, `execution/verificar_pdf.py:110-113`, `2026-09-11_faq_diagramas_flujo.md`.
 
 ---
+
+## P24. ¿Cuál es el código de salida cuando el LLM altera el número de nodos (invariante geométrico)?
+
+**Respuesta: 1, por excepción no capturada** (no es un JSON estructurado). El invariante en `execution/regenerar_faq_flujo.py:443` hace `raise RuntimeError(...)`, y no hay ningún `try/except` alrededor de `sys.exit(main())` (`:474-475`) → Python imprime el traceback en stderr y el proceso sale con código **1**, sin JSON en stdout.
+
+Efecto en cadena en el orquestador (`flujo_sync_faq_flujo.py:131-140`):
+```python
+proc = subprocess.run(regen_cmd, ...)          # returncode = 1
+try:
+    regen = json.loads(proc.stdout)            # falla: stdout vacío (solo stderr tiene traceback)
+except json.JSONDecodeError:
+    regen = {"status": "error", "message": proc.stdout + proc.stderr}
+if regen.get("status") != "ok":
+    _log(f"[ERROR] regenerar_faq_flujo.py (código {proc.returncode}): ...")
+    return {"status": "error", "code": proc.returncode if proc.returncode else 1, **regen}
+```
+→ el orquestador registra `[ERROR] (código 1)` con el mensaje del traceback y propaga `{"status": "error", "code": 1}`.
+
+**Contraste importante con el aborto estructural `--no-llm`:** ese sí devuelve **JSON estructurado con código 3** (`regenerar_faq_flujo.py:410-417`); la violación del invariante geométrico, en cambio, es un **crash genérico** (traceback en stderr, stdout vacío). Ambos dejan el `.tex` intacto (la escritura atómica nunca llegó a `os.replace`), pero el primero es una señal manejable por el orquestador (código semántico + mensaje), el segundo es un fallo de script que el orquestador solo puede reportar con el texto del traceback. Nota: el crash ocurre **después** de consumir los créditos de la llamada `_llm_edits` (el edit se pagó, se validó y se rechazó por geometría).
+
+Referencias: `execution/regenerar_faq_flujo.py:439-446, 474-475`, `flujo_sync_faq_flujo.py:131-140`.
+
+---
+
+## P25. ¿Es cierto que el código 5 = fallo del LLM o edits inválidos tras agotar reintentos?
+
+**Respuesta:** Es lo que documenta la **directiva**, pero NO está implementado en el script — es una **discrepancia directiva ↔ implementación**.
+
+- **Lo que dice el SOP** (`directives/sync_faq_a_flujo.yaml:82-84`): *"Fallo del LLM o edits inválidos → reintentar con fallback cost-aware (máx 3); si se agota, terminar con **código 5** sin escribir el .tex (nunca dejar el .tex a medias)."*
+- **Lo que hace la implementación** (`execution/regenerar_faq_flujo.py`): **no existe `return 5`**. Únicos returns explícitos: `2` (falta el `.md`, `:362`), `4` (falta el `.tex`, `:367`), `3` (`--no-llm` estructural, `:417`).
+
+Los 3 caminos que la afirmación describe terminan realmente en **exit 1 por excepción no capturada** (sin `try/except` alrededor de `sys.exit(main())`):
+
+| Caso (SOP) | Implementación real | Exit |
+|---|---|---|
+| Agotar reintentos del LLM | `_llm_edits` → `raise RuntimeError("Falló la re-traducción...")` (`:317`) | 1 (crash) |
+| Edits inválidos (token estructural `_FORBIDDEN_IN_NEW`, `old` no único) | `_edits_validos` → `raise ValueError` (`:330-333`) | 1 (crash) |
+| Violación invariante geométrico | `raise RuntimeError` (`:443`) | 1 (crash) |
+
+**Matices:**
+- La **intención** del código 5 ("nunca dejar el `.tex` a medias") **sí se cumple**: ninguno de esos caminos alcanza la escritura atómica (`os.replace`, `:464-467`), el `.tex` queda intacto.
+- Lo que no se cumple es el **código semántico**: el SOP promete una señal distinguible (5 = fallo LLM/seguridad), y el script entrega un crash genérico (traceback en stderr, stdout vacío) que el orquestador solo puede reportar como `code 1` con el texto del error.
+- Además, la afirmación leída mezcla dos edge cases distintos del SOP: "fallo del LLM o edits inválidos" (`:82`) es el del código 5; "intentar alterar geometría" (`:86-88`) es otro edge case cuya directiva dice *"rechaza los edits y aborta sin escribir"* sin asignarle código — en la implementación también cae a un exit 1.
+
+Ruta de corrección (pendiente anotado en bitácora): o implementar `return 5` en `regenerar_faq_flujo.py` capturando `RuntimeError`/`ValueError` de `_llm_edits`/`_edits_validos`/invariante, o ajustar la directiva a la conducta real (código 1). Mientras estén desincronizados, **no confiar en el código 5 ni al interpretar salidas ni al escribir edge cases nuevos**.
+
+Referencias: `directives/sync_faq_a_flujo.yaml:82-96`, `execution/regenerar_faq_flujo.py:317, 330-333, 362-367, 410-417, 439-446`.
+
+---
+
+## P26. ¿Qué campo se actualiza mediante inyección determinista (regex) sin usar el LLM? (para elegir una opción)
+
+**Respuesta: C. La versión del modelo obsoleto (ej. `deepseek-v4-pro`).**
+
+Los "campos conocidos" de inyección determinista viven en `execution/regenerar_faq_flujo.py:73-76` y se aplican con `re.sub` en `aplicar_campos_conocidos` (`:181-207`): 0 créditos, sin LLM, y el clasificador los normaliza vía `_scrub_line` (`:104-109`) para que no cuenten como cambio semántico (`semantico=False`):
+
+```python
+_RE_FECHA    = r"\d{4}-\d{2}-\d{2}"      # FECHA_PLANTILLA → tex = re.sub(_RE_FECHA, iso, tex)   (:188)
+_RE_MODELO   = r"deepseek-[\w.-]+"       # modelo obsoleto → tex = re.sub(_RE_MODELO, modelo, tex) (:198)
+_RE_ANTIGUAS = r"\d+\s+antiguas"         # nº bitácoras antiguas → (:204)
+```
+
+`_RE_MODELO = r"deepseek-[\w.-]+"` coincide con `deepseek-v4-pro` (la variante discontinuada) y con cualquier otra v4.x — la docstring del script lo enuncia (`:10-11`): *"campos conocidos (FECHA_PLANTILLA, modelo obsoleto, nº de bitácoras antiguas) se inyectan por sustitución directa"*.
+
+Por qué las otras son falsas:
+- **A** (posiciones de nodos en el ISO 5807) → la geometría jamás se toca (Invariante Geométrico, P21/P24).
+- **B** (hash SHA-256 de la cabecera del PDF) → los hashes (`md_sha256`, `tex_sha256`) van al estado/snapshot (`flujo_sync_faq_flujo.py:183-193`), no se inyectan en el `.tex`.
+- **D** (descripción semántica de un veredicto de estado de sesión) → es exactamente el camino LLM (re-traducción quirúrgica de textos/leyenda), lo opuesto a la inyección determinista.
+
+Referencias: `execution/regenerar_faq_flujo.py:73-76, 104-109, 143-159, 181-207`, `flujo_sync_faq_flujo.py:183-193`.
+
+---
+
+## P27. ¿Qué representa el símbolo de un Cilindro en los diagramas de flujo ISO 5807?
+
+**Respuesta: A. Almacenamiento online, como archivos JSON de estado o logs.**
+
+El cilindro es la forma estándar ISO 5807 para almacenamiento. Está declarado en `execution/generar_diagrama_flujo.py:71-76`:
+
+```python
+almacenamiento/.style={
+    draw=azulNoche, fill=grisPapel,
+    cylinder, shape border rotate=90, aspect=0.3,
+    text width=1.7cm, align=center, inner sep=2mm,
+    font=\footnotesize\sffamily,
+},
+```
+
+Se asigna con prefijo **`A`** (por "Almacenamiento"): `A1`, `A2`, etc. Los nodos `A` del workspace representan `.tmp/run_state.json`, `session_log_*.jsonl` y las bitácoras `Sessions/*.md`. En el descriptor JSON (`~/.tmp/descriptor_*.json`) aparecen como `"tipo": "almacenamiento"`.
+
+Las demás opciones son otras formas ISO 5807 declaradas en el mismo archivo:
+- **B** (decisión) → rombo (`decision`, `:66-70`)
+- **C** (entrada/salida documentos físicos) → trapecio (`entradasalida`, `:60-65`)
+- **D** (inicio/fin, terminador) → rectángulo redondeado (`terminador`, `:50-54`)
+
+Referencias: `execution/generar_diagrama_flujo.py:34-36, 42-92, 71-76`, `directives/diagrama_flujo.yaml`.
+
+---
+
+## P28. ¿Qué implica que el log sea "tamper-evident" en el contexto de higiene de estado?
+
+**Respuesta: C. Cualquier manipulación, borrado o reordenamiento deja un rastro detectable por la ruptura de la cadena de hashes.**
+
+Mecanismo exacto en `execution/sesion_log.py:237-271` (`integrity`):
+
+Cada evento escrito con `add` (`:100-132`) lleva tres campos de integridad:
+- `seq` (entero secuencial, 1-based) — detecta reordenamiento o borrado.
+- `prev` (SHA-256 del *raw bytes* completo del evento anterior) — detecta edición in situ.
+- `append_only` (marca booleana) — detecta corrupción.
+
+`integrity` recorre el log línea por línea y verifica (`:247-269`):
+```python
+if ev.get("seq") != i:
+    return _error(f"¿Se eliminó u ordenó mal una línea?")
+if ev.get("prev") != _hash_linea_prev(prev):
+    return _error("el log fue modificado (append-only violado).")
+if not ev.get("append_only"):
+    return _error("falta la marca append_only → log corrupto.")
+```
+
+El docstring lo dice (`:11-12`): *"Cada línea es un evento JSON con hash encadenado (prev): cualquier edición o eliminación rompe la cadena y es detectada por `integrity`."*
+
+**Por qué las demás son falsas:**
+- **A** (impide físicamente la escritura) → es tamper-**proof**, no tamper-evident; el sistema no bloquea escrituras.
+- **B** (clave HSM) → no se usa criptografía de claves; solo SHA-256 abierto.
+- **D** (encriptado, solo legible por el orquestador) → el log es JSONl plano (texto plano legible por `sesion_log.py ver`).
+
+Referencias: `execution/sesion_log.py:11-12, 82-132, 237-271`, `execution/estado_sesion.py:21, 178`.
+
+---
+
+## P29. ¿Cómo maneja la sincronización el primer arranque sin snapshot previo?
+
+**Respuesta: D. Se establece una línea base: se sincronizan los campos deterministas y se crea el snapshot, sin invocar al LLM.**
+
+Documentado en `directives/sync_faq_a_flujo.yaml:72-76` (edge case n.º 1): *"Se toma como línea base: se sincronizan los campos deterministas y se crea el snapshot; NO se invoca el LLM (no hay diff qué interpretar)."*
+
+Verificación en código:
+- `snap_text = snap_path.read_text(...) if snap_path.is_file() else None` (`regenerar_faq_flujo.py:371`) → sin snapshot, `clasificar_cambios` no se ejecuta (`:378`) → `cambios_por_seccion = {}` → `llm_necesario = False` (`:391`) → **0 créditos, sin LLM**.
+- La rama determinista sigue activa: `aplicar_campos_conocidos` inyecta los campos conocidos (fecha/modelo/antiguas) (`:374-375`).
+- El orquestador crea estado + snapshot al final: `_guardar_estado(estado)` y `SNAPSHOT_FILE.write_text(md_text)` (`flujo_sync_faq_flujo.py:183-193`). El siguiente cambio de `.md` ya tiene contra qué comparar.
+
+Por qué las otras no:
+- **A** → no requiere intervención manual; es un caso documentado y autónomo.
+- **B** → el código 2 es por `.md`/`.tex` inexistentes (`regenerar_faq_flujo.py:361-367`), no por falta de snapshot.
+- **C** → nunca se fuerza re-traducción Opus; sin diff no hay nada que interpretar.
+
+Referencias: `directives/sync_faq_a_flujo.yaml:72-76`, `execution/regenerar_faq_flujo.py:371, 374-378, 391`, `flujo_sync_faq_flujo.py:192-193`.
+
+---
+
+## P30. ¿Qué herramienta captura la geometría de las palabras del PDF para detectar solapes?
+
+**Respuesta: C. `pdftotext -bbox`** (paquete poppler-utils).
+
+`_bbox_paginas` en `execution/verificar_pdf.py:55-65` ejecuta:
+```python
+raw = subprocess.run(["pdftotext", "-bbox", str(pdf), "-"], capture_output=True, text=True, timeout=120)
+```
+y parsea la salida XML con `_WORD_RE` (`:33-35`) extrayendo `xMin/yMin/xMax/yMax` de cada `<word>`. Esa geometría alimenta `_solapa` (intersección normalizada por el rectángulo menor, `:38-52`) y el umbral `SOLAPE_FRACCION = 0.35` (`:90`).
+
+- **A** (LLM con visión) → no: el guardrail es determinista, sin LLM ni créditos.
+- **B** (`pdflatex --geometry`) → no: `--geometry` no es bandera de pdflatex; la geometría aquí es de *cajas de palabras*, no de página.
+- **D** (`sha256sum --check`) → no: verifica hashes de archivos, no solapes de texto.
+
+Referencias: `execution/verificar_pdf.py:10-11, 33-35, 55-65`, `flujo_sync_faq_flujo.py:165-177`.
+
+---
+
+## P31. ¿Cómo decide `regenerar_faq_flujo.py` qué tier de modelo LLM usar?
+
+**Respuesta: D. Mediante el enrutador determinista, que evalúa los tokens medidos y la criticidad.**
+
+En `_llm_edits` (`regenerar_faq_flujo.py:255-265`):
+```python
+task = "conversion"
+decision = decide(task, tokens, critico, False, None)   # enrutador 100% local ($0)
+if decision["tier"] == "desconocido":
+    raise RuntimeError(decision["reason"])
+append_log({"tipo": "sync_faq", **decision})            # telemetría -> .tmp/routing_log.jsonl
+candidates = [decision["model"]] + (decision.get("fallback") or [])[:2]   # fallback cost-aware
+```
+
+Las entradas del descriptor:
+- **Tokens medidos** (nunca estimados): `corpus = md_text + bloque_tex + diff; tokens = len(corpus) // 4` (`:431-432`), medidos en tiempo de ejecución.
+- **Criticidad**: flag `--critico` de la CLI (`:354, 434`) → escala la decisión a `opus` vía el enrutador.
+- **Visión**: `False` explícito (`:258`), no aplica aquí.
+- **Override**: `--modelo <id>` (opcional) antepone el modelo pedido a los candidatos (`:264-265`).
+
+Ninguna de las otras:
+- **A** → el `--modelo` es solo un override opcional, no un requisito por ejecución.
+- **B** → no se elige el más caro; `conversion` es tarea de rutina → tier `flash` por defecto, con fallback en cadena cost-aware (flash→deepseek→glm, etc., según `execution/enrutador.py`).
+- **C** → el tier no depende del tipo de archivo fuente (.md vs .tex); ambos entran juntos al corpus medido.
+
+Referencias: `execution/regenerar_faq_flujo.py:255-265, 354, 431-434`, `execution/enrutador.py`, `.agent/enrutamiento.md`.
+
+---
+
+## P32. ¿Cuál es la función principal de `SOLAPE_FRACCION = 0.35`?
+
+**Respuesta: B. Definir el umbral de tolerancia para solapes accidentales entre cajas de texto** (los pares que lo superan se clasifican como solape reportable).
+
+En `execution/verificar_pdf.py:32`:
+```python
+SOLAPE_FRACCION = 0.35   # fracción del rectángulo menor que debe quedar solapada
+```
+y es el punto de corte en `_detectar_solapes` (`:90`): `if frac > SOLAPE_FRACCION: solapes.append({...})`. El `frac` es la intersección normalizada por el rectángulo de menor área (`:38-52`), en `[0,1]`.
+
+**Propósito:** ignorar solapes accidentales/imperceptibles (margen tipográfico de aire entre cajas contiguas nunca llega a 0.35) y reportar solo texto realmente "montado" (etiquetas sobrepuestas, bloques rotos que hacen ilegible la zona). Es el equilibrio del guardrail: sensible al problema real, inmune al ruido de la maquetación normal.
+
+- **A** → no: no evalúa probabilidad de error semántico del LLM (eso es el clasificador de cambios, `clasificar_cambios`).
+- **C** → no: nada que ver con créditos OpenRouter.
+- **D** → no: no ajusta fuentes; el tamaño de nodos es control exclusivo de la geometría (invariante, P21).
+
+Referencias: `execution/verificar_pdf.py:32, 38-52, 80-93`.
+
+---
+
+## P33. ¿Qué ocurre si una sección del FAQ se marca como 'ignorada' en la clasificación?
+
+**Respuesta: B. El hash del documento se actualiza como atendido, pero no se realiza ninguna acción sobre el .tex.**
+
+Secciones ignoradas = `_IGNORED_MD_SECTIONS = {"front", "refs"}` (`regenerar_faq_flujo.py:61`) — portada, metadatos, referencias cruzadas: no alimentan los diagramas. En `main()` (`:382-385`):
+```python
+if sec in _IGNORED_MD_SECTIONS:
+    mapa.append({"seccion": sec, "via": "ignorada", "hunks": len(info["hunks"])})
+    continue          # sin LLM, sin re-traducción, .tex intacto
+```
+
+La directiva lo formaliza (`sync_faq_a_flujo.yaml:78-80`): *"Cambio solo de metadatos (tabla de commits, artefactos, referencias cruzadas): se ignoran (no alimentan los diagramas); el hash se marca como atendido sin tocar el .tex."*
+
+"Atendido" es literal: al completar el flujo, el orquestador guarda el nuevo `md_sha256` en el estado y escribe el snapshot (`flujo_sync_faq_flujo.py:183-193`) → el siguiente arranque ve "Sin cambios en el markdown (hash idéntico)" (`:96-97`). El cambio quedó rastreado sin gastar créditos ni recompilar.
+
+Las falsas:
+- **A** → ignorada no es anomalía; no genera warning ni bloquea el cierre de sesión.
+- **C** → nunca regenera bloques vacíos; reescribir bloques con contenido vacío rompería el invariante geométrico (P21) y la escritura jamás ocurre.
+- **D** → no borra nada del `.md`; el flujo solo lee, nunca muta la fuente.
+
+Referencias: `execution/regenerar_faq_flujo.py:61, 382-391`, `directives/sync_faq_a_flujo.yaml:78-80`, `flujo_sync_faq_flujo.py:96-97, 183-193`.
+
+---
+
+## P34. ¿Qué garantiza el 'bucle de auto-curación determinista'?
+
+**Respuesta: C. La misma entrada produce siempre el mismo comportamiento, y las partes probabilísticas están acotadas y validadas.**
+
+Es la tesis de la arquitectura de 3 capas (`.agent/AGENT_FRAMEWORK.md`): empujar la complejidad al código determinista y mantener la toma de decisiones delgada. La evidencia concreta en el workspace:
+
+1. **Decisiones deterministas** — `execution/enrutador.py` es una función pura: mismo descriptor → mismo tier/modelo, sin criterio subjetivo en el chat (P31). El enrutador decide, el prompt no.
+2. **Ejecución determinista** — campos conocidos por regex (P26), cadena de hashes tamper-evident del `session_log` (P28), geometría por `pdftotext -bbox` con umbral fijo (P30), invariante geométrico mismo nº de `\node[` (P21), snapshot+hash para detectar cambios idénticos (P33).
+3. **Parte probabilística acotada** — el LLM solo produce edits quirúrgicos que pasan por envolturas deterministas: `old` único, tokens prohibidos (`_FORBIDDEN_IN_NEW`), invariante de nodos, extracción JSON balanceada, `temperature=0.1`. Si la salida es inválida → retry budget (máx 3) → fallback cost-aware → abortar/escalar (P25).
+4. **Bucle auto-curación (self-annealing)** — ante un fallo: leer stack → aislar causa raíz → corregir script/directiva → probar → actualizar SOP. Retry budget máximo 3; luego escalamiento al usuario (`.agent/AGENT_FRAMEWORK.md` → Operational Principles).
+
+Ninguna de las otras:
+- **A** → el humano entra solo por escalamiento/política (p. ej. `--no-llm` código 3), no al final de cada ciclo.
+- **B** → los modelos viven en OpenRouter; no hay pesos congelados, pero la fiabilidad no depende de ellos: los outputs se validan deterministamente.
+- **D** → generación aleatoria hasta compilar sería exactamente la violación del principio de reproducibilidad (mismo input → output distinto), prohibido por el guardrail de AGENTS.md.
+
+Referencias: `.agent/AGENT_FRAMEWORK.md`, `.agent/enrutamiento.md`, `execution/enrutador.py`, `execution/sesion_log.py:237-271`, `execution/verificar_pdf.py:32`, `execution/regenerar_faq_flujo.py:439-446`.
+
+---
+
+## P35. En el sistema de bitácoras, ¿qué significa que una anomalía sea 'accionable'?
+
+**Respuesta: D. Que afecta directamente el veredicto del comando `check` y el código de salida del script.**
+
+Mecánica exacta en `execution/bitacoras.py:115-155, 172-203`:
+```python
+base["ok"] = (not problemas) or periodo == "legado"      # :154  legado siempre 'ok'
+...
+if not info["ok"]:
+    anomalies += 1                        # :177  total informativo
+    if info["periodo"] != "legado":
+        accionables += 1                  # :179-180  solo hoy/reciente cuentan
+...
+veredicto = "atencion"   # si accionables > 0 o no hay bitácora de hoy  (:185-190)
+return 2 if accionables else 0            # :203  exit code 2 SOLO por accionables
+```
+
+El comentario del código lo explica (`:152-153`): *"Las bitácoras LEGADO responden a otra convención: se listan informativamente pero solo hoy/reciente cuentan como anomalía estructural accionable."* → por eso las ~34 bitácoras legadas con secciones faltantes salen como `anomalias > 0` pero `accionables: 0` (P14) y `check` devuelve 0.
+
+Las falsas:
+- **A** → la anomalía no es solo auditoría pasiva en un `.log`; sí presiona el veredicto.
+- **B** → no tiene relación con errores de sintaxis YAML (eso es otra capa).
+- **C** → el `check` jamás corrige solo (docstring `:26`: "Solo diagnostica: 0 créditos, no borra nada"); la auto-corrección es responsabilidad del agente al leer el diagnóstico (P34), no del script.
+
+Referencias: `execution/bitacoras.py:48-51, 115-155, 158-203`.
+
+---
+
+## P36. ¿Cuál es la limitación explícita del flujo de sincronización respecto a los diagramas?
+
+**Respuesta: A. No puede crear diagramas nuevos desde cero; requiere una plantilla base en `.tex`.**
+
+La guarda en `execution/regenerar_faq_flujo.py:363-367`:
+```python
+if not tex_path.is_file():
+    print(json.dumps({"status": "error", "code": 4,
+        "message": "No hay plantilla .tex (...). Este flujo no crea diagramas desde cero."},
+        ensure_ascii=False))
+    return 4
+```
+y la directiva lo fija (`sync_faq_a_flujo.yaml:94-96`): *"Este flujo sincroniza; NO crea diagramas desde cero (eso es tarea del orquestador con revisión visual del usuario)."* Es consistente con P29 (primer arranque = línea base sobre plantilla existente) y con el rol de cada script: la creación del diagrama base es de `execution/generar_diagrama_flujo.py` (descriptor JSON → LaTeX ISO 5807), el sync solo la mantiene al día.
+
+Las falsas:
+- **B** → el generador soporta toda la familia ISO 5807, incluido el paralelogramo (`entradasalida`, `generar_diagrama_flujo.py:60-65`).
+- **C** → la salida sí es PDF vectorial (compila con pdflatex, P23), no PNG.
+- **D** → no hay límite de 5 nodos; los flujos grandes se dividen en secciones/páginas del descriptor (AGENTS.md, convención de diagramas).
+
+Referencias: `execution/regenerar_faq_flujo.py:32-37, 363-367`, `directives/sync_faq_a_flujo.yaml:94-96`, `execution/generar_diagrama_flujo.py:34-92`.
+
+---
+
+## P37. En la bitácora 'nueva', ¿cuántas secciones estándar se escriben obligatoriamente?
+
+**Respuesta: A. 5.**
+
+El comando `nueva` genera el archivo con la plantilla completa (`PLANTILLA`, `bitacoras.py:52-69`):
+
+1. `## Tema`
+2. `## Contexto`
+3. `## Decisiones (usuario)`
+4. `## Actividades`
+5. `## Pendientes`
+
+Matiz: la validación (`SECCIONES_REQUERIDAS = ["## Tema", "## Decisiones (usuario)", "## Actividades", "## Pendientes"]`, `:48`) solo exige **4** de esas 5; `## Contexto` queda excluida porque es *"opcional, recomendable"* (`:14`). Pero `nueva` siempre escribe las 5 (el template incluye Contexto con placeholder). Las opciones no incluyen 4, así que la intención de la pregunta es contar las secciones que `nueva` imprime = 5.
+
+Las falsas: **B (1)**, **C (7)**, **D (3)** — ninguna coincide con el template ni con las secciones requeridas.
+
+Referencias: `execution/bitacoras.py:12-17, 48, 52-69, 91-113`.
+
+---
+
+## P38. ¿Qué acción realiza el script verificar_pdf.py si detecta líneas que comienzan con '!' en el archivo de log?
+
+**Respuesta: A. Marca el estado como 'error' y devuelve un código de salida 1.**
+
+En `execution/verificar_pdf.py`:
+```python
+errores = [ln.strip() for ln in log_text.splitlines() if ln.startswith("!")]  # :112  (errores de compilación)
+...
+"status": "ok" if not errores else "error"                                    # :128
+...
+return 0 if not errores else 1                                                # :136  exit code
+```
+
+Matices:
+- Las líneas `!` del `.log` de pdflatex son **la única señal bloqueante** del guardrail (docstring `:8,21-22`): "líneas `!` del .log (deben ser 0)" y "1 — Errores de compilación detectados o PDF irrecuperable".
+- Aunque haya errores, el script **igual** ejecuta `_bbox_paginas` y reporta solapes/overfull (`:115-133`); lo que cambia es el veredicto (`status`, `:128`) y el exit code (`:136`).
+- Los `errores` se recortan a `errores[:5]` (`:130`).
+
+Las falsas:
+- **B** → no se ignoran como "formato no crítico"; justo al revés, bloquean.
+- **C** → `alert_user.py` lo invoca el orquestador (`flujo_sync_faq_flujo.py`), no este script (Layer 3 = señal, Layer 2 = notificación).
+- **D** → no hay semilla ni recompilación por "fallo del LLM"; el guardrail es determinista y no sabe de LLMs.
+
+Referencias: `execution/verificar_pdf.py:8, 21-22, 96-136`, `flujo_sync_faq_flujo.py:164-177`.
+
+---
+
+## P39. ¿Qué se entiende por 'Eslabón Semántico' en este sistema?
+
+**Respuesta: A. La conexión entre los datos de bajo nivel (logs) y el PORQUÉ de las decisiones en las bitácoras.**
+
+Definido literalmente en el docstring de `execution/bitacoras.py:5-11`:
+
+> *"La memoria del workspace tiene dos capas: [BAJO nivel: datos] `session_log_*.jsonl` + `run_state*.json` (reproducible, inmutable, blindado)... [ALTO nivel: significado] `Sessions/YYYY-MM-DD_<tema>.md` — por QUÉ se decidió, qué se descartó, intenciones del usuario, matices. **Este fichero NO vive en ningún log de ejecución: es el eslabón semántico de la continuidad.**"*
+
+Los logs responden **qué pasó** (trazabilidad tamper-evident, P28); las bitácoras responden **por qué se decidió** (semántica, intención del usuario). El eslabón es ese puente entre ambas capas — por eso las bitácoras se conservan como canonicas de la continuidad y el flujo de higiene tiene `bitacoras.py` dedicado.
+
+Las falsas:
+- **B** → el mapeo markdown↔bloques LaTeX es el mecanismo de sync (`% ══ Sección N:` con U+2550 en `regenerar_faq_flujo.py:143-159`), no la memoria semántica.
+- **C** → la relación orquestador↔scripts de ejecución es la arquitectura de 3 capas (`.agent/AGENT_FRAMEWORK.md`).
+- **D** → la cadena SHA-256 del JSONL es tamper-evidence de bajo nivel (P28), el QUÉ, no el PORQUÉ.
+
+Referencias: `execution/bitacoras.py:5-11`, `execution/sesion_log.py:6-12`, `Sessions/2026-09-11_faq_diagramas_flujo.md` (Contexto), `AGENTS.md` (Session logs).
+
+---
