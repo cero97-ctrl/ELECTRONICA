@@ -1,0 +1,45 @@
+nombre: Failover del motor del orquestador
+descripcion: Detecta de forma determinista el agotamiento de la cuota free del motor vigente y conmuta
+  al motor de respaldo (auto-restore incluido).
+nivel: capa_1_directiva
+meta: Que la conmutación sea funcion pura del resultado de la sonda (nunca razonada en el chat) y que
+  el auto-restore minimice la ventana de gasto del motor de respaldo.
+entradas_requeridas:
+- nombre: modelo_vigente
+  descripcion: 'Modelo free que actúa como motor. Default: opencode/big-pickle.'
+- nombre: modelo_respaldo
+  descripcion: 'Motor de respaldo NO free (consume saldo OpenRouter). Default: openrouter/qwen/qwen3.8-max-0902.'
+- nombre: confirmaciones_min
+  descripcion: 'Confirmaciones consecutivas antes de conmutar. Default: 2, max 3 (retry budget).'
+pasos:
+- paso: 1
+  nombre: Sondear
+  script: execution/verificar_cuota_motor.py check --modelo <%= modelo_vigente %>
+  salida: 'Clasifica: ok | agotada | error_infra | indeterminado'
+  siguiente: paso 2
+- paso: 2
+  nombre: Evaluar firma
+  deteccion: 'regex determinista sobre stderr/error: 429|quota|rate|limit|usage|reset|retry'
+  decisión: Si firma agotada y confirmaciones >= N -> paso 3; si no -> volver a paso 1
+  siguiente: paso 3|paso 1
+- paso: 3
+  nombre: Conmutar
+  script: execution/aplicar_switch_modelo.py switch --modelo <%= modelo_respaldo %>
+  nota: 'Backup de la config previa + marker de fallback + escritura atómica. Después: alertar + relanzar
+    TUI.'
+  siguiente: paso 4
+- paso: 4
+  nombre: Auto-restore
+  script: execution/verificar_cuota_motor.py check --modelo <%= modelo_vigente %> (repetir cada 900s)
+  condicion: Si 2 sondeos consecutivos ok -> restore + relanzar TUI con el motor free
+  siguiente: fin
+casos_borde:
+- caso: error_infra
+  protocolo: 'No conmutar: re-sondear con backoff.'
+- caso: indeterminado
+  protocolo: 'No conmutar: re-sondear hasta aclarar.'
+- caso: confirmaciones < N
+  protocolo: No conmutar aún.
+salidas_esperadas:
+- Cuota free agotada detectada y motor conmutado a openrouter/qwen/qwen3.8-max-0902 (con aviso al usuario).
+- 'Auto-restore: al recuperar la cuota free, motor restaurado y TUI relanzada.'

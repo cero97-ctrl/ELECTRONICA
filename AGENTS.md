@@ -166,6 +166,7 @@ flujo_ruview_rescue.py      (UDP listener :5005 — datos CSI/acelerómetro; con
 flujo_telegram.py           (Telegram gateway polling — config en directives/telegram_gateway.yaml)
 flujo_consultar_docs.py     <tech> [--topic ...] [--url ...] [--max-chars N]
 flujo_sync_faq_flujo.py     [--watch] [--force] [--no-llm] [--critico] (auto-sincroniza faq_higiene_estado_sesion.md → flujo.{tex,pdf} por hash; SOP en directives/sync_faq_a_flujo.yaml)
+flujo_motor_fallback.py      [check|switch|estado|watch|pasivo] [--modelo <vigente>] [--confirmaciones N] [--auto-restart/--no-relaunch] [--pasivo]   (failover del motor: sonda determinista de la cuota free en execution/verificar_cuota_motor.py, conmutación atómica vía execution/aplicar_switch_modelo.py switch, auto-restore al recuperar; SOP en directives/motor_fallback.yaml)
 ```
 
 ### MCP servers (`mcp_*_server.py`, FastMCP)
@@ -192,7 +193,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 - Datasets de entrenamiento LLM: raw capture en `datasets/*.jsonl` (`execution/data_capture.py`, pasivo, gitignored); curado/particionado en `datasets/curated/` (`execution/curar_datasets.py` o `flujo_curar_dataset.py`); paquetes HF (Parquet+LICENSE+README) en `datasets/paquetes/` (`execution/empaquetar_dataset.py` o `flujo_empaquetar_dataset.py`); publicación HF Hub (`execution/publicar_hf.py` o `flujo_publicar_hf.py`, requiere `HF_TOKEN` en `.env`)
 - LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
 - LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)
-- **Diagramas de flujo (convención):** todo flujo grande del repo (flujo_*, mcp_* con sus 3 capas: directiva + orquestador + script) entregado al usuario debe incluir un diagrama de flujo ISO 5807 estilo infográfico en `docs/<tema>/<proceso>_flujo.{tex,pdf}`, generado de forma determinista con `execution/generar_diagrama_flujo.py` a partir de un descriptor JSON (`--descriptor .tmp/descriptor_<proceso>.json --output docs/<tema>/<proceso>_flujo`). El descriptor modela nodos (terminador/proceso/decisión/almacenamiento/entrada-salida/documento/nota) y conexiones con col/fila (tronco en col 0, ramas a la derecha). SOP: `directives/diagrama_flujo.yaml`. Proceso enorme → dividir en secciones del descriptor (una por página).
+- **Diagramas de flujo (convención):** todo flujo grande del repo (flujo_*, mcp_* con sus 3 capas: directiva + orquestador + script) entregado al usuario debe incluir un diagrama de flujo ISO 5807 estilo infográfico en `docs/<tema>/<proceso>_flujo.{tex,pdf}`, generado de forma determinista con `execution/generar_diagrama_flujo.py` a partir de un descriptor JSON (`--descriptor .tmp/descriptor_<proceso>.json --output docs/<tema>/<proceso>_flujo`). El descriptor modela nodos (terminador/proceso/decisión/almacenamiento/entrada-salida/documento/nota) y conexiones con col/fila (tronco en col 0, ramas a la derecha). **Convención de render (patrón `docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex`):** cada símbolo muestra SOLO su etiqueta (T/P/D/E/A/N + número, = id del nodo) y las conexiones llevan rótulos cortos Siempre Sí/No; el significado completo vive en la tabla *Leyenda de etiquetas* (Etiqueta | Significado) bajo cada diagrama. SOP: `directives/diagrama_flujo.yaml`. Proceso enorme → dividir en secciones del descriptor (una por página).
 
 ## Git quirks
 

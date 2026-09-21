@@ -1,0 +1,168 @@
+{
+  "titulo": "Failover del motor del orquestador",
+  "subtitulo": "Deteccion determinista del agotamiento de la cuota free y conmutacion al motor de respaldo con auto-restore",
+  "cabecera_izq": "ELECTRONICA",
+  "cabecera_der": "flujo_motor_fallback",
+  "icono_banda": "exchange-alt",
+  "notas": [
+    "La conmutacion es funcion pura de la sonda (nunca razonada en el chat)",
+    "El motor de respaldo (openrouter/qwen/qwen3.8-max-0902) consume saldo OpenRouter; auto-restore la minimiza",
+    "Sonda activa: ~8-9k tokens free; modo pasivo escanea opencode.log sin gastar tokens",
+    "Auto-restore: 2 sondeos ok consecutivos => restore + relaunch TUI con motor free"
+  ],
+  "secciones": [
+    {
+      "nombre": "Deteccion de cuota agotada y conmutacion",
+      "icono": "exchange-alt",
+      "nodos": [
+        {
+          "id": "T1",
+          "tipo": "terminador",
+          "col": 0,
+          "fila": 0,
+          "significado": "Inicio: motor free vigente (opencode/big-pickle) en la TUI."
+        },
+        {
+          "id": "P1",
+          "tipo": "proceso",
+          "col": 0,
+          "fila": 1,
+          "significado": "Sonda: execution/verificar_cuota_motor.py check --modelo vigente. Clasifica: ok|agotada|error_infra|indeterminado."
+        },
+        {
+          "id": "D1",
+          "tipo": "decision",
+          "col": 0,
+          "fila": 2,
+          "significado": "Firma de cuota agotada (429|quota|rate|limit|usage|reset|retry|retry_after)?"
+        },
+        {
+          "id": "T3",
+          "tipo": "terminador",
+          "col": 0,
+          "fila": 3,
+          "significado": "No: cuota free OK, seguir con el motor vigente."
+        },
+        {
+          "id": "D2",
+          "tipo": "decision",
+          "col": 1,
+          "fila": 2,
+          "significado": "Confirmaciones consecutivas >= N (retry budget max 3)?"
+        },
+        {
+          "id": "T4",
+          "tipo": "terminador",
+          "col": 2,
+          "fila": 3,
+          "significado": "No: confirmacion insuficiente, re-sondear."
+        },
+        {
+          "id": "A1",
+          "tipo": "almacenamiento",
+          "col": 1,
+          "fila": 4,
+          "significado": "Backup config previa + marker .tmp/motor_fallback.json (timestamp, motivo, previo)."
+        },
+        {
+          "id": "P2",
+          "tipo": "proceso",
+          "col": 1,
+          "fila": 5,
+          "significado": "Switch: execution/aplicar_switch_modelo.py switch --modelo openrouter/qwen/qwen3.8-max-0902."
+        },
+        {
+          "id": "P3",
+          "tipo": "proceso",
+          "col": 1,
+          "fila": 6,
+          "significado": "Alertar + relanzar TUI en tmux con el motor de respaldo."
+        },
+        {
+          "id": "W1",
+          "tipo": "proceso",
+          "col": 1,
+          "fila": 7,
+          "significado": "Watcher daemon (--watch): re-sondear cuota free cada 900s."
+        },
+        {
+          "id": "D3",
+          "tipo": "decision",
+          "col": 2,
+          "fila": 7,
+          "significado": "Cuota free restablecida (2 sondeos ok consecutivos)?"
+        },
+        {
+          "id": "T5",
+          "tipo": "terminador",
+          "col": 1,
+          "fila": 8,
+          "significado": "Seguir con el motor de respaldo; auto-restore pendiente."
+        },
+        {
+          "id": "P4",
+          "tipo": "proceso",
+          "col": 2,
+          "fila": 8,
+          "significado": "Auto-restore: execution/aplicar_switch_modelo.py restore + relaunch TUI."
+        }
+      ],
+      "conexiones": [
+        {
+          "from": "T1",
+          "to": "P1"
+        },
+        {
+          "from": "P1",
+          "to": "D1"
+        },
+        {
+          "from": "D1",
+          "to": "T3",
+          "etiqueta": "No"
+        },
+        {
+          "from": "D1",
+          "to": "D2",
+          "etiqueta": "Si"
+        },
+        {
+          "from": "D2",
+          "to": "T4",
+          "etiqueta": "No"
+        },
+        {
+          "from": "D2",
+          "to": "A1",
+          "etiqueta": "Si"
+        },
+        {
+          "from": "A1",
+          "to": "P2"
+        },
+        {
+          "from": "P2",
+          "to": "P3"
+        },
+        {
+          "from": "P3",
+          "to": "W1"
+        },
+        {
+          "from": "W1",
+          "to": "D3"
+        },
+        {
+          "from": "D3",
+          "to": "T5",
+          "etiqueta": "No"
+        },
+        {
+          "from": "D3",
+          "to": "P4",
+          "etiqueta": "Si"
+        }
+      ]
+    }
+  ]
+}
