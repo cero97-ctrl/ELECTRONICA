@@ -1,0 +1,70 @@
+goal: |
+  Mantener el disco utilizable sin perder trabajo: medir el espacio real, purgar solo
+  rutas de una whitelist explicita y verificar el resultado. La prioridad es que NUNCA
+  se borre algo que cueste trabajo (proyectos, datos, herramientas, caches de
+  navegadores, bases de datos) y que el flujo pueda repetirse cada hora sin
+  supervision. El diseno es Reference/Whitelist: no se busca que borrar, se decide que
+  se puede borrar, y todo lo demas es intocable por defecto.
+
+layer: orchestration
+references:
+  orchestrator: flujo_disco.py
+  scripts: execution/catalogo_disco.py, execution/disco_medir.py, execution/disco_purgar.py, execution/test_barrera_disco.py, execution/generar_diagrama_flujo.py
+  input: / (filesystem a medir via statvfs)
+  output: .tmp/disco_informe.json, .tmp/disco_medicion.json, .tmp/run_state.json, docs/MANTENIMIENTO_DISCO/disco_flujo.pdf
+
+required_inputs:
+  - name: --tier
+    description: "Nivel maximo a purgar: seguro | recargable | pesado | todos (default seguro). seguro = caches que se regeneran solos sin coste de red (pip, uv, npm, thumbnails de Arduino, shaders de Mesa, temporales LaTeX). recargable = se recuperan pero obligan a re-descargar (packages de Arduino, caches de navegadores, playwright, huggingface). pesado = margen amplio sin re-descargar (modelos de embeddings, descargas de apt, clones de repos). El nivel lo elige el operador; el flujo NUNCA sube de tier por su cuenta."
+  - name: --umbral
+    description: "Uso porcentual a partir del cual conviene purgar (default 90)."
+  - name: --yes
+    description: "Autoriza el borrado. Sin este flag el flujo SIEMPRE simula."
+  - name: --watch / --interval
+    description: "Repite el flujo cada N segundos (minimo 300) para uso como daemon."
+
+steps:
+  - name: medir
+    description: "disco_medir.py lee statvfs de / y dimensiona cada target del catalogo con du -s -B1 (bytes de bloque asignados, que es lo que se recupera; el tamano logico miente). Calcula dos cifras distintas: medido (lo que ocupa disco) y reclaimable (lo que se puede borrar AHORA, ya descontadas la barrera y la guarda de antiguedad). Confundirlas hace que el flujo despierte para no hacer nada."
+    script: execution/disco_medir.py
+  - name: decidir
+    description: "Funcion PURA en flujo_disco.py: purgar si uso% > --umbral Y hay bytes purgables en el tier. Sin opinion ni heuristica conversacional: los mismos numeros producen siempre la misma decision."
+    script: flujo_disco.py -> decidir()
+  - name: purgar
+    description: "disco_purgar.py recorre el tier elegido. Por cada entrada revalida las 4 barreras (raiz permitida, no protegido, sin symlink, dentro del catalogo) y solo entonces borra. Reporta por target: estado, bytes liberados, entradas borradas, omitidas con motivo y fallos."
+    script: execution/disco_purgar.py
+  - name: verificar
+    description: "Vuelve a medir y contrasta el espacio antes/despues; escribe el informe de la pasada."
+    script: execution/disco_medir.py (segunda vez)
+  - name: alertar
+    description: "Alerta audible solo si la pasada libero espacio de verdad."
+    script: execution/alert_user.py success
+
+expected_outputs:
+  - .tmp/disco_informe.json (antes, despues, decision, omitidos, requiere_sudo)
+  - .tmp/disco_medicion.json (26 targets con bytes medidos y bytes purgables)
+  - docs/MANTENIMIENTO_DISCO/disco_flujo.pdf (diagrama ISO 5807 del flujo)
+
+edge_cases:
+  - sin_espacio_urgente: "Si uso% <= umbral el flujo NO purga, solo informa. Es el caso normal en ejecucion periodica, no un error."
+  - todo_conservado_por_antiguedad: "Si los targets tienen contenido reciente (< min_edad_dias) se conservan enteros y se reintentan en la siguiente pasada. Es la razon mas frecuente de no liberar nada: se acaba de compilar o navegar."
+  - requiere_sudo: "Rutas de sistema (/var/cache/apt, /var/lib/docker) se REPORTAN y nunca se borran; este flujo no usa sudo. Si hacen falta es una decision aparte del operador."
+  - sin_permiso: "Entradas sin permiso se omiten con motivo sin_permiso, el target queda parcial y el informe las lista para reintentar. exit 2."
+  - symlink_trampa: "Un symlink (por ejemplo hacia ~/.ssh) colado dentro de una ruta del catalogo se rechaza como es_symlink y no se sigue. Cubierto por test_barrera_disco.py."
+  - inodos_vs_bytes: "Un disco puede tener gigabytes libres y llenarse por inodos (15.6M en total, 30% usados aqui). disco_medir reporta ambos para no dejarse enganar."
+  - find_con_permisos: "find sale con codigo 1 si encuentra un directorio ilegible pero ya imprime lo que si pudo leer, asi que se parsea su stdout igual. Descartarlo por el codigo de retorno vaciaba el informe entero de forma silenciosa."
+  - coste_del_escaneo: "Medir 1.6M inodos de $HOME cuesta 2-4 min. Por eso el escaneo profundo es opt-in (--profundo) y el camino rapido (~5 s) es el de las pasadas periodicas."
+  - glob_sin_comodin: "Un target glob puede declararse como base + patron sin asterisco en la ruta. Por eso el contenedor lo decide el catalogo (contenedor_de) y no la heuristica de buscar un asterisco en la ruta."
+
+invariants:
+  - "La barrera se revalida por ENTRADA, no solo por target: un error en el catalogo o un symlink plantado a mano no pueden convertir la purga en perdida de trabajo."
+  - "Sin --yes no se borra nada. No hay flag que lo cambie."
+  - "Nunca se sube de tier automaticamente, ni aunque el disco este critico."
+  - "Nunca se invoca sudo."
+  - "Cero gasto de LLM: la decision es codigo determinista y no pasa por el enrutador."
+
+maintenance:
+  test: "python3 execution/test_barrera_disco.py (80+ aserciones; debe dar 0 fallos)"
+  chart: docs/MANTENIMIENTO_DISCO/disco_flujo.pdf
+  periodic: "crontab -e -> 0 * * * * cd /ruta/al/repo && python3 flujo_disco.py --watch --interval 3600 --no-alert"
+  adding_targets: "Editar SOLO catalogo_disco.CATALOGO. Cada entrada necesita id, ruta, tier, modo y descripcion; si es glob, un patron. Ejecutar despues python3 execution/test_barrera_disco.py para comprobar que la whitelist sigue cerrada antes de purgar nada."

@@ -199,11 +199,14 @@ def _generar_conexiones_latex(conexiones: list[dict], mapa_nodos: dict) -> str:
             path = f"({a}.{ancla_a}) -- ({b}.{ancla_b})"
         if etiqueta:
             lbl = _escape_tex(etiqueta)
-            # Posición de etiqueta: sobre la flecha para horizontal, a la izq para vertical
+            # Posición de etiqueta: sobre la flecha para horizontal, a la izq para vertical.
+            # pos=0.5 (media arista) y no al final: cuando varias aristas convergen en
+            # un mismo nodo, la etiqueta al final se apila en el mismo ancla y las
+            # etiquetas se solapan (p. ej. la "No" de D2 y la "Si" de D3 sobre P4).
             if abs(col_b - col_a) > 0:
-                pos_lbl = ", above"
+                pos_lbl = ", above, pos=0.5"
             else:
-                pos_lbl = ", left"
+                pos_lbl = ", left, pos=0.5"
             lineas.append(
                 f"  \\draw[->] {path} node[etiqueta{pos_lbl}]{{{lbl}}};"
             )

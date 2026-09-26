@@ -139,7 +139,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 ## Commands
 
-**Tests:** `python test_generator.py` (EDA JSON, zero external deps)
+**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos)
 
 **RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`openai/gpt-oss-20b`, `OPENROUTER_API_KEY`)
 
@@ -167,6 +167,7 @@ flujo_telegram.py           (Telegram gateway polling — config en directives/t
 flujo_consultar_docs.py     <tech> [--topic ...] [--url ...] [--max-chars N]
 flujo_sync_faq_flujo.py     [--watch] [--force] [--no-llm] [--critico] (auto-sincroniza faq_higiene_estado_sesion.md → flujo.{tex,pdf} por hash; SOP en directives/sync_faq_a_flujo.yaml)
 flujo_motor_fallback.py      [check|switch|estado|watch|pasivo] [--modelo <vigente>] [--confirmaciones N] [--auto-restart/--no-relaunch] [--pasivo]   (failover del motor: sonda determinista de la cuota free en execution/verificar_cuota_motor.py, conmutación atómica vía execution/aplicar_switch_modelo.py switch, auto-restore al recuperar; SOP en directives/motor_fallback.yaml)
+flujo_disco.py               [--tier seguro|recargable|pesado|todos] [--umbral 90] [--only ids] [--check] [--dry-run] [--yes] [--watch --interval N] [--profundo] [--no-alert]   (mantenimiento de disco: medir → decidir por regla pura → purgar solo la whitelist de execution/catalogo_disco.py → verificar; sin `--yes` NUNCA borra, sin sudo, sin autoescalar de tier; SOP en directives/mantenimiento_disco.yaml)
 ```
 
 ### MCP servers (`mcp_*_server.py`, FastMCP)
@@ -193,6 +194,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 - Datasets de entrenamiento LLM: raw capture en `datasets/*.jsonl` (`execution/data_capture.py`, pasivo, gitignored); curado/particionado en `datasets/curated/` (`execution/curar_datasets.py` o `flujo_curar_dataset.py`); paquetes HF (Parquet+LICENSE+README) en `datasets/paquetes/` (`execution/empaquetar_dataset.py` o `flujo_empaquetar_dataset.py`); publicación HF Hub (`execution/publicar_hf.py` o `flujo_publicar_hf.py`, requiere `HF_TOKEN` en `.env`)
 - LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
 - LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)
+- **Mantenimiento de disco (barrera anti-borrado):** lo único que el flujo puede borrar está en la whitelist `CATALOGO` de `execution/catalogo_disco.py`; `validar_destino()` es la función que decide, con 4 barreras (raíz permitida, no protegido, sin symlink, dentro del catálogo) que se revalidan **por entrada**, no solo por target. Antes de añadir o editar un target, correr `python3 execution/test_barrera_disco.py` (debe dar 0 fallos). Estructural: `.git`, `Sessions`, `docs`, `cursos`, `Proyectos`, `directives`, `execution`, `chroma_db`, `datasets`, `.env*`, `db_state.json`, `~/.platformio`, `~/.npm-global` (contiene `platformio-mcp`), `~/.config/opencode` y `~/.local/share/opencode/opencode.db*` son intocables; `~/.local/share/Trash` sí es purgable solo tras la guarda de antigüedad. Nunca `sudo`, nunca autoescalar de tier.
 - **Diagramas de flujo (convención):** todo flujo grande del repo (flujo_*, mcp_* con sus 3 capas: directiva + orquestador + script) entregado al usuario debe incluir un diagrama de flujo ISO 5807 estilo infográfico en `docs/<tema>/<proceso>_flujo.{tex,pdf}`, generado de forma determinista con `execution/generar_diagrama_flujo.py` a partir de un descriptor JSON (`--descriptor .tmp/descriptor_<proceso>.json --output docs/<tema>/<proceso>_flujo`). El descriptor modela nodos (terminador/proceso/decisión/almacenamiento/entrada-salida/documento/nota) y conexiones con col/fila (tronco en col 0, ramas a la derecha). **Convención de render (patrón `docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex`):** cada símbolo muestra SOLO su etiqueta (T/P/D/E/A/N + número, = id del nodo) y las conexiones llevan rótulos cortos Siempre Sí/No; el significado completo vive en la tabla *Leyenda de etiquetas* (Etiqueta | Significado) bajo cada diagrama. SOP: `directives/diagrama_flujo.yaml`. Proceso enorme → dividir en secciones del descriptor (una por página).
 
 ## Git quirks
