@@ -62,9 +62,45 @@ El usuario autorizó explícitamente limpiar `_cacache` y los árboles `_npx` an
 
 **Prueba de regresión (lo importante):** handshake MCP completo **después** de borrar `_cacache`/`_npx`, con el mismo `env -i` y `cwd` de la config → `initialize OK` (`platformio-mcp-server` 3.1.0, proto 2024-11-05) y `get_project_config` → `env:esp32dev`. El servidor arranca **sin red y sin caché**, lo que confirma que el desacoplamiento del fix funciona. `npm` (10.9.8), `node` (v22.23.1) y `pio` (Core 6.2.0) siguen operativos.
 
+## Tercera fase — purga de cachés "Grupo A" (autorizada por el usuario)
+
+El usuario eligió el **Grupo A** de los tres grupos de cachés propuestos (cero
+consecuencia: material re-descargable, no trabajo del usuario).
+
+| Carpeta | Peso | Qué es | Comando usado |
+| :--- | :--- | :--- | :--- |
+| `~/.cache/pip` | 5,8 G | wheels/paquetes Python ya bajados | `python3 -m pip cache purge` → 3825 files, 6181.6 MB |
+| `~/.cache/uv` | 628 M | caché del gestor `uv` | `uv cache clean` → 10702 files, 597.8 MiB |
+| `~/.cache/thumbnails` | 135 M | miniaturas del explorador de archivos | `rm -rf` (se regeneran solas) |
+| `~/.cache/node-gyp` | 67 M | cabeceras C++ para compilar módulos nativos | `rm -rf` (se re-bajan al compilar) |
+
+Se usaron las herramientas de limpieza propias de cada gestor (`pip cache purge`,
+`uv cache clean`) en vez de `rm -rf` indiscriminado, para que cada una valide su
+propio formato de caché.
+
+**Resultado:** disco de **96% → 94%**, libres de **9,1 GB → 16 GB**. `~/.cache` de 12 GB → **5,2 GB**.
+
+**Corrección a la fase 2:** había clasificado mal `~/.cache/chroma` (167 M) y
+`~/.cache/huggingface` (546 M) como "datos de trabajo del RAG". Verificado que **no**:
+- `~/.cache/chroma` = `onnx_models/all-MiniLM-L6-v2` → copia local del modelo de
+  embeddings que ChromaDB baja, re-descargable.
+- `~/.cache/huggingface` = `sentence-transformers/all-MiniLM-L6-v2` y
+  `paraphrase-multilingual-MiniLM-L12-v2` → los modelos que usa `rag_system.py`,
+  re-descargables.
+- El trabajo real e irreemplazable del RAG está en **`chroma_db/` (81 M, en el repo)**,
+  NO en `~/.cache`: es el `chroma.sqlite3` con los embeddings de todos los PDFs/`.tex`.
+  Nunca se tocó. Para rehacerlo habría que re-procesar todos los documentos.
+
+**Sanity post-purga (todo verificado en vivo):** `platformio 6.2.0` (import), `pio 6.2.0`,
+`npm 10.9.8`, `node v22.23.1`, `uv 0.11.11`, `pip 26.0.1`, symlink global
+`platformio-mcp` intacto. Handshake MCP completo → `initialize OK`
+(`platformio-mcp-server` 3.1.0) y `get_project_config` resuelve `env:esp32dev`.
+
+**Balance total de la sesión (espacio en disco):** 5,3 GB → 16 GB libres (98% → 94%), +10,7 GB recuperados.
+
 ## Pendientes
 - **Reiniciar opencode** para que cargue la config nueva (los MCP se leen en el boot, no en caliente). No verificado por mí porque no puedo reiniciar el proceso desde dentro.
 - Tras el reinicio, validar: (a) sin `WARN "server unavailable" key=platformio` en `opencode.log`; (b) banner nuevo en `~/.platformio-mcp/server.log`; (c) aparecen las tools `platformio_*`; (d) una tool de proyecto devuelve `esp32dev` usando `projectDir: "."`.
-- **Disco (96%, 9.1 GB libres) — siguiente objetivo grande, NO autorizado todavía:** `~/.cache` pesa **12 GB** y es el mayor consumidor: `pip` 5.8 G, `puppeteer` 1.3 G, `opera` 1.3 G, `google-chrome` 1.3 G, `uv` 628 M, `huggingface` 546 M, `ms-playwright-go` 253 M, `chroma` 167 M, `thumbnails` 135 M, `mozilla` 115 M, `cloud-code` 100 M, `node-gyp` 67 M. Candidatos seguros: `pip`, `uv`, `node-gyp`, `thumbnails` (todo regenerable). Los de navegadores solo si se acepta re-descargar. Ojo: `chroma` y `huggingface` los usa `rag_system.py` (borrar fuerza re-embeddings/re-descarga de modelos).
+- **Opcional, no autorizado — Grupo B y C de cachés (~5,1 GB):** navegadores/bots (`puppeteer` 1,3 G, `opera` 1,3 G, `google-chrome` 1,3 G, `ms-playwright-go` 253 M, `mozilla` 115 M, `cloud-code` 100 M) y modelos de IA re-descargables (`huggingface` 546 M, `chroma` 167 M). Con el disco en 94% y 16 GB libres **no hay urgencia**; se dejan como están. Restos menores: `arduino` 66 M, `mesa_shader_cache*` 64 M, `mintinstall` 37 M.
 - Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
 - Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
