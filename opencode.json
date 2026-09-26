@@ -1,4 +1,17 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": [".agent/*.md"]
+  "instructions": [".agent/*.md"],
+  "mcp": {
+    "platformio": {
+      "type": "local",
+      "command": ["/home/cero/.npm-global/bin/platformio-mcp"],
+      "cwd": "Proyectos/ESP32_Kids_Lab",
+      "enabled": true,
+      "timeout": 60000,
+      "environment": {
+        "PATH": "/home/cero/anaconda3/envs/elect_env/bin:/home/cero/.nvm/versions/node/v22.23.1/bin:/home/cero/.npm-global/bin:/usr/bin:/bin",
+        "PLATFORMIO_CORE_DIR": "/home/cero/.platformio"
+      }
+    }
+  }
 }
