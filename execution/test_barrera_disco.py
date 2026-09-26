@@ -48,7 +48,12 @@ def test_positivos() -> None:
         base = t.ruta_resuelta()
         if not base.exists():
             continue
-        if t.modo == "directorio":
+        # Modos de destino: el propio directorio del target es lo que se purga, asi que
+        # se valida el. Los nativos también: la herramienta oficial (conda clean) purga
+        # el directorio del target, no sus hijos, y es justo esa ruta la que valida
+        # disco_purgar antes de ejecutarse. Validar el primer hijo en nativo daria
+        # "fuera_de_catalogo" sin motivo real, porque los hijos no se borran uno a uno.
+        if t.modo in ("directorio", "nativo"):
             permitido, motivo = C.validar_destino(base)
             comprobar(permitido, f"[positivos] {t.id}: el target debe ser válido, dio {motivo}")
             continue

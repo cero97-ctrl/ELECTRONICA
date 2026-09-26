@@ -32,6 +32,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 
 ## Know before you act
 
+- **Entrenamiento de IA → SIEMPRE en Google Colab, con TensorFlow.** Esta máquina (Celeron N4020, 2 núcleos @1,1 GHz, 3,63 GB RAM, sin GPU) **no entrena modelos**: la regla es de política, no una medición ("si cabe, lo hago local"). Locales solo: inferencia, prototipos, validación. Antes de lanzar cualquier entrenamiento, ejecutar el canario `docs/COLAB/entorno_colab.ipynb` (Drive montado + TF + GPU computando de verdad). Contexto y evidencia: `Sessions/2026-09-26_capacidad_hardware_pc_ml.md`.
 - **Session logs (continuity):** the `Sessions/` folder (repo root) records one `.md` per session, named by topic (`Sessions/<fecha>_<tema>.md`).
   - **At the start of each new session**, before investigating anything, check `Sessions/` for the most recent log matching the topic the user brings up (glob `Sessions/*<tema>*.md`, fallback to the newest file). Read it to recover what was decided/pending — avoid re-investigating from scratch and burning tokens.
   - **Then create** this session's own log in `Sessions/<fecha>_<tema>.md` via `python3 execution/bitacoras.py nueva --tema "<tema>"` (canonical template: Tema/Contexto/Decisiones (usuario)/Actividades/Pendientes; never overwrites), recording date, topic, activities, decisions and pending items, and commit it with the rest of the session's work.

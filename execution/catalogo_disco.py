@@ -229,6 +229,21 @@ CATALOGO: tuple[Target, ...] = (
     ),
     # ══ TIER RECARGABLE ════════════════════════════════════════════════════════
     Target(
+        id="conda-pkgs",
+        ruta="~/anaconda3/pkgs",
+        tier="recargable",
+        modo="nativo",
+        cmd="conda clean --all -y",
+        descripcion="Cache de paquetes de conda: tarballs, indice y paquetes sin uso. "
+                    "MEDIR antes de prometer cifras: la carpeta ronda los 11 GB, pero solo "
+                    "~2.4 GB son recuperables; el resto son paquetes EN USO por los envs, y "
+                    "conda clean no los toca. Ojo: 'conda clean --all' no comprueba paquetes "
+                    "instalados con enlaces simbolicos al cache, por lo que puede romper esos "
+                    "envs; verificado antes que ningun env de esta maquina los usa. -y es "
+                    "necesario porque el flujo lo ejecuta sin terminal interactiva.",
+        min_edad_dias=1,
+    ),
+    Target(
         id="arduino-packages",
         ruta="~/.arduino15/packages",
         tier="recargable",

@@ -333,7 +333,7 @@
 
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
 \fancyhead[L]{\small\color{azulNoche}\textbf{Reporte de Diagnóstico} --- Sistema}
-\fancyhead[R]{\small 14 de agosto de 2026 a las 19:11}
+\fancyhead[R]{\small 26 de septiembre de 2026 a las 08:38}
 \renewcommand{\headrulewidth}{0pt}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -355,13 +355,13 @@ A continuación se detallan las características principales del sistema operati
 \hline
 \textbf{Parámetro} & \textbf{Valor} \\ \hline
 Sistema Operativo & Linux \\
-Versión/Release & 6.8.0-137-generic \\
+Versión/Release & 6.8.0-142-generic \\
 Arquitectura & x86\_64 \\
 Nombre del Host (Hostname) & ZETA \\
-Versión de Python & 3.13.5 \\
-Entorno Conda Activo & base \\
+Versión de Python & 3.10.20 \\
+Entorno Conda Activo & elect\_env \\
 Codificación por Defecto & utf-8 \\
-Tiempo de Actividad (Uptime) & 1.3 horas \\ \hline
+Tiempo de Actividad (Uptime) & 0.3 horas \\ \hline
 \end{tabular}
 \caption{Características del software y sistema base.}
 \end{table}
@@ -378,17 +378,43 @@ Detalles del procesador, memoria RAM disponible y almacenamiento en disco.
 \subsection{Memoria RAM}
 \begin{itemize}
     \item \textbf{Memoria Total:} 3.63 GB
-    \item \textbf{Memoria Disponible:} 0.38 GB
-    \item \textbf{Porcentaje en Uso:} 89.4\%
+    \item \textbf{Memoria Disponible:} 1.57 GB
+    \item \textbf{Porcentaje en Uso:} 56.9\%
 \end{itemize}
 
 \subsection{Almacenamiento (Disco Raíz)}
 \begin{itemize}
     \item \textbf{Capacidad Total:} 233.18 GB
-    \item \textbf{Espacio Usado:} 215.77 GB
-    \item \textbf{Espacio Libre:} 5.5 GB
-    \item \textbf{Porcentaje en Uso:} 92.5\%
+    \item \textbf{Espacio Usado:} 204.02 GB
+    \item \textbf{Espacio Libre:} 17.25 GB
+    \item \textbf{Porcentaje en Uso:} 87.5\%
 \end{itemize}
+
+\subsection{Placa Base y BIOS}
+Datos leídos del firmware vía DMI (sin necesidad de privilegios elevados):
+\begin{itemize}
+  \item \textbf{Fabricante de la Placa}: LENOVO
+  \item \textbf{Modelo de la Placa}: LNVNB161216
+  \item \textbf{Versión de la Placa}: SDK0J40700 WIN
+  \item \textbf{Fabricante del BIOS}: LENOVO
+  \item \textbf{Versión del BIOS}: DVCN20WW
+  \item \textbf{Fecha del BIOS}: 05/25/2021
+\end{itemize}
+
+
+\subsection{Discos Detectados (SSD / HDD)}
+Inventario de las unidades de almacenamiento, obtenido con \texttt{lsblk}. Una unidad marcada como SSD/NVMe no es rotacional (columna ROTA=0) y una HDD es mecánica (ROTA=1); la distinción decide si una copia de seguridad o una compilación va a ser rápida o lenta:
+\begin{table}[h!]
+\centering
+\begin{tabular}{llll}
+\hline
+\textbf{Dispositivo} & \textbf{Modelo} & \textbf{Capacidad} & \textbf{Tipo / Transporte} \\ \hline
+nvme0n1 & SAMSUNG MZALQ256HAJD-000L2 & 238.5 GB & SSD/NVMe / nvme \\
+\hline
+\end{tabular}
+\caption{Unidades de almacenamiento detectadas.}
+\end{table}
+
 
 \subsection{Tarjetas Gráficas (GPUs)}
 No se detectaron GPUs aceleradas de NVIDIA activas o `nvidia-smi` no está instalado.

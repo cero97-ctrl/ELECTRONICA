@@ -109,6 +109,53 @@ def generar_latex_reporte(telemetria: dict, fecha_str: str) -> str:
     else:
         gpu_section = "\\subsection{Tarjetas Gráficas (GPUs)}\nNo se detectaron GPUs aceleradas de NVIDIA activas o `nvidia-smi` no está instalado.\n"
 
+    # Procesar Placa Base y BIOS (DMI de sysfs, sin sudo)
+    board = hw.get("placa", {})
+    if board.get("disponible"):
+        board_section = "\\subsection{Placa Base y BIOS}\n"
+        board_section += "Datos leídos del firmware vía DMI (sin necesidad de privilegios elevados):\n"
+        board_section += "\\begin{itemize}\n"
+        for clave, etiqueta in (
+            ("placa_fabricante", "Fabricante de la Placa"),
+            ("placa_modelo", "Modelo de la Placa"),
+            ("placa_version", "Versión de la Placa"),
+            ("bios_fabricante", "Fabricante del BIOS"),
+            ("bios_version", "Versión del BIOS"),
+            ("bios_fecha", "Fecha del BIOS"),
+        ):
+            if board.get(clave):
+                board_section += f"  \\item \\textbf{{{etiqueta}}}: {escape_latex(board[clave])}\n"
+        board_section += "\\end{itemize}\n"
+    else:
+        board_section = "\\subsection{Placa Base y BIOS}\n"
+        board_section += "No se pudo leer la información de la placa: " + escape_latex(board.get("motivo", "DMI no disponible")) + ".\n"
+
+    # Procesar discos reales: modelo y si es SSD o HDD
+    dispositivos = hw.get("dispositivos", {})
+    discos = dispositivos.get("discos", []) if dispositivos.get("disponible") else []
+    if discos:
+        disks_section = "\\subsection{Discos Detectados (SSD / HDD)}\n"
+        disks_section += ("Inventario de las unidades de almacenamiento, obtenido con \\texttt{lsblk}. "
+                          "Una unidad marcada como SSD/NVMe no es rotacional (columna ROTA=0) y una HDD "
+                          "es mecánica (ROTA=1); la distinción decide si una copia de seguridad o una "
+                          "compilación va a ser rápida o lenta:\n")
+        disks_section += "\\begin{table}[h!]\n\\centering\n\\begin{tabular}{llll}\n\\hline\n"
+        disks_section += "\\textbf{Dispositivo} & \\textbf{Modelo} & \\textbf{Capacidad} & \\textbf{Tipo / Transporte} \\\\ \\hline\n"
+        for d in discos:
+            tam = d.get("tamano_gb")
+            cap = f"{tam} GB" if tam else "N/A"
+            disks_section += (
+                f"{escape_latex(d.get('nombre', 'N/A'))} & "
+                f"{escape_latex(d.get('modelo', 'N/A'))} & "
+                f"{cap} & "
+                f"{escape_latex(d.get('tipo', 'N/A'))} / {escape_latex(d.get('transporte', 'N/A'))} \\\\\n"
+            )
+        disks_section += "\\hline\n\\end{tabular}\n"
+        disks_section += "\\caption{Unidades de almacenamiento detectadas.}\n\\end{table}\n"
+    else:
+        disks_section = "\\subsection{Discos Detectados (SSD / HDD)}\n"
+        disks_section += "No se pudo obtener el inventario de discos: " + escape_latex(dispositivos.get("motivo", "lsblk no disponible")) + ".\n"
+
     # Formatear el contenido LaTeX del informe
     latex = PREAMBULO_INFOGRAFIA + r"""
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
@@ -169,6 +216,10 @@ Detalles del procesador, memoria RAM disponible y almacenamiento en disco.
     \item \textbf{Espacio Libre:} """ + str(disk.get("free_gb", "N/A")) + r""" GB
     \item \textbf{Porcentaje en Uso:} """ + str(disk.get("percent_used", "N/A")) + r"""\%
 \end{itemize}
+
+""" + board_section + r"""
+
+""" + disks_section + r"""
 
 """ + gpu_section + r"""
 
