@@ -98,9 +98,36 @@ propio formato de caché.
 
 **Balance total de la sesión (espacio en disco):** 5,3 GB → 16 GB libres (98% → 94%), +10,7 GB recuperados.
 
+## Cierre — validación tras el reinicio de opencode (CONFIRMADO)
+
+El usuario reinició opencode y el MCP cargó. Los 4 puntos de validación pendientes,
+verificados con evidencia (no de palabra):
+
+| # | Verificación | Resultado |
+| :--- | :--- | :--- |
+| a | Sin `WARN "server unavailable" key=platformio` | ✅ el único `server unavailable` en el log es el viejo de `2026-09-26T09:45:42` (run `62f572be`, sesión anterior); ninguno nuevo |
+| b | Banner nuevo en `~/.platformio-mcp/server.log` | ✅ `2026-09-26T10:45:39` (boot post-reinicio) |
+| c | Tools `platformio_*` disponibles y ejecutando | ✅ el propio server.log registra `[Command Execution] Tool invoked: 'get_policy_status'`; la llamada devolvió policy válida |
+| d | Tool de proyecto resuelve el proyecto con `projectDir: "."` | ✅ `env:esp32dev` → platform `espressif32`, board `esp32dev`, framework `arduino`, `lib_ldf_mode deep`, `monitor_speed 115200`, littlefs y las 9 `lib_deps` |
+
+**Cadena causal confirmada:** el fallo era `npx -y` reinstalando en cada boot; con el
+binario absoluto pinneado el arranque es local, sin red y sin caché → dentro de la
+ventana de conect de MCP.
+
+**Nota operativa discovery (`get_policy_status`):** el perfil activo es
+`flash_requires_approval`, con `requireWorkspaceBoundary: true`,
+`requireDeviceLockForUpload: true`, `redactSecretsFromLogs: true` y
+`auditAllAgentActions: true`. Las operaciones `upload_firmware`,
+`upload_filesystem`, `erase_flash`, `reset_server_state`, `run_shell_command` y
+`ssh_deploy` **exigen aprobación explícita**; `erase_disk`, `format_drive` y
+`delete_home_directory` están **denegadas**. También se ve que **no** hay
+`~/.platformio-mcp/policy.yaml` (todo viene del perfil built-in): se puede crear
+ese archivo para endurecer o relajar la política por proyecto (patrón
+`.pio-mcp-policy.json` con perfiles `read_only`, `build_only`, `monitor_only`,
+`flash_requires_approval`, `lab_runner`, `lab_admin`).
+
 ## Pendientes
-- **Reiniciar opencode** para que cargue la config nueva (los MCP se leen en el boot, no en caliente). No verificado por mí porque no puedo reiniciar el proceso desde dentro.
-- Tras el reinicio, validar: (a) sin `WARN "server unavailable" key=platformio` en `opencode.log`; (b) banner nuevo en `~/.platformio-mcp/server.log`; (c) aparecen las tools `platformio_*`; (d) una tool de proyecto devuelve `esp32dev` usando `projectDir: "."`.
-- **Opcional, no autorizado — Grupo B y C de cachés (~5,1 GB):** navegadores/bots (`puppeteer` 1,3 G, `opera` 1,3 G, `google-chrome` 1,3 G, `ms-playwright-go` 253 M, `mozilla` 115 M, `cloud-code` 100 M) y modelos de IA re-descargables (`huggingface` 546 M, `chroma` 167 M). Con el disco en 94% y 16 GB libres **no hay urgencia**; se dejan como están. Restos menores: `arduino` 66 M, `mesa_shader_cache*` 64 M, `mintinstall` 37 M.
-- Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
+- (ninguno crítico) Queda opcional y sin autorizar: purgar el Grupo B/C de cachés (~5,1 GB: navegadores/bots + modelos de IA re-descargables). Con 16 GB libres no hay urgencia.
+- Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
+- Opcional a futuro: crear `~/.platformio-mcp/policy.yaml` o `.pio-mcp-policy.json` en el proyecto si se quiere una política distinta al perfil built-in `flash_requires_approval`.
 - Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
