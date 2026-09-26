@@ -29,11 +29,42 @@ Estabilizar el servidor MCP `platformio` (PlatformIO) que venía fallando al arr
    **Hallazgo operativo:** las tools **exigen `projectDir` explícito**; el `cwd` de la config NO lo suple. Usar `projectDir: "."` (relativo al cwd del proceso) o la ruta absoluta.
 5. `opencode.json`: bloque `mcp.platformio` reescrito — `command` absoluto (fuera `npx`), `cwd: "Proyectos/ESP32_Kids_Lab"`, `timeout: 60000`, `environment.PATH` con `elect_env/bin` primero (para que resuelva `pio`) + `.npm-global/bin`, y `PLATFORMIO_CORE_DIR=/home/cero/.platformio` explícito. Sin `--open-dashboard-on-start` (no abrir navegador). Newline final agregado.
 6. Validación contra el schema oficial (`McpLocalConfig`): todas las claves usadas están soportadas (`command`, `cwd`, `enabled`, `environment`, `timeout`, `type`); `command[0]` existe y es ejecutable; `cwd` y `PLATFORMIO_CORE_DIR` existen. `timeout` sube del default de 5000 ms a 60000 ms (un `build`/`upload` tarda minutos).
-7. `rm -rf ~/.npm/_npx/550b0ddd39c815e4` (62 MB, árbol corrupto, inservible). `_npx` queda en 1.1 GB / 7 entradas. Disco sigue al 98% (5.3 GB libres).
+7. `rm -rf ~/.npm/_npx/550b0ddd39c815e4` (62 MB, árbol corrupto, inservible).
 8. `python3 execution/alert_user.py success`.
+
+## Segunda fase — limpieza de disco (autorizada por el usuario)
+
+El usuario autorizó explícitamente limpiar `_cacache` y los árboles `_npx` antiguos (el pendiente 3 de la fase 1).
+
+**Inventario previo (qué se iba a perder, todo reversible por re-descarga):**
+
+| Árbol `_npx` | Peso | Paquete | Fecha |
+| :--- | :--- | :--- | :--- |
+| `f437e8661646c77a` | 369 M | `node` + `wrangler@^4.112.0` | 2026-07-18 |
+| `32026684e21afda6` | 195 M | `wrangler@^4.86.0` | 2026-07-10 |
+| `0eedb5afd4158ff3` | 166 M | `wrangler@^3.114.17` | 2026-07-11 |
+| `ebaba8b9e55fd0a9` | 144 M | `node` standalone (node-bin-setup) | 2026-07-18 |
+| `489a79bf3aed000d` | 81 M | `markdown-pdf@^11` | 2026-07-24 |
+| `55158e48eb5c59f7` | 66 M | `md-to-pdf@^5.2.5` | 2026-07-24 |
+| `15c61037b1978c83` | 15 M | `chrome-devtools-mcp@^1.10.1` | 2026-07-10 |
+
+**Verificaciones de riesgo hechas ANTES de borrar (todas negativas → borrado seguro):**
+1. `grep -rn "npx"` en `opencode.json`, `~/.config/opencode/opencode.jsonc` y `.opencode/` → **cero referencias**. Ningún MCP queda lanado por `npx`, así que no puede reintroducirse el fallo de timeout de arranque.
+2. `Proyectos/cloudflare-agent` tiene `wrangler` **instalado localmente** (`node_modules/wrangler` + `.bin/wrangler`) → los 730 MB de árboles `_npx` de wrangler eran duplicados, no su instalación.
+3. `ps` sin procesos `npm`/`npx`/`node` en curso → nada usando los árboles.
+4. El install global de `platformio-mcp` vive en `/home/cero/.npm-global/lib/node_modules/` (74 MB), **independiente** de `_cacache` y `_npx`.
+
+**Ejecutado:**
+- `rm -rf /home/cero/.npm/_npx/*` (7 árboles, 1.1 GB).
+- `npm cache clean --force` (2.8 GB) → `~/.npm` queda en 268 KB.
+
+**Resultado:** disco de **98% → 96%**, libres de **5.3 GB → 9.1 GB** (+3.8 GB).
+
+**Prueba de regresión (lo importante):** handshake MCP completo **después** de borrar `_cacache`/`_npx`, con el mismo `env -i` y `cwd` de la config → `initialize OK` (`platformio-mcp-server` 3.1.0, proto 2024-11-05) y `get_project_config` → `env:esp32dev`. El servidor arranca **sin red y sin caché**, lo que confirma que el desacoplamiento del fix funciona. `npm` (10.9.8), `node` (v22.23.1) y `pio` (Core 6.2.0) siguen operativos.
 
 ## Pendientes
 - **Reiniciar opencode** para que cargue la config nueva (los MCP se leen en el boot, no en caliente). No verificado por mí porque no puedo reiniciar el proceso desde dentro.
 - Tras el reinicio, validar: (a) sin `WARN "server unavailable" key=platformio` en `opencode.log`; (b) banner nuevo en `~/.platformio-mcp/server.log`; (c) aparecen las tools `platformio_*`; (d) una tool de proyecto devuelve `esp32dev` usando `projectDir: "."`.
-- Disco al 98%: decidir si limpiar `_cacache` (2.7 GB) y/o los `_npx` antiguos (los 6 restantes son de jul-sep, ~700 MB, de otros paquetes). Requiere autorización del usuario.
+- **Disco (96%, 9.1 GB libres) — siguiente objetivo grande, NO autorizado todavía:** `~/.cache` pesa **12 GB** y es el mayor consumidor: `pip` 5.8 G, `puppeteer` 1.3 G, `opera` 1.3 G, `google-chrome` 1.3 G, `uv` 628 M, `huggingface` 546 M, `ms-playwright-go` 253 M, `chroma` 167 M, `thumbnails` 135 M, `mozilla` 115 M, `cloud-code` 100 M, `node-gyp` 67 M. Candidatos seguros: `pip`, `uv`, `node-gyp`, `thumbnails` (todo regenerable). Los de navegadores solo si se acepta re-descargar. Ojo: `chroma` y `huggingface` los usa `rag_system.py` (borrar fuerza re-embeddings/re-descarga de modelos).
+- Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
 - Sin resolver por decisión del usuario: la alternativa C (`pio` CLI directo con las 3 capas, sin MCP) queda documentada pero descartada por ahora. Si el third-party `platformio-mcp` (dashboard web, socket.io, lockfiles, tools de flash/reset con approval gates; no oficial de PlatformIO) da problemas, es el plan B.
