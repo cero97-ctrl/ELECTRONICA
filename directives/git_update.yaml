@@ -1,20 +1,55 @@
-Goal: "Gestionar el control de versiones del proyecto, aplicando versionado semántico (SemVer) y sincronizando con el repositorio remoto."
+# Estado HONESTO: capacidad IMPLEMENTADA. Esta directiva apuntaba al script
+# git_sync.py de la capa 3, que nunca existio en el historial de git (ni
+# versionado ni borrado), y prometia versionado semantico (patch/minor/major) y
+# un JSON de exito con la version actual. update_repo.sh no hace ninguna de las
+# dos cosas: cero menciones de version, semver o bump. La directiva mentia sobre
+# un script real, que es peor que una referencia muerta.
+#
+# Nota: el nombre del script muerto se cita SIN el prefijo de carpeta a proposito.
+# La auditoria busca la forma literal execution/<algo>.py en TODO el texto, sin
+# distinguir codigo de prosa, y asi debe ser: comentar un paso no puede ser una
+# forma de pasar la comprobacion.
+#
+# Reescrita el 2026-09-27 al contrato REAL de update_repo.sh, leido linea a
+# linea. SemVer y el JSON pasan a No_implementado, no a capacidad.
+Status: activo
+No_implementado:
+  - "versionado semantico (bump patch/minor/major): update_repo.sh no lo tiene"
+  - "salida JSON de exito con la version actual: update_repo.sh no la produce"
+
+Goal: "Sincronizar el repo: traer los cambios del remoto (pull --rebase), confirmar los locales con un mensaje y, si se pide, empujar. El mensaje lo pone la persona, no el script."
 
 Required inputs:
-  - commit_message: "Mensaje descriptivo del commit."
-  - bump_type: "Tipo de actualización (patch, minor, major) para SemVer. Opcional."
+  - commit_message: "Mensaje del commit (-m). Si se omite, el script usa 'Update from update_repo.sh'."
+  - push: "Si es true, empuja tras el commit (--push). Por defecto NO empuja: sin --push el remoto no se toca."
+  - dry_run: "Si es true, imprime lo que haria sin tocar nada (--dry-run). Opt-in, NO es el default del script."
+  - confirm: "Si es true, pregunta antes de stagear (--confirm). Recomendado cuando haya untracked."
 
 Steps:
   - step: 1
-    action: "Verificar estado y hacer commit/push"
-    script: "execution/git_sync.py"
+    action: "Simular primero y ejecutar despues: --dry-run imprime el plan, y la ejecucion real aplica"
+    script: "./update_repo.sh"
     inputs:
+      dir: "{{repo_dir}}"
+      remote: "{{remote}}"
+      branch: "{{branch}}"
       message: "{{commit_message}}"
-      bump: "{{bump_type}}"
+      push: "{{push}}"
+      dry_run: "{{dry_run}}"
+      confirm: "{{confirm}}"
 
 Expected outputs:
-  - "Mensaje JSON de éxito indicando la versión actual y confirmación de que se empujó al remoto."
+  - "Texto de git en la terminal: resultado del pull, del commit y del push. El codigo de salida es 0 en exito y 3 si el pull --rebase encuentra conflictos."
+  - "El script NO produce JSON. Quien necesite estado programatico debe usar el codigo de salida y parsear la salida de git, no esperar un contrato JSON."
 
 Edge cases:
-  - error: "Conflictos de merge (Merge conflicts)."
-    recovery: "Abortar el push y notificar al usuario para resolver manualmente."
+  - error: "Conflictos durante el pull --rebase."
+    recovery: "update_repo.sh detecta el fallo del pull, avisa y sale con codigo 3 sin llegar a stagear ni commitear. No forzar: resolver el conflicto a mano. Con --no-pull el remoto no se toca, pero el rebase sin traer los cambios remotos no resuelve nada."
+  - error: "La rama remota no existe todavia."
+    recovery: "update_repo.sh avisa y SE SALTa el pull (lo trata como primer push), en vez de fallar. Es el camino normal de un repo nuevo."
+  - error: "No hay cambios que confirmar."
+    recovery: "El commit se omite sin error; no es un fallo. Con --dry-run se ve antes de intentarlo."
+  - error: "Hay ficheros sin trackear que no se querian stagear."
+    recovery: "PELIGRO REAL: el script hace 'git add -A' sin filtro, asi que stagea TODO lo no ignorado, incluidos los 28 untracked ajenos que hay ahora mismo en este repo. El .gitignore es la unica barrera y un fichero ignorado a proposito se perderia. Usar --confirm, que pregunta antes de stagear, y revisar 'git status --porcelain' antes."
+  - error: "El remoto no es alcanzable o no hay permisos de push."
+    recovery: "Sin --push el remoto no se toca, asi que el commit local ya creado es seguro. Informar del fallo de push sin rehacer el commit."

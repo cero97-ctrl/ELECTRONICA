@@ -55,8 +55,8 @@ dimensions:
       por_que_nueva: "Un .env trackeado o una clave pegada en un .md se filtra al hacer push y no lo detecta ningun verificador de los 13 inventariados."
       excluye: ".env y ficheros de credencial por nombre, codigo vendorizado (node_modules, .pio, miniflare) y binarios"
     - name: directivas
-      que_mide: "Referencias a scripts de execution/ que no existen, en las directivas de directives/."
-      por_que_nueva: "Una directiva que apunta a un script que se borro no avisa: simplemente nunca se ejecuta. Es el fallo mas silencioso del sistema de 3 capas."
+      que_mide: "Referencias a scripts de execution/ que no existen, separando las trampas silenciosas (directiva 'activa') de los huecos declarados (directiva con 'Status: planificado'), y avisando de los marcadores obsoletos o fuera de vocabulario."
+      por_que_nueva: "Una directiva que apunta a un script que se borro no avisa: simplemente nunca se ejecuta. Es el fallo mas silencioso del sistema de 3 capas. Pero un hueco DECLARADO no es una trampa: la capacidad se implementa cuando haga falta, no antes."
     - name: capas
       que_mide: "Flujos flujo_*.py que no nombran ningun script real de execution/ (capa 3 ausente). Exime daemons, que son orquestadores de por si."
       por_que_nueva: "Un flujo que hace todo en el chat no es determinista, y nada lo delata."
@@ -160,6 +160,8 @@ edge_cases:
   - disco_no_es_el_disco: "La cifra de 'recuperable' es lo que el flujo PUEDE borrar (las 27 entradas de catalogo_disco.py, validadas por la barrera), no lo que el disco PUEDE liberar. Medido 2026-09-27: du ve 124 GB de los 201 GB que declara df, y 43.6 GB de esa diferencia son imagenes de Docker en /var/lib/docker, inalcanzables para el flujo por diseno. Publicar '16.1 MB recuperables' sin decir eso se lee como 'el disco esta bien'. El resumen declara su ambito y la accion lo dice."
   - disco_tenia_sin_accion: "El interprete de disco no devolvia clave 'accion', asi que la dimension que suele ser la mas grave (disco en fallo) no aparecia en la seccion 'Que hacer, en orden de gravedad'. La dimension mas grave era la unica que callaba. Toda dimension con estado distinto de ok debe devolver accion."
   - fixture_inventado_no_prueba: "Los tests de disco usaban fixtures escritos a mano que omitian resumen_catalogo entero, asi que la rama del recuperable nunca se ejecutaba y el test pasaba con la clave equivocada. Un fixture que omite el campo que importa no prueba el contrato de ese campo. Cada interprete se prueba con la forma REAL capturada del script."
+  - declaracion_honesta: "El estado 'planificado' de una directiva baja la gravedad de sus referencias rotas de fallo a aviso, NUNCA a ok: el hueco sigue contado y nombrado. Tres guardas evitan que el marcador sea un escondite: (1) vocabulario cerrado {activo, planificado}, y ausente equivale a 'activo', que es el default conservador; (2) un 'planificado' cuyas referencias SI resuelven es un marcador OBSOLETO y se reporta, porque entonces la directiva miente en sentido contrario; (3) el texto se escanea entero, comentarios incluidos, para que comentar un paso no sirva como forma de pasar. Medido: 12 referencias rotas en 10 directivas, de las que 0 se podian reapuntar (ningun script existio jamas);ademas, git_update.yaml mentia sobre un script real, lo cual es peor que una referencia muerta."
+  - no_todo_se_implementa: "El error de Estado con 12 referencias rotas no era 'arreglalas': 8 capacidades enteras (4 CLI de memoria, web search x2, FreeCAD, KiCad PCB) no estan pedidas por nadie. La via correcta es hacer la declaracion honesta, no inventar los scripts. Implementar de mas cuesta dias y anade superficie que nadie mantiene."
 
 invariants:
   - "El veredicto global es el PEOR estado de las dimensiones, nunca un promedio ni una media ponderada."

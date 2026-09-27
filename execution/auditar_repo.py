@@ -227,27 +227,63 @@ def comprobar_secretos(raiz: Path) -> dict[str, Any]:
     }
 
 
+# Vocabulario cerrado del marcador de estado de una directiva. Ausencia de
+# marcador equivale a 'activo', que es el default mas conservador: una directiva
+# sin Status NO puede esconderse tras un hueco declarado.
+ESTADO_ACTIVO = "activo"
+ESTADO_PLANIFICADO = "planificado"
+ESTADOS_DIRECTIVA = {ESTADO_ACTIVO, ESTADO_PLANIFICADO}
+
+
 def comprobar_directivas(raiz: Path) -> dict[str, Any]:
     """Directivas que invocan scripts de execution/ que no existen.
 
     Una directiva muerta no falla: simplemente nunca se ejecuto. Es la forma mas
     silenciosa de perder la arquitectura de 3 capas, porque el flujo sigue
     "funcionando" mientras su SOP ya no describe lo que hace.
+
+    Un hueco DECLARADO no es una trampa. Si la directiva dice 'Status:
+    planificado', el lector ya sabe que la capacidad no existe y la ausencia de
+    los scripts es la consecuencia esperada, no una sorpresa. Por eso:
+
+    - referencia rota en directiva 'activa'  -> fallo (trampa silenciosa)
+    - referencia rota en directiva 'planificada' -> aviso, y se nombra
+    - marcador 'planificado' cuyas referencias SI resuelven -> aviso (mentira
+      en sentido contrario: el marcador esta obsoleto)
+
+    Nunca 'ok' si queda alguna referencia rota, solo declarada o no: el hueco
+    sigue visible en la evidencia y en la accion, solo baja de gravedad.
     """
     directivas = sorted((raiz / "directives").glob("*.yaml"))
     if not directivas:
         return _no_verificado("directivas", "no hay directorio directives/")
 
     rotas: list[dict[str, Any]] = []
+    obsoletos: list[dict[str, Any]] = []
+    marcadores_invalidos: list[dict[str, Any]] = []
     total_refs = 0
     patron = re.compile(r"\bexecution/([A-Za-z0-9_.\-]+\.py)\b")
+    patron_status = re.compile(r"^Status:\s*([A-Za-z_]+)\s*$", re.MULTILINE)
 
     for y in directivas:
         try:
             texto = y.read_text(encoding="utf-8", errors="replace")
         except OSError as exc:
-            rotas.append({"directiva": y.name, "script": "?", "motivo": f"ilegible: {exc}"})
+            rotas.append({
+                "directiva": y.name, "script": "?",
+                "motivo": f"ilegible: {exc}", "estado_directiva": ESTADO_ACTIVO,
+            })
             continue
+
+        m = patron_status.search(texto)
+        estado_dir = m.group(1).strip().lower() if m else ESTADO_ACTIVO
+        if estado_dir not in ESTADOS_DIRECTIVA:
+            marcadores_invalidos.append({
+                "directiva": y.name, "valor": estado_dir,
+                "motivo": f"fuera del vocabulario {sorted(ESTADOS_DIRECTIVA)}",
+            })
+            estado_dir = ESTADO_ACTIVO
+
         vistas: set[str] = set()
         for m in patron.finditer(texto):
             nombre = m.group(1)
@@ -258,35 +294,114 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
                     "directiva": y.name,
                     "script": nombre,
                     "motivo": "execution/ no existe",
+                    "estado_directiva": estado_dir,
+                    "declarada": estado_dir == ESTADO_PLANIFICADO,
                 })
 
-    estado = "fallo" if rotas else "ok"
+        # Marcador obsoleto: dice 'no implementado' pero todo lo que referencia
+        # existe. Miente en sentido contrario y hay que decirlo.
+        if estado_dir == ESTADO_PLANIFICADO and vistas:
+            faltan = [
+                n for n in sorted(vistas)
+                if not (raiz / "execution" / n).is_file()
+            ]
+            if not faltan:
+                obsoletos.append({
+                    "directiva": y.name,
+                    "motivo": "Status: planificado pero sus "
+                              f"{len(vistas)} referencia(s) existen",
+                })
+
     if total_refs == 0:
         return _no_verificado(
             "directivas",
             "ninguna directiva referencia execution/*.py: no se puede afirmar nada",
         )
+
+    silenciosas = [r for r in rotas if not r.get("declarada")]
+    declaradas = [r for r in rotas if r.get("declarada")]
+
+    if silenciosas:
+        estado = "fallo"
+    elif declaradas or obsoletos or marcadores_invalidos:
+        estado = "aviso"
+    else:
+        estado = "ok"
+
+    partes = []
+    if silenciosas:
+        partes.append(f"{len(silenciosas)} referencia(s) rota(s) SIN declarar")
+    if declaradas:
+        nombres = sorted({r['directiva'] for r in declaradas})
+        partes.append(
+            f"{len(declaradas)} referencia(s) declarada(s) no implementada(s) "
+            f"en {len(nombres)} directiva(s) con Status: planificado"
+        )
+    if obsoletos:
+        partes.append(f"{len(obsoletos)} marcador(es) obsoleto(s)")
+    if marcadores_invalidos:
+        partes.append(f"{len(marcadores_invalidos)} marcador(es) fuera de vocabulario")
+
+    if partes:
+        resumen = (
+            f"{len(directivas)} directivas, {total_refs} referencias: "
+            + "; ".join(partes)
+        )
+    else:
+        resumen = (
+            f"las {total_refs} referencias de {len(directivas)} directivas "
+            "resuelven y ningun marcador esta obsoleto"
+        )
+
+    if silenciosas:
+        accion = (
+            "Una directiva que apunta a un script inexistente SIN declarar que "
+            "la capacidad no esta implementada es una trampa: no avisa, "
+            "simplemente nunca se ejecuta. Corregir la referencia, marcar la "
+            "directiva como 'Status: planificado' si es un roadmap, o retirarla."
+        )
+    elif declaradas or obsoletos or marcadores_invalidos:
+        capas = []
+        if declaradas:
+            capas.append(
+                f"Hay {len(declaradas)} capacidad(es) declarada(s) no implementada(s) "
+                f"en {len({r['directiva'] for r in declaradas})} directiva(s) "
+                "(Status: planificado). No es un fallo: el hueco esta declarado y "
+                "contado. Se implementan cuando hagan falta, no antes."
+            )
+        if obsoletos:
+            capas.append(
+                f"{len(obsoletos)} directiva(s) dicen 'planificado' pero todo lo que "
+                "referencia existe: el marcador esta obsoleto y hay que quitarlo o "
+                "implementar lo que prometen."
+            )
+        if marcadores_invalidos:
+            capas.append(
+                f"{len(marcadores_invalidos)} marcador(es) de Status fuera del "
+                f"vocabulario {sorted(ESTADOS_DIRECTIVA)}."
+            )
+        accion = " ".join(capas)
+    else:
+        accion = (
+            "Toda referencia execution/*.py de las directivas resuelve a un "
+            "fichero real y ningun marcador de estado esta obsoleto."
+        )
+
     return {
         "dimension": "directivas",
         "estado": estado,
-        "resumen": (
-            f"{len(rotas)} referencia(s) a scripts inexistentes en {len(directivas)} directivas"
-            if rotas else
-            f"las {total_refs} referencias de {len(directivas)} directivas resuelven"
-        ),
+        "resumen": resumen,
         "evidencia": {
             "directivas_revisadas": len(directivas),
             "referencias_totales": total_refs,
             "referencias_rotas": len(rotas),
+            "referencias_rotas_silenciosas": len(silenciosas),
+            "referencias_declaradas_no_implementadas": len(declaradas),
+            "marcadores_obsoletos": obsoletos,
+            "marcadores_invalidos": marcadores_invalidos,
             "rotas": rotas,
         },
-        "accion": (
-            "Una directiva que apunta a un script inexistente es una directiva "
-            "muerta: no avisa, simplemente nunca se ejecuta. Corregir la "
-            "referencia o retirar la directiva."
-            if rotas else
-            "Toda referencia execution/*.py de las directivas resuelve a un fichero real."
-        ),
+        "accion": accion,
     }
 
 

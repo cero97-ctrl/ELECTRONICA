@@ -361,6 +361,61 @@ with tempfile.TemporaryDirectory() as tmp:
     comprobar("y el motivo lo explica", "referencia" in d3["evidencia"]["motivo"].lower(),
               d3["evidencia"]["motivo"])
 
+    # --- Declaracion honesta: un hueco DECLARADO baja de gravedad, no desaparece.
+    for f in (raiz / "directives").glob("*.yaml"):
+        f.unlink()
+    (raiz / "directives" / "roadmap.yaml").write_text(
+        "Status: planificado\nreferences:\n"
+        "  scripts: execution/aun_no.py, execution/tampoco.py\n", encoding="utf-8")
+    d4 = AR.comprobar_directivas(raiz)
+    comprobar("referencia rota en directiva 'planificado' -> aviso, no fallo",
+              d4["estado"] == "aviso", d4["resumen"])
+    comprobar("y se cuenta como declarada, no como silenciosa",
+              d4["evidencia"]["referencias_declaradas_no_implementadas"] == 2
+              and d4["evidencia"]["referencias_rotas_silenciosas"] == 0,
+              str(d4["evidencia"]))
+    comprobar("pero NUNCA 'ok': el hueco sigue visible y contado",
+              d4["estado"] != "ok" and d4["evidencia"]["referencias_rotas"] == 2)
+    comprobar("y la accion nombra la capacidad no implementada",
+              "no implementada" in d4["accion"], d4["accion"])
+    comprobar("y la accion dice que no es un fallo",
+              "no es un fallo" in d4["accion"].lower(), d4["accion"])
+
+    # Marcador obsoleto: dice 'no implementado' pero todo lo que referencia existe.
+    (raiz / "directives" / "roadmap.yaml").write_text(
+        "Status: planificado\nreferences:\n  scripts: execution/existe.py\n",
+        encoding="utf-8")
+    d5 = AR.comprobar_directivas(raiz)
+    comprobar("marcador 'planificado' obsoleto -> aviso, no 'ok'",
+              d5["estado"] == "aviso", d5["resumen"])
+    comprobar("y se cuenta como obsoleto, no como capacidad pendiente",
+              len(d5["evidencia"]["marcadores_obsoletos"]) == 1
+              and d5["evidencia"]["referencias_rotas"] == 0,
+              str(d5["evidencia"]))
+    comprobar("y la accion dice que el marcador esta obsoleto",
+              "obsoleto" in d5["accion"], d5["accion"])
+
+    # Status fuera de vocabulario no sirve para esconderse.
+    (raiz / "directives" / "tramposa.yaml").write_text(
+        "Status: hecho\nreferences:\n  scripts: execution/oculta.py\n", encoding="utf-8")
+    d6 = AR.comprobar_directivas(raiz)
+    comprobar("Status inventado no oculta la referencia rota",
+              d6["estado"] == "fallo"
+              and d6["evidencia"]["referencias_rotas_silenciosas"] == 1, d6["resumen"])
+    comprobar("y se reporta el marcador invalido con su valor",
+              len(d6["evidencia"]["marcadores_invalidos"]) == 1
+              and d6["evidencia"]["marcadores_invalidos"][0]["valor"] == "hecho",
+              str(d6["evidencia"]["marcadores_invalidos"]))
+
+    # Comentarios TAMBIEN cuentan: comentar un paso no puede ser como pasar.
+    (raiz / "directives" / "comentada.yaml").write_text(
+        "# antes usaba execution/oculta.py, ya no\n"
+        "references:\n  scripts: execution/todavia_no.py\n", encoding="utf-8")
+    d7 = AR.comprobar_directivas(raiz)
+    comprobar("una referencia solo mencionada en un comentario tambien se cuenta",
+              any(r["script"] == "oculta.py" for r in d7["evidencia"]["rotas"]),
+              str(d7["evidencia"]["rotas"]))
+
     # capas: deteccion por EXISTENCIA, no por forma de la ruta
     (raiz / "flujo_bueno.py").write_text(
         'MEDIR = SCRIPT_DIR / "execution" / "existe.py"\n', encoding="utf-8")

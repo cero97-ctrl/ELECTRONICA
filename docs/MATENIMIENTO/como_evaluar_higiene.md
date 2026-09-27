@@ -104,7 +104,7 @@ Las 7 nuevas que existen, y por que ninguna estaba cubierta:
 | --- | --- | --- |
 | `secretos` | Claves de proveedor, tokens y claves privadas en texto propio del repo | Un `.env` trackeado se filtra al hacer push y ningun verificador lo detecta |
 | `logs` | Cadena de hashes de cada `.tmp/session_log_*.jsonl` | Un log append-only truncado rompe la trazabilidad en silencio |
-| `directivas` | Directivas que invocan scripts de `execution/` que no existen | Una directiva que apunta a un script borrado **nunca se ejecuta y no avisa** |
+| `directivas` | Scripts de `execution/` que las directivas invocan y no existen, separando **trampa silenciosa** de **hueco declarado** (`Status: planificado`), y avisando de marcadores obsoletos | Una directiva que apunta a un script borrado **nunca se ejecuta y no avisa** |
 | `capas` | Flujos `flujo_*.py` que no nombran ningun script real de `execution/` | Un flujo que hace todo en el chat no es determinista, y nada lo delata |
 | `peso_git` | MB trackeados, ficheros >= 5 MB, carpetas que no deben estar en el indice | GitHub no avisa por email: el push falla al final, cuando ya se hizo el trabajo |
 | `untracked` | Ficheros sin trackear (aviso en 20) | Es la forma mas comun de perder trabajo: un `git add .` se lleva lo de otra sesion |
@@ -172,7 +172,7 @@ mientras se construia. Ver seccion 6.
 
 Regla: **el nucleo (`clasificar_salud`) se testea como funcion pura**, y cada
 comprobacion de capa 3 se prueba sobre un repo minimo construido en un
-`temporarydir`. Hoy son 112 aserciones.
+`temporarydir`. Hoy son 123 aserciones.
 
 ```bash
 python3 execution/test_auditar_repo.py
@@ -228,6 +228,51 @@ git add <ficheros explicitos, uno a uno>               # NUNCA `git add .`
 Nunca `git add .`: el repositorio arrastra trabajo de otras sesiones y un add
 masivo se lo lleva. Al commit, cuerpo con el **por que** de cada decision, no el
 que.
+
+### Regla asociada — la dimension `directivas` y la declaracion honesta
+
+La dimension `directivas` caza scripts de `execution/` que las directivas invocan
+y no existen. El caso grave no es que falte el script: es que **la directiva no
+avise**. Una directiva con la forma de un SOP ejecutable (pasos, entradas,
+salidas esperadas, edge cases) y nada detras es peor que no tener directiva,
+porque invita a alguien a intentarlo.
+
+La distincion que hace falta:
+
+| Que dice la directiva | Que pasa | Gravedad |
+| --- | --- | --- |
+| nada (o `Status: activo`) | el lector cree que funciona | `fallo`: trampa silenciosa |
+| `Status: planificado` | el lector sabe que no existe | `aviso`: hueco declarado y contado |
+| `Status: planificado` pero todo resuelve | el marcador esta obsoleto | `aviso`: miente al reves |
+
+`planificado` **nunca** produce `ok`. Baja la gravedad porque el hueco ya es
+visible para quien lee la directiva, no porque dejara de existir: sigue contado en
+`referencias_declaradas_no_implementadas` y nombrado en la accion.
+
+Cuatro guardas, porque un marcador de estado es un escondite facil:
+
+1. **Vocabulario cerrado** `{activo, planificado}`. Un valor inventado se
+   reporta en `marcadores_invalidos` y se trata como `activo`, que es el default
+   conservador: **ausente = `activo`**, asi que no declarar nunca oculta nada.
+2. **Marcador obsoleto detectable**: un `planificado` cuyas referencias si
+   resuelven se reporta, porque entonces la directiva miente en sentido
+   contrario.
+3. **Se escanea el texto entero, comentarios incluidos.** Comentar un paso no
+   puede ser una forma de pasar la comprobacion.
+4. **`git log` para el diagnostico, no el nombre del fichero.** Saber si un
+   script se borro o nunca existio (`git log --diff-filter=D -- <ruta>`) es la
+   unica forma de distinguir deriva de capacidad jamas construida, y las dos
+  y las dos acciones correctas son distintas.
+
+Y la regla de decision que evita el error por defecto: **no todos los huecos se
+implementan**. 8 capacidades sin pedir (CLI de memoria, busqueda web, FreeCAD,
+KiCad PCB) se declaran; construirlas todas cuesta dias y anade superficie que
+nadie mantiene. Implementar de mas no es rigor, es trabajo que nadie pidio.
+
+Tampoco al reves: una directiva que apunta a un script **real** y promete cosas
+que ese script no hace (versionado semantico que no existe, JSON que no se
+emite) es la forma mas danosa de esta dimension, porque el script funciona y la
+directiva miente sobre el.
 
 ---
 
@@ -334,6 +379,8 @@ Cada una ocurrio durante la construccion. Están tambien en la directiva.
 | Fixture inventado (seccion 5) | El informe afirma un `0` que nadie midio | Fixture desde la salida real; la ausencia se declara |
 | Interprete sin clave `accion` | La dimension mas grave no sale de "Que hacer" | Toda dimension con estado distinto de `ok` devuelve accion |
 | Cifra sin declarar su ambito | "16.1 MB recuperables" se lee como "el disco esta bien" | Decir que es lo unico que el flujo *puede* borrar, no lo que el disco *puede* liberar |
+| Marcador de estado como escondite | Marcar todo `planificado` y la dimension se pone verde | Vocabulario cerrado, ausente = `activo`, obsoletos se reportan, nunca `ok` |
+| Reescribir un nombre por topicidad | `sys_maintain.py` -> `flujo_diagnostico.py` porque "ambos son de sistema" | Leer el contrato del script destino antes de reapuntar |
 | `PROGRAMA` con palabra inglesa pegada | "y no se **knew** antes" | El verificador de texto busca CJK, mojibake y `camelCase`; **no** detecta code-switching en comentarios |
 | Icono inexistente en el diagrama | `! Package fontawesome5 Error: ... was not` | Probar cada icono; el generador puede publicar un PDF con errores |
 
@@ -412,7 +459,7 @@ de tres mostro un ahorro real del 43 %, no porque la intuicion lo dijera.
 
 ```bash
 python3 -m py_compile flujo_auditar_repo.py execution/auditar_repo.py
-python3 execution/test_auditar_repo.py        # 112 aserciones
+python3 execution/test_auditar_repo.py        # 123 aserciones
 python3 execution/test_barrera_disco.py       # 88
 python3 execution/test_verificar_texto.py     # 22
 python3 execution/verificar_texto.py AGENTS.md directives/auditar_repo.yaml

@@ -1,3 +1,12 @@
+# Estado HONESTO: capacidad declarada y NO implementada. Los scripts de los
+# pasos de abajo no existen en execution/, y esta directiva no tiene orquestador.
+# Falta: no hay nada de FreeCAD en el repo; requiere FreeCAD headless, que no esta instalado.
+# Se conserva como roadmap declarado, no como SOP ejecutable. Mientras no se implemente,
+# la dimension 'directivas' de la auditoria la cuenta como aviso nombrandola, no
+# como fallo silencioso. Ver directives/auditar_repo.yaml (edge case
+# declaracion_honesta) y docs/MATENIMIENTO/como_evaluar_higiene.md seccion 3.
+Status: planificado
+
 Goal: "Generar modelos 3D paramétricos (STL, STEP, OBJ, PNG), realizar operaciones booleanas, transformaciones, y calcular propiedades físicas (volumen, masa) utilizando FreeCAD en modo headless."
 
 Required inputs:

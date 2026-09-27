@@ -1,3 +1,12 @@
+# Estado HONESTO: capacidad declarada y NO implementada. Los scripts de los
+# pasos de abajo no existen en execution/, y esta directiva no tiene orquestador.
+# Falta: la capa de datos existe (chroma_db/, rag_system.py) pero no el CLI ni su orquestador.
+# Se conserva como roadmap declarado, no como SOP ejecutable. Mientras no se implemente,
+# la dimension 'directivas' de la auditoria la cuenta como aviso nombrandola, no
+# como fallo silencioso. Ver directives/auditar_repo.yaml (edge case
+# declaracion_honesta) y docs/MATENIMIENTO/como_evaluar_higiene.md seccion 3.
+Status: planificado
+
 Goal: "Eliminar un recuerdo específico de la memoria a largo plazo mediante su ID."
 
 Required inputs:
