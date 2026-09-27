@@ -442,3 +442,114 @@ El 403 es un bloqueo intencional: los sistemas anti-bot (Cloudflare, Akamai, Dat
 > **Archivos afectados:**
 > - `execution/scrape_single_site.py` (funciones `fetch_html`, `_browser_headers`, `_sleep_backoff`)
 > - `directives/scrape_website.yaml` (edge case 403)
+
+---
+
+## 19. FastMCP v1: `@mcp.tool` sin Paréntesis Lanza `TypeError` en Registro (`@mcp.tool()` correcto)
+
+### Síntoma / Mensaje de Error
+
+Al registrar una herramienta en un servidor FastMCP (paquete `mcp` v1.x), el script muere al arrancar con:
+
+```text
+TypeError: The @tool decorator was used incorrectly. Did you forget to call it? Use @tool() instead of @tool
+```
+
+### Causa
+
+FastMCP v1 (mcp 1.30, API `from mcp.server.fastmcp import FastMCP`) exige el decorador **invocado**: `@mcp.tool()` (con paréntesis). Usar `@mcp.tool` sin paréntesis se interpreta como pasar la función como argumento de configuración y el registro falla en runtime.
+
+### Solución
+
+```python
+# Incorrecto:
+@mcp.tool
+def mi_tool(...): ...
+
+# Correcto:
+@mcp.tool()
+def mi_tool(...): ...
+```
+
+### Puntos Clave
+
+- Aplica a `@mcp.tool()`, `@mcp.prompt()`, `@mcp.resource()` — todos llevan paréntesis en v1.
+- mcp 2.x renombró `FastMCP` → `MCPServer`; el proyecto usa mcp 1.30 (pin `mcp<2`) y sigue con la API v1.
+
+> **Archivo afectado:** `execution/servidor_sismico.py`
+
+---
+
+## 20. FastMCP v1: `host`/`port` NO van en `run()`; van en el Constructor `FastMCP(...)`
+
+### Síntoma / Mensaje de Error
+
+Al lanzar el servidor en modo `streamable-http`, el script falla con:
+
+```text
+ERROR al ejecutar el servidor: FastMCP.run() got an unexpected keyword argument 'host'
+```
+
+### Causa
+
+En mcp 1.30 la firma es `run(transport, mount_path=None)` — `run()` SOLO recibe el transporte. Los parámetros de red (`host`, `port`, `streamable_http_path`, etc.) son argumentos del **constructor** `FastMCP(name, host=..., port=..., streamable_http_path='/mcp')`.
+
+### Solución
+
+```python
+# Incorrecto (falla en mcp 1.30):
+mcp = FastMCP("MiServidor")
+mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)
+
+# Correcto:
+mcp = FastMCP("MiServidor", host="127.0.0.1", port=8000)
+mcp.run(transport="streamable-http")
+```
+
+### Puntos Clave
+
+- URL por defecto del endpoint HTTP: `http://HOST:PORT/mcp` (`streamable_http_path`).
+- Stdio no usa host/port; solo se aplican en streamable-http/sse.
+
+> **Archivo afectado:** `execution/servidor_sismico.py`
+
+---
+
+## 21. Colisión de Nombres: Parámetro `lista` Sombreado por una Tool Decorada → `'function' object is not iterable`
+
+### Síntoma / Mensaje de Error
+
+Una tool FastMCP registrada dentro de una función que recibe la lista de datos como parámetro, y cuyo nombre coincide con esa lista, falla al invocarla:
+
+```text
+Error executing tool eventos: 'function' object is not iterable
+```
+
+### Causa
+
+El decorador `@mcp.tool()` reasigna el **mismo nombre local** de la función decorada (ej. `eventos`) al objeto Tool, sombreando el parámetro de la función contenedora que tenía ese nombre (ej. `registrar_tools(mcp, eventos)`). Dentro del closure, `eventos` ya no es la lista sino el objeto Tool decorado → al iterar, `'function' object is not iterable`.
+
+### Solución
+
+Renombrar el parámetro de la función contenedora para que **no** coincida con ningún nombre de tool/parámetro de tool:
+
+```python
+# Incorrecto — 'eventos' (lista) colisiona con la tool 'eventos':
+def registrar_tools(mcp, eventos):
+    @mcp.tool()
+    def eventos(...):           # ← reasigna el local 'eventos'
+        filtrados = _filtra(eventos, ...)   # ← 'eventos' es ahora el Tool
+
+# Correcto:
+def registrar_tools(mcp, catalogo):
+    @mcp.tool()
+    def eventos(...):
+        filtrados = _filtra(catalogo, ...)  # ← nombre no colisiona
+```
+
+### Puntos Clave
+
+- Regla general: el parámetro del closure (los datos) debe tener un nombre DISTINTO de todas las tools/parámetros que se registren dentro.
+- Chequear el código de la tool que falla: si su cuerpo itera una variable y el error es `'function' object is not iterable`, casi seguro es sombreado por el decorador.
+
+> **Archivo afectado:** `execution/servidor_sismico.py` (función `registrar_tools`)

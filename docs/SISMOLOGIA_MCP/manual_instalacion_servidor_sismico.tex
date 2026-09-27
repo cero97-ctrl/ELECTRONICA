@@ -1,0 +1,618 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabeceras específicas del documento ──────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{Manual de instalaci\'on --- Servidor MCP S\'ismico}}
+\fancyhead[R]{\small 2026-09-23}
+
+\begin{document}
+
+\renewcommand{\iconoBanda}{book-open}
+\bandaTitulo[verdeTurquesa]{Manual de instalaci\'on del servidor MCP s\'ismico}{Pasos para montar en su m\'aquina el servidor de datos s\'ismicos --- Prof.\ Rommel Contreras}
+
+\vspace{6pt}
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{list-check}~Qu\'e lograr\'a con esta gu\'ia}]
+Usted terminar\'a con un \textbf{servidor MCP} corriendo en su PC que expone su cat\'alogo de eventos
+s\'ismicos (y waveforms) a otros investigadores, quienes se conectan con sus propias LLMs. El
+prototipo le entrega un cat\'alogo de \textbf{prueba sint\'etico determinista} (42 eventos de la zona
+de los Andes Venezolanos, incluido el doblete con sufijo {\texttt{-B}}) para que valide todo el flujo
+antes de conectar sus datos reales.
+
+\medskip
+\textbf{Arquitectura entregada (3 capas):}
+\begin{itemize}[leftmargin=1.6em, itemsep=2pt]
+  \item Directiva (SOP): \texttt{directives/servidor\_sismico.yaml}
+  \item Orquestador (decisi\'on/validaci\'on): \texttt{flujo\_servidor\_sismico.py}
+  \item Ejecuci\'on (servidor MCP): \texttt{execution/servidor\_sismico.py}
+\end{itemize}
+\end{tcolorbox}
+
+% ══ REQUISITOS ════════════════════════════════════════════════════════
+\section{\iconotexto{computer}{Requisitos de su m\'aquina}}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{terminal}~Software necesario}]
+\begin{itemize}[leftmargin=1.6em, itemsep=2pt]
+  \item \textbf{Python 3.10 o superior} (verificar con \texttt{python --version}).
+  \item El paquete \textbf{\texttt{mcp}} en su versi\'on \textbf{v1.x} (pin \texttt{mcp<2}):
+\begin{lstlisting}
+python3 -m pip install "mcp<2"
+\end{lstlisting}
+  \item Para probar de punta a punta en su m\'aquina, un cliente MCP: \textbf{opencode}
+        o \textbf{Claude Desktop} (cualquier cliente compatible con MCP sirve).
+  \item \textbf{Sin API de LLM en el servidor}: el servidor solo sirve datos y herramientas.
+        Cada investigador que se conecte usa su propio modelo.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{info-circle}~Por qu\'e pin \texttt{mcp<2}}]
+La API que usa el prototipo es \texttt{from mcp.server.fastmcp import FastMCP} (versi\'on 1.x del
+paquete \texttt{mcp}). La versi\'on 2.x renombr\'o esta clase a \texttt{MCPServer} y rompe el c\'odigo.
+Instalando \texttt{mcp<2} garantiza compatibilidad total con el servidor entregado.
+\end{tcolorbox}
+
+% ══ PASO 1: OBTENER EL CÓDIGO ═════════════════════════════════════════
+\section{\iconotexto{download}{Paso 1 --- Obtener el prototipo}}
+
+El prototipo vive en el repositorio \texttt{ELECTRONICA}. Para llevarlo a su m\'aquina:
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
+  \item Clonar el repositorio (o copiar la carpeta del proyecto):
+\begin{lstlisting}
+git clone <ubicacion-del-repositorio-ELECTRONICA>.git
+cd ELECTRONICA
+\end{lstlisting}
+  \item Verificar que existen las tres piezas del flujo:
+\begin{lstlisting}
+ls directives/servidor_sismico.yaml
+ls flujo_servidor_sismico.py
+ls execution/servidor_sismico.py
+\end{lstlisting}
+\end{enumerate}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{bolt}~Nota: el cat\'alogo sint\'etico ya est\'a generado}]
+En el repositorio se incluye \texttt{docs/SISMOLOGIA\_MCP/catalogo\_sismico.json} como ejemplo.
+Si desea regenerarlo desde cero (mismo resultado, es determinista):
+\begin{lstlisting}
+python3 flujo_servidor_sismico.py generar
+\end{lstlisting}
+\end{tcolorbox}
+
+% ══ PASO 2: PRUEBA LOCAL ══════════════════════════════════════════════
+\section{\iconotexto{flask}{Paso 2 --- Prueba local (transporte \texttt{stdio})}}
+
+Antes de exponer nada a la red, pruebe el servidor en su propia consola:
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
+  \item Lanzar el servidor contra el cat\'alogo sint\'etico:
+\begin{lstlisting}
+python3 flujo_servidor_sismico.py iniciar --transporte stdio
+\end{lstlisting}
+  \item Desde su cliente MCP (opencode) agregue el servidor como \textbf{local}:
+\begin{lstlisting}[language=json]
+{
+  "mcp": {
+    "sismica": {
+      "type": "local",
+      "command": ["python3", "execution/servidor_sismico.py", "--transporte", "stdio", "--catalogo", "docs/SISMOLOGIA_MCP/catalogo_sismico.json"],
+      "enabled": true
+    }
+  }
+}
+\end{lstlisting}
+  \item Saludar a las \textbf{herramientas} expuestas: \texttt{eventos} (filtra por magnitud/
+        profundidad/lugar), \texttt{evento} (detalle por id), \texttt{waveform} (serie sint\'etica
+        determinista), \texttt{estadisticas} (resumen global del cat\'alogo).
+\end{enumerate}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{vial}~Compruebe el doblete}]
+Preg\'untele a su cliente: \emph{``\texttt{muestra el evento VE0001-B y su waveform}''}. El sufijo
+\texttt{-B} modela la r\'eplica del doblete; el waveform es \textbf{determinista}: el mismo id
+siempre produce la misma se\~nal.
+\end{tcolorbox}
+
+% ══ PASO 3: CONECTAR DATOS REALES ═════════════════════════════════════
+\section{\iconotexto{database}{Paso 3 --- Conectar sus datos reales}}
+
+Cuando quiera dejar el sint\'etico, entregue su cat\'alogo en \textbf{JSON} (lista de objetos) o
+\textbf{CSV} (con cabecera). Campos esperados por el servidor:
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{cubes}~Formato del cat\'alogo}]
+\begin{tabularx}{\linewidth}{@{}p{4.4cm}X@{}}
+\toprule
+\textbf{Campo} & \textbf{Descripci\'on} \\
+\midrule
+\texttt{id}          & Identificador \'unico (ej. \texttt{RM001}, \texttt{VE1030-B}). \\
+\texttt{fecha\_utc}  & Fecha/hora en ISO 8601 UTC. \\
+\texttt{latitud}     & Coordenada del epicentro. \\
+\texttt{longitud}    & Coordenada del epicentro. \\
+\texttt{magnitud}    & Magnitud. \\
+\texttt{profundidad\_km} & Profundidad en kil\'ometros. \\
+\texttt{lugar}       & Texto de la zona (se usa para el filtro por lugar). \\
+\texttt{tipo}        & \texttt{detectado}, \texttt{doblete}, etc. (opcional). \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
+  \item Guardar su archivo, por ejemplo \texttt{datos/catalogo\_real.json}, y lanzar:
+\begin{lstlisting}
+python3 flujo_servidor_sismico.py iniciar --transporte stdio --catalogo datos/catalogo_real.json
+\end{lstlisting}
+  \item El orquestador \textbf{valida} el cat\'alogo antes de servir: que exista, que sea una
+        lista no vac\'ia y que los \texttt{id} sean \'unicos. Si falla, le indica el motivo y
+        aborta con c\'odigo 1 (no sirve datos corruptos).
+  \item Si sus datos vienen de otro formato (SAC, MSEED, CAT), convi\'ertalos antes a una de las
+        dos estructuras aceptadas. Puede validar el estado con:
+\begin{lstlisting}
+python3 flujo_servidor_sismico.py estado
+\end{lstlisting}
+\end{enumerate}
+
+% ══ PASO 4: EXPONERLO A LOS INVESTIGADORES ═════════════════════════════
+\section{\iconotexto{network-wired}{Paso 4 --- Exponer el servidor hacia otros investigadores}}
+
+Para que sus colegas se conecten desde fuera, use el transporte \textbf{\texttt{streamable-http}}:
+el servidor queda escuchando en una URL \texttt{http://127.0.0.1:8000/mcp}. Como en Venezuela la
+mayor\'ia de ISPs usan \textbf{CGNAT} (sin IP p\'ublica), el camino m\'as pr\'actico y gratuito es un
+\textbf{Cloudflare Tunnel}:
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=4pt]
+  \item Instalar \texttt{cloudflared} (desc\'arguelo de la web oficial de Cloudflare para su SO).
+  \item Lanzar el servidor MCP apuntando a la interfaz local:
+\begin{lstlisting}
+python3 flujo_servidor_sismico.py iniciar --transporte streamable-http --port 8000 --catalogo datos/catalogo_real.json
+\end{lstlisting}
+  \item En otra terminal, abrir el t\'unel hacia ese puerto:
+\begin{lstlisting}
+cloudflared tunnel --url http://127.0.0.1:8000
+\end{lstlisting}
+  \item \texttt{cloudflared} mostrar\'a una URL tipo \texttt{https://xxxx.trycloudflare.com}.
+        El \textbf{endpoint MCP} de ese t\'unel es:
+\begin{lstlisting}
+https://xxxx.trycloudflare.com/mcp
+\end{lstlisting}
+\end{enumerate}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{globe}~Acceso alternativo con IP p\'ublica}]
+Si usted s\'i dispone de IP p\'ublica o un dominio, puede usar \texttt{nginx} + \textbf{Let's
+Encrypt} como proxy inverso hacia \texttt{127.0.0.1:8000}; el t\'unel de Cloudflare es la v\'ia
+recomendada por no requerir IP est\'atica.
+\end{tcolorbox}
+
+% ══ PASO 5: TOKEN Y SEGURIDAD ══════════════════════════════════════════
+\section{\iconotexto{lock}{Paso 5 --- Restringir el acceso (token y HTTPS)}}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{user-secret}~Proteger el endpoint}]
+El servidor acepta el flag \texttt{--token}, pero la autorizaci\'on \textbf{real} del protocolo MCP
+(OAuth de FastMCP v1) queda para un despliegue institucional. La pr\'actica recomendada es:
+\begin{itemize}[leftmargin=1.6em, itemsep=2pt]
+  \item Exigir \textbf{HTTPS} (el t\'unel lo da gratis y autom\'atico).
+  \item Para grupos cerrados: compartir el \textbf{token} por canal cifrado y rotarlo peri\'odicamente.
+        El intercambio del token se documenta a los colegas junto con la URL.
+  \item No abrir el puerto 8000 crudo a Internet: siempre detras del t\'unel o de un proxy.
+  \item Para despliegues con mayor exigencia, proteger a nivel de t\'unel/nginx (cabecera
+        \texttt{Authorization}) o implementar el \texttt{token\_verifier} OAuth del SDK.
+\end{itemize}
+\end{tcolorbox}
+
+% ══ PASO 6: CÓMO SE CONECTAN LOS COLEGAS ═══════════════════════════════
+\section{\iconotexto{users}{Paso 6 --- C\'omo se conectan los investigadores}}
+
+Cada colega configura su cliente MCP apuntando a la URL del t\'unel, sin tocar su m\'aquina.
+
+\textbf{opencode} (en \texttt{opencode.json}):
+\begin{lstlisting}[language=json]
+{
+  "mcp": {
+    "sismica": {
+      "type": "remote",
+      "url": "https://xxxx.trycloudflare.com/mcp",
+      "headers": { "Authorization": "Bearer <token-compartido>" },
+      "enabled": true
+    }
+  }
+}
+\end{lstlisting}
+
+\textbf{Claude Desktop} (\texttt{claude\_desktop\_config.json}):
+\begin{lstlisting}[language=json]
+{
+  "mcpServers": {
+    "sismica": {
+      "type": "http",
+      "url": "https://xxxx.trycloudflare.com/mcp",
+      "headers": { "Authorization": "Bearer <token-compartido>" }
+    }
+  }
+}
+\end{lstlisting}
+
+\begin{tcolorbox}[cajaContenido, title={\faIcon{question-circle}~Qu\'e puede hacer cada colega}]
+Cada investigador usa \textbf{su propia LLM} (OpenRouter, Gemini u otra accesible desde su pa\'is)
+para preguntar en lenguaje natural: \emph{``mostrar eventos de magnitud $>3$ en T\'achira''},
+\emph{``graficar el waveform de VE0001-B''}, etc. El servidor solo responde datos; los modelos son
+de cada cliente.
+\end{tcolorbox}
+
+% ══ VERIFICACIÓN ═══════════════════════════════════════════════════════
+\section{\iconotexto{clipboard-check}{Verificaci\'on final (lista de control)}}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{check-double}~Checklist antes de distribuir la URL}]
+\begin{itemize}[leftmargin=1.6em, itemsep=3pt]
+  \item El cat\'alogo real fue validado por el orquestador (c\'odigo 0 y \texttt{estado} sin errores).
+  \item Prueba local con \texttt{stdio} responde las 4 herramientas.
+  \item Con \texttt{streamable-http} + túnel, la URL \texttt{https://.../mcp} responde al handshake.
+  \item HTTPS activo y token compartido por canal seguro.
+  \item Si la PC se apaga, el servidor cae: para disponibilidad robusta, considere publicar el
+        cat\'alogo en GitHub o Hugging Face para que cada colega apunte a su propio clon.
+\end{itemize}
+\end{tcolorbox}
+
+% ══ SOLUCIÓN DE PROBLEMAS ══════════════════════════════════════════════
+\section{\iconotexto{wrench}{Soluci\'on de problemas frecuentes}}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{exclamation-triangle}~Errores y acciones}]
+\begin{tabularx}{\linewidth}{@{}p{7.2cm}X@{}}
+\toprule
+\textbf{S\'intoma} & \textbf{Acci\'on} \\
+\midrule
+\texttt{mcp} no importa / \texttt{ModuleNotFoundError} & Instalar: \texttt{pip install "mcp<2"}. \\
+\texttt{FastMCP.run() got an unexpected keyword argument 'host'} & Usar mcp v1: host/puerto van en el
+constructor \texttt{FastMCP(...)}, no en \texttt{run()}. \\
+Cat\'alogo rechazado (c\'odigo 1) & Revisar formato: lista JSON o CSV con cabecera, \texttt{id}
+\'unicos, campos requeridos. \\
+Puerto 8000 ocupado & Cambiar de puerto y repetir (\texttt{--port 8001}). \\
+URL del túnel no responde & Confirmar que \texttt{cloudflared} siga corriendo y que el endpoint sea
+\texttt{/mcp}. \\
+Clientes con 401/403 & Verificar el token compartido y que el túnel/nginx aplique la cabecera
+correctamente. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+% ══ CIERRE ═════════════════════════════════════════════════════════════
+\vspace{10pt}
+\begin{tcolorbox}[cajaConcepto]
+\textbf{Resumen:} el prototipo est\'a listo para que usted lo clone, lo pruebe con el cat\'alogo
+sint\'etico y, cuando tenga su dato real, lo conecte y comparta la URL del túnel con la comunidad.
+Si necesita integrar autenticaci\'on institucional (OAuth/SSO), el siguiente paso es implementar el
+\texttt{token\_verifier} de FastMCP bajo demanda.
+\end{tcolorbox}
+
+\vspace{12pt}
+\begin{center}
+\footnotesize\color{grisTexto}
+Generado desde \texttt{ELECTRONICA} (estilo infogr\'afico propio) \textbullet\ 2026-09-23.
+\end{center}
+
+\end{document}

@@ -1,0 +1,97 @@
+name: servidor_sismico
+description: Flujo para servir un catálogo de eventos sísmicos y waveforms vía MCP
+  (Model Context Protocol) para colaboración de investigadores con LLMs. Incluye un
+  catálogo sintético determinista de la zona de los Andes Venezolanos y soporte de
+  transporte remoto (streamable-http) para clientes externos.
+version: 1.0
+
+# SOP (Standard Operating Procedure)
+goal: >
+  Permitir a un investigador (Prof. Rommel Contreras) exponer su catálogo de eventos
+  sísmicos como un servidor MCP al que otros investigadores se conectan con sus propias
+  LLMs. La decisión de modelo/LLM corresponde a cada cliente; el servidor solo sirve datos.
+
+required_inputs:
+  - name: accion
+    description: "generar | iniciar | estado. generar crea el catálogo sintético determinista;
+      iniciar lanza el servidor; estado muestra el último run."
+  - name: transporte
+    description: "stdio (local) o streamable-http (remoto). Opcional, default stdio."
+  - name: host
+    description: "Interfaz a la que escuchar en streamable-http (default 127.0.0.1)."
+  - name: port
+    description: "Puerto en streamable-http (default 8000)."
+  - name: catalogo
+    description: "Ruta a un catálogo real (JSON o CSV). Si se omite, se usa el sintético
+      generado en docs/SISMOLOGIA_MCP/catalogo_sismico.json o uno en memoria."
+
+steps:
+  - step: 1
+    action: "Validar entradas y estado (flujo_servidor_sismico.py)."
+  - step: 2
+    action: "generar: invocar execution/servidor_sismico.py --generar-sintetico DIR y
+      escribir .tmp/run_state_sismico.json."
+    script: "execution/servidor_sismico.py"
+  - step: 3
+    action: "iniciar: validar catálogo (ids únicos, campos mínimos) y lanzar
+      execution/servidor_sismico.py --transporte <t> [--host H] [--port P] [--catalogo R]."
+    script: "execution/servidor_sismico.py"
+  - step: 4
+    action: "estado: leer y mostrar .tmp/run_state_sismico.json."
+
+expected_outputs:
+  - "Archivo docs/SISMOLOGIA_MCP/catalogo_sismico.json (catálogo sintético, 42 eventos, determinista: misma seed -> mismo catálogo)."
+  - "Servidor MCP 'Sismologia-VE' escuchando en stdio o http://HOST:PORT/mcp."
+  - "Estado de ejecución en .tmp/run_state_sismico.json."
+
+tools_expuestas:
+  - name: eventos
+    description: "Filtra el catálogo por magnitud mínima, profundidad máxima y texto del lugar.
+      Ordenado por fecha UTC. Devuelve total_coincidentes y un subconjunto (límite default 30)."
+  - name: evento
+    description: "Detalle completo de un evento por id (ej. 'VE0003-B')."
+  - name: waveform
+    description: "Serie temporal sintética determinista del evento (aceleración normalizada,
+      muestreo 100 Hz). El mismo id siempre produce la misma señal."
+  - name: estadisticas
+    description: "Resumen: total, rangos de magnitud y profundidad, conteos por zona y tipo."
+
+client_config_example:
+  opencode: |
+    {
+      "mcp": {
+        "sismica": {
+          "type": "remote",
+          "url": "https://xxxx.trycloudflare.com/mcp",
+          "headers": { "Authorization": "Bearer <token>" },
+          "enabled": true
+        }
+      }
+    }
+  claude_desktop: |
+    {
+      "mcpServers": {
+        "sismica": {
+          "type": "http",
+          "url": "https://xxxx.trycloudflare.com/mcp",
+          "headers": { "Authorization": "Bearer <token>" }
+        }
+      }
+    }
+
+edge_cases:
+  - error: "Catálogo inexistente o con formato inválido (no lista / vacío / sin campos mínimos)."
+    recovery: "El orquestador aborta con código 1; validar que el archivo real tenga los campos
+      id, fecha_utc, latitud, longitud, magnitud, profundidad_km, lugar, tipo."
+  - error: "Ids duplicados en el catálogo real."
+    recovery: "El orquestador aborta con código 1; deduplicar el catálogo antes de servir."
+  - error: "Puerto ocupado en streamable-http (error OSError EADDRINUSE)."
+    recovery: "Cambiar --port y reintentar (límite renderless de reintentos: 3)."
+  - error: "Paquete mcp no instalado."
+    recovery: "python3 -m pip install 'mcp<2' en el entorno conda elect_env."
+  - error: "Clientes remotos no acceden (CGNAT / sin IP pública)."
+    recovery: "Usar Cloudflare Tunnel (cloudflared tunnel --url http://127.0.0.1:PORT) o
+      nginx con Let's Encrypt; nunca exponer el puerto crudo a Internet."
+  - error: "Autenticación: --token no activa OAuth dentro de FastMCP v1."
+    recovery: "Proteger el endpoint a nivel de túnel/nginx (cabecera Authorization) o
+      implementar el token_verifier OAuth del SDK para despliegues institucionales."
