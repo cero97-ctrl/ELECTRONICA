@@ -33,6 +33,12 @@ examen*
 # Datasets de entrenamiento LLM (datos crudos capturados — no se versionan)
 datasets/
 
+# Intermedios y artefactos de build: TODO .tmp/ es regenerable por diseño
+# (AGENTS.md: "Si Python lo necesita temporalmente -> .tmp/"). Se saca la
+# carpeta entera del índice; las reglas siguientes se conservan por
+# documentación explícita de qué regenera cada cosa.
+.tmp/
+
 # Caché de documentación consultada (regenerable)
 .tmp/docs_cache/
 
