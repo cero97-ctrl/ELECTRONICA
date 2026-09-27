@@ -1,0 +1,160 @@
+goal: |
+  Evaluar la higiene integral del repositorio en una sola pasada, reusing lo
+  que ya existe y anadiendo las comprobaciones que nadie hacia. Responde a una
+  pregunta que hoy no tiene respuesta corta: "si alguien abriera este repo manana,
+  que se encontraria mal?".
+
+  Nace de un inventario que encontro 13 verificadores parciales independientes
+  (texto corrupto, estado de sesion, bitacoras, logs append-only, disco, FAQ,
+  LaTeX, ...) y ningun compositor. Cada uno era correcto en su ambito y ninguno
+  podia afirmar nada del conjunto: todos podian salir en verde mientras el repo
+  estaba peor de lo que ninguno de ellos mira.
+
+  La directriz de diseno no es "detectar mas cosas" sino tres reglas que se
+  hicieron costosas de aprender durante la construccion:
+
+    1. No hay puntuacion. Un promedio de 12 dimensiones sanas sobre 13 daria
+       0.92 y taparia un disco al 91%. Gana el peor estado, sin medias ni
+       pesos: el veredicto es el maximo, nunca el promedio.
+    2. "No lo he comprobado" no es "esta bien". Una dimension que no se pudo
+       medir (timeout, script roto, JSON con otra forma) se declara
+       `no_verificado` y su veredicto impide que el conjunto sea `limpio`. La
+       salida es 2, no 0.
+    3. La precision se mide contra contenido que se sabe legitimo. Cada
+       heuristica se calibro con los falsos positivos reales del repo antes de
+       quedar escrita, y los que no pasaron, no se encendieron.
+
+  Al salir, el flujo tiene que ser util para tres audiences: quien recibe el
+  repo, quien mantiene la sesion, y quien toma la decision de commitear.
+
+layer: orchestration
+references:
+  orchestrator: flujo_auditar_repo.py
+  scripts: execution/auditar_repo.py, execution/test_auditar_repo.py
+  reuses: |
+    execution/estado_sesion.py, execution/bitacoras.py, execution/sesion_log.py,
+    execution/disco_medir.py, execution/verificar_texto.py,
+    execution/test_verificar_texto.py, execution/test_barrera_disco.py
+  input: el repositorio (sin argumentos de fichero; la unidad de medida es el repo entero)
+  output: informe por stdout, .tmp/auditoria_repo.json y .tmp/run_state.json
+
+required_inputs:
+  - name: --dimension NOMBRE
+    description: "Repetible. Limita la pasada a esas dimensiones (secretos, directivas, capas, peso_git, untracked, pdf_stale, texto, estado_sesion, bitacoras, logs, disco, barrera, test_texto). Repetir una dimension no la ejecuta dos veces."
+  - name: --json
+    description: "Emite el informe completo en JSON por stdout, con cobertura, evidencia y accion por dimension."
+  - name: --rapido
+    description: "Omite las dimensiones lentas (texto, barrera, test_texto) para tener un veredicto en segundos. Lo omitido se declara, nunca se cuenta como limpio."
+
+dimensions:
+  nuevas:
+    - name: secretos
+      que_mide: "Claves de proveedor, tokens y claves privadas en texto propio del repo (script y por el). Usa entropia de Shannon para no marcar prosa normal."
+      por_que_nueva: "Un .env trackeado o una clave pegada en un .md se filtra al hacer push y no lo detecta ningun verificador de los 13 inventariados."
+      excluye: ".env y ficheros de credencial por nombre, codigo vendorizado (node_modules, .pio, miniflare) y binarios"
+    - name: directivas
+      que_mide: "Referencias a scripts de execution/ que no existen, en las directivas de directives/."
+      por_que_nueva: "Una directiva que apunta a un script que se borro no avisa: simplemente nunca se ejecuta. Es el fallo mas silencioso del sistema de 3 capas."
+    - name: capas
+      que_mide: "Flujos flujo_*.py que no nombran ningun script real de execution/ (capa 3 ausente). Exime daemons, que son orquestadores de por si."
+      por_que_nueva: "Un flujo que hace todo en el chat no es determinista, y nada lo delata."
+    - name: peso_git
+      que_mide: "MB aparentes trackeados, ficheros >= 5 MB y carpetas que no deberian estar en el indice. Umbrales de GitHub: aviso 50 MB, bloqueo 100 MB."
+      por_que_nueva: "GitHub no avisa por email cuando te pasa el limite: el push falla al final, cuando ya se hizo el trabajo."
+    - name: untracked
+      que_mide: "Ficheros sin trackear, con umbral de aviso en 20."
+      por_que_nueva: "Es la forma mas comun de perder trabajo: un `git add .` se lleva el trabajo de otra sesion."
+    - name: pdf_stale
+      que_mide: "Pares .tex/.pdf donde el fuente es mas nuevo que el PDF."
+      por_que_nueva: "Un .tex bonito con un PDF viejo no comunica nada: el PDF es lo que lee el usuario final."
+  reutilizadas:
+    - texto: execution/verificar_texto.py (corrupcion de prosa)
+    - estado_sesion: execution/estado_sesion.py (integridad de las vistas de estado)
+    - bitacoras: execution/bitacoras.py (continuidad de Sessions/)
+    - logs: execution/sesion_log.py integrity (cadena de hashes)
+    - disco: execution/disco_medir.py (filesystem e inodos)
+    - barrera: execution/test_barrera_disco.py (barrera anti-borrado)
+    - test_texto: execution/test_verificar_texto.py (regresion del detector de prosa)
+
+steps:
+  - name: acotar
+    description: |
+      Resolver el conjunto de dimensiones: las 6 nuevas mas las 7 reutilizadas,
+      menos las que --rapido omite. Con --dimension se restringe, y lo pedido se
+      valida contra el conjunto conocido (salida 3 si el nombre no existe).
+    script: flujo_auditar_repo.py (DIMENSIONES_NUEVAS / DIMENSIONES_REUTILIZADAS)
+  - name: medir_nuevas
+    description: |
+      Ejecutar las comprobaciones de capa 3 (execution/auditar_repo.py). Cada
+      una recibe la raiz del repo, es de solo lectura y devuelve un estado mas
+      una evidencia contable. Una excepcion no aborta la pasada: la dimension
+      pasa a no_verificado y el resto continua.
+    script: execution/auditar_repo.py
+  - name: medir_reutilizadas
+    description: |
+      Invocar cada script reutilizado como subprocess con su timeout, y traducir
+      su salida con un interprete explicito por dimension. Los scripts que ya
+      imprimen JSON se leen tal cual; los que imprimen texto se parsean por su
+      linea de conteo. Un interprete que no reconoce la forma de la salida
+      devuelve no_verificado, nunca ok.
+    script: flujo_auditar_repo.py -> DIMENSIONES_REUTILIZADAS
+  - name: decidir
+    description: |
+      clasificar_salud() es una funcion PURA y concentrates en el test. Gana el
+      peor estado: fallo > no_verificado > aviso > ok. Sin puntuacion, sin
+      medias, sin pesos. Una dimension con un estado fuera del vocabulario se
+      trata como no_verificado (si no, una errata en una cadena producia un
+      verde falsificado). Salida: 0 limpio o con avisos, 1 con fallos, 2 no
+      verificado, 3 error de uso.
+    script: flujo_auditar_repo.py -> clasificar_salud()
+  - name: trazar
+    description: |
+      Escribir flujo/inicio y flujo/fin en el log append-only con el run_id, y
+      el estado derivado en .tmp/run_state.json con el run_id presente (sin el,
+      estado_sesion.py clasifica la vista como corrupta). La trazabilidad falla
+      blanda: si el log no se puede escribir, avisa y sigue.
+    script: flujo_auditar_repo.py -> trazar() / escribir_estado()
+  - name: actuar
+    description: |
+      Imprimir, en orden de gravedad, la accion de cada dimension con estado
+      fallo, aviso o no_verificado. El informe no corrige nada por su cuenta:
+      decide, mide y dice que hacer. Un `git rm --cached`, un .gitignore o una
+      recompilacion son decisiones del operador, con sus consecuencias.
+
+expected_outputs:
+  - veredicto global (limpio / con_avisos / con_fallos / no_verificado) y exit code 0/1/2
+  - una linea por dimension: estado, resumen y, si procede, accion
+  - cobertura explicita: cuantas dimensiones se midieron y cuantas no
+  - .tmp/auditoria_repo.json con la evidencia completa de cada dimension
+  - .tmp/run_state.json con run_id, y .tmp/session_log_<run_id>.jsonl
+
+edge_cases:
+  - sin_verde_falso: "Es la regla que mas importa. Ninguna dimension se da por buena sin medirla: sin referencias que escanear, sin pares .tex/.pdf, sin 'checks', o con un interprete que no reconoce la salida, el estado es no_verificado. Un repo al que no se le puede mirar una dimension NUNCA sale como limpio."
+  - sin_promedio: "El caso que motivo el diseno: 12 dimensiones ok y disco al 91%. Un promedio daria 0.92 y el flujo saldria limpio. Gana el peor. Esta regla esta fijada en el test con exactamente ese reparto."
+  - estado_desconocido: "Un 'estado' mal escrito en una dimension caia fuera de todos los if del clasificador y salia como limpio. Es el mismo verde falso por otra via. Ahora un estado fuera del vocabulario degrada a no_verificado y nombra la dimension."
+  - huerfano_no_es_corrupto: "estado_sesion.py mete 'huerfano' (corrida terminada, vista sobrevivio) y 'corrupto' (JSON roto) en la misma bolsa y lo publica como 'anomalias'. Contar esa cifra trataria como fallo de integridad a una vista pendiente de purgar. Se mapea por veredicto: solo 'corrupto' es fallo; 'huerfano' y 'no_verificable' son aviso."
+  - bitacoras_no_es_entero: "El interpreto de bitacoras asumia que 'bitacoras' era un numero; es una lista. Con la forma real, el campo no existia y la dimension salia no_verificado siempre. Cada interprete se probo con la forma de salida real de su script, no con la imaginada."
+  - codigo_vendizado: "El primer escaneo de secretos dio falsos positivos en codigo de terceros (miniflare/workerd, con cadenas largas de codigo, no claves). Se excluyen por prefijo las carpetas de codigo ajeno. Un detector de secretos que solo sabe decir 'algo hay' acaba ignorandose."
+  - prosa_no_es_secreto: "Una palabra inglesa larga no es una clave. El filtro exige ademas una asignacion (clave/secret/token/password = ...) y una entropia minima, para no marcar prosa ni identificadores de commit."
+  - solo_vendidas: "node_modules, .pio, miniflare y .git estan excluidos del escaneo. Se escanea el codigo propio del repo, que es lo que se puede arreglar."
+  - capa3_por_existencia: "La primera version de 'capas' pedia que el flujo contuviera la forma de ruta 'SCRIPT_DIR / execution' o similar, y dio 13 falsos positivos en flujos que si delegan, porque construyen la ruta con Path(...). Se cambio a intersectar el nombre del script con los ficheros REALES de execution/: si el flujo nombra un script que existe, hay capa 3."
+  - daemons_exentos: "flujo_ruview_rescue.py y flujo_telegram.py no invocan scripts de execution/ porque son procesos residentes con su config en directives/. Exigirles capa 3 seria un falso positivo estructural; se declaran exentos a proposito, no por forgot."
+  - capa1_no_afirmable: "La verificacion de que cada flujo tenga su directiva no se hace. El mapeo flujo-directiva no es 1:1 (flujos legacy como manage_bot.sh no son de 3 capas) y solo 4 de 20 flujos declaran 'orchestrator:' en su directiva. Se reporta como no verificable en vez de inventar una regla que no se sostiene."
+  - no_toca_nada: "La auditoria no borra, no toca el indice de git y no reescribe historia. Lo unico que escribe son sus tres salidas en .tmp/. Por eso puede correr sin --yes, sin sudo y sin miedo: no hay forma de que destruya trabajo."
+  - git_no_bloquea_el_repo: "Sacar un fichero grande del indice NO reduce el tamano de .git; el objeto sigue en el historial. El aviso de peso_git lo dice explicitamente para que nadie crea que se ha arreglado. Reducir el historico exige reescribirlo, que es una operacion con consecuencias y una decision, no una comprobacion."
+  - untracked_no_es_basura: "El conteo de untracked es un aviso, no un fallo, y nunca se stagea nada. 30+ ficheros sin trackear son trabajo en curso de otras sesiones; un 'git add .' a ciegas se lo lleva."
+  - reutilizado_es_contrato: "Cada dimension reutilizada declara su script, su timeout y su interprete, y ninguna puede recibir argumentos que limpien o purguen. Si un dia se le pasa 'clean' a una dimension de solo lectura, el test lo detecta."
+  - timeout_no_es_ok: "Un script que se cuelga se cuenta como no_verificado con su timeout en el mensaje, no como limpio. En una maquina de 2 nucleos, disco_medir y los tests largos pueden pasarse; por eso existe --rapido."
+  - camel_es_ruido_en_codigo: "Medido: --class camel sobre los dos scripts de este flujo dio 23 hallazgos, todos falsos (tuplas de excepcion, regex, ArgumentParser, '50 MB'). Correcto: camel es una heuristica de PROSA y va apagada por defecto. Sirve como recordatorio de que opt-in no significa util."
+  - solo_fallo_no_es_error: "exit 1 no es un fallo del flujo: es el resultado esperado cuando hay algo que corregir. Quien corrige es la orquestacion, no el script. Por eso el codigo de error del flujo y su veredicto van juntos y no se confunden."
+
+invariants:
+  - "El veredicto global es el PEOR estado de las dimensiones, nunca un promedio ni una media ponderada."
+  - "Ninguna dimension sin medir puede producir 'limpio'. Sin verificar es un veredicto de primera clase, con su propio codigo de salida."
+  - "La salida de cada dimension incluye la evidencia contable que la produjo (ficheros, MB, referencias, hashes). Un veredicto sin numero al lado no es reproducible."
+  - "Ningun estado fuera del vocabulario {ok, aviso, fallo, no_verificado} se trata como sano."
+  - "Cero gasto de LLM, cero red: todas las comprobaciones son codigo determinista y no pasan por el enrutador."
+  - "La auditoria es de solo lectura sobre el repo. Escribe unicamente sus tres salidas en .tmp/."
+  - "Reutilizar antes de construir: cada dimension nueva tiene escrito por que no la cubria ninguna de las 7 reutilizadas."
+  - "Toda accion propuesta es consecuencia de un dato medido, con su efecto declarado (incluido el caso de que arreglarlo NO resuelve lo que parece)."
+  - "El test del clasificador de veredicto es lo mas protegido del flujo: si la regla 'gana el peor' se rompe, todo lo demas deja de importar."

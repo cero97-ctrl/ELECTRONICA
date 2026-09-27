@@ -1,0 +1,321 @@
+% ======================================================================
+% Diagrama de flujo — generado automáticamente por generar_diagrama_flujo.py
+% NO EDITAR MANUALMENTE; regenerar desde el descriptor JSON.
+% ======================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── TikZ (simbolos ISO 5807 / ANSI X3.5) ──────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{babel, arrows.meta, positioning, shapes.geometric,
+                shapes.symbols, decorations.pathmorphing, calc}
+
+% ── Tablas y listas ───────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% ── Secciones con barra de color (infografía) ─────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores ─────────────────────────────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{verdeTurquesa}{HTML}{004D40}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{azulMedio}{HTML}{2A5298}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{naranjaVivo}{HTML}{FF7043}
+\definecolor{rojoAlerta}{HTML}{E53935}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{amarilloNota}{HTML}{FFB300}
+
+% ── Tarjetas ──────────────────────────────────────────────────────────────────
+\tcbset{
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Macros ────────────────────────────────────────────────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+\newcommand{\iconoBanda}{sitemap}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \noindent
+  \begin{tcolorbox}[%
+    enhanced, arc=4mm, colback=#1!10!white, colframe=#1, boxrule=0pt,
+    borderline west={6pt}{0pt}{cyanNeon},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  ]
+    \noindent
+    \begin{minipage}[c]{0.10\linewidth}
+      \centering\color{cyanNeon}\faIcon{clipboard-check}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+
+  % ── Estilos de flujo (ISO 5807 / ANSI X3.5) ─────────────────────────────
+  \tikzset{
+    flujo/.style={
+      >=Stealth,
+      font=\footnotesize\sffamily,
+    },
+    terminador/.style={
+      draw=azulNoche, fill=azulNoche!8!white, rounded corners=3pt,
+      text width=1.6cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    proceso/.style={
+      draw=azulNoche, fill=cyanNeon!10!white,
+      text width=1.6cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    entradasalida/.style={
+      draw=azulNoche, fill=verdeSignal!10!white,
+      trapezium, trapezium left angle=75, trapezium right angle=105,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    decision/.style={
+      draw=azulNoche, fill=amarilloNota!20!white,
+      diamond, aspect=1.6, text width=1.5cm, align=center, inner sep=1pt,
+      font=\footnotesize\sffamily,
+    },
+    almacenamiento/.style={
+      draw=azulNoche, fill=grisPapel,
+      cylinder, shape border rotate=90, aspect=0.3,
+      text width=1.7cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    documento/.style={
+      draw=azulNoche, fill=azulMedio!8!white,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    nota/.style={
+      draw=grisLinea, dashed, fill=grisPapel,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\scriptsize\sffamily,
+    },
+    etiqueta/.style={
+      font=\scriptsize\sffamily, fill=white,
+      fill opacity=0.75, text opacity=1, inner sep=1pt,
+    },
+  }
+
+
+% ── Cabecera del documento ────────────────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{ELECTRONICA}}
+\fancyhead[R]{\small\color{grisTexto}flujo\_auditar\_repo}
+\renewcommand{\headrulewidth}{0pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\bandaTitulo{Auditoria de higiene del repo}{Trece dimensiones, siete nuevas y seis reutilizadas, y un veredicto que gana el peor estado: nunca un promedio}
+
+\vspace{4pt}
+\begin{center}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{map-signs}~Leyenda de símbolos---ISO 5807 / ANSI X3.5}]
+\small
+Óvalo = \textbf{terminador} (inicio/fin) $\cdot$
+Rectángulo = \textbf{proceso} (acción determinista) $\cdot$
+Rombo = \textbf{decisión} (ramas Sí/No) $\cdot$
+Paralelogramo = \textbf{entrada/salida} (lectura/escritura de archivos) $\cdot$
+Cilindro = \textbf{almacenamiento online} (estado, snapshots) $\cdot$
+Rectángulo con base ondulada = \textbf{documento} (sesiones, logs) $\cdot$
+Rectángulo punteado gris = \textbf{nota explicativa} (sin acción).
+Flujo: arriba$\rightarrow$abajo, izquierda$\rightarrow$derecha.
+
+\faIcon{tags}~Cada símbolo lleva una \textbf{etiqueta} (T/P/D/E/A/N + número, según su tipo);
+su significado se expande en la tabla \emph{Leyenda de etiquetas} bajo cada diagrama.
+\end{tcolorbox}
+\end{center}
+
+\vspace{6pt}
+
+\section{\iconotexto{shield-alt}{La pasada: medir trece dimensiones sin que ninguna oculte a otra}}
+
+\begin{center}
+\begin{tikzpicture}[flujo, >=Stealth, x=1cm, y=1cm]
+  % Fondo decorativo
+  \fill[azulNoche!3!white, rounded corners=4pt]
+    (-2.3,1.8) rectangle (5.8,-19.9);
+  \node[terminador] (T1) at (0.0,0.0) {T1};
+  \node[proceso] (P1) at (0.0,-2.2) {P1};
+  \node[decision] (D1) at (0.0,-4.4) {D1};
+  \node[terminador] (T2) at (3.5,-4.4) {T2};
+  \node[proceso] (P2) at (0.0,-6.6) {P2};
+  \node[proceso] (P3) at (0.0,-8.8) {P3};
+  \node[decision] (D2) at (0.0,-11.0) {D2};
+  \node[nota] (N1) at (3.5,-11.0) {N1};
+  \node[proceso] (P4) at (0.0,-13.2) {P4};
+  \node[almacenamiento] (A1) at (0.0,-15.4) {A1};
+  \node[terminador] (T3) at (0.0,-17.6) {T3};
+
+  \draw[->] (T1.south) -- (P1.north);
+  \draw[->] (P1.south) -- (D1.north);
+  \draw[->] (D1.east) -- (T2.west) node[etiqueta, above, pos=0.5]{Si};
+  \draw[->] (D1.south) -- (P2.north) node[etiqueta, left, pos=0.5]{No};
+  \draw[->] (P2.south) -- (P3.north);
+  \draw[->] (P3.south) -- (D2.north);
+  \draw[->] (D2.south) -- (P4.north) node[etiqueta, left, pos=0.5]{No};
+  \draw[->] (D2.east) -- (N1.west) node[etiqueta, above, pos=0.5]{Si};
+  \draw[->] (N1.west) -- (P4.east);
+  \draw[->] (P4.south) -- (A1.north);
+  \draw[->] (A1.south) -- (T3.north);
+\end{tikzpicture}
+\end{center}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+A1 & Informe de la pasada: .tmp/auditoria\_repo.json, con cobertura explicita de lo medido y lo no medido. \\
+D1 & --dimension nombra algo que no existe en el conjunto conocido? \\
+D2 & Alguna dimension dio excepcion, se paso de timeout, o su interprete no reconoce la forma de la salida? \\
+N1 & Esa dimension cae a no\_verificado y la pasada CONTINUA. Una comprobacion rota no puede tapar a las otras doce ni abortar la auditoria. \\
+P1 & Acotar: reunir las 7 dimensiones nuevas y las 6 reutilizadas. Con --rapido se omiten texto, barrera y test\_texto, y lo omitido se declara en vez de contarse como limpio. \\
+P2 & Medir las 7 nuevas: auditar\_repo.py comprueba secretos, logs append-only, directivas muertas, capa 3 ausente, peso del indice, ficheros sin trackear y PDF desfasado. \\
+P3 & Medir las 6 reutilizadas: texto, estado de sesion, bitacoras, disco, barrera anti-borrado y regresion del verificador de prosa, cada una en subprocess con su timeout. \\
+P4 & Traducir: cada dimension queda con su estado y su evidencia contable (ficheros, MB, referencias, hashes, aserciones). \\
+T1 & Inicio: ejecutar flujo\_auditar\_repo.py, opcionalmente con --dimension, --json o --rapido. \\
+T2 & Salir con codigo 3 por uso incorrecto. No se mide nada: un nombre mal escrito no puede medirse en silencio. \\
+T3 & Pasar al algebra del veredicto (seccion siguiente) con la lista de dimensiones ya medida. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\section{\iconotexto{gavel}{El veredicto: gana el peor estado, y lo que no se comprobo se dice}}
+
+\begin{center}
+\begin{tikzpicture}[flujo, >=Stealth, x=1cm, y=1cm]
+  % Fondo decorativo
+  \fill[azulNoche!3!white, rounded corners=4pt]
+    (-2.3,1.8) rectangle (5.8,-19.9);
+  \node[terminador] (T4) at (0.0,0.0) {T4};
+  \node[proceso] (P5) at (0.0,-2.2) {P5};
+  \node[nota] (N2) at (3.5,-2.2) {N2};
+  \node[decision] (D3) at (0.0,-4.4) {D3};
+  \node[terminador] (T7) at (3.5,-4.4) {T7};
+  \node[decision] (D4) at (0.0,-8.8) {D4};
+  \node[terminador] (T8) at (3.5,-8.8) {T8};
+  \node[decision] (D5) at (0.0,-13.2) {D5};
+  \node[terminador] (T9) at (3.5,-13.2) {T9};
+  \node[terminador] (T6) at (0.0,-15.4) {T6};
+  \node[almacenamiento] (A2) at (0.0,-17.6) {A2};
+  \node[nota] (N3) at (3.5,-17.6) {N3};
+
+  \draw[->] (T4.south) -- (P5.north);
+  \draw[->] (P5.south) -- (D3.north);
+  \draw[->] (D3.east) -- (T7.west) node[etiqueta, above, pos=0.5]{Si};
+  \draw[->] (D3.south) -- (D4.north) node[etiqueta, left, pos=0.5]{No};
+  \draw[->] (D4.east) -- (T8.west) node[etiqueta, above, pos=0.5]{Si};
+  \draw[->] (D4.south) -- (D5.north) node[etiqueta, left, pos=0.5]{No};
+  \draw[->] (D5.east) -- (T9.west) node[etiqueta, above, pos=0.5]{Avisos};
+  \draw[->] (D5.south) -- (T6.north) node[etiqueta, left, pos=0.5]{Ninguno};
+\end{tikzpicture}
+\end{center}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+A2 & En cualquiera de las cuatro salidas: flujo/inicio y flujo/fin en .tmp/session\_log\_<run\_id>.jsonl, y el estado derivado en .tmp/run\_state.json CON run\_id (sin el, la vista se clasifica como corrupta). \\
+D3 & Hay alguna dimension en estado fallo? \\
+D4 & Sin fallos: hay alguna dimension en no\_verificado? \\
+D5 & Todas medidas y sin fallos: hay avisos? \\
+N2 & Sin media y sin pesos. Doce dimensiones sanas sobre trece darian un promedio de 0.92 y taparian un disco al 91\%: el promedio esconde justo lo que hay que arreglar. \\
+N3 & La auditoria no modifica nada: corregir lo que encontro (sacar bloat del indice, purgar vistas huerfanas, recompilar PDF) son decisiones del operador, con sus consecuencias. \\
+P5 & Contar estados. Un estado fuera del vocabulario se degrada a no\_verificado y nombra la dimension culpable. \\
+T4 & Entrada del algebra: la lista de dimensiones con su estado y su evidencia contable. \\
+T6 & Salir con codigo 0 y veredicto limpio, y solo cuando la cobertura fue completa. Un verde sin cobertura es la peor respuesta posible. \\
+T7 & Salir con codigo 1, veredicto con\_fallos, e imprimir las acciones en orden de gravedad: primero los fallos, despues los avisos. \\
+T8 & Salir con codigo 2 y enumerar que dimension no se pudo comprobar y por que. Sin verificar no es un veredicto: es una laguna declarada. \\
+T9 & Salir con codigo 0 y veredicto con\_avisos: cada aviso queda nombrado y con su accion, sin bloquear. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+
+\section{\iconotexto{sticky-note}{Notas}}
+\begin{itemize}
+\item El veredicto global es el PEOR estado de las dimensiones. No hay puntuacion ni media: 12 dimensiones sanas sobre 13 darian 0.92 y taparian un disco al 91\%
+\item No verificado no es estar bien. Una dimension que no se pudo medir impide que el conjunto salga como limpio y devuelve codigo 2
+\item Un estado fuera del vocabulario \{ok, aviso, fallo, no\_verificado\} se degrada a no\_verificado: una errata en una cadena no puede producir un verde
+\item La auditoria es de solo lectura. Escribe unicamente sus tres salidas en .tmp/ y no borra, no toca el indice de git ni reescribe historia
+\item Ningun estado de la sesion se borra ni se toca: la limpieza de vistas huerfanas la decide el operador con estado\_sesion.py clean
+\item Cero gasto de LLM y cero red: las trece comprobaciones son codigo determinista y no pasan por el enrutador
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\end{document}

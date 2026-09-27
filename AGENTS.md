@@ -33,6 +33,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 ## Know before you act
 
 - **Entrenamiento de IA → SIEMPRE en Google Colab, con TensorFlow.** Esta máquina (Celeron N4020, 2 núcleos @1,1 GHz, 3,63 GB RAM, sin GPU) **no entrena modelos**: la regla es de política, no una medición ("si cabe, lo hago local"). Locales solo: inferencia, prototipos, validación. Antes de lanzar cualquier entrenamiento, ejecutar el canario `docs/COLAB/entorno_colab.ipynb` (Drive montado + TF + GPU computando de verdad). Contexto y evidencia: `Sessions/2026-09-26_capacidad_hardware_pc_ml.md`.
+- **Auditoría de higiene (compositor):** antes de dar por buena la higiene del repo, ejecutar `python3 flujo_auditar_repo.py`. Reutiliza los verificadores que ya existen (texto, estado, bitácoras, logs, disco, barrera) y añade 7 comprobaciones que nadie hacía (secretos, directivas muertas, capa 3 ausente, peso del índice, untracked, PDF desfasado, integridad de logs). **El veredicto es el peor estado, no un promedio**, y `no_verificado` impide el verde: si una dimensión no se pudo medir, la salida es 2. Es de solo lectura, así que corre sin miedo.
 - **Session logs (continuity):** the `Sessions/` folder (repo root) records one `.md` per session, named by topic (`Sessions/<fecha>_<tema>.md`).
   - **At the start of each new session**, before investigating anything, check `Sessions/` for the most recent log matching the topic the user brings up (glob `Sessions/*<tema>*.md`, fallback to the newest file). Read it to recover what was decided/pending — avoid re-investigating from scratch and burning tokens.
   - **Then create** this session's own log in `Sessions/<fecha>_<tema>.md` via `python3 execution/bitacoras.py nueva --tema "<tema>"` (canonical template: Tema/Contexto/Decisiones (usuario)/Actividades/Pendientes; never overwrites), recording date, topic, activities, decisions and pending items, and commit it with the rest of the session's work.
@@ -140,7 +141,9 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 ## Commands
 
-**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos)
+**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos) · `python3 execution/test_auditar_repo.py` (álgebra de veredicto e interpretes de la auditoría; 81 aserciones) · `python3 execution/test_verificar_texto.py` (detector de prosa)
+
+**Auditoría de higiene:** `python3 flujo_auditar_repo.py [--dimension N] [--json] [--rapido]` — 13 dimensiones; el veredicto global es el **peor** estado, no un promedio. Salida: `0` limpio/con avisos · `1` con fallos · `2` sin verificar (nunca verde) · `3` uso incorrecto. Es de **solo lectura**: no borra, no toca el índice de git ni reescribe historia; escribe solo sus tres salidas en `.tmp/`.
 
 **RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`google/gemini-3.7-flash`, `OPENROUTER_API_KEY`)
 
@@ -169,6 +172,7 @@ flujo_consultar_docs.py     <tech> [--topic ...] [--url ...] [--max-chars N]
 flujo_sync_faq_flujo.py     [--watch] [--force] [--no-llm] [--critico] (auto-sincroniza faq_higiene_estado_sesion.md → flujo.{tex,pdf} por hash; SOP en directives/sync_faq_a_flujo.yaml)
 flujo_motor_fallback.py      [check|switch|estado|watch|pasivo] [--modelo <vigente>] [--confirmaciones N] [--auto-restart/--no-relaunch] [--pasivo]   (failover del motor: sonda determinista de la cuota free en execution/verificar_cuota_motor.py, conmutación atómica vía execution/aplicar_switch_modelo.py switch, auto-restore al recuperar; SOP en directives/motor_fallback.yaml)
 flujo_disco.py               [--tier seguro|recargable|pesado|todos] [--umbral 90] [--only ids] [--check] [--dry-run] [--yes] [--watch --interval N] [--profundo] [--no-alert]   (mantenimiento de disco: medir → decidir por regla pura → purgar solo la whitelist de execution/catalogo_disco.py → verificar; sin `--yes` NUNCA borra, sin sudo, sin autoescalar de tier; SOP en directives/mantenimiento_disco.yaml)
+flujo_auditar_repo.py        [--dimension NOMBRE] [--json] [--rapido]   (auditoría de higiene integral: 13 dimensiones, 7 nuevas + 6 reutilizadas, y el veredicto global es el PEOR estado, nunca un promedio; `--rapido` omite texto/barrera/test_texto; solo lectura, escribe únicamente en `.tmp/`; SOP en directives/auditar_repo.yaml, diagrama en docs/AGENTE_IA/auditar_repo_flujo.pdf)
 ```
 
 ### MCP servers (`mcp_*_server.py`, FastMCP)

@@ -17,6 +17,7 @@ import json
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -24,10 +25,27 @@ SCRIPT = PROJECT_ROOT / "execution" / "verificar_texto.py"
 TMP = PROJECT_ROOT / ".tmp"
 STATE = TMP / "run_state.json"
 INFORME = TMP / "verificacion_texto.json"
+SESION_LOG = PROJECT_ROOT / "execution" / "sesion_log.py"
+PYTHON = sys.executable
 
 CODIGO_OK = 0
 CODIGO_HALLAZGOS = 1
 CODIGO_SIN_VERIFICAR = 2
+
+
+def trazar(run_id: str, tipo: str, datos: dict | None = None) -> bool:
+    """Trazabilidad append-only. Falla blanda: devuelve False, nunca tumba el flujo."""
+    cmd = [PYTHON, str(SESION_LOG), "add", "--run", run_id, "--tipo", tipo]
+    if datos:
+        try:
+            cmd += ["--datos", json.dumps(datos, ensure_ascii=False)]
+        except (TypeError, ValueError):
+            pass
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return proc.returncode == 0
 
 
 def now_iso() -> str:
@@ -114,6 +132,11 @@ def main(argv: list[str] | None = None) -> int:
     for ex in args.exclude:
         cmd += ["--exclude", ex]
 
+    run_id = f"verificar-texto-{time.strftime('%Y%m%d-%H%M%S')}"
+    started_at = now_iso()
+    trazar(run_id, "flujo/inicio", {"ficheros": len(args.rutas), "diff": args.diff,
+                             "clases": args.clases or ["script", "conocido"]})
+
     proc = subprocess.run(cmd, cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=900)
     if not args.silencioso and proc.stderr:
         print(proc.stderr.rstrip(), file=sys.stderr)
@@ -134,12 +157,24 @@ def main(argv: list[str] | None = None) -> int:
     }
     TMP.mkdir(exist_ok=True)
     INFORME.write_text(json.dumps(estado, ensure_ascii=False, indent=2), encoding="utf-8")
-    STATE.write_text(json.dumps(
-        {"current_step": 3, "status": "terminado" if veredicto == "limpio" else "atencion",
-         "flujo": "verificar_texto", "veredicto": veredicto, "exit_code": proc.returncode,
-         "updated_at": now_iso()},
-        ensure_ascii=False, indent=2,
-    ), encoding="utf-8")
+    # `run_id` es obligatorio: sin el, execution/estado_sesion.py clasifica este
+    # run_state.json como corrupto (no puede casarlo con su log append-only).
+    # El bug se detecto al auditar con este mismo flujo, no al escribirlo.
+    state = {
+        "run_id": run_id,
+        "current_step": 3,
+        "status": "terminado" if veredicto == "limpio" else "atencion",
+        "flujo": "verificar_texto",
+        "veredicto": veredicto,
+        "exit_code": proc.returncode,
+        "started_at": started_at,
+        "updated_at": now_iso(),
+    }
+    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Trazabilidad append-only: el log es la fuente de verdad y sobrevive a que
+    # otro flujo sobrescriba .tmp/run_state.json.
+    if not trazar(run_id, "flujo/fin", {"veredicto": veredicto, "exit_code": proc.returncode}):
+        print("  aviso: no se pudo escribir en el log append-only", file=sys.stderr)
 
     if args.json:
         print(json.dumps(estado, ensure_ascii=False, indent=2))
