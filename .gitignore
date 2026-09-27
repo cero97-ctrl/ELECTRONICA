@@ -39,6 +39,12 @@ datasets/
 # documentación explícita de qué regenera cada cosa.
 .tmp/
 
+# Grabaciones de pantalla locales de docs/AGENTE_IA/ (39-41 MB cada una).
+# Se conservan en el disco del autor pero fuera del repo: .git ya pesa 698 MB
+# y ningun .tex/.md los referencia. Publicar un video es una decision
+# consciente, no un efecto secundario de tener el fichero en la carpeta.
+docs/AGENTE_IA/*.mp4
+
 # Caché de documentación consultada (regenerable)
 .tmp/docs_cache/
 
