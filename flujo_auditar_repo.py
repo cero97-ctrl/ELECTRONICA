@@ -201,6 +201,17 @@ def _interpreta_test(stdout: str, timeout: bool) -> dict[str, Any]:
 
 
 def _interpreta_disco(rc: int, stdout: str, timeout: bool) -> dict[str, Any]:
+    """disco_medir.py: el estado lo decide `filesystem.uso_pct`.
+
+    Sobre los bytes recuperables hay que ser exquisito. La version anterior leia
+    `datos["recuperable"]`, clave que `disco_medir.py` NUNCA ha emitido: el
+    numero vivia en `resumen_catalogo.reclaimable_por_tier.seguro.bytes`. Como
+    la clave no existia, `rec` valia siempre 0 y el informe afirmaba "0 MB
+    recuperables" como si fuera un dato medido. No lo era: era una clave
+    ausente. Un `or 0` sobre algo opcional convierte "no lo sé" en "cero", y
+    "cero" es un hecho; "no lo sé" es una laguna. Por eso aqui la ausencia del
+    resumen se declara en vez de rellenarse con un cero.
+    """
     if timeout:
         return _dim_no_verificado("timeout al ejecutarse")
     datos = _json_o_texto(stdout)
@@ -211,20 +222,34 @@ def _interpreta_disco(rc: int, stdout: str, timeout: bool) -> dict[str, Any]:
     if uso is None:
         return _dim_no_verificado("el informe no trae uso_pct")
     # Umbral de 90: el mismo que usa flujo_disco.py para decidir purgar. Si se
-    # supera aqui y no se knew antes, el disco crecio sin que nadie lo midiera.
+    # supera aqui y no se midio antes, el disco crecio sin que nadie lo midiera.
     estado = "fallo" if uso >= 90 else ("aviso" if uso >= 80 else "ok")
-    rec = (datos.get("recuperable") or {}).get("bytes", 0) or 0
+
+    # Bytes realmente recuperables SIN riesgo, segun el catalogo ya validado
+    # por la barrera. Si el resumen no viene, no se inventa la cifra.
+    seguro = ((datos.get("resumen_catalogo") or {})
+              .get("reclaimable_por_tier", {})
+              .get("seguro") or {})
+    rec_bytes = seguro.get("bytes")
+    if isinstance(rec_bytes, (int, float)):
+        legible = f"{rec_bytes / 1048576:.1f} MB recuperables con borrado seguro"
+        rec_mb = round(rec_bytes / 1048576, 1)
+    else:
+        legible = "recuperable no informado por disco_medir.py"
+        rec_mb = None
+
     return {
         "estado": estado,
-        "resumen": (
-            f"disco al {uso}% ({fs.get('libre_gb', '?')} GB libres); "
-            f"{rec / 1048576:.0f} MB recuperables con borrado seguro"
-        ),
+        "resumen": f"disco al {uso}% ({fs.get('libre_gb', '?')} GB libres); {legible}",
         "evidencia": {
             "uso_pct": uso, "libre_gb": fs.get("libre_gb"),
             "inodos_pct": fs.get("inodos_usados_pct"),
-            "recuperable_mb": round(rec / 1048576, 1),
-            "nota": "si uso>=90 y recuperable==0, purgar no ayudara: hace falta una decision",
+            "recuperable_mb": rec_mb,
+            "nota": (
+                "si uso>=90 y recuperable_mb==0, purgar no ayudara: hace falta una "
+                "decision. Si recuperable_mb es null, el dato no vino y hay que "
+                "repetir la medicion; no debe leerse como cero."
+            ),
         },
     }
 

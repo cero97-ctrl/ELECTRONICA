@@ -182,6 +182,55 @@ comprobar("int. disco: JSON invalido -> sin verificar",
 comprobar("int. disco: sin 'filesystem' -> sin verificar",
           FA._interpreta_disco(0, json.dumps({"otra": 1}), False)["estado"] == "no_verificado")
 
+# El bug que estas dos aserciones de arriba NO cazaban. Sus fixtures estaban
+# escritos a mano y omitian `resumen_catalogo` por completo, asi que la rama del
+# recuperable nunca se ejecutaba: el test demuestra umbrales y no dice nada del
+# numero. El interpreta leia `datos["recuperable"]`, clave que disco_medir.py
+# nunca ha emitido, de modo que afirmaba "0 MB recuperables" con una clave
+# ausente. Estas de aqui si usan la forma REAL capturada de disco_medir.py.
+_DISCO_REAL = {
+    "filesystem": {"ruta": "/", "total_gb": 233.18, "usado_gb": 212.8,
+                   "libre_gb": 20.38, "uso_pct": 91.3,
+                   "inodos_total": 15597568, "inodos_libres": 10935829,
+                   "inodos_usados_pct": 29.9},
+    "resumen_catalogo": {
+        "entradas": 27,
+        "reclaimable_por_tier": {
+            "pesado": {"bytes": 746131456, "humano": "711.6 MB"},
+            "recargable": {"bytes": 9063030784, "humano": "8.4 GB"},
+            "seguro": {"bytes": 16863232, "humano": "16.1 MB"},
+        },
+        "reclaimable_total_bytes": 9826025472,
+        "reclaimable_total": "9.2 GB",
+        "medido_por_tier": {"seguro": {"bytes": 473964544, "humano": "452.0 MB"}},
+    },
+    "targets": [], "rutas_que_requieren_sudo": [], "notas": [], "status": "ok",
+}
+_r = FA._interpreta_disco(0, json.dumps(_DISCO_REAL), False)
+comprobar("int. disco: lee los bytes reales de la salida real (16.1 MB, no 0)",
+          _r["evidencia"]["recuperable_mb"] == 16.1, str(_r["evidencia"]["recuperable_mb"]))
+comprobar("int. disco: el resumen afirma la cifra real, no un cero inventado",
+          "16.1 MB recuperables" in _r["resumen"], _r["resumen"])
+comprobar("int. disco: el umbral NO se confunde con el total recuperable (9.2 GB)",
+          _r["evidencia"]["recuperable_mb"] != 9826025472 / 1048576,
+          "debe leer el tier 'seguro', no el total")
+comprobar("int. disco: 'medido_por_tier' no se confunde con 'reclaimable_por_tier'",
+          _r["evidencia"]["recuperable_mb"] != round(473964544 / 1048576, 1),
+          "452.0 MB es lo medido, 16.1 MB lo recuperable tras la barrera")
+
+# La ausencia de dato NO puede convertirse en un cero afirmado.
+_sin_catalogo = FA._interpreta_disco(
+    0, json.dumps({"filesystem": {"uso_pct": 91.3, "libre_gb": 20.38}}), False)
+comprobar("int. disco: sin resumen_catalogo, recuperable es null y no 0",
+          _sin_catalogo["evidencia"]["recuperable_mb"] is None,
+          str(_sin_catalogo["evidencia"]["recuperable_mb"]))
+comprobar("int. disco: sin resumen_catalogo, el resumen NO dice '0 MB'",
+          "0 MB" not in _sin_catalogo["resumen"], _sin_catalogo["resumen"])
+comprobar("int. disco: sin resumen_catalogo, el resumen declara la laguna",
+          "no informado" in _sin_catalogo["resumen"], _sin_catalogo["resumen"])
+comprobar("int. disco: el estado sigue decidiéndose por uso_pct aunque falte el catálogo",
+          _sin_catalogo["estado"] == "fallo", _sin_catalogo["estado"])
+
 comprobar("int. test: cuenta los fallos de la linea de aserciones",
           FA._interpreta_test("Aserciones OK: 88   Fallos: 2", False)["estado"] == "fallo")
 comprobar("int. test: todo verde -> ok",
