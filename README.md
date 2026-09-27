@@ -19,8 +19,9 @@ El proyecto sigue un marco de **3 capas** que separa la lógica probabilística 
 ## Componentes Principales
 
 ### Asistente RAG (`rag_system.py`)
-Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + Llama 3 (Groq):
+Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + OpenRouter:
 - Embeddings multilingües (`paraphrase-multilingual-MiniLM-L12-v2`)
+- LLM vía OpenRouter con `google/gemini-3.7-flash` (tier `flash`); requiere `OPENROUTER_API_KEY` en `.env`
 - Actualizaciones incrementales vía `db_state.json`
 - Memoria conversacional
 
@@ -78,8 +79,8 @@ Orquestador seguro basado en Long Polling (`flujo_telegram.py`) que actúa como 
    ```bash
    pip install -r requirements.txt
    ```
-3. Obtén una API Key gratuita de [Groq](https://console.groq.com) (usada para texto).
-4. Crea `.groq_api_key` en la raíz con tu clave (sin espacios ni comillas).
+3. Obtén una API Key en [OpenRouter](https://openrouter.ai/keys) (es el LLM por defecto: RAG, netlists, exámenes). Funciona desde Venezuela sin VPN; Groq y OpenAI directos devuelven 403 por geo-bloqueo.
+4. Créala en `.env` (raíz del repo) como `OPENROUTER_API_KEY=...`. Ajusta `OPENROUTER_MAX_TOKENS` si tu saldo es limitado (default 2048; 8192 recomendado).
 5. Para evaluación de exámenes (visión): obtén una API Key de [Google AI Studio](https://aistudio.google.com/apikey)
    y configúrala como `GOOGLE_API_KEY` en `.env`.
 
@@ -159,4 +160,4 @@ git rm -r --cached chroma_db/
 ```
 
 ---
-*Desarrollado con LangChain, ChromaDB, Llama (Groq) y modelos Open-Source.*
+*Desarrollado con LangChain, ChromaDB, embeddings locales de Hugging Face y modelos Open-Source vía OpenRouter.*

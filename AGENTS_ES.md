@@ -16,7 +16,7 @@ Un nuevo flujo de trabajo debe incluir las tres capas; nunca escribas solo un or
 
 | Archivo | Contenido |
 |---|---|
-| `.groq_api_key` | Clave de API de Groq (LLMs de texto) |
+| `.groq_api_key` | Clave de API de Groq — **LEGACY, solo con VPN.** El backend por defecto es `openrouter`; desde VE sin VPN Groq devuelve 403 |
 | `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `TELEGRAM_BOT_TOKEN` |
 
 `opencode.json` carga `instructions: [".agent/*.md"]` — esas son tus instrucciones operativas principales.

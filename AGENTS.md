@@ -25,7 +25,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 
 | File | Content |
 |---|---|
-| `.groq_api_key` | Groq API key (fallback provider `groq`) |
+| `.groq_api_key` | Groq API key. **LEGACY / solo con VPN:** el backend por defecto es `openrouter`. Desde VE sin VPN Groq devuelve 403 (`unsupported_country_region_territory`); la rama `groq` sigue en algunos scripts solo como opción legacy. No es "fallback provider" activo. |
 | `.env` | `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MAX_TOKENS`, `GITHUB_TOKEN`, `TELEGRAM_BOT_TOKEN`, `HF_TOKEN` (+ otras claves de proveedor: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`) |
 
 `opencode.json` loads `instructions: [".agent/*.md"]` — those are your core operating instructions. **This file (`AGENTS.md`) is the authoritative instruction set**; `AGENTS_ES.md` is a Spanish translation that may lag — don't trust it where they differ.
@@ -45,7 +45,7 @@ Solo procedas con la petición original si el usuario la confirma tras la alerta
 - **Node vía nvm en shells de opencode:** `.opencode/plugins/nvm-env.js` (hook `shell.env`) antepone `~/.nvm/versions/node/v22.23.1/bin` al PATH en toda shell de este workspace (las shells de opencode no cargan nvm y sin él resuelven `node` al v18 EOL del sistema, que queda intacto como reserva); fallback automático a la mayor versión instalada si la fijada desaparece; el único proyecto Node es `Proyectos/cloudflare-agent` (wrangler 3.x, engines >=16.13). Requiere reinicio de opencode tras editarlo
 - **No linter, type checker, formatter, or CI** is configured — don't waste time running them
 - **Run everything from repo root** — imports use relative paths; `mcp_latex_server.py`, `mcp_sistema_server.py` and `execution/compile_latex.py` have `sys.path.append()` but root-level scripts don't need it. The newer MCP servers (`mcp_analizar_server.py`, `mcp_diagnostico_server.py`, `mcp_elaborar_server.py`, `mcp_evaluar_server.py`) resolve their own `project_root` via `os.path.dirname(os.path.abspath(__file__))` and load `.env` from there — they are path-agnostic and can run from anywhere
-- **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter (`openai/gpt-oss-20b`). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → usar `openai/gpt-oss-20b` para salida estructurada
+- **LLM backends desde VE (geo-bloqueo):** Groq y OpenAI directos devuelven 403 (`unsupported_country_region_territory`) — solo funcionan con VPN a nivel máquina. Los backends accesibles sin VPN son **OpenRouter** (texto, `OPENROUTER_API_KEY`) y **Gemini**. `rag_system.py` y `agent_eda.py` ya usan OpenRouter vía `get_chat_openai()` de `execution/llm_client.py`: `rag_system.py` con `google/gemini-3.7-flash`; `agent_eda.py` con `anthropic/claude-opus-5` (netlist) y `google/gemini-3.7-flash` (fallback). **Ningún script usa ya `openai/gpt-oss-20b`** (referencia obsoleta, migrada el 2026-08-15). Reglas: fijar siempre `max_tokens`/`max_output_tokens` (sin él OpenRouter pide 65536 y con saldo bajo devuelve 402; `OPENROUTER_MAX_TOKENS` en `.env`, default 2048, activo 8192); `qwen/qwen3.6-27b` devuelve su razonamiento como `content` (rompe extracción JSON) → no usarlo para salida estructurada
 - **Enrutamiento multi-LLM (determinista):** NO elijas el modelo razonando en el chat — construye el descriptor (`--task` del vocabulario controlado, tokens medidos, criticidad, visión) y ejecuta el Enrutador (ver Commands); luego invoca el script con `--api-backend openrouter --modelo <id>`. Fuente única de IDs: `MODEL_TIERS` en `execution/llm_client.py` (flash=`google/gemini-3.7-flash`, deepseek=`deepseek/deepseek-v4.1-flash`, glm=`z-ai/glm-5.2`, opus=`anthropic/claude-opus-5`; Kimi K3 solo por `--modelo-explicito`). Fallback cost-aware ante 429/errores de servicio, máx 3 intentos. Telemetría: `.tmp/routing_log.jsonl`. Política completa: `.agent/enrutamiento.md`, `directives/enrutamiento_llm.yaml`, `docs/ARQUITECTURA_ENRUTAMIENTO_LLM/arquitectura_enrutamiento_llm.md`
 - **Motor del asistente opencode (rotativo):** es SOLO la interfaz del orquestador, NO forma parte del routing y NUNCA consume `OPENROUTER_API_KEY`. Las cuotas Free se agotan rápido y el motor puede rotar sin previo aviso, indistintamente entre Free del gateway OpenCode Zen (`opencode/...`) o Free de OpenRouter — verificar el modelo vigente en `/models` en vez de asumirlo. **Facturación en `/models`:** los modelos vía Zen facturan a la cuenta Zen aparte (los Free = $0); los modelos vía proveedor OpenRouter descuentan el saldo de `OPENROUTER_API_KEY`. Los créditos solo se consumen cuando un script de `execution/` llama a `openrouter_chat` (NOTA: `enrutador.py` NO consume — decide 100% local); matriz completa de qué consume y qué no: `.agent/enrutamiento.md` → "Qué consume créditos OpenRouter y qué no". Cambiar el motor no requiere tocar el router
 
@@ -142,7 +142,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 **Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos)
 
-**RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`openai/gpt-oss-20b`, `OPENROUTER_API_KEY`)
+**RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`google/gemini-3.7-flash`, `OPENROUTER_API_KEY`)
 
 **LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
 
@@ -217,14 +217,14 @@ replicar manualmente en la PC destino:
 | **Skills externos** | `~/.claude/skills/`, `~/.agents/skills/` | No | auto-cargados (cloudflare, agents-sdk, etc.) |
 | **Config global opencode** | `~/.config/opencode/opencode.json(c)`, plugins/agentes globales | No | `default_agent`, permisos, MCP globales |
 | **`.env` (claves API)** | `.env` (raíz del repo) | No (gitignored a propósito) | `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, etc. |
-| `.groq_api_key` | raíz del repo | No (gitignored) | clave Groq |
+| `.groq_api_key` | raíz del repo | No (gitignored) | clave Groq — **opcional**: solo para la rama legacy `--api-backend groq`, que exige VPN. No es necesaria para ningún flujo por defecto |
 | **Project skills/plugins/agentes** | `.opencode/skills/`, `.opencode/plugin(s)/`, `.opencode/agent(s)/` | **Sí** | viajan con el repo |
 | Directivas, flujos, scripts | `directives/`, `flujo_*`, `execution/` | **Sí** | viajan con el repo |
 
 **Checklist de migración (además de `git clone`):**
 1. Copiar `~/.config/opencode/` completa (skills globales + config + plugins globales).
 2. Copiar `~/.claude/skills/` (y `~/.agents/skills/` si existe) — skills externos auto-cargados.
-3. Recrear `.env` y `.groq_api_key` en el repo destino (nunca viajan por git).
+3. Recrear `.env` en el repo destino (nunca viaja por git). `.groq_api_key` es **opcional** y solo aplica si se va a usar la rama legacy `groq` (que exige VPN).
 4. Entorno conda `elect_env` + `node` vía nvm (ver plugins `.opencode/plugin/conda-env.js` y `nvm-env.js`).
 5. Dependencias del proyecto (ver AGENTS.md "Know before you act": `requirements.txt` es mínimo).
 

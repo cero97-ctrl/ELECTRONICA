@@ -2,6 +2,8 @@
 
 Este archivo documenta errores comunes encontrados al ejecutar scripts Python en este espacio de trabajo, junto con sus respectivas soluciones para evitar regresiones.
 
+> **Alcance:** es un registro **histórico** de fallos reales y sus arreglos, no una descripción del estado actual del código. Entradas que mencionan `langchain_groq`, `ChatGroq` o "Llama 3.3 vía Groq" (p. ej. las 3 y 4) describen un stack que **ya no existe**: la migración a OpenRouter se aplicó y commiteó el 2026-08-15 (`c672c27`). Sus soluciones (venv/conda, `jinja2` en `PromptTemplate`, raw strings, llaves balanceadas para JSON) siguen siendo válidas y fueron aplicadas; lo que caducó fue el proveedor. `agent_eda.py` ya no importa `langchain_groq`: usa `get_chat_openai()` de `execution/llm_client.py`.
+
 ---
 
 ## 1. `PromptTemplate` de LangChain Falla con Contenido LaTeX que Contiene Llaves Numéricas

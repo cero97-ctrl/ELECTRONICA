@@ -205,6 +205,38 @@ no se ejecutó ningún borrado.** Lo que se midió:
   usar dry-run como prueba de que la creación de entornos está sana.
 - Entornos de prueba creados y eliminados; sin residuos.
 
+## E. Corrección documental: Groq ya no es el router (pendiente que señaló el usuario)
+
+El usuario señaló que la doc del RAG aún decía "Llama 3 (Groq)". Al verificar contra el
+código, el problema era **más amplio que esa línea**: la migración se aplicó al código el
+2026-08-15 (`c672c27`) pero **la documentación nunca se propagó**. Se creó un mes de deriva.
+
+- **Causa raíz de la deriva:** la migración commiteó los `.py` pero no un barrido de docs.
+  `Sessions/2026-08-15_migracion_groq_decomision_llama.md` lo documenta como "COMPLETA";
+  el código lo confirma (cero referencias a Groq en `rag_system.py` y `agent_eda.py`).
+- **`gpt-oss-20b` era una referencia fantasma:** `AGENTS.md:48` y `AGENTS.md:145` lo
+  nombraban como el modelo del RAG, pero **ningún `.py` del repo lo usa**. El modelo real
+  es `google/gemini-3.7-flash` (`rag_system.py:139`) y `anthropic/claude-opus-5` +
+  `google/gemini-3.7-flash` (`agent_eda.py:45,50`).
+- **Correcciones aplicadas (7 archivos, solo docs):**
+  - `.agent/AGENT_INSTRUCTIONS.md:98` — la línea que señaló el usuario: Groq/Llama 3 → OpenRouter
+    + `gemini-3.7-flash`, con la nota de no reintroducir `ChatGroq`.
+  - `AGENTS.md:28` — `.groq_api_key` deja de ser "fallback provider" → legacy, solo VPN.
+  - `AGENTS.md:48` y `:145` — modelos reales; `gpt-oss-20b` marcado como referencia obsoleta.
+  - `AGENTS.md:220` y `:227` — la clave de Groq pasa a **opcional** en la migración de entorno.
+  - `README.md:22,82-85,163` — **el README pedía sacar una clave de Groq a un usuario nuevo**,
+    que desde VE da 403. Ahora pide OpenRouter y explica el geo-bloqueo. Era el error más
+    caro de los siete: doc de onboarding que instruye a un paso que no funciona.
+  - `AGENTS_ES.md:19` — misma corrección en la traducción.
+  - `.agent/python.md` — **no se reescribió la historia**: se añadió una nota de alcance
+    (head) que etiqueta las entradas Groq (`langchain_groq`, `ChatGroq`, "Llama 3.3 vía Groq")
+    como stack histórico, conservando las soluciones que siguen siendo válidas (`jinja2`,
+    raw strings, llaves balanceadas). AGENTS.md manda acumular conocimiento, no borrarlo.
+- **Lo que NO se tocó (decisión del usuario pendiente):** la rama `api_backend == "groq"`
+  sigue viva en 6 scripts (`elaborar_examen`, `elaborar_ejercicios`, `analizar_imagen`,
+  `extraer_netlist_imagen`, `generar_kicad_llm`, `evaluar_examen:560`). Funciona con VPN,
+  así que no es código muerto; borrarla es decisión del operador, no una limpieza automática.
+
 ## Pendientes
 - **Entrenamiento de IA → Colab** (decisión firme). Local solo: inferencia, prototipos
   y validación. Si se propone entrenar aquí, recordar la política.
@@ -215,9 +247,5 @@ no se ejecutó ningún borrado.** Lo que se midió:
   exacta (`bytes_antes - bytes_despues`), así que el informe final no miente, pero la
   predicción sí. Arreglo posible: que el modo nativo consultara el `--dry-run` de la
   propia herramienta en vez de usar `du`.
-- Sin commit: `execution/env_diagnostic.py`, `flujo_diagnostico.py`,
-  `execution/catalogo_disco.py`, `execution/test_barrera_disco.py`, ambas bitácoras y
-  el PDF regenerado están en el working tree.
-- TF no está en `elect_env` (solo en `IA`); si alguna vez hiciera falta aquí,
-  usar `tensorflow-cpu` y no `tensorflow` (la wheel completa arrastra paquetes
-  NVIDIA de 2-3 GB inservibles aquí, y el disco está al 87%).
+- ~~Sin commit: `execution/env_diagnostic.py`, `flujo_diagnostico.py`, `execution/catalogo_disco.py`, `execution/test_barrera_disco.py`, ambas bitácoras y el PDF regenerado~~ → **RESUELTO 2026-09-26**, commit `8d01554` (11 archivos). El working tree conserva solo trabajo ajeno (`.agent/python.md` antes de esta sesión, `directives/diagrama_flujo.yaml`, `execution/generar_diagrama_flujo.py`, `docs/AGENTE_IA/`, `.tmp/latex_build/`), intacto y sin stagear.
+- ~~TF no está en `elect_env` (solo en `IA`)~~ → **SUPERADO por D1**: el TF de `base` también se eliminó (1,8 GB). El único TF en la máquina es `IA` (584 MB, funcional). La intuición de usar `tensorflow-cpu` en vez de `tensorflow` queda **confirmada por la evidencia**: la   wheel completa de TensorFlow en esta CPU da SIGILL, y ningún env nuevo es viable aquí.
