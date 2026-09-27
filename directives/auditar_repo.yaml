@@ -41,10 +41,12 @@ references:
 required_inputs:
   - name: --dimension NOMBRE
     description: "Repetible. Limita la pasada a esas dimensiones (secretos, directivas, capas, peso_git, untracked, pdf_stale, texto, estado_sesion, bitacoras, logs, disco, barrera, test_texto). Repetir una dimension no la ejecuta dos veces."
+  - name: --solo A,B
+    description: "Alias de --dimension como lista separada por comas. Ambas formas se unen, de modo que `--dimension texto --solo disco` restringe a las dos. Repetir una dimension no la ejecuta dos veces."
   - name: --json
-    description: "Emite el informe completo en JSON por stdout, con cobertura, evidencia y accion por dimension."
+    description: "Emite el informe completo en JSON por stdout, con cobertura, evidencia, duracion por dimension y accion por dimension."
   - name: --rapido
-    description: "Omite las dimensiones lentas (texto, barrera, test_texto) para tener un veredicto en segundos. Lo omitido se declara, nunca se cuenta como limpio."
+    description: "Omite texto, barrera_disco y test_texto (medido: 15.9s de 43.5s, un 36.6%) para tener veredicto en ~25s en vez de ~43s. NO es equivalente a la pasada completa: el informe declara cuantas dimensiones se midieron, y el codigo de salida puede diferir. No usar --rapido como sustituto de la pasada completa en un gate."
 
 dimensions:
   nuevas:
@@ -79,8 +81,9 @@ dimensions:
 steps:
   - name: acotar
     description: |
-      Resolver el conjunto de dimensiones: las 6 nuevas mas las 7 reutilizadas,
-      menos las que --rapido omite. Con --dimension se restringe, y lo pedido se
+      Resolver el conjunto de dimensiones: las 7 nuevas mas las 6 reutilizadas,
+      menos las que --rapido omite. Se restringe con --dimension (repetible) o
+      con su alias --solo (lista de comas); ambas formas se unen. Lo pedido se
       valida contra el conjunto conocido (salida 3 si el nombre no existe).
     script: flujo_auditar_repo.py (DIMENSIONES_NUEVAS / DIMENSIONES_REUTILIZADAS)
   - name: medir_nuevas
@@ -124,9 +127,16 @@ steps:
 expected_outputs:
   - veredicto global (limpio / con_avisos / con_fallos / no_verificado) y exit code 0/1/2
   - una linea por dimension: estado, resumen y, si procede, accion
+  - duracion por dimension, para saber que cuesta cada comprobacion
   - cobertura explicita: cuantas dimensiones se midieron y cuantas no
   - .tmp/auditoria_repo.json con la evidencia completa de cada dimension
   - .tmp/run_state.json con run_id, y .tmp/session_log_<run_id>.jsonl
+
+codigos_de_salida:
+  - 0: "Todas las dimensiones medidas, sin fallos (puede haber avisos, y se listan)."
+  - 1: "Al menos una dimension en fallo."
+  - 2: "Al menos una dimension en no_verificado. Reservado para esto: ningun otro caso devuelve 2."
+  - 3: "Uso incorrecto: flag desconocido, valor mal formado o dimension que no existe. argparse devuelve 2 por defecto, y aqui se remapea a 3, porque si una errata de tipeo se reportara como 'no verificado' el contrato de codigos no seria de fiar."
 
 edge_cases:
   - sin_verde_falso: "Es la regla que mas importa. Ninguna dimension se da por buena sin medirla: sin referencias que escanear, sin pares .tex/.pdf, sin 'checks', o con un interprete que no reconoce la salida, el estado es no_verificado. Un repo al que no se le puede mirar una dimension NUNCA sale como limpio."

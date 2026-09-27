@@ -417,22 +417,52 @@ def ejecutar_reutilizada(dim: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Auditoria de higiene del repo (compone los verificadores existentes).")
+class _Parser(argparse.ArgumentParser):
+    """Argparse sale con codigo 2, que aqui ya significa 'no verificado'.
+
+    Remapea el error de uso a 3 para que 2 signifique una sola cosa en todo el
+    flujo. Sin esto, un flag mal escrito se reporta como una dimension que no
+    se pudo comprobar, que es una lectura falsa y grave: invita a reintentar la
+    medicion cuando el problema era el comando.
+    """
+
+    def error(self, message: str) -> None:
+        self.print_usage(sys.stderr)
+        print(f"{self.prog}: error: {message}", file=sys.stderr)
+        raise SystemExit(3)
+
+
+def construir_parser() -> argparse.ArgumentParser:
+    """Construye el parser del flujo.
+
+    Vive fuera de main() para que el contrato del CLI se pueda inspeccionar y
+    probar sin ejecutar la auditoria entera.
+    """
+    ap = _Parser(description="Auditoria de higiene del repo (compone los verificadores existentes).")
     ap.add_argument("--json", action="store_true", help="salida en JSON")
-    ap.add_argument("--rapido", action="store_true", help="omitir las dimensiones lentas")
-    ap.add_argument("--solo", default="", help="comas: restringir a estas dimensiones")
+    ap.add_argument("--rapido", action="store_true", help="omitir texto, barrera y test_texto")
+    ap.add_argument("--dimension", action="append", default=[],
+                    help="repetible: restringir la pasada a esa dimension")
+    ap.add_argument("--solo", default="",
+                    help="alias de --dimension como lista separada por comas")
     ap.add_argument("--timeout-dim", type=int, default=0,
                     help="forzar timeout por dimension (0 = el de cada una)")
-    args = ap.parse_args(argv)
+    return ap
 
-    solo = {s.strip() for s in args.solo.split(",") if s.strip()}
+
+def main(argv: list[str] | None = None) -> int:
+    args = construir_parser().parse_args(argv)
+
+    # Las dos formas se unen, de modo que --dimension texto --solo disco
+    # restringe a las dos, y repetir una dimension no la ejecuta dos veces.
+    pedidas = set(args.dimension) | {s.strip() for s in args.solo.split(",") if s.strip()}
     conocidas = {d["nombre"] for d in DIMENSIONES_REUTILIZADAS} | set(DIMENSIONES_NUEVAS)
-    desconocidas = solo - conocidas
+    desconocidas = pedidas - conocidas
     if desconocidas:
         print(f"error: dimensiones desconocidas: {', '.join(sorted(desconocidas))}", file=sys.stderr)
         print(f"       disponibles: {', '.join(sorted(conocidas))}", file=sys.stderr)
         return 3
+    solo = pedidas
 
     TMP.mkdir(parents=True, exist_ok=True)
     run_id = f"auditoria-repo-{time.strftime('%Y%m%d-%H%M%S')}"
@@ -458,6 +488,7 @@ def main(argv: list[str] | None = None) -> int:
     for nombre, fn in DIMENSIONES_NUEVAS.items():
         if solo and nombre not in solo:
             continue
+        t0 = time.perf_counter()
         try:
             d = fn(RAIZ)
         except Exception as exc:
@@ -467,6 +498,9 @@ def main(argv: list[str] | None = None) -> int:
                 "evidencia": {"excepcion": str(exc)},
             }
         d["capa"] = "nueva"
+        # La duracion por dimension es lo que permite decidir si --rapido vale
+        # algo. Sin ella, el flag solo es una promesa.
+        d["duracion_s"] = round(time.perf_counter() - t0, 2)
         dimensiones.append(d)
 
     for dim in DIMENSIONES_REUTILIZADAS:
@@ -476,7 +510,10 @@ def main(argv: list[str] | None = None) -> int:
             continue
         if args.timeout_dim:
             dim = {**dim, "timeout": args.timeout_dim}
-        dimensiones.append(ejecutar_reutilizada(dim))
+        t0 = time.perf_counter()
+        d = ejecutar_reutilizada(dim)
+        d["duracion_s"] = round(time.perf_counter() - t0, 2)
+        dimensiones.append(d)
 
     salud = clasificar_salud(dimensiones)
     fin = datetime.now(timezone.utc)
@@ -510,7 +547,9 @@ def main(argv: list[str] | None = None) -> int:
     marcas = {"ok": "ok        ", "aviso": "AVISO     ",
               "fallo": "FALLO     ", "no_verificado": "SIN VERIF."}
     for d in sorted(dimensiones, key=lambda x: -PRIORIDAD.get(x.get("estado", "no_verificado"), 9)):
-        print(f"  [{marcas.get(d.get('estado'), '?        ')}] {d['dimension']:16} {d.get('resumen', '')}")
+        coste = d.get("duracion_s")
+        marca_coste = f"  [{coste:6.2f}s]" if isinstance(coste, (int, float)) else ""
+        print(f"  [{marcas.get(d.get('estado'), '?        ')}] {d['dimension']:16}{marca_coste} {d.get('resumen', '')}")
     print(f"\n  VEREDICTO: {salud['veredicto']}  (exit {salud['exit_code']})")
     print(f"  {salud['motivo']}")
     if salud["veredicto"] != "limpio":

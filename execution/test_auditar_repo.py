@@ -348,6 +348,73 @@ comprobar("toda dimension declara de donde sale (script o funcion)",
           all(d.get("script") or d.get("capa") for d in FA.DIMENSIONES_REUTILIZADAS))
 
 print()
+# ---------------------------------------------------------------------------
+print("== Contrato del CLI: codigos de salida y las dos formas del flag ==")
+# ---------------------------------------------------------------------------
+# El motivo de que estas aserciones exista: argparse sale con 2, y en este
+# flujo 2 significa 'no verificado'. Con el codigo de argparse, escribir mal
+# un flag se reportaba como una dimension que no se pudo comprobar, que es una
+# lectura falsa: invita a reintentar la medicion cuando el problema era el
+# comando. Se remapea a 3 para que cada codigo signifique una sola cosa.
+
+def _exit_de_uso(argv: list[str], modulo) -> int | None:
+    """Devuelve el codigo de salida por error de uso, o None si no lo hubo."""
+    try:
+        return modulo.main(argv)
+    except SystemExit as exc:
+        return exc.code
+
+
+for etiqueta, argv in [
+    ("flag inexistente", ["--flag-inexistente"]),
+    ("valor mal formado", ["--timeout-dim", "abc"]),
+]:
+    comprobar(f"{etiqueta} -> 3, no 2", _exit_de_uso(argv, FA) == 3, str(argv))
+
+comprobar("dimension inexistente -> 3 (no exception, return directo)",
+          FA.main(["--solo", "dimension_que_no_existe"]) == 3)
+
+# Las dos capas deben coincidir en el codigo de uso incorrecto.
+comprobar("capa 3: raiz invalida -> 3, no 2", AR.main(["--raiz", "/tmp"]) == 3)
+comprobar("ambas capas definen su propia subclase con el mismo contrato",
+          isinstance(FA._Parser, type) and isinstance(AR._Parser, type)
+          and FA._Parser is not AR._Parser)
+
+# --dimension (repetible) y --solo (lista) deben ser la misma cosa, y unionarse.
+_a = FA.construir_parser().parse_args(["--dimension", "texto", "--solo", "disco"])
+comprobar("--dimension es repetible (append)", _a.dimension == ["texto"], str(_a.dimension))
+comprobar("--solo se acepta como alias de lista", _a.solo == "disco", str(_a.solo))
+
+_b = FA.construir_parser().parse_args(["--dimension", "texto", "--dimension", "disco"])
+comprobar("repetir --dimension acumula sin repetir trabajo",
+          _b.dimension == ["texto", "disco"], str(_b.dimension))
+
+_solo_set = {s.strip() for s in " texto , estado_sesion ,".split(",") if s.strip()}
+comprobar("--solo con espacios y comas sueltas se normaliza",
+          _solo_set == {"texto", "estado_sesion"}, str(_solo_set))
+
+_codigos_uso = {_exit_de_uso(["--flag-inexistente"], FA), _exit_de_uso(["--solo", "nope"], FA)}
+comprobar("ningun error de uso produce 2 (que queda reservado a no_verificado)",
+          2 not in _codigos_uso, str(_codigos_uso))
+
+# La duracion por dimension es lo que permite decidir si --rapido ahorra algo.
+comprobar("cada comprobacion nueva mide su duracion",
+          all(callable(fn) for fn in AR.DIMENSIONES_NUEVAS.values()))
+
+with tempfile.TemporaryDirectory() as _td:
+    _raiz = Path(_td)
+    (_raiz / "directives").mkdir()
+    _dur = AR.DIMENSIONES_NUEVAS["logs"](_raiz).get("duracion_s")
+    comprobar("la duracion es un numero no negativo",
+              isinstance(_dur, (int, float)) and _dur >= 0, f"duracion_s={_dur!r}")
+
+    (_raiz / "directives" / "x.yaml").write_text(
+        "required_inputs:\n  - name: --dimension N\n", encoding="utf-8")
+    _dur2 = AR.DIMENSIONES_NUEVAS["directivas"](_raiz).get("duracion_s")
+    comprobar("toda comprobacion expone duracion_s, no solo una",
+              isinstance(_dur2, (int, float)), f"duracion_s={_dur2!r}")
+
+print()
 if FALLOS:
     print(f"FALLOS: {len(FALLOS)}/{PRUEBAS}")
     for f in FALLOS:

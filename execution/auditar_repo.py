@@ -29,6 +29,7 @@ import math
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any, Callable
 
@@ -654,19 +655,55 @@ def _ofuscar(secreto: str) -> str:
     return f"{s[:6]}***{s[-2:]}({len(s)} chars)"
 
 
+def _cronometrar(fn: Callable[[Path], dict[str, Any]]) -> Callable[[Path], dict[str, Any]]:
+    """Anade la duracion de la comprobacion a su resultado.
+
+    Se envuelve aqui y no en cada comprobar_* para que el dato lo tengan tanto
+    la capa 3 en solitario como el orquestador, sin duplicar instrumentacion.
+    Sin el, no hay forma de decidir si --rapido ahorra algo: solo se conocia el
+    total, y el total no dice que parte es prescindible.
+    """
+
+    def envoltura(raiz: Path) -> dict[str, Any]:
+        t0 = time.perf_counter()
+        resultado = fn(raiz)
+        resultado["duracion_s"] = round(time.perf_counter() - t0, 2)
+        return resultado
+
+    envoltura.__name__ = getattr(fn, "__name__", "comprobar")
+    envoltura.__doc__ = fn.__doc__
+    return envoltura
+
+
 DIMENSIONES_NUEVAS: dict[str, Callable[[Path], dict[str, Any]]] = {
-    "secretos": comprobar_secretos,
-    "logs": comprobar_logs_append_only,
-    "directivas": comprobar_directivas,
-    "capas": comprobar_capas,
-    "peso_git": comprobar_peso_git,
-    "untracked": comprobar_untracked,
-    "pdf_stale": comprobar_pdf_stale,
+    nombre: _cronometrar(fn)
+    for nombre, fn in {
+        "secretos": comprobar_secretos,
+        "logs": comprobar_logs_append_only,
+        "directivas": comprobar_directivas,
+        "capas": comprobar_capas,
+        "peso_git": comprobar_peso_git,
+        "untracked": comprobar_untracked,
+        "pdf_stale": comprobar_pdf_stale,
+    }.items()
 }
 
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(
+class _Parser(argparse.ArgumentParser):
+    """Codigo 3 para uso incorrecto, igual que en el orquestador.
+
+    argparse usa 2 y en este flujo 2 significaria 'no verificado'. Un flag mal
+    escrito no es una dimension que no se pudo comprobar, asi que se remapea.
+    """
+
+    def error(self, message: str) -> None:
+        self.print_usage(sys.stderr)
+        print(f"{self.prog}: error: {message}", file=sys.stderr)
+        raise SystemExit(3)
+
+
+def construir_parser() -> argparse.ArgumentParser:
+    ap = _Parser(
         description="Comprobaciones estructurales del repo que ningun verificador cubre.",
     )
     ap.add_argument("--json", action="store_true", help="salida en JSON")
@@ -674,12 +711,16 @@ def main(argv: list[str] | None = None) -> int:
                     choices=sorted(DIMENSIONES_NUEVAS),
                     help="restringir a estas dimensiones (repetible)")
     ap.add_argument("--raiz", default=str(PROJECT_ROOT), help="raiz del repo")
-    args = ap.parse_args(argv)
+    return ap
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = construir_parser().parse_args(argv)
 
     raiz = Path(args.raiz).resolve()
     if not (raiz / "directives").is_dir():
         print(f"error: {raiz} no parece la raiz del repo (falta directives/)", file=sys.stderr)
-        return 2
+        return 3
 
     elegidas = args.dimension or list(DIMENSIONES_NUEVAS)
     informe = {"dimensiones": [DIMENSIONES_NUEVAS[n](raiz) for n in elegidas]}

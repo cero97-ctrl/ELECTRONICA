@@ -239,14 +239,14 @@ su significado se expande en la tabla \emph{Leyenda de etiquetas} bajo cada diag
 \toprule
 \textbf{Etiqueta} & \textbf{Significado} \\ \midrule
 A1 & Informe de la pasada: .tmp/auditoria\_repo.json, con cobertura explicita de lo medido y lo no medido. \\
-D1 & --dimension nombra algo que no existe en el conjunto conocido? \\
+D1 & --dimension o --solo nombran algo que no existe en el conjunto conocido? Salida 3, que es codigo de uso incorrecto: argparse devuelve 2 por defecto y se remapea, porque si una errata se reportara como no verificado el contrato de codigos no seria de fiar. \\
 D2 & Alguna dimension dio excepcion, se paso de timeout, o su interprete no reconoce la forma de la salida? \\
 N1 & Esa dimension cae a no\_verificado y la pasada CONTINUA. Una comprobacion rota no puede tapar a las otras doce ni abortar la auditoria. \\
 P1 & Acotar: reunir las 7 dimensiones nuevas y las 6 reutilizadas. Con --rapido se omiten texto, barrera y test\_texto, y lo omitido se declara en vez de contarse como limpio. \\
 P2 & Medir las 7 nuevas: auditar\_repo.py comprueba secretos, logs append-only, directivas muertas, capa 3 ausente, peso del indice, ficheros sin trackear y PDF desfasado. \\
 P3 & Medir las 6 reutilizadas: texto, estado de sesion, bitacoras, disco, barrera anti-borrado y regresion del verificador de prosa, cada una en subprocess con su timeout. \\
 P4 & Traducir: cada dimension queda con su estado y su evidencia contable (ficheros, MB, referencias, hashes, aserciones). \\
-T1 & Inicio: ejecutar flujo\_auditar\_repo.py, opcionalmente con --dimension, --json o --rapido. \\
+T1 & Inicio: ejecutar flujo\_auditar\_repo.py, opcionalmente con --dimension (repetible, o su alias --solo de lista), --json o --rapido. \\
 T2 & Salir con codigo 3 por uso incorrecto. No se mide nada: un nombre mal escrito no puede medirse en silencio. \\
 T3 & Pasar al algebra del veredicto (seccion siguiente) con la lista de dimensiones ya medida. \\
 \bottomrule
