@@ -1,0 +1,111 @@
+goal: |
+  Detectar corrupcion de prosa en espanol (palabras fusionadas, escritura
+  extranjera intrusa) ANTES de que llegue a un commit, y hacerlo con precision
+  suficiente para que su resultado sea accionable. Nace de un fallo repetido:
+  en una sola sesion el agente corrompio prosa en cinco o seis ocasiones,
+  incluyendo dos dentro de un mensaje de commit y dos invisibles a las
+  comprobaciones que se hicieron. El catalogo literal de esos casos vive en
+  execution/detecciones_texto.json y no se duplica aqui a proposito: un
+  fichero de conocimiento que se copia en dos sitios se desincroniza, y esta
+  directiva necesitaria sus propias exenciones para poder citar los ejemplos.
+
+  La directriz de diseno no es "encontrar corrupcion" sino "no mentir sobre lo
+  que se comprobo". Tres errores de la sesion que motivo el flujo se corrigen
+  de forma explicita:
+    1. Un validador de "palabras pegadas" devolvio 402 hallazgos, todos falsos
+       positivos. Las heuristicas van apagadas por defecto.
+    2. Un escaneo global arrastro miles de falsos positivos de un clon tercero
+       en chino bajo .tmp/. El alcance es explicito y se excluyen directorios
+       por nombre.
+    3. Un "0 anomalias" se acepto sin verificar cobertura. Si no se escanea
+       ningun fichero, el flujo sale con codigo 2, nunca con un verde.
+
+layer: orchestration
+references:
+  orchestrator: flujo_verificar_texto.py
+  scripts: execution/verificar_texto.py, execution/test_verificar_texto.py
+  knowledge: execution/detecciones_texto.json
+  input: ficheros de prosa (.md, .tex, .py, .yaml, .json, .txt) o un rango de commits
+  output: informe por stdout (texto o --json), codigo de salida 0/1/2
+
+required_inputs:
+  - name: rutas (posicional)
+    description: "Ficheros o directorios a escanear. Opcional: sin argumentos usa el alcance por defecto (Sessions/, docs/, directives/, execution/, cursos/, Proyectos/)."
+  - name: --diff REF
+    description: "Escanea solo las lineas anadidas por los commits posteriores a REF. Util para revisar un lote de commits ya escrito."
+  - name: --class
+    description: "Clase a activar, repetible. Default: script,conocido. Valores: script (cirilico, CJK, japones, coreano, ancho completo), conocido (cadenas literales de corrupciones ya vistas), camel (minuscula seguida de mayuscula dentro de palabra; heuristica, apagada por defecto)."
+  - name: --known-file
+    description: "Fichero JSON adicional de cadenas conocidas/permitidas, con las claves 'cadenas' y 'permitidas'. Permite anadir detecciones sin tocar el codigo."
+  - name: --exclude
+    description: "Directorio a excluir, adicional a la lista por defecto (.git, .tmp, node_modules, chroma_db, __pycache__, .venv, .pio, build, site-packages...)."
+  - name: --json
+    description: "Emite el informe completo en JSON por stdout, con cobertura y hallazgos estructurados."
+  - name: --max-ficheros
+    description: "Tope de ficheros por pasada (default 4000). Alcanzarlo hace que el resto cuente como omitido, nunca como limpio."
+
+steps:
+  - name: acotar
+    description: |
+      Resolver el alcance ANTES de leer nada. Sin --diff son las rutas dadas o
+      el conjunto por defecto, siempre podadas por DEFAULT_EXCLUDES. Con --diff
+      son las lineas anadidas por `git diff REF..HEAD`, que es como se
+      detecto el caso real: la corrupcion vivia en el working tree, todavia
+      sin commitear.
+    script: execution/verificar_texto.py (resolucion de alcance)
+  - name: escanear
+    description: |
+      Recorrer el alcance y aplicar las clases activas. 'script' busca
+      caracteres de escritura extranjera en prosa; 'conocido' busca cadenas
+      literales de corrupciones ya observadas, con emparejamiento insensible a
+      diacriticos porque la palabra corrompida se escribe con o sin tilde. La
+      clase 'camel' solo corre si se pide explicitamente.
+    script: execution/verificar_texto.py
+  - name: contrastar
+    description: |
+      Antes de dar por bueno cualquier resultado, comprobar que el informe
+      trae cobertura util: ficheros_escaneados > 0 y lineas_escaneadas > 0.
+      Un informe con 0 ficheros se clasifica sin_verificar y el flujo devuelve 2.
+    script: flujo_verificar_texto.py -> contrastar_cobertura()
+  - name: decidir
+    description: |
+      exit 0 sin hallazgos, exit 1 con hallazgos, exit 2 sin verificar o con
+      uso incorrecto. El codigo 1 no es un fallo del flujo: es el resultado
+      esperado cuando hay algo que corregir, y quien corrige es la capa de
+      orquestacion, no el script.
+    script: flujo_verificar_texto.py -> main()
+  - name: aprender
+    description: |
+      Si un hallazgo de clase 'conocido' no estaba en la lista, anadir la
+      cadena a execution/detecciones_texto.json. Si es una excepcion legitima
+      (una cita didactica, un nombre propio en otro idioma), anadirla a
+      'permitidas' con el motivo en la nota. El fichero acumula conocimiento;
+      no se reescribe su historia.
+    script: edicion de execution/detecciones_texto.json
+
+expected_outputs:
+  - informe por stdout con clase activa, ficheros y lineas escaneados, omitidos y cadenas cargadas
+  - hallazgos con fichero, linea, columna, clase, detalle y fragmento
+  - codigo de salida 0 (limpio) / 1 (con hallazgos) / 2 (sin verificar o uso incorrecto)
+
+edge_cases:
+  - sin_verde_falso: "Si no se escanea ningun fichero, el flujo devuelve 2 y dice SIN VERIFICAR. Nunca devuelve 0 por no haber mirado nada. Es el fallo mas caro de la sesion que motivo el flujo: un 0 sin cobertura se acepto como prueba de limpieza."
+  - griego_excluido: "El Griego NO se detecta, por decision. Medido: con el patron activo, el repo devolvio 123 hallazgos de 127 (97%) y todos eran Omega, beta, pi, mu, tau, rho y demas notacion normal de electronica y semiconductores. Antes de anadir un patron por 'parece sospechoso', hay que medirlo contra contenido que se sabe legitimo del propio dominio."
+  - ficheros_meta: "execution/detecciones_texto.json y execution/verificar_texto.py se excluyen del escaneo: por definicion contienen las cadenas y los caracteres que se cazan. Incluirlos produciria falsos positivos garantizados en cada pasada."
+  - clones_terceros: "Un clon de un repositorio ajeno bajo .tmp/ (documentacion en chino) produjo miles de falsos positivos en un escaneo global. Por eso .tmp esta excluido por nombre y el alcance se declara siempre en el informe."
+  - diacriticos: "El emparejamiento de cadenas conocidas ignora tildes: la palabra corrompida se escribe a veces con tilde y a veces sin ella, y ambas son el mismo fallo. Un detector que solo acepta una de las dos formas deja pasar la mitad de los casos; esto se detecto al probar con un fixture escrito sin tilde."
+  - corrupcion_antes_del_commit: "La corrupcion se produce al escribir, antes del commit. Por eso el camino normal es escanear el working tree, no el historial: un --diff sobre commits ya escritos no la encuentra porque todavia no esta ahi."
+  - camel_opt_in: "La clase 'camel' encuentra palabras con minuscula pegada a mayuscula, pero tambien nombres de API legitimos. Va apagada por defecto y hay que pedirla con --class camel, asumiendo revision manual de sus resultados."
+  - exenciones_con_motivo: "'permitidas' exime una linea entera de forma INDEPENDIENTE: basta con que contenga uno de los fragmentos. Cada exencion se anade con su motivo escrito. Anadir exenciones sin quitar la causa que las exige es como se degrada un detector hasta hacerlo inutil: durante la construccion hubo que excepcionar cuatro lineas de esta misma directiva porque citaba las cadenas literales, y la solucion fue apuntar al catalogo en vez de acumular exenciones."
+  - meta_pide_nada: "Pedir el escaneo de unicamente ficheros meta (este script, el catalogo) devuelve 2 y no 0: no queda nada que leer, y un verde sobre el vacio seria la peor respuesta posible. Con al menos un fichero real, el meta se omite en silencio y la cobertura lo declara."
+  - binarios_e_ilegibles: "Los ficheros que no se pueden decodificar en UTF-8 se cuentan como omitidos, nunca como limpios. Un informe que declara omitidos debe leerse antes de aceptarlo."
+  - no_texto_no_es_omision: "PDF, imagenes y locks se cuentan en ficheros_no_texto, que NO es una omision: no hay nada que revisar. Contarlos como omision (error cometido durante la construccion: 1498 falsos 'omitidos' que obligaban a ignorar el veredicto) mezcla lo que se decidio con lo que no se pudo leer."
+  - medir_antes_de_creer: "Toda cifra de este flujo se ha contrastado con su inversa: que el repo de limpio Y que un fixture sucio se detecte. Un detector que solo sabe decir 'limpio' no se ha probado, se ha usado."
+  - coste: "El escaneo por defecto son ~480 ficheros y ~131.000 lineas y tarda poco. Con --max-ficheros se puede acotar; alcanzar el tope genera omitidos visibles en la cobertura."
+
+invariants:
+  - "Un 0 solo significa algo junto a su cobertura. El informe siempre dice cuantos ficheros y lineas se miraron."
+  - "Ninguna heuristica esta activa por defecto. Todo lo que no sea deteccion de clase 'script' o 'conocido' se enciende explicitamente."
+  - "El script no modifica nada: es de solo lectura. Corregir la prosa es trabajo de la orquestacion, y registrar el hallazgo en detecciones_texto.json es trabajo del operador."
+  - "Cero gasto de LLM: la deteccion es codigo determinista y no pasa por el enrutador."
+  - "El patron Griego se queda fuera salvo que un cambio del dominio del repo lo justifique con medicion, no con intuicion."

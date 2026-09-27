@@ -1,0 +1,41 @@
+{
+  "_documentacion": [
+    "Cadenas literales de corrupcion de prosa confirmadas en este repo.",
+    "Se anaden con escapes \\u a proposito: el fichero queda en ASCII puro y",
+    "asi el propio detector no se auto-marca al escanearse. El valor visible es",
+    "el caracter que hay que cazar.",
+    "",
+    "Esto es una red reactiva, no un detector primario: solo encuentra lo que",
+    "alguien ya registro. La clase 'script' (cirilico, CJK, ancho completo) es",
+    "la que aporta precision; esta lista cubre los casos de fusion de palabras",
+    "en espanol, que no tienen senal Unicode."
+  ],
+  "cadenas": [
+    "susArréglalo",
+    "seQFUEran",
+    "Seacryó",
+    "quecitó",
+    "elREADME",
+    "сохраняя",
+    "安装在"
+  ],
+  "permitidas": [
+    "para cazar un"
+  ],
+  "_permitidas_nota": [
+    "Cada entrada es una exencion INDEPENDIENTE: si una linea contiene alguno de",
+    "estos fragmentos, se salta entera. No se combinan entre si.",
+    "",
+    "Vigente: 'para cazar un' -> Sessions/2026-09-26_capacidad_hardware_pc_ml.md",
+    "menciona un caracter CJK (\\u6838) como ejemplo didactico de la propia",
+    "corrupcion. No es un error.",
+    "",
+    "Hubo cuatro exenciones mas para directives/verificar_texto_corrupto.yaml,",
+    "que citaba las cadenas corrompidas tal cual. Se eliminaron en vez de",
+    "mantenerlas: la directiva ahora apunta a este fichero como catalogo y no",
+    "duplica los literales. Duplicar el catalogo obligaba a excepcionar cada",
+    "copia, y una excepcion por linea se rompe en cuanto el texto se refluye.",
+    "Esa es la via por la que un detector se degrada hasta no servir: ceder ante",
+    "cada excepcion en vez de quitar la causa de la excepcion."
+  ]
+}

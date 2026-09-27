@@ -1,0 +1,267 @@
+% ======================================================================
+% Diagrama de flujo — generado automáticamente por generar_diagrama_flujo.py
+% NO EDITAR MANUALMENTE; regenerar desde el descriptor JSON.
+% ======================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── TikZ (simbolos ISO 5807 / ANSI X3.5) ──────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{babel, arrows.meta, positioning, shapes.geometric,
+                shapes.symbols, decorations.pathmorphing, calc}
+
+% ── Tablas y listas ───────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+
+% ── Secciones con barra de color (infografía) ─────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores ─────────────────────────────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}
+\definecolor{verdeTurquesa}{HTML}{004D40}
+\definecolor{azulNoche}{HTML}{1B3A6B}
+\definecolor{azulMedio}{HTML}{2A5298}
+\definecolor{cyanNeon}{HTML}{00C8E0}
+\definecolor{verdeSignal}{HTML}{00B887}
+\definecolor{naranjaVivo}{HTML}{FF7043}
+\definecolor{rojoAlerta}{HTML}{E53935}
+\definecolor{grisPapel}{HTML}{F4F6FA}
+\definecolor{grisLinea}{HTML}{C8D0E0}
+\definecolor{grisTexto}{HTML}{6B7A99}
+\definecolor{amarilloNota}{HTML}{FFB300}
+
+% ── Tarjetas ──────────────────────────────────────────────────────────────────
+\tcbset{
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Macros ────────────────────────────────────────────────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+\newcommand{\iconoBanda}{sitemap}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \noindent
+  \begin{tcolorbox}[%
+    enhanced, arc=4mm, colback=#1!10!white, colframe=#1, boxrule=0pt,
+    borderline west={6pt}{0pt}{cyanNeon},
+    top=6pt, bottom=6pt, left=8pt, right=8pt,
+  ]
+    \noindent
+    \begin{minipage}[c]{0.10\linewidth}
+      \centering\color{cyanNeon}\faIcon{shield-alt}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+
+  % ── Estilos de flujo (ISO 5807 / ANSI X3.5) ─────────────────────────────
+  \tikzset{
+    flujo/.style={
+      >=Stealth,
+      font=\footnotesize\sffamily,
+    },
+    terminador/.style={
+      draw=azulNoche, fill=azulNoche!8!white, rounded corners=3pt,
+      text width=1.6cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    proceso/.style={
+      draw=azulNoche, fill=cyanNeon!10!white,
+      text width=1.6cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    entradasalida/.style={
+      draw=azulNoche, fill=verdeSignal!10!white,
+      trapezium, trapezium left angle=75, trapezium right angle=105,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    decision/.style={
+      draw=azulNoche, fill=amarilloNota!20!white,
+      diamond, aspect=1.6, text width=1.5cm, align=center, inner sep=1pt,
+      font=\footnotesize\sffamily,
+    },
+    almacenamiento/.style={
+      draw=azulNoche, fill=grisPapel,
+      cylinder, shape border rotate=90, aspect=0.3,
+      text width=1.7cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    documento/.style={
+      draw=azulNoche, fill=azulMedio!8!white,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\footnotesize\sffamily,
+    },
+    nota/.style={
+      draw=grisLinea, dashed, fill=grisPapel,
+      text width=1.8cm, align=center, inner sep=2mm,
+      font=\scriptsize\sffamily,
+    },
+    etiqueta/.style={
+      font=\scriptsize\sffamily, fill=white,
+      fill opacity=0.75, text opacity=1, inner sep=1pt,
+    },
+  }
+
+
+% ── Cabecera del documento ────────────────────────────────────────────────────
+\fancyhead[L]{\small\color{azulNoche}\textbf{ELECTRONICA}}
+\fancyhead[R]{\small\color{grisTexto}Verificacion de texto}
+\renewcommand{\headrulewidth}{0pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+\bandaTitulo{Verificacion de corrupcion de texto}{Filtro de prosa antes del commit: 3 capas, deteccion acotada y cobertura explicita}
+
+\vspace{4pt}
+\begin{center}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{map-signs}~Leyenda de símbolos---ISO 5807 / ANSI X3.5}]
+\small
+Óvalo = \textbf{terminador} (inicio/fin) $\cdot$
+Rectángulo = \textbf{proceso} (acción determinista) $\cdot$
+Rombo = \textbf{decisión} (ramas Sí/No) $\cdot$
+Paralelogramo = \textbf{entrada/salida} (lectura/escritura de archivos) $\cdot$
+Cilindro = \textbf{almacenamiento online} (estado, snapshots) $\cdot$
+Rectángulo con base ondulada = \textbf{documento} (sesiones, logs) $\cdot$
+Rectángulo punteado gris = \textbf{nota explicativa} (sin acción).
+Flujo: arriba$\rightarrow$abajo, izquierda$\rightarrow$derecha.
+
+\faIcon{tags}~Cada símbolo lleva una \textbf{etiqueta} (T/P/D/E/A/N + número, según su tipo);
+su significado se expande en la tabla \emph{Leyenda de etiquetas} bajo cada diagrama.
+\end{tcolorbox}
+\end{center}
+
+\vspace{6pt}
+
+\section{\iconotexto{sitemap}{Flujo principal}}
+
+\begin{center}
+\begin{tikzpicture}[flujo, >=Stealth, x=1cm, y=1cm]
+  % Fondo decorativo
+  \fill[azulNoche!3!white, rounded corners=4pt]
+    (-2.3,1.8) rectangle (5.8,-19.9);
+  \node[terminador] (T1) at (0.0,0.0) {T1};
+  \node[entradasalida] (E1) at (0.0,-2.2) {E1};
+  \node[proceso] (P1) at (0.0,-4.4) {P1};
+  \node[proceso] (P2) at (0.0,-6.6) {P2};
+  \node[almacenamiento] (A1) at (0.0,-8.8) {A1};
+  \node[decision] (D1) at (0.0,-11.0) {D1};
+  \node[terminador] (T3) at (3.5,-11.0) {T3};
+  \node[decision] (D2) at (0.0,-13.2) {D2};
+  \node[proceso] (P3) at (0.0,-15.4) {P3};
+  \node[terminador] (T2) at (0.0,-17.6) {T2};
+  \node[terminador] (T4) at (3.5,-17.6) {T4};
+
+  \draw[->] (T1.south) -- (E1.north);
+  \draw[->] (E1.south) -- (P1.north);
+  \draw[->] (P1.south) -- (P2.north);
+  \draw[->] (P2.south) -- (A1.north);
+  \draw[->] (A1.south) -- (D1.north);
+  \draw[->] (D1.east) -- (T3.west) node[etiqueta, above, pos=0.5]{No};
+  \draw[->] (D1.south) -- (D2.north) node[etiqueta, left, pos=0.5]{Si};
+  \draw[->] (D2.south) -- (P3.north) node[etiqueta, left, pos=0.5]{Si};
+  \draw[->] (P3.south) -- (T2.north);
+  \draw[->] (D2.east) -- (T4.west) node[etiqueta, above, pos=0.5]{No};
+\end{tikzpicture}
+\end{center}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+A1 & Informe: cobertura (ficheros, lineas, omitidos) mas hallazgos con fichero, linea, columna, clase y fragmento. Se escribe en .tmp/verificacion\_texto.json. \\
+D1 & Contrastar cobertura (funcion pura): se leyeron mas de cero ficheros y lineas? \\
+D2 & Hay hallazgos? \\
+E1 & Alcance: rutas posicionales, o el conjunto por defecto (Sessions, docs, directives, execution, cursos, Proyectos) podado por las exclusiones por nombre. \\
+P1 & Acotar (capa 2): resolver el alcance antes de leer nada. Con --diff se toman las lineas anadidas por git diff REF..HEAD. \\
+P2 & Escanear (capa 3): aplicar las clases activas. 'script' busca escritura extranjera intrusa; 'conocido' busca el catalogo literal de corrupciones ya vistas, con emparejamiento insensible a tildes. \\
+P3 & Registrar aprendizaje: si el fallo es nuevo, anadir la cadena al catalogo; si es una excepcion legitima, anadirla a permitidas con su motivo escrito. \\
+T1 & Inicio: se pide verificar la prosa del repo, de unas rutas concretas, o las lineas anadidas tras un ref (--diff). \\
+T2 & Fin con hallazgos, codigo 1. El flujo no falla: hay algo que corregir. Quien corrige es la orquestacion. \\
+T3 & Fin SIN VERIFICAR, codigo 2. No se ha comprobado nada, y por tanto el resultado no soporta ninguna conclusion. Es el peor caso porque parece el mejor. \\
+T4 & Fin limpio, codigo 0, con la cobertura impresa para que el verde sea auditable. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+
+\section{\iconotexto{sticky-note}{Notas}}
+\begin{itemize}
+\item Nace de un fallo repetido: cinco o seis corrupciones de prosa en una sesion, dos dentro de un mensaje de commit y dos invisibles a las comprobaciones hechas
+\item La deteccion es codigo determinista; no pasa por el enrutador ni consume creditos
+\item Las heuristicas estan apagadas por defecto: un patron que marca el 97\% del contenido sano del dominio no detecta nada
+\item El Griego se excluyo a proposito: Omega, beta, tau y pi son la notacion normal de un repo de electronica
+\item Un 0 solo significa algo junto a su cobertura; sin ficheros leidos el flujo sale con codigo 2, nunca verde
+\item El script es de solo lectura: corregir la prosa y registrar el hallazgo es trabajo de orquestacion y del operador
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\end{document}
