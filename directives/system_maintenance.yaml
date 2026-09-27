@@ -7,6 +7,12 @@
 # declaracion_honesta) y docs/MATENIMIENTO/como_evaluar_higiene.md seccion 3.
 Status: planificado
 
+# Nota de 2026-09-27: existe ya `directives/auditar_sistema.yaml` (con sus 3
+# capas), que MIDE y VEREDICTA RAM, ZRAM y servicios. Eso NO reduce este
+# marcador: auditar y mantener son cosas distintas a proposito, para que un
+# veredicto de fallo y un borrado nunca sean el mismo comando. Lo que sigue
+# faltando aqui es exactamente la parte de PURGAR, que ningun flujo cubre.
+
 Goal: "Realizar un diagnóstico y mantenimiento integral de los recursos del sistema (RAM, ZRAM, Disco) y la base de datos de memoria."
 
 Required inputs:

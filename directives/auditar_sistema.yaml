@@ -1,0 +1,166 @@
+goal: |
+  Emitir un VEREDICTO y un CODIGO DE SALIDA sobre el estado del sistema (RAM,
+  intercambio, CPU, servicios del repo, GPU). Solo lectura, sin sudo, sin
+  purgar nada.
+
+  Existe porque `flujo_diagnostico.py` ya mide RAM, CPU y disco, pero imprime
+  numeros: "carga 1.3", "RAM 72%". Eso no se puede enmarcar. La diferencia
+  entera entre medir y auditar es el veredicto y el `exit code`: un numero se
+  lee, un veredicto se puede automatizar (enmarcar, comparar con la corrida
+  anterior, elegir la siguiente capa). Este flujo no reimprime RAM: emite
+  `con_avisos`, exit 0.
+
+  Auditar y mantener son dos flujos separados A PROPOSITO. Si el que audita
+  purga, un `fallo` y un borrado seria el mismo comando, y la tentacion de
+  "arreglarlo" dejaria de ser una decision consciente. Purgar sigue siendo
+  competencia de `system_maintenance.yaml` (hoy `Status: planificado`, sin capa 3) y
+  en `flujo_disco.py`. Este flujo no toca nada del sistema.
+
+  Por que NO se fusiona con `flujo_auditar_repo.py`: uno audita el REPO (que es
+  del proyecto y por tanto se puede arreglar) y otro el SISTEMA (que es de la
+  maquina y cuyo margen esta fuera del alcance del flujo, en rutas de root).
+  Mezclarlos haria que arreglar un .tex y redimensionar particiones
+  pesaran lo mismo en un veredicto que nadie puede actuar por igual.
+
+  Y por que el algebra de veredictos esta extraida a
+  `execution/veredicto_algebra.py` y NO duplicada: dos flujos con dos algebras
+  divergen en silencio, que es la forma mas cara de equivocarse en un modulo
+  cuya unica razon de ser es la consistencia.
+
+layer: orchestration
+references:
+  orchestrator: flujo_auditar_sistema.py
+  scripts: execution/auditar_sistema.py, execution/test_auditar_sistema.py
+  reuses: |
+    execution/veredicto_algebra.py (algebra compartida con flujo_auditar_repo.py),
+    execution/sesion_log.py (trazabilidad append-only)
+  input: el sistema operativo en ejecucion (sin argumentos de fichero; la unidad de medida es la maquina)
+  output: informe por stdout, .tmp/auditoria_sistema.json y .tmp/run_state_sistema.json
+
+required_inputs:
+  - name: --dimension NOMBRE
+    description: "Repetible. Limita la pasada a esas dimensiones (memoria, intercambio, cpu, servicios, aceleracion). Repetir una dimension no la ejecuta dos veces."
+  - name: --solo A,B
+    description: "Alias de --dimension como lista separada por comas. Ambas formas se unen, de modo que `--dimension cpu --solo memoria` restringe a las dos."
+  - name: --json
+    description: "Emite el informe completo en JSON por stdout, con umbrales, evidencia por dimension y accion por dimension."
+  - name: --umbrales
+    description: "Imprime los umbrales aplicados y termina. No audita. Existe para poder ver la politica sin tener que ejecutar una pasada."
+  - name: servicios auditados
+    description: |
+      Telegram gateway y Waydroid container, las dos unidades que declara y
+      mantiene el repo (AGENTS.md, manage_bot.sh, manage_waydroid.sh). No es la
+      lista de todo systemd: auditar 300 unidades del sistema operativo no es el
+      trabajo de este flujo y avisar de unidades ajenas convierte el informe en
+      ruido que nadie lee.
+  - name: credenciales
+    description: "Ninguna. Sin API keys, sin red, sin sudo."
+
+steps:
+  - name: acotar
+    description: |
+      Resolver el subconjunto de dimensiones pedido y validarlo contra el
+      conjunto conocido. Un nombre desconocido sale con 3, que esta reservado
+      al uso incorrecto de flags y jamas se usa para un hueco de medicion.
+    script: flujo_auditar_sistema.py (DIMENSIONES)
+  - name: medir
+    description: |
+      Ejecutar la capa 3 (execution/auditar_sistema.py): leer /proc/meminfo,
+      /proc/swaps, /proc/loadavg, /proc/stat, /proc/pressure, /sys/block/zram* y
+      consultar `systemctl show` (que es consulta, no accion). La capa 3 SOLO
+      produce hechos contables y jamas un estado: elegir el veredicto alli seria
+      mover la politica a la capa equivocada. Una excepcion en una medicion no
+      tumba la pasada: esa dimension queda `no_verificado`.
+    script: execution/auditar_sistema.py (medir_memoria / medir_intercambio / medir_cpu / medir_servicios / medir_aceleracion)
+  - name: interpretar
+    description: |
+      Aplicar los umbrales a los hechos, con interpretes que son funciones PURAS
+      `(medicion) -> dimension`. Sin ficheros, sin procesos, sin reloj: por eso
+      se testean enteras. Los umbrales son constantes, NO flags, y se imprimen
+      DENTRO del informe: la misma maquina con otros umbrales daria otro
+      veredicto, y un informe que no dice con cuales se hizo es irreproducible.
+    script: flujo_auditar_sistema.py (interpretar_memoria / interpretar_intercambio / interpretar_cpu / interpretar_servicios / interpretar_aceleracion)
+  - name: componer
+    description: |
+      Ensamblar el informe con `ensamblar_informe`, otra funcion pura, y obtener
+      el veredicto global del algebra compartida. Gana el PEOR estado presente,
+      nunca un promedio.
+    script: flujo_auditar_sistema.py (ensamblar_informe) + execution/veredicto_algebra.py (clasificar_salud)
+  - name: trazar_y_persistir
+    description: |
+      Escribir `flujo/inicio`, `dimension/medida` y `flujo/fin` en el log
+      append-only, mas el estado en .tmp/. Si la trazabilidad falla, el flujo
+      avisa por stderr y CONTINUA: perder la traza no debe impedir el informe.
+    script: execution/sesion_log.py
+  - name: informar
+    description: |
+      Imprimir la tabla legible con el veredicto, y lo que hay que hacer en orden
+      de gravedad. Devolver el codigo de salida del veredicto.
+    script: flujo_auditar_sistema.py (_imprimir_informe)
+
+expected_outputs:
+  - description: "Tabla de 5 dimensiones con estado, duracion y resumen, mas el veredicto global y su codigo de salida."
+  - description: ".tmp/auditoria_sistema.json con salud, umbrales aplicados, evidencia por dimension, contexto (host, nucleos, ventana temporal) y notas."
+  - description: ".tmp/run_state_sistema.json, emparejado con su log append-only para que execution/estado_sesion.py lo juzgue en vez de marcarlo no_verificable."
+  - description: "Lineas en el log append-only: flujo/inicio, dimension/medida por dimension y flujo/fin."
+
+edge_cases:
+  - no_powershell: "Nunca. Ni sudo, ni purga, ni reinicio, ni escritura fuera de .tmp/. Si algun dia hace falta arreglar algo, eso es otro flujo."
+  - zram_lleno_no_es_presion: |
+      El falso aviso clasico. zram es RAM COMPRIMIDA: llenarse es su estado de
+      diseno, y "usado" ahi no significa que falte memoria. Por eso el veredicto
+      de `intercambio` lo lleva el swap EN DISCO y el zram se reporta aparte,
+      con su razon de compresion, que es lo que demuestra lo que ocurre por
+      dentro. En esta maquina un zram al 88% con compresion 4.5x es `ok`.
+  - swap_en_disco_es_la_senal: "Cada pagina que vuelve a disco sale de la RAM. Un swap en disco lleno si es presion, y con el disco al 91% la paginacion se nota."
+  - no_presente_no_es_caido: |
+      `LoadState` distingue `not-found` (no instalado: no_verificado) de `failed`
+      (instalado y caido: fallo) y de `inactive` (instalado y parado: aviso).
+      Sin esa distincion, instalar el repo en una maquina sin Waydroid daria un
+      `fallo` falso.
+  - sin_gpu_no_es_defecto: |
+      La ausencia de GPU discreta es un HECHO del entorno, no una averia, asi que
+      la dimension `aceleracion` sale `ok` en ambos casos. Marcarla `aviso`
+      haria que el veredicto global no pudiese ser `limpio` nunca en esta
+      maquina, y un veredicto incapaz de distinguir "todo bien" de "todo bien y
+      sin GPU" no sirve para detectar una degradacion real. El hecho y la regla
+      de Colab van en el resumen y en la accion, que se emiten siempre.
+  - carga_por_nucleo: |
+      Un load de 2 son 2 nucleos saturados y 16 ociosos. El veredicto usa la
+      carga NORMALIZADA y el loadavg de 5 minutos: el de 1 minuto es demasiado
+      espurio y el de 15 minutos lagea de mas para uso interactivo. Con steal o
+      PSI altos, un load bajo sigue siendo lentisimo, asi que steal y PSI pueden
+      solo EMPEORAR el estado, nunca mejorarlo.
+  - steal_no_se_arregla_desde_dentro: |
+      `steal` alto significa que el anfitrion de virtualizacion le roba tiempo a
+      la CPU. Se reporta porque explica lentitud que el load no ve, pero ninguna
+      accion local lo arregla: eso lo decide quien administra el anfitrion.
+  - el_flujo_mide_su_propia_carga: |
+      Una pasada de auditoria no es trivial, asi que un aviso de `cpu` con un
+      trabajo pesado corriendo a la vez puede estar midiendo ese trabajo. El
+      informe lo dice en sus notas y en la accion, en vez de presentar un numero
+      sin contexto como si fuera una averia.
+  - sin_psi: "Un kernel sin CONFIG_PSI no expone /proc/pressure. Es `None` y no degrada nada por un dato que no existe; lo que no se puede medir no se inventa."
+  - sin_memavailable: "Un kernel sin `MemAvailable` no permite saber cuanto se puede pedir sin swap. Se declara `no_medible` en vez de estimarlo con `MemFree`, que daria un numero con apariencia de medido."
+  - timeout_de_systemctl: "Si `systemctl show` no responde, `servicios` es `no_verificado` y el veredicto no puede ser verde. Un informe que no sabe si el gateway esta vivo no dice que el sistema este bien."
+  - umbral_que_no_dispara: |
+      Cada umbral se testea en su borde exacto (74.9/75.0/75.1). Un umbral mal
+      escrito que no dispara en el limite produce un sistema saturado marcado como
+      `ok`, que es el fallo mas caro posible en un veredicto. Por eso los tests
+      van al limite y no a un valor de ejemplo.
+  - cambiar_umbrales: "Cambiar un umbral es cambiar la politica: se commitea, no se pasa por linea de comandos. Si fuese un flag, el mismo comando en dos maquinas daria dos veredictos y el informe no podria decir con cual."
+  - exit_3_reservado: "El 3 es para uso incorrecto de flags (dimension inexistente). Un hueco de medicion es 2. Reservar el 2 para 'no medido' es lo que impide que un informe incompleto salga verde."
+
+invariants:
+  - "Solo lectura: cero escrituras fuera de .tmp/, cero sudo, cero purga, cero reinicio. Un veredicto de fallo y una accion de borrado nunca son el mismo comando."
+  - "El veredicto global es el PEOR estado de las dimensiones, nunca un promedio, con el algebra compartida execution/veredicto_algebra.py."
+  - "Ninguna dimension sin medir puede producir 'limpio'. Sin verificar sale con 2 y jamas verde."
+  - "La capa 3 devuelve hechos, nunca estados: un test falla si una medicion anade la clave 'estado'."
+  - "Los umbrales aplicados viajan DENTRO del informe. Sin ellos el veredicto es irreproducible por construccion."
+  - "zram lleno no es presion de memoria: el veredicto de intercambio lo lleva el swap en disco."
+  - "steal y PSI de CPU solo pueden empeorar el estado, nunca mejorarlo."
+  - "La ausencia de GPU es un hecho del entorno con estado ok, no un defecto."
+  - "not-found, failed e inactive son tres estados distintos: no instalado no es estar caido."
+  - "Un estado fuera del vocabulario {ok, aviso, fallo, no_verificado} se trata como no comprobado, nunca como sano."
+  - "Cero gasto de LLM, cero red: la medicion es codigo determinista y no pasa por el enrutador."
+  - "El codigo 3 esta reservado al uso incorrecto de flags y no se usa nunca para un hueco de medicion."

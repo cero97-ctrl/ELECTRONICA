@@ -127,6 +127,14 @@ def main() -> int:
         comprobar("con tilde se detecta", rc_a == 1, f"exit={rc_a}")
         comprobar("sin tilde tambien (insensible a diacriticos)", rc_b == 1, f"exit={rc_b}")
 
+        # Este test corre el flujo real, que escribe en el .tmp REAL del
+        # proyecto. Antes se dejaba la vista puesta y `estado_sesion.py` la
+        # reportaba como huerfana en cada ejecucion: el test contaminaba el
+        # estado que despues audita. El snapshot va ANTES de la primera
+        # invocacion (las siguientes ya lo crean), y al final se retira solo lo
+        # que el test creo, sin tocar una vista preexistente de otro flujo.
+        _vista = PROJECT_ROOT / ".tmp" / "run_state.json"
+        _preexistente = _vista.is_file()
         print("== Flujo (capa 2) ==")
         rc, out = ejecutar([str(base)], guion=FLUJO)
         comprobar("el flujo propaga exit 1 con hallazgos", rc == 1, f"exit={rc}")
@@ -137,7 +145,12 @@ def main() -> int:
         comprobar("y advierte que no comprobo nada", "NO ha comprobado nada" in out)
 
         rc, out = ejecutar([str(base)], guion=FLUJO)
-        comprobar("el flujo escribe estado en run_state", (PROJECT_ROOT / ".tmp" / "run_state.json").is_file())
+        comprobar("el flujo escribe estado en run_state", _vista.is_file())
+
+    # Retirar la vista que este test creo (ver el snapshot mas arriba). El
+    # log append-only NO se toca: es la verdad permanente.
+    if "_vista" in dir() and not _preexistente and _vista.is_file():
+        _vista.unlink()
 
     print()
     if FALLOS:

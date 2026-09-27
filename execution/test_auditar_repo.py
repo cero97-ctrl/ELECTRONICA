@@ -482,6 +482,18 @@ comprobar("toda dimension declara de donde sale (script o funcion)",
 print()
 # ---------------------------------------------------------------------------
 print("== Contrato del CLI: codigos de salida y las dos formas del flag ==")
+# Regresion: `--solo` con `default=""` no acumula, Sobescribe. Se comprobo en
+# vivo: `--solo bitacoras --solo texto` ejecutaba solo `texto` y no decia nada.
+_ap = FA.construir_parser()
+comprobar("--solo es repetible y no se sobrescribe",
+          _ap.parse_args(["--solo", "bitacoras", "--solo", "texto"]).solo
+          == ["bitacoras", "texto"],
+          "el segundo --solo borraba al primero")
+comprobar("--solo por defecto es lista vacia, no cadena",
+          _ap.parse_args([]).solo == [])
+comprobar("--solo acepta una lista con comas",
+          _ap.parse_args(["--solo", "texto,disco"]).solo == ["texto,disco"])
+
 # ---------------------------------------------------------------------------
 # El motivo de que estas aserciones exista: argparse sale con 2, y en este
 # flujo 2 significa 'no verificado'. Con el codigo de argparse, escribir mal
@@ -515,13 +527,21 @@ comprobar("ambas capas definen su propia subclase con el mismo contrato",
 # --dimension (repetible) y --solo (lista) deben ser la misma cosa, y unionarse.
 _a = FA.construir_parser().parse_args(["--dimension", "texto", "--solo", "disco"])
 comprobar("--dimension es repetible (append)", _a.dimension == ["texto"], str(_a.dimension))
-comprobar("--solo se acepta como alias de lista", _a.solo == "disco", str(_a.solo))
+# El alias ahora es una LISTA (append). Antes era una cadena, y por eso
+# `--solo a --solo b` se perdia `a` en silencio. La intencion del test original
+# -- "las dos formas se combinan" -- se conserva; lo que cambia es el tipo.
+comprobar("--solo se acepta como alias de lista", _a.solo == ["disco"], str(_a.solo))
+comprobar("--dimension y --solo se combinan (union de las dos formas)",
+          set(_a.dimension) | {d.strip() for d in _a.solo[0].split(",") if d.strip()}
+          == {"texto", "disco"})
 
 _b = FA.construir_parser().parse_args(["--dimension", "texto", "--dimension", "disco"])
 comprobar("repetir --dimension acumula sin repetir trabajo",
           _b.dimension == ["texto", "disco"], str(_b.dimension))
 
-_solo_set = {s.strip() for s in " texto , estado_sesion ,".split(",") if s.strip()}
+_solo_set: set[str] = set()
+for _bloque in _ap.parse_args(["--solo", " texto , estado_sesion ,"]).solo:
+    _solo_set |= {s.strip() for s in _bloque.split(",") if s.strip()}
 comprobar("--solo con espacios y comas sueltas se normaliza",
           _solo_set == {"texto", "estado_sesion"}, str(_solo_set))
 

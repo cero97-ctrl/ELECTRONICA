@@ -50,105 +50,17 @@ PYTHON = sys.executable
 
 sys.path.insert(0, str(EJECUCION))
 import auditar_repo as AR  # noqa: E402  (capa 3, resolucion explicita)
+import veredicto_algebra as VA  # noqa: E402  (capa 3, algebra compartida)
 
 # ---------------------------------------------------------------------------
-# Prioridad de estados. De peor a mejor. "no_verificado" va por delante de todo
-# porque no es un problema del sistema: es un limite de lo que sabemos, y un
-# informe que no sabe algo no puede llamarse limpio.
+# Algebra de veredictos: vive en CAPA 3 (`execution/veredicto_algebra.py`) porque
+# `flujo_auditar_sistema.py` necesita exactamente la misma y duplicarla
+# produciria dos verdades divergiendo en silencio. Se reexporta aqui con estos
+# nombres porque el modulo entero, sus interpretes y sus 123 tests los usan.
 # ---------------------------------------------------------------------------
-PRIORIDAD = {"no_verificado": 3, "fallo": 2, "aviso": 1, "ok": 0}
-VEREDICTO_POR_ESTADO = {
-    "no_verificado": "no_verificado",
-    "fallo": "con_fallos",
-    "aviso": "con_avisos",
-    "ok": "limpio",
-}
-
-
-def clasificar_salud(dimensiones: list[dict[str, Any]]) -> dict[str, Any]:
-    """Funcion PURA: lista de dimensiones -> veredicto global.
-
-    Sin promedio, sin pesos, sin puntuacion. Gana el peor estado presente, y la
-    precedencia entre `no_verificado` y `fallo` es explicita: si hay algo roto
-    se dice primero, porque es lo que hay que arreglar, aunque ademas haya
-    dimensiones que no se pudieron medir. El veredicto final tambien lo dice.
-
-    Es una funcion pura a proposito: se testea sola, sin ficheros ni git.
-    """
-    if not dimensiones:
-        return {
-            "veredicto": "no_verificado",
-            "exit_code": 2,
-            "motivo": "no se evaluo ninguna dimension: un informe sin dimensiones no informa",
-            "conteo": {},
-        }
-
-    conteo: dict[str, int] = {}
-    desconocidos: list[str] = []
-    for d in dimensiones:
-        estado = d.get("estado", "no_verificado")
-        conteo[estado] = conteo.get(estado, 0) + 1
-        # Un estado que no existe en el vocabulario NO se cuenta como sano. Sin
-        # esta comprobacion, una dimension con un `estado` mal escrito caia
-        # fuera de todos los `if` siguientes y salia como "limpio": un verde
-        # falsoproduced por una errata en una cadena.
-        if estado not in PRIORIDAD:
-            desconocidos.append(d.get("dimension", "?"))
-
-    if not conteo:
-        return {
-            "veredicto": "no_verificado", "exit_code": 2,
-            "motivo": "ninguna dimension devolvio estado", "conteo": conteo,
-        }
-
-    if desconocidos:
-        return {
-            "veredicto": "no_verificado", "exit_code": 2,
-            "motivo": (
-                f"{len(desconocidos)} dimension(es) devolvieron un estado fuera del "
-                f"vocabulario {sorted(PRIORIDAD)}: {', '.join(desconocidos)}. "
-                "Un estado no reconocido se trata como no comprobado, nunca como sano."
-            ),
-            "conteo": conteo,
-            "dimensiones_afectadas": desconocidos,
-            "cobertura": {"medidas": 0, "no_medidas": len(dimensiones)},
-        }
-
-    # Peor estado presente, con la precedencia explicita de arriba.
-    if conteo.get("fallo"):
-        veredicto = "con_fallos"
-        exit_code = 1
-    elif conteo.get("no_verificado"):
-        veredicto = "no_verificado"
-        exit_code = 2
-    elif conteo.get("aviso"):
-        veredicto = "con_avisos"
-        exit_code = 0
-    else:
-        veredicto = "limpio"
-        exit_code = 0
-
-    motivos = [d["dimension"] for d in dimensiones if d.get("estado") == "fallo"]
-    if conteo.get("no_verificado"):
-        motivos += [d["dimension"] for d in dimensiones
-                    if d.get("estado") == "no_verificado"]
-
-    return {
-        "veredicto": veredicto,
-        "exit_code": exit_code,
-        "motivo": (
-            f"{conteo.get('fallo', 0)} dimension(es) con fallo"
-            + (f", {conteo.get('no_verificado', 0)} sin verificar" if conteo.get("no_verificado") else "")
-            if veredicto != "limpio" else
-            f"las {len(dimensiones)} dimensiones medidas no tienen fallos"
-        ),
-        "conteo": conteo,
-        "dimensiones_afectadas": motivos,
-        "cobertura": {
-            "medidas": len(dimensiones) - conteo.get("no_verificado", 0),
-            "no_medidas": conteo.get("no_verificado", 0),
-        },
-    }
+PRIORIDAD = VA.PRIORIDAD
+VEREDICTO_POR_ESTADO = VA.VEREDICTO_POR_ESTADO
+clasificar_salud = VA.clasificar_salud
 
 
 # ---------------------------------------------------------------------------
@@ -513,7 +425,7 @@ def construir_parser() -> argparse.ArgumentParser:
     ap.add_argument("--rapido", action="store_true", help="omitir texto, barrera y test_texto")
     ap.add_argument("--dimension", action="append", default=[],
                     help="repetible: restringir la pasada a esa dimension")
-    ap.add_argument("--solo", default="",
+    ap.add_argument("--solo", action="append", default=[],
                     help="alias de --dimension como lista separada por comas")
     ap.add_argument("--timeout-dim", type=int, default=0,
                     help="forzar timeout por dimension (0 = el de cada una)")
@@ -525,7 +437,13 @@ def main(argv: list[str] | None = None) -> int:
 
     # Las dos formas se unen, de modo que --dimension texto --solo disco
     # restringe a las dos, y repetir una dimension no la ejecuta dos veces.
-    pedidas = set(args.dimension) | {s.strip() for s in args.solo.split(",") if s.strip()}
+    # `--solo` es append, no un string: con `default=""` el segundo `--solo`
+    # SOBRESCRIBIA al primero y se perdian dimensiones en silencio
+    # (`--solo bitacoras --solo texto` ejecutaba solo `texto`). Perder trabajo
+    # pedido sin decir nada es el peor tipo de bug en una flag.
+    pedidas = set(args.dimension)
+    for bloque in args.solo:
+        pedidas |= {s.strip() for s in bloque.split(",") if s.strip()}
     conocidas = {d["nombre"] for d in DIMENSIONES_REUTILIZADAS} | set(DIMENSIONES_NUEVAS)
     desconocidas = pedidas - conocidas
     if desconocidas:
