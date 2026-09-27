@@ -16,9 +16,13 @@ required_inputs:
       Archivo JSON con la estructura del proceso. Campos:
       titulo (str), subtitulo (str), cabecera_izq/der (str), icono_banda (str, FontAwesome),
       notas (opcional, lista de str), secciones (lista): cada sección tiene nombre, icono,
-      nodos (id, tipo, texto, significado, col, fila) y conexiones (from, to, etiqueta).
+      nodos (id, tipo, significado, col, fila) y conexiones (from, to, etiqueta).
       Tipos de nodo válidos: terminador, proceso, decision, almacenamiento, entradasalida,
       documento, nota. Se ubica en .tmp/descriptor_<proceso>.json.
+      CONVENCIÓN (patrón docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex): el diagrama
+      muestra SOLO la etiqueta del nodo (T/P/D/E/A/N + número, el campo `id`); el campo
+      `significado` expande esa etiqueta en la tabla "Leyenda de etiquetas" bajo cada
+      diagrama. Las conexiones llevan solo rótulos cortos de decisión (Sí/No).
   - name: output
     description: >-
       Prefijo de salida sin extensión, p. ej. docs/AGENTE_IA/sync_faq_flujo_flujo.
@@ -30,10 +34,12 @@ steps:
     description: >-
       El orquestador modela el proceso terminado como JSON: lee la directiva y el flujo
       real, identifica nodos (terminadores T, procesos P, decisiones D, almacenamiento A,
-      entrada/salida E, documento N) y conexiones con sus etiquetas (Sí/No u otras).
-      Es parsing de intención, no decisión probabilística: la geometría (col, fila) se elige
-      de forma predecible (tronco principal en col 0 hacia abajo, ramas a la derecha
-      col+1/+2, evitando que las flechas crucen nodos). El descriptor se guarda en .tmp/.
+      entrada/salida E, documento N) y conexiones con sus etiquetas (Sí/No u otras cortas).
+      Solo el `id` se renderiza dentro del símbolo; el `significado` (descripción completa,
+      tildes correctas) alimenta la tabla de leyenda. Es parsing de intención, no decisión
+      probabilística: la geometría (col, fila) se elige de forma predecible (tronco
+      principal en col 0 hacia abajo, ramas a la derecha col+1/+2, evitando que las flechas
+      crucen nodos). El descriptor se guarda en .tmp/.
 
   - action: generar
     script: execution/generar_diagrama_flujo.py --descriptor .tmp/descriptor_<proceso>.json

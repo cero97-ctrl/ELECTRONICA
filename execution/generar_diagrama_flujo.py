@@ -37,7 +37,7 @@ TIPOS_VALIDOS = frozenset({
 })
 
 COL_SPACING_CM = 3.5
-FILA_SPACING_CM = 2.0
+FILA_SPACING_CM = 2.2
 
 # ─── Estilos TiKZ ISO 5807 / ANSI X3.5 (constante, no depende de external files) ──
 TIKZ_ESTILOS_ISO = r"""
@@ -49,39 +49,39 @@ TIKZ_ESTILOS_ISO = r"""
     },
     terminador/.style={
       draw=azulNoche, fill=azulNoche!8!white, rounded corners=3pt,
-      text width=2.2cm, align=center, inner sep=2mm,
+      text width=1.6cm, align=center, inner sep=2mm,
       font=\footnotesize\sffamily,
     },
     proceso/.style={
       draw=azulNoche, fill=cyanNeon!10!white,
-      text width=2.2cm, align=center, inner sep=2mm,
+      text width=1.6cm, align=center, inner sep=2mm,
       font=\footnotesize\sffamily,
     },
     entradasalida/.style={
       draw=azulNoche, fill=verdeSignal!10!white,
       trapezium, trapezium left angle=75, trapezium right angle=105,
-      text width=2.2cm, align=center, inner sep=2mm,
+      text width=1.8cm, align=center, inner sep=2mm,
       font=\footnotesize\sffamily,
     },
     decision/.style={
       draw=azulNoche, fill=amarilloNota!20!white,
-      diamond, aspect=1.6, text width=2.0cm, align=center, inner sep=1pt,
+      diamond, aspect=1.6, text width=1.5cm, align=center, inner sep=1pt,
       font=\footnotesize\sffamily,
     },
     almacenamiento/.style={
       draw=azulNoche, fill=grisPapel,
       cylinder, shape border rotate=90, aspect=0.3,
-      text width=2.2cm, align=center, inner sep=2mm,
+      text width=1.7cm, align=center, inner sep=2mm,
       font=\footnotesize\sffamily,
     },
     documento/.style={
       draw=azulNoche, fill=azulMedio!8!white,
-      text width=2.2cm, align=center, inner sep=2mm,
+      text width=1.8cm, align=center, inner sep=2mm,
       font=\footnotesize\sffamily,
     },
     nota/.style={
       draw=grisLinea, dashed, fill=grisPapel,
-      text width=2.4cm, align=center, inner sep=2mm,
+      text width=1.8cm, align=center, inner sep=2mm,
       font=\scriptsize\sffamily,
     },
     etiqueta/.style={
@@ -156,14 +156,16 @@ def _escape_tex(texto: str) -> str:
 
 
 def _generar_nodos_latex(nodos: list[dict]) -> str:
+    # Convención (directivas/diagrama_flujo.yaml): el diagrama solo muestra la
+    # etiqueta del nodo (T/P/D/E/A/N + número); su significado vive en la tabla
+    # "Leyenda de etiquetas" bajo el diagrama. El campo `texto` es solo referencia.
     lineas = []
     for nodo in nodos:
         nid = nodo["id"]
         tipo = nodo["tipo"]
-        texto = _escape_tex(nodo.get("texto", nid))
         x, y = _nodo_a_coordenada(nodo)
         lineas.append(
-            f"  \\node[{tipo}] ({nid}) at ({x},{y}) {{{texto}}};"
+            f"  \\node[{tipo}] ({nid}) at ({x},{y}) {{{nid}}};"
         )
     return "\n".join(lineas)
 
@@ -243,28 +245,22 @@ def _generar_tikzpicture(seccion: dict) -> str:
 
 
 def _generar_tabla_leyenda(nodos: list[dict]) -> str:
-    """Genera tabla de leyenda de etiquetas (tipo | etiqueta | significado)."""
-    tipos_map = {
-        "terminador": "Óvalo (terminador)",
-        "proceso": "Rectángulo (proceso)",
-        "decision": "Rombo (decisión)",
-        "almacenamiento": "Cilindro (almacenamiento)",
-        "entradasalida": "Paralelogramo (entrada/salida)",
-        "documento": "Rectángulo + onda (documento)",
-        "nota": "Rectángulo punteado (nota)",
-    }
+    """Genera la tabla 'Leyenda de etiquetas' (Etiqueta | Significado).
+
+    Convención (directivas/diagrama_flujo.yaml): el diagrama solo muestra
+    etiquetas (T/P/D/E/A/N + número); esta tabla expande su significado.
+    """
     filas = []
     for n in sorted(nodos, key=lambda x: x["id"]):
-        tipo_largo = tipos_map.get(n["tipo"], n["tipo"])
         sig = _escape_tex(n.get("significado", n.get("texto", "")))
-        filas.append(f"{n['id']} & {tipo_largo} & {sig} \\\\")
+        filas.append(f"{n['id']} & {sig} \\\\")
     filas_str = "\n".join(filas)
-    return rf"""\begin{{tcolorbox}}[cajaContenido, title={{\faIcon{{tags}}~Leyenda de etiquetas}}]
+    return rf"""\vspace{{6pt}}
+\begin{{tcolorbox}}[cajaContenido, title={{\faIcon{{table}}~Leyenda de etiquetas}}]
 \small
-\begin{{tabularx}}{{\linewidth}}{{@{{}}llX@{{}}}}
+\begin{{tabularx}}{{\linewidth}}{{@{{}}>{{\centering\arraybackslash}}p{{1.4cm}}X@{{}}}}
 \toprule
-\textbf{{Etiqueta}} & \textbf{{Símbolo}} & \textbf{{Significado}} \\
-\midrule
+\textbf{{Etiqueta}} & \textbf{{Significado}} \\ \midrule
 {filas_str}
 \bottomrule
 \end{{tabularx}}

@@ -305,32 +305,32 @@ Cada ejecución del orquestador recorre esta secuencia (fases E1--E5 del SOP):
 \begin{center}
 \begin{tikzpicture}[flujo, scale=0.66, transform shape, x=1cm, y=1cm]
   % Nodo inicial
-  \node[terminador] (inicio) at (0,0) {Orquesta\\ \texttt{--once}};
-  \node[proceso] (f1) at (0,-1.6) {SHA-256\\ del .md};
-  \node[almacenamiento, text width=3cm, align=center] (estado) at (3,-1.6) {Estado\\ \texttt{faq\_flujo\_sync.json}};
-  \node[decision] (f2) at (0,-3.3) {¿Cambió?};
-  \node[terminador] (fin0) at (3,-3.3) {Fin\\ sin cambios};
-  \node[proceso] (p1) at (0,-5.0) {Clasificar plan};
-  \node[decision] (f3) at (0,-6.7) {¿Cambio\\ estructural?};
-  \node[proceso] (det) at (-3,-6.7) {Inyectar\\ campos};
-  \node[proceso] (llm1) at (0,-8.4) {LLM quirúrgico\\ (enrutador)};
-  \node[nota] (notallm) at (3.2,-7.6) {Aviso previo\\ de créditos\\ OpenRouter};
-  \node[proceso] (c1) at (0,-10.2) {Reescribir .tex};
-  \node[proceso] (c2) at (0,-11.9) {pdflatex $\times$\\ 2 pasadas};
-  \node[proceso] (c3) at (0,-13.6) {Copiar PDF};
-  \node[proceso] (c4) at (0,-15.3) {Verificar\\ PDF};
-  \node[proceso] (c5) at (0,-17.0) {Estado +\\ snapshot};
-  \node[terminador] (fin) at (0,-18.7) {Fin\\ sincronizado};
+  \node[terminador] (inicio) at (0,0) {T1};
+  \node[proceso] (f1) at (0,-1.6) {P1};
+  \node[almacenamiento] (estado) at (3,-1.6) {A1};
+  \node[decision] (f2) at (0,-3.3) {D1};
+  \node[terminador] (fin0) at (3,-3.3) {T2};
+  \node[proceso] (p1) at (0,-5.0) {P2};
+  \node[decision] (f3) at (0,-6.7) {D2};
+  \node[proceso] (det) at (-3,-6.7) {P3};
+  \node[proceso] (llm1) at (0,-8.4) {P4};
+  \node[nota] (notallm) at (3.2,-7.6) {N1};
+  \node[proceso] (c1) at (0,-10.2) {P5};
+  \node[proceso] (c2) at (0,-11.9) {P6};
+  \node[proceso] (c3) at (0,-13.6) {P7};
+  \node[proceso] (c4) at (0,-15.3) {P8};
+  \node[proceso] (c5) at (0,-17.0) {P9};
+  \node[terminador] (fin) at (0,-18.7) {T3};
 
   % Aristas
   \draw[->] (inicio.south) -- (f1.north);
   \draw[<->, dashed] (f1.east) -- (estado.west);
   \draw[->] (f1.south) -- (f2.north);
   \draw[->] (f2.east) -- node[etiqueta, right, pos=0.5]{No} (fin0.west);
-  \draw[->] (f2.south) -- node[etiqueta, left, pos=0.5]{Sí} (p1.north);
+  \draw[->] (f2.south) -- node[etiqueta, left, pos=0.5]{S\'i} (p1.north);
   \draw[->] (p1.south) -- (f3.north);
   \draw[->] (f3.west) -- node[etiqueta, left, pos=0.5]{No} (det.east);
-  \draw[->] (f3.south) -- node[etiqueta, left, pos=0.5]{Sí} (llm1.north);
+  \draw[->] (f3.south) -- node[etiqueta, left, pos=0.5]{S\'i} (llm1.north);
   \draw[dashed] (llm1.east) -- (notallm.west);
   \draw[->] (det.south) |- (c1.west);
   \draw[->] (llm1.south) -- (c1.north);
@@ -340,6 +340,32 @@ Cada ejecución del orquestador recorre esta secuencia (fases E1--E5 del SOP):
   \draw[->] (c4.south) -- (c5.north);
   \draw[->] (c5.south) -- (fin.north);
 \end{tikzpicture}
+
+\vspace{6pt}
+\begin{tcolorbox}[cajaContenido, title={\faIcon{table}~Leyenda de etiquetas}]
+\small
+\begin{tabularx}{\linewidth}{@{}>{\centering\arraybackslash}p{1.4cm}X@{}}
+\toprule
+\textbf{Etiqueta} & \textbf{Significado} \\ \midrule
+T1 & Inicio: el orquestador arranca con \texttt{flujo\_sync\_faq\_flujo.py --once}. \\
+P1 & C\'alculo del hash SHA-256 del \texttt{faq\_higiene\_estado\_sesion.md} (funci\'on pura determinista). \\
+A1 & Estado del flujo: \texttt{.tmp/faq\_flujo\_sync.json} (hashes md/tex, v\'ia, secciones). \\
+D1 & \textquestiondown{}El hash del \texttt{.md} coincide con el guardado? S\'i \textrightarrow{} proceso inerte; No \textrightarrow{} clasificar. \\
+T2 & Fin sin cambios: el documento y el flujo quedan sincronizados. \\
+P2 & Clasificar el \texttt{diff} del \texttt{.md} contra el snapshot (\texttt{regenerar\_faq\_flujo.py --plan}). \\
+D2 & \textquestiondown{}Cambio estructural (requiere LLM)? S\'i \textrightarrow{} re-traducci\'on; No \textrightarrow{} inyectar campos. \\
+P3 & Inyectar campos deterministas (regex): fecha, modelo obsoleto, n\'umero de bit\'acoras antiguas. \\
+P4 & Re-traducci\'on quir\'urgica v\'ia LLM: tier decidido por \texttt{enrutador.py}, edits JSON validados. \\
+N1 & Aviso previo de consumo de cr\'editos OpenRouter antes de invocar el LLM. \\
+P5 & Reescribir \texttt{faq\_higiene\_estado\_sesion\_flujo.tex} aplicando los edits validados. \\
+P6 & Compilar con 2 pasadas de pdflatex (log conservado v\'ia \texttt{compile\_latex.py clean=False}). \\
+P7 & Copiar el \texttt{.pdf} del build a \texttt{docs/AGENTE\_IA/}. \\
+P8 & Guardrail post-compilaci\'on: 0 errores ``!'' en el log; overfull y solapes registrados. \\
+P9 & Estado + snapshot: actualiza \texttt{faq\_flujo\_sync.json} y el snapshot del \texttt{.md}; alerta audible. \\
+T3 & Fin sincronizado: el flujo queda actualizado y compilado. \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
 \end{center}
 
 \emph{Nota: la decisión central ``¿cambio estructural?'' la toma \texttt{regenerar\_faq\_flujo.py}
