@@ -200,6 +200,47 @@ def _interpreta_test(stdout: str, timeout: bool) -> dict[str, Any]:
     }
 
 
+AMBITO_DISCO = (
+    "solo la whitelist del proyecto (execution/catalogo_disco.py, validada por "
+    "la barrera); no incluye /var/lib/docker, /var/lib/waydroid, /var/lib/containerd "
+    "ni ninguna ruta de root"
+)
+
+
+def _accion_disco(estado: str, rec_mb: float | None) -> str:
+    """Accion de la dimension `disco`.
+
+    Antes de este cambio el interprete no devolvia clave `accion`, de modo que
+    `disco` --que suele ser la dimension en `fallo`-- no aparecia entre las
+    acciones de la seccion "Que hacer, en orden de gravedad". La dimension mas
+    grave era la unica que callaba.
+
+    El texto dice la verdad incomoda: lo que el flujo puede liberar es
+    irrelevante frente a lo que el disco tiene ocupado fuera de su alcance. Las
+    cifras (43.6 GB de imagenes Docker) son una medicion con fecha, no un
+    contrato, asi que van en el documento y en la bitacora, no aqui: este
+    resumen tiene que ser estable entre corridas.
+    """
+    if estado != "fallo":
+        return ("Fuera de umbral de purga. La cifra recuperable es solo la del "
+                f"proyecto ({AMBITO_DISCO}); no dice nada del resto del disco.")
+    if rec_mb is None:
+        return ("Lo recuperable no se puede cuantificar: disco_medir.py no lo "
+                "informo. Ausencia de dato, no cero, asi que no se puede afirmar "
+                "que el margen sea poco ni mucho. Reintentar la medicion antes de "
+                "decidir nada; si se confirma, la cifra sera de la whitelist y el "
+                "margen real quedara fuera del alcance del flujo.")
+    return (
+        "El flujo casi no puede hacer nada por si mismo: lo recuperable por su "
+        "cuenta es irrelevante. El margen real esta FUERA de su whitelist, en rutas de root "
+        "que `du` no puede leer sin privilegios (imagenes de Docker, Waydroid, "
+        "containerd), asi que hace falta una decision del operador; el flujo no "
+        "las toca y no debe. Ojo con `docker system prune -a`: tambien se lleva "
+        "las imagenes de build del proyecto (kicad/kicad:8.0, pcb_sandbox, "
+        "agent-sandbox), que habria que volver a descargar."
+    )
+
+
 def _interpreta_disco(rc: int, stdout: str, timeout: bool) -> dict[str, Any]:
     """disco_medir.py: el estado lo decide `filesystem.uso_pct`.
 
@@ -240,15 +281,19 @@ def _interpreta_disco(rc: int, stdout: str, timeout: bool) -> dict[str, Any]:
 
     return {
         "estado": estado,
-        "resumen": f"disco al {uso}% ({fs.get('libre_gb', '?')} GB libres); {legible}",
+        "resumen": (f"disco al {uso}% ({fs.get('libre_gb', '?')} GB libres); "
+                    f"{legible} [ambito: {AMBITO_DISCO}]"),
+        "accion": _accion_disco(estado, rec_mb),
         "evidencia": {
             "uso_pct": uso, "libre_gb": fs.get("libre_gb"),
             "inodos_pct": fs.get("inodos_usados_pct"),
             "recuperable_mb": rec_mb,
+            "ambito": AMBITO_DISCO,
             "nota": (
                 "si uso>=90 y recuperable_mb==0, purgar no ayudara: hace falta una "
                 "decision. Si recuperable_mb es null, el dato no vino y hay que "
-                "repetir la medicion; no debe leerse como cero."
+                "repetir la medicion; no debe leerse como cero. El numero es lo "
+                "que el flujo PUEDE borrar, no lo que el disco PUEDE liberar."
             ),
         },
     }

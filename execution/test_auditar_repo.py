@@ -231,6 +231,34 @@ comprobar("int. disco: sin resumen_catalogo, el resumen declara la laguna",
 comprobar("int. disco: el estado sigue decidiéndose por uso_pct aunque falte el catálogo",
           _sin_catalogo["estado"] == "fallo", _sin_catalogo["estado"])
 
+# El ambito de la cifra, y la accion que faltaba por completo. Sin esto el
+# informe publicaba "16.1 MB recuperables" sin decir que eso es SOLO lo del
+# proyecto: leido suelto dice "el disco esta bien", cuando el margen real esta
+# en rutas de root fuera del alcance del flujo.
+comprobar("int. disco: el resumen declara su ambito",
+          "ambito" in _r["resumen"] and "catalogo_disco.py" in _r["resumen"],
+          _r["resumen"])
+comprobar("int. disco: el ambito nombra las rutas que NO cubre",
+          all(s in FA.AMBITO_DISCO for s in ("/var/lib/docker", "/var/lib/waydroid", "root")),
+          FA.AMBITO_DISCO)
+comprobar("int. disco: evidencia expone el ambito de forma legible por maquina",
+          _r["evidencia"]["ambito"] == FA.AMBITO_DISCO)
+comprobar("int. disco: en fallo hay accion (antes no la habia: 0 acciones en el informe)",
+          bool(_r.get("accion")), "accion ausente")
+comprobar("int. disco: la accion advierte de que el margen esta fuera del flujo",
+          "FUERA de su whitelist" in _r["accion"], _r["accion"][:80])
+comprobar("int. disco: la accion avisa del riesgo de docker prune con las imagenes del proyecto",
+          "docker system prune" in _r["accion"] and "kicad/kicad:8.0" in _r["accion"])
+comprobar("int. disco: sin dato de recuperable, la accion manda repetir la medicion",
+          "Reintentar la medicion" in _sin_catalogo["accion"], _sin_catalogo["accion"][:80])
+_aviso_disco = FA._interpreta_disco(0, json.dumps({"filesystem": {"uso_pct": 85}}), False)
+comprobar("int. disco: fuera de umbral, la accion NO dramatiza",
+          "FUERA de su whitelist" not in _aviso_disco["accion"], _aviso_disco["accion"][:80])
+comprobar("int. disco: fuera de umbral, la accion sigue declarando el ambito",
+          "catalogo_disco.py" in _aviso_disco["accion"])
+comprobar("int. disco: resumen y accion no afirman que 0 sea el total del disco",
+          "todo el disco" not in _r["accion"] or "no dice nada del resto" in _aviso_disco["accion"])
+
 comprobar("int. test: cuenta los fallos de la linea de aserciones",
           FA._interpreta_test("Aserciones OK: 88   Fallos: 2", False)["estado"] == "fallo")
 comprobar("int. test: todo verde -> ok",

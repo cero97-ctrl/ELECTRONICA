@@ -172,7 +172,7 @@ mientras se construia. Ver seccion 6.
 
 Regla: **el nucleo (`clasificar_salud`) se testea como funcion pura**, y cada
 comprobacion de capa 3 se prueba sobre un repo minimo construido en un
-`temporarydir`. Hoy son 102 aserciones.
+`temporarydir`. Hoy son 112 aserciones.
 
 ```bash
 python3 execution/test_auditar_repo.py
@@ -332,6 +332,8 @@ Cada una ocurrio durante la construccion. Están tambien en la directiva.
 | Deteccion de capa 3 por forma de ruta | 13 falsos positivos en flujos que si delegan | Intersectar el **nombre** del script con los ficheros reales de `execution/` |
 | Escaneo de secretos en codigo vendorizado | Falsos positivos en `workerd` / `miniflare` | Excluir por prefijo las carpetas de codigo ajeno |
 | Fixture inventado (seccion 5) | El informe afirma un `0` que nadie midio | Fixture desde la salida real; la ausencia se declara |
+| Interprete sin clave `accion` | La dimension mas grave no sale de "Que hacer" | Toda dimension con estado distinto de `ok` devuelve accion |
+| Cifra sin declarar su ambito | "16.1 MB recuperables" se lee como "el disco esta bien" | Decir que es lo unico que el flujo *puede* borrar, no lo que el disco *puede* liberar |
 | `PROGRAMA` con palabra inglesa pegada | "y no se **knew** antes" | El verificador de texto busca CJK, mojibake y `camelCase`; **no** detecta code-switching en comentarios |
 | Icono inexistente en el diagrama | `! Package fontawesome5 Error: ... was not` | Probar cada icono; el generador puede publicar un PDF con errores |
 
@@ -410,7 +412,7 @@ de tres mostro un ahorro real del 43 %, no porque la intuicion lo dijera.
 
 ```bash
 python3 -m py_compile flujo_auditar_repo.py execution/auditar_repo.py
-python3 execution/test_auditar_repo.py        # 102 aserciones
+python3 execution/test_auditar_repo.py        # 112 aserciones
 python3 execution/test_barrera_disco.py       # 88
 python3 execution/test_verificar_texto.py     # 22
 python3 execution/verificar_texto.py AGENTS.md directives/auditar_repo.yaml
@@ -459,6 +461,17 @@ python3 execution/generar_diagrama_flujo.py --descriptor .tmp/descriptor_<x>.jso
   mantenimiento (medir, purgar la whitelist, verificar), no un evaluador de
   salud. La unica dimension de nivel sistema dentro de la auditoria del repo es
   `disco`.
+- **El alcance de la dimension `disco` es la whitelist, no el disco.** Medido el
+  2026-09-27: `du` ve 124 GB de los 201 GB que declara `df`, y **43,6 GB de esa
+  diferencia son imagenes de Docker en `/var/lib/docker`** (96 % recuperables
+  segun `docker system df`; 3 contenedores parados hace 7 meses). Es el 22 % de
+  todo lo que ocupa el disco, y las 27 entradas de `catalogo_disco.py` no pueden
+  alcanzarlo. No es un descuido: la barrera existe para que el flujo nunca toque
+  rutas del sistema, y esa decision tiene esta consecuencia. Pero significa que
+  "no hay nada recuperable" quiere decir "no hay nada recuperable **dentro del
+  proyecto**", y el resumen de la dimension lo dice ahora explicitamente para
+  que no se lea como "el disco esta cuidado". Los ~33 GB restantes (Waydroid,
+  containerd) solo se pueden medir con `sudo du -xsh /var/lib/* | sort -rh`.
 - **Capa 1 completa:** no se verifica que cada flujo tenga su directiva. El
   mapeo flujo-directiva no es 1:1 y solo 4 de 20 flujos declaran `orchestrator:`.
   Se reporta como no verificable en vez de inventar una regla que no se sostiene.
