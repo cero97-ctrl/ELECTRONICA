@@ -257,6 +257,34 @@ sea visible y no una cifra magica. La descripcion del target, que hardcodeaba "1
 Aviso de coste: el recorrido en exclusivo sobre `pkgs` son ~14 s extra en la dimension
 `disco`.
 
+- **P2 RESUELTO (correccion, no espacio)** la guarda de antiguedad de `disco_medir` y
+  `disco_purgar` preguntaba al DIRECTORIO CONTENEDOR, no al target. Con un patron
+  estrecho eso no es lo mismo: `tmp-clones` (`.tmp/repo_clone_*`, min 7d) se
+  conservaba porque `.tmp/` tenia 211 ficheros de menos de 7 dias — los informes
+  que genera la propia auditoria — y no por nada de los clones. Un guard que da
+  True siempre que haya actividad en el repo no protege nada, solo oculta el
+  espacio. Ahora `hay_entradas_recientes_de_target()` pregunta por las entradas
+  que casan, que es la lista que `_plan_entradas()` borra; `contenido`/`rotar`
+  (patron `*`) no cambian, porque ahi preguntar por todos los hijos ya era
+  correcto. **No libera espacio**: ver P4, la razon de verdad es otra.
+- **P4 abierto, requiere decision del usuario** los 115 MB de `tmp-clones` siguen
+  conservados, y ahora por una razon VERIFICADA: `.git/` de cada clon tiene mtime
+  de hace minutos, mientras el unico fichero reciente de 11.184 es el propio
+  directorio `.git` (ni un solo objeto, ni reflog, ni FETCH_HEAD). Medido:
+  `git status` dentro del clon mueve ese mtime sin reescribir `.git/index`.
+  Es decir, la guarda la puede disparar una herramienta, no el humano. Y algo las
+  dispara cada ~1-2 min: no hay crontab, ni timer systemd sospechoso, ni proceso
+  vivo, y nada del repo invoca git sobre repos descubiertos. **No se identifica al
+  autor.** La pregunta de politica es si `min_edad_dias` debe ignorar la
+  bookkeeping de un VCS: `.git` cambiando no es actividad de la persona. Es la
+  misma distincion que ya hace la dimension `entornos` con `.pyc` (evidencia de
+  uso, no mtime de cualquier fichero), pero aqui la respuesta es al reves y relaja
+  una guarda de borrado, asi que no se decide solo.
+- **P2 obsoleto, se corrige la anotacion** el P2 anterior de `tmp-clones`
+  ("marcado conservado_reciente por el `.git` interno de 19,8/22,9 dias") era
+  medio verdad y senalaba a la solucion equivocada. El sintoma se ve igual, pero la
+  causa de la guarda era el padre, no el `.git`. El `.git` explica el residuo (P4).
+
 ## Pendientes
 - ~~**P1** `flujo_auditar_repo.py:521` retira `run_state.json` al cerrar.~~
   **RESUELTO**: la vista pasa a `run_state_{run_id}.json` y se borra al cerrar la

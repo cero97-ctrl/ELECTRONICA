@@ -53,7 +53,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from catalogo_disco import (  # noqa: E402
     CATALOGO, TAMANO_HUMANO, TIERS, Target, contenedor_de, du_bytes, du_pies_carpeta,
-    hay_entradas_recientes, objetivo_por_id, pistas_sudo, validar_destino,
+    hay_entradas_recientes_de_target, objetivo_por_id, pistas_sudo, validar_destino,
 )
 
 
@@ -146,8 +146,14 @@ def purgar_target(t: Target, args) -> dict:
     # Guarda de antigüedad: si algo se movió hace poco, no se toca el target entero.
     # Aplica a TODOS los modos, incluido el nativo: si un caché se acaba de usar,
     # vaciarlo con la herramienta oficial tampoco procede.
+    #
+    # Se pregunta por el TARGET y no por su contenedor (misma regla que usa
+    # `disco_medir`): para un patrón estrecho, preguntar "¿hay algo reciente en el
+    # padre?" conservaba el target entero por culpa de ficheros que no son
+    # suyos. Medir y purgar deben hacer la misma pregunta; si no, el informe
+    # ofrece un espacio que la purga luego niega sin explicar por qué.
     min_edad = t.min_edad_dias if args.min_edad_dias is None else max(0, args.min_edad_dias)
-    if min_edad > 0 and hay_entradas_recientes(contenedor, min_edad):
+    if min_edad > 0 and hay_entradas_recientes_de_target(t, min_edad):
         reg.update(estado="omitido", motivo="conservado_reciente")
         return reg
 

@@ -38,7 +38,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from catalogo_disco import (  # noqa: E402
     CATALOGO, HOME, REPO_ROOT, TAMANO_HUMANO, bytes_exclusivos, contenedor_de,
     du_bytes, du_bytes_lote, du_hijos, du_mayores, du_pies_carpeta,
-    edad_entrada_dias, hay_entradas_recientes, pistas_sudo, validar_destino,
+    edad_util_de_target, hay_entradas_recientes_de_target,
+    pistas_sudo, validar_destino,
 )
 
 GB = 1024 ** 3
@@ -110,7 +111,7 @@ def medir_targets() -> list[dict]:
         # target entero. Sin esto, quien decide vería espacio disponible que en
         # realidad no se puede tocar y despertaría para no hacer nada.
         reciente = bool(existe and t.min_edad_dias > 0
-                        and hay_entradas_recientes(base, t.min_edad_dias))
+                        and hay_entradas_recientes_de_target(t, t.min_edad_dias))
         # En un arbol con hardlinks, lo aparente y lo purgable no son lo mismo:
         # borrar la entrada de `pkgs` no libera un bloque que un entorno vivo
         # sigue enlazando. Se pesa en exclusivo para no prometer espacio que no
@@ -138,7 +139,7 @@ def medir_targets() -> list[dict]:
             "tamano_exclusivo_humano": TAMANO_HUMANO(bytes_excl) if bytes_excl is not None else None,
             "medicion_exclusiva": bool(t.medir_exclusivo and bytes_excl is not None),
             "bytes_purgables": bytes_purgables if purgable else 0,
-            "edad_dir_dias": round(edad_entrada_dias(base), 2) if existe else -1.0,
+            "edad_dir_dias": round(edad_util_de_target(t), 2) if existe else -1.0,
             "min_edad_dias": t.min_edad_dias,
             "borrable": purgable,
             "unidad_borrable": unidad,

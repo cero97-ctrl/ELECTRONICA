@@ -695,6 +695,54 @@ def hay_entradas_recientes(ruta: Path | str, dias: float) -> bool:
     return edad_dias(r) < dias
 
 
+def hay_entradas_recientes_de_target(t: Target, dias: float) -> bool:
+    """La guarda de antigüedad del TARGET, no la del directorio que lo contiene.
+
+    `contenedor_de()` responde a otra pregunta: qué directorio no se borra en
+    contenido/glob/rotar. Para un target con comodín devuelve el padre, y
+    "¿hay algo reciente en el padre?" no es "¿hay algo reciente entre lo que este
+    target puede borrar?". Para un patrón estrecho las dos preguntas no se
+    parecen en nada.
+
+    El caso medido: `tmp-clones` (`.tmp/repo_clone_*`, min 7d) salía
+    `conservado_reciente` con 120 MB de clones de 20 días. No porque los clones
+    tuvieran algo reciente, sino porque `.tmp/` — el padre — tiene 211 ficheros de
+    menos de 7 días, incluidos los informes que genera la propia auditoría. La
+    guarda daba True siempre que hubiera actividad en el repo, que es siempre.
+    Un guard que no se puede abrir es indistinguible de un guard que no existe.
+
+    Solo cambia `modo="glob"`, donde el patrón es un subconjunto de los hijos. En
+    `contenido`/`rotar` el patrón es `*` y la unidad borrable son todos los hijos,
+    así que preguntar por todos ellos ya es la pregunta correcta. En
+    `directorio`/`nativo` la unidad es el contenedor entero y sus hijos cuentan.
+
+    La guarda no se relaja: pasa a perguntar por las entradas que casan, que es
+    justo la lista que `disco_purgar._plan_entradas()` borra. Un clon recién
+    clonado sigue protegido por su propia edad.
+    """
+    if t.modo in ("directorio", "nativo"):
+        return hay_entradas_recientes(contenedor_de(t), dias)
+    return any(
+        hay_entradas_recientes(entrada, dias)
+        for entrada in du_pies_carpeta(contenedor_de(t), t.patron)
+    )
+
+
+def edad_util_de_target(t: Target) -> float:
+    """Antigüedad de la entrada MÁS JOVEN que el target puede llegar a borrar.
+
+    Importa la más joven, no la del contenedor: es la que decide si la guarda se
+    abre. Con `base` se reportaba la edad de `.tmp/` para `tmp-clones` (casi 0
+    días) cuando las entradas reales tenían 20 — un número que no correspondía a
+    nada de lo que el target describe. -1 si no hay entradas.
+    """
+    base = contenedor_de(t)
+    if t.modo in ("directorio", "nativo"):
+        return edad_entrada_dias(base)
+    edades = [e for e in (edad_entrada_dias(x) for x in du_pies_carpeta(base, t.patron)) if e >= 0]
+    return min(edades) if edades else -1.0
+
+
 def edad_entrada_dias(ruta: Path | str) -> float:
     """Antigüedad en días de la entrada en sí (un stat). -1 si no existe.
 

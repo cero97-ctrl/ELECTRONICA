@@ -24,6 +24,7 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -230,11 +231,73 @@ def test_nativo() -> None:
             pass
 
 
+def test_guarda_antigueda_por_target() -> None:
+    """La guarda pregunta por el TARGET, no por el directorio que lo contiene.
+
+    Regresion de un fallo medido en `tmp-clones` (`.tmp/repo_clone_*`, min 7d):
+    120 MB de clones de 20 dias salian `conservado_reciente` porque `.tmp/` — el
+    padre — tenia 211 ficheros de menos de 7 dias. Un guard que da True siempre
+    que haya actividad en el repo no protege nada; solo impide ver el espacio.
+    """
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td) / "contenedor"
+        base.mkdir()
+        # Un clon VIEJO, como los reales: no se toca.
+        viejo = base / "repo_clone_viejo"
+        (viejo / ".git").mkdir(parents=True)
+        _envejecer(viejo)
+        # Ruido ajeno al target, fresco: es lo que hacia disparar la guarda.
+        for n in ("informe.json", "descriptor.json", "log.txt"):
+            (base / n).write_text("x")
+
+        t = C.Target(id="x-glob", ruta=str(base / "repo_clone_*"), tier="seguro",
+                     modo="glob", patron="repo_clone_*", descripcion="test",
+                     min_edad_dias=7)
+        # Solo el clon viejo: el ruido fresco del padre NO debe conservarlo.
+        comprobar(not C.hay_entradas_recientes_de_target(t, 7),
+                  "[glob] un clon de 20 dias no es reciente aunque el padre tenga ruido fresco")
+
+        # Aparece un clon RECIENTE: es el que la guarda debe seguir parando.
+        nuevo = base / "repo_clone_nuevo"
+        nuevo.mkdir()
+        (nuevo / "trabajo.txt").write_text("x")
+        comprobar(C.hay_entradas_recientes_de_target(t, 7),
+                  "[glob] un clon recien clonado sigue protegido por su propia edad")
+        comprobar(nuevo.exists(),
+                  "[glob] el clon reciente no puede desaparecer: la guarda no se relaja")
+
+        # `contenido` (patron `*`) NO cambia: preguntar por todos los hijos ya era
+        # correcto, porque la unidad borrable son todos los hijos.
+        tc = C.Target(id="x-cont", ruta=str(base), tier="seguro", modo="contenido",
+                      patron="*", descripcion="test", min_edad_dias=7)
+        comprobar(C.hay_entradas_recientes_de_target(tc, 7),
+                  "[contenido] con patron `*` cualquier hijo fresco conserva el target")
+
+        # La edad que se reporta es la de la entrada mas JOVEN, no la del padre.
+        edad = C.edad_util_de_target(t)
+        comprobar(0 <= edad < 1,
+                  f"[glob] la edad reportada debe ser la del clon recien (0 d), no la del padre; vino {edad}")
+        _envejecer(nuevo)
+        e2 = C.edad_util_de_target(t)
+        comprobar(e2 > 7, f"[glob] con todo envejecido la edad debe ser >7 d; vino {e2}")
+
+
+def _envejecer(p: Path, dias: int = 30) -> None:
+    """Baja el mtime de `p` y de todo lo que cuelga de el."""
+    viejo = time.time() - dias * 86400
+    for x in [p, *p.rglob("*")]:
+        try:
+            os.utime(x, (viejo, viejo))
+        except OSError:
+            pass
+
+
 def main() -> int:
     test_positivos()
     test_negativos()
     test_barreras()
     test_nativo()
+    test_guarda_antigueda_por_target()
     print(f"Aserciones OK: {ok}   Fallos: {len(fallos)}")
     for f in fallos:
         print(f"  FALLO: {f}")
