@@ -151,6 +151,39 @@ fenomeno medido en dos direcciones.
 anterior a hoy (2026-06-20 / 2025-10-25): intactos. `pandas` no esta en `elect_env`
 pero ningun script del repo lo importa, y su ausencia es preexistente.
 
+## `conda clean --packages`: los 44 huerfanos
+
+Autorizado por el usuario con la condicion explicita "si lo que hacen es ocupar espacio
+entonces hay que eliminarlos". La condicion se cumple y se verifico antes de ejecutar:
+`--tarballs` y `--index-cache` no tienen nada, asi que los 536,7 MB de los 44 paquetes
+eran toda la oportunidad disponible. Tras la limpieza, `conda clean --packages --dry-run`
+responde "There are no unused package(s) to remove".
+
+### Sin dano: huella antes/despues identica
+`elect_env` 20830 `.pyc` · `agro_env` 8617 · `bio_env` 4323 · `IA` 9993, y los mismos
+CPython (3.10.20 / 3.10.19 / 3.11.15 / 3.11.14 / base 3.13.5) antes y despues.
+`elect_env` sigue importando `numpy requests sklearn serial`; `IA` sigue con
+`tensorflow 2.19.1`. Es la confirmacion empirica de que borrar la cache no toca los
+envs: sus ficheros estan hardlinkeados, no copiados.
+
+### El espacio real recuperado no se puede demostrar
+`pkgs` bajo de 7,5 G a 6,9 G segun la contabilidad de conda, **pero `df` no se movio**:
+quedo en 200,13 GB usados / 37,45 GB libres. Y no se puede afirmar que se recuperaran
+los 536,7 MB, por dos razones honestas:
+
+1. **No guarde el `df` en bytes antes de ejecutar.** Con la eliminacion de los 12 envs
+   si lo hice; aqui me conforme con la salida de 1 GB de `df -h`, que no tiene
+   resolucion para 536 MB. Inconsistencia mia de rigor entre dos operaciones
+   consecutivas: la segunda merecia el mismo cuidado que la primera.
+2. **La cifra de conda no son bloques libres.** Medido sobre la cache restante:
+   **85,6 %** de los ficheros de `pkgs` tienen `nlink > 1`, o sea un hardlink desde
+   algun env; solo el 14,4 % tiene bloques exclusivos. `conda clean --packages` mide
+   tamano de directorio, que es la misma sobreestimacion del P2 de `conda-pkgs` que ya
+   estaba anotada, vista por tercera vez y desde el lado de conda.
+
+Lo unico afirmable: los 44 paquetes no referenciados ya no estan. Lo que el sistema de
+ficheros devolvio queda por debajo de la resolucion de lo medido.
+
 ## Pendientes
 - **P1** `flujo_auditar_repo.py:521` retira `run_state.json` al cerrar, igual que
   `flujo_auditar_sistema.py`. Y desambiguar `STATE_FILE` por flujo
@@ -167,9 +200,7 @@ pero ningun script del repo lo importa, y su ausencia es preexistente.
   `docs/ENTORNOS_CONDA/README.md`: falta solo codificarlo. Enquanto sea manual, la
   proxima sesion vuelve a reconstruir la evidencia a mano.
 - **P2** `conda clean --packages` mide **536,7 MB** (44 paquetes) huerfanos en
-  `anaconda3/pkgs` tras la limpieza. NO ejecutado: es una operacion nueva, fuera de
-  la whitelist de `flujo_disco.py` y sin autorizacion del usuario. Es re-descargable
-  y no toca ningun env, asi que el riesgo es bajo, pero es decision suya.
+  `anaconda3/pkgs` tras la limpieza. **RESUELTO más abajo.**
 - **P2** 3 referencias colgantes a interpretes ya eliminados, **no reparadas**
   deliberadamente: `CYBERSEGURIDAD/.vscode/settings.json:2` (`cyber_env`),
   `AGENTE_IA_FABRICACION_DIGITAL/setup.sh:6` (`pcb_env`, se recrea al ejecutarse) y
