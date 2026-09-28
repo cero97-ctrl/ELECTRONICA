@@ -282,6 +282,81 @@ def test_guarda_antigueda_por_target() -> None:
         comprobar(e2 > 7, f"[glob] con todo envejecido la edad debe ser >7 d; vino {e2}")
 
 
+def test_guarda_ignora_bookkeeping_vcs() -> None:
+    """La guarda mide actividad de la persona, no bookkeeping de la herramienta.
+
+    Regresion del caso medido en `tmp-clones`: los dos clones seguian saliendo
+    `conservado_reciente` con 115 MB porque lo unico reciente bajo ellos era el
+    directorio `.git` en si, que un `git status` refresca sin que nadie toque un
+    solo fichero de trabajo (medido: no reescribe ni `.git/index`). El autor del
+    toque quedo sin identificar, pero da igual: lo que se mide es si la persona
+    estuvo trabajando, y ahi la respuesta era no.
+    """
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td) / "contenedor"
+        base.mkdir()
+        clon = base / "repo_clone_x"
+        (clon / ".git" / "objects").mkdir(parents=True)
+        (clon / "src").mkdir()
+        (clon / "src" / "main.py").write_text("x")
+        _envejecer(clon)
+        _envejecer(base)
+
+        t = C.Target(id="x-vcs", ruta=str(base / "repo_clone_*"), tier="seguro",
+                     modo="glob", patron="repo_clone_*", descripcion="test",
+                     min_edad_dias=7)
+
+        # 1) Todo viejo: no reciente, y la edicion anterior no lo abria.
+        comprobar(not C.hay_entradas_recientes_de_target(t, 7),
+                  "[vcs] un clon de 30 dias no es reciente")
+
+        # 2) Solo `.git` y su contenido frescos: eso es lo que hace `git status`.
+        ahora = time.time()
+        for x in (clon / ".git", clon / ".git" / "objects"):
+            os.utime(x, (ahora, ahora))
+        comprobar(not C.hay_entradas_recientes_de_target(t, 7),
+                  "[vcs] un `git status` no debe conservar el clon: no hay trabajo humano")
+        # El flag es lo que hace el trabajo, no una casualidad del fixture.
+        comprobar(C.hay_entradas_recientes(clon, 7),
+                  "[vcs] sin el flag, `.git` fresco SI es reciente (control del test)")
+
+        # 3) Un fichero de trabajo fresco: la guarda SIGUE parando. Esto es lo que
+        #    protege de verdad, y es lo que no se puede relajar.
+        (clon / "src" / "nuevo.py").write_text("y")
+        comprobar(C.hay_entradas_recientes_de_target(t, 7),
+                  "[vcs] un clon con trabajo reciente sigue protegido")
+        comprobar(clon.exists(), "[vcs] el clon con trabajo reciente no puede desaparecer")
+
+        # 4) Criterio del informe == criterio de la guarda. `disco_medir` publica
+        #    los dos en el mismo objeto; si discrepan, el informe se contradice.
+        _envejecer(clon)
+        edad = C.edad_util_de_target(t)
+        comprobar(not C.hay_entradas_recientes_de_target(t, 7),
+                  "[vcs] tras envejecer, la guarda se abre")
+        comprobar(20.0 < edad < 60.0,
+                  f"[vcs] la edad reportada debe ignorar `.git` como la guarda; vino {edad}")
+
+        # 5) El respaldo en Python tiene la misma semantica que el `find`. Si
+        #    divergieran, la misma pregunta daria dos respuestas segun la maquina.
+        _envejecer(clon)
+        ahora = time.time()
+        for x in (clon / ".git", clon / ".git" / "objects"):
+            os.utime(x, (ahora, ahora))
+        comprobar(C.edad_dias(clon, ignorar_vcs=True) > 7,
+                  "[vcs] edad_dias(ignorar_vcs=True) no debe contar `.git`")
+        comprobar(C.edad_dias(clon) < 1,
+                  "[vcs] edad_dias() sin el flag debe contar `.git` (control del test)")
+
+        # 6) Aplica a todos los modos, no solo a `glob`. Aqui la unidad borrable
+        #    son TODOS los hijos, `.git` incluido: si lo unico reciente de una cache
+        #    es su propio bookkeeping, la cache no esta en uso y borrarla es lo
+        #    correcto. Queda escrito para que sea una decision y no un accidente.
+        tc = C.Target(id="x-vcs-cont", ruta=str(clon), tier="seguro", modo="contenido",
+                      patron="*", descripcion="test", min_edad_dias=7)
+        comprobar(not C.hay_entradas_recientes_de_target(tc, 7),
+                  "[vcs] en `contenido`, un `.git` fresco tampoco es trabajo humano")
+
+
 def _envejecer(p: Path, dias: int = 30) -> None:
     """Baja el mtime de `p` y de todo lo que cuelga de el."""
     viejo = time.time() - dias * 86400
@@ -298,6 +373,7 @@ def main() -> int:
     test_barreras()
     test_nativo()
     test_guarda_antigueda_por_target()
+    test_guarda_ignora_bookkeeping_vcs()
     print(f"Aserciones OK: {ok}   Fallos: {len(fallos)}")
     for f in fallos:
         print(f"  FALLO: {f}")

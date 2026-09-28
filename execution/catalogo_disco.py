@@ -668,7 +668,19 @@ def du_bytes_lote(rutas: list[Path], trocear: int = 400) -> int:
     return total
 
 
-def hay_entradas_recientes(ruta: Path | str, dias: float) -> bool:
+#: Bookkeeping de un VCS. Su mtime lo mueve la HERRAMIENTA, no la persona: un
+#: `git status` refresca `.git` aunque no se haya tocado un solo fichero de
+#: trabajo (medido: no reescribe `.git/index`, y deja el mtime del directorio al
+#: día). Clasificar eso como "actividad reciente" hace que una guarda de borrado
+#: no pueda abrirse, y una guarda que no se puede abrir no protege nada.
+#:
+#: Se excluye para los targets, no en `hay_entradas_recientes()` a secas: quien
+#: llama a la primitiva decide, y el comportamiento por defecto no cambia bajo los
+#: pies de nadie.
+BOOKKEEPING_VCS: tuple[str, ...] = (".git", ".hg", ".svn", ".bzr")
+
+
+def hay_entradas_recientes(ruta: Path | str, dias: float, ignorar_vcs: bool = False) -> bool:
     """True si hay ALGO bajo `ruta` modificado en los últimos `dias` días.
 
     Es la guarda que impide borrar descargas o compilaciones en curso. Se resuelve
@@ -676,23 +688,69 @@ def hay_entradas_recientes(ruta: Path | str, dias: float) -> bool:
     el caso normal (algo reciente) es instantáneo, y en el peor caso es un recorrido
     en C, no un `stat()` por inodo en Python. El corte se pasa como época absoluta
     para no depender del locale ni de la fecha del sistema.
+
+    `ignorar_vcs` deja de mirar dentro de `BOOKKEEPING_VCS`. Los dos caminos
+    (find y el respaldo en Python) lo respetan: si solo se corrigiera uno, la
+    misma pregunta daria dos respuestas distintas segun la maquina, que es la
+    clase de fallo mas dificil de ver y mas facil de creer.
     """
     r = _ruta_abs(ruta)
     if not r.exists():
         return False
     corte = int(time.time() - dias * 86400)
     if shutil.which("find"):
-        proc = subprocess.run(
-            ["find", str(r), "-xdev", "-newermt", f"@{corte}", "-print", "-quit"],
-            capture_output=True, text=True, check=False,
-        )
+        cmd = ["find", str(r), "-xdev"]
+        if ignorar_vcs:
+            # Sin shell de por medio, `(` y `)` llegan literales a find y son su
+            # propio agrupador de expresiones. La alternancia va DENTRO del grupo,
+            # y sin `-o` inicial: un grupo que empieza por un operador deja la
+            # expresion mal formada y find no imprime nada, con lo que el guard
+            # nunca direia "reciente" y dejaria pasar cualquier borrado.
+            cmd += ["(", "-name", BOOKKEEPING_VCS[0]]
+            for n in BOOKKEEPING_VCS[1:]:
+                cmd += ["-o", "-name", n]
+            cmd += [")", "-prune", "-o"]
+        cmd += ["-newermt", f"@{corte}", "-print", "-quit"]
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
         # Se lee stdout aunque returncode != 0: `find` sale con 1 si hay un
         # directorio sin permiso, pero ya imprimió todo lo que sí pudo leer.
         if proc.stdout.strip():
             return True
         if proc.returncode == 0:
             return False
-    return edad_dias(r) < dias
+    return edad_dias(r, ignorar_vcs=ignorar_vcs) < dias
+
+
+def _es_bookkeeping_de_vcs(ruta: Path, base: Path) -> bool:
+    """True si `ruta` cuelga de un directorio de bookkeeping de VCS de `base`.
+
+    `ignorar_vcs` de `hay_entradas_recientes()` solo puede podar al BAJAR desde una
+    raíz. `du_pies_carpeta()` aplana el árbol y devuelve tambien las entradas
+    internas de `.git`, a las que la guarda les pregunta el mtime una por una: ahí
+    el flag ya no llega y `objects` (0 días) pasaba por trabajo humano.
+    """
+    try:
+        rel = ruta.relative_to(base)
+    except ValueError:
+        return False
+    return any(parte in BOOKKEEPING_VCS for parte in rel.parts)
+
+
+def candidatas_de_guarda(t: Target) -> list[Path]:
+    """Entradas que la guarda de antigüedad puede mirar para `t`.
+
+    Son las que el target puede llegar a borrar, menos lo que cuelgue de un
+    directorio de bookkeeping de VCS. Guarda e informe salen los dos de aquí: si
+    cada uno filtrara por su cuenta volverían a discrepar, que es exactamente como
+    se manifestó el bug de `bytes_tier` — el informe diciendo una cosa y la
+    decisión otra, en el mismo objeto.
+
+    En `directorio`/`nativo` no se usa: la unidad borrable es el contenedor entero,
+    y de él baja el `find -prune` directamente.
+    """
+    base = contenedor_de(t)
+    return [p for p in du_pies_carpeta(base, t.patron)
+            if not _es_bookkeeping_de_vcs(p, base)]
 
 
 def hay_entradas_recientes_de_target(t: Target, dias: float) -> bool:
@@ -718,13 +776,21 @@ def hay_entradas_recientes_de_target(t: Target, dias: float) -> bool:
 
     La guarda no se relaja: pasa a perguntar por las entradas que casan, que es
     justo la lista que `disco_purgar._plan_entradas()` borra. Un clon recién
-    clonado sigue protegido por su propia edad.
+    clonado sigue protegido, porque sus ficheros de trabajo nacen con la fecha del
+    clon.
+
+    Y de entre esas entradas se aparta `BOOKKEEPING_VCS`. El caso medido: los dos
+    clones seguían saliendo `conservado_reciente` con 115 MB porque lo único
+    reciente bajo ellos era el directorio `.git` en sí, que un `git status`
+    refresca sin que nadie haya tocado un solo fichero. Lo que se mide es
+    actividad de la persona, no bookkeeping de la herramienta; y aplica a todos
+    los modos, no solo a `glob`, por la misma razón.
     """
     if t.modo in ("directorio", "nativo"):
-        return hay_entradas_recientes(contenedor_de(t), dias)
+        return hay_entradas_recientes(contenedor_de(t), dias, ignorar_vcs=True)
     return any(
-        hay_entradas_recientes(entrada, dias)
-        for entrada in du_pies_carpeta(contenedor_de(t), t.patron)
+        hay_entradas_recientes(entrada, dias, ignorar_vcs=True)
+        for entrada in candidatas_de_guarda(t)
     )
 
 
@@ -735,29 +801,30 @@ def edad_util_de_target(t: Target) -> float:
     abre. Con `base` se reportaba la edad de `.tmp/` para `tmp-clones` (casi 0
     días) cuando las entradas reales tenían 20 — un número que no correspondía a
     nada de lo que el target describe. -1 si no hay entradas.
+
+    Se mide con el MISMO criterio que `hay_entradas_recientes_de_target()`, VCS
+    incluido. `disco_medir` publica la guarda y esta cifra en el mismo objeto, y
+    un informe que dice "conservado_reciente" junto a "18 días" se contradice a sí
+    mismo: obliga a elegir cuál de los dos números creer, y el que se elige mal es
+    el que abre la puerta al borrado.
     """
-    base = contenedor_de(t)
     if t.modo in ("directorio", "nativo"):
-        return edad_entrada_dias(base)
-    edades = [e for e in (edad_entrada_dias(x) for x in du_pies_carpeta(base, t.patron)) if e >= 0]
+        return edad_dias(contenedor_de(t), ignorar_vcs=True)
+    edades = [
+        e for e in (edad_dias(x, ignorar_vcs=True) for x in candidatas_de_guarda(t))
+        if e >= 0
+    ]
     return min(edades) if edades else -1.0
 
 
-def edad_entrada_dias(ruta: Path | str) -> float:
-    """Antigüedad en días de la entrada en sí (un stat). -1 si no existe.
+def edad_dias(ruta: Path | str, ignorar_vcs: bool = False) -> float:
+    """Antigüedad en días de la entrada más reciente bajo la ruta (0 si no existe).
 
-    Es la cifra barata para el informe. NO sustituye a `hay_entradas_recientes()`
-    como guarda de borrado: un directorio puede ser viejo y contener hijos frescos.
+    Con `ignorar_vcs`, ni el mtime de un directorio de bookkeeping ni lo que haya
+    dentro cuentan. Es el mismo criterio que el `find -prune` de
+    `hay_entradas_recientes()`; los dos caminos tienen que coincidir o la pregunta
+    "esto es reciente?" deja de tener una sola respuesta.
     """
-    r = Path(ruta)
-    try:
-        return max(0.0, (time.time() - r.stat().st_mtime) / 86400)
-    except OSError:
-        return -1.0
-
-
-def edad_dias(ruta: Path | str) -> float:
-    """Antigüedad en días de la entrada más reciente bajo la ruta (0 si no existe)."""
     r = Path(ruta)
     if not r.exists():
         return -1.0
@@ -773,11 +840,14 @@ def edad_dias(ruta: Path | str) -> float:
                     try:
                         if entrada.is_symlink():
                             continue
+                        es_dir = entrada.is_dir(follow_symlinks=False)
+                        if ignorar_vcs and es_dir and entrada.name in BOOKKEEPING_VCS:
+                            continue
                         st = entrada.stat(follow_symlinks=False)
                     except OSError:
                         continue
                     mas_reciente = max(mas_reciente, st.st_mtime)
-                    if entrada.is_dir(follow_symlinks=False):
+                    if es_dir:
                         pila.append(Path(entrada.path))
         except (OSError, PermissionError):
             continue

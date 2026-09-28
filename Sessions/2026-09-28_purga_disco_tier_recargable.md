@@ -267,19 +267,45 @@ Aviso de coste: el recorrido en exclusivo sobre `pkgs` son ~14 s extra en la dim
   que casan, que es la lista que `_plan_entradas()` borra; `contenido`/`rotar`
   (patron `*`) no cambian, porque ahi preguntar por todos los hijos ya era
   correcto. **No libera espacio**: ver P4, la razon de verdad es otra.
-- **P4 abierto, requiere decision del usuario** los 115 MB de `tmp-clones` siguen
-  conservados, y ahora por una razon VERIFICADA: `.git/` de cada clon tiene mtime
-  de hace minutos, mientras el unico fichero reciente de 11.184 es el propio
-  directorio `.git` (ni un solo objeto, ni reflog, ni FETCH_HEAD). Medido:
-  `git status` dentro del clon mueve ese mtime sin reescribir `.git/index`.
-  Es decir, la guarda la puede disparar una herramienta, no el humano. Y algo las
-  dispara cada ~1-2 min: no hay crontab, ni timer systemd sospechoso, ni proceso
-  vivo, y nada del repo invoca git sobre repos descubiertos. **No se identifica al
-  autor.** La pregunta de politica es si `min_edad_dias` debe ignorar la
-  bookkeeping de un VCS: `.git` cambiando no es actividad de la persona. Es la
-  misma distincion que ya hace la dimension `entornos` con `.pyc` (evidencia de
-  uso, no mtime de cualquier fichero), pero aqui la respuesta es al reves y relaja
-  una guarda de borrado, asi que no se decide solo.
+- ~~**P4 abierto, requiere decision del usuario**~~ **RESUELTO por decision del
+  usuario (opcion 1): la guarda ignora la bookkeeping de VCS.** Autor del toque
+  **NO identificado**, y al final eso resulto no ser lo que decidia el caso.
+  Se descarto con evidencia: `crontab` vacio; los timers de systemd que existen
+  (anacron, fwupd, motd-news, plocate, apt-daily, logrotate) no tocan un `.git` y su
+  horario no cuadra; **MEGAsync** (que sincroniza esta misma carpeta) con 0
+  transferencias y 0 menciones de los clones en su log, de 49.382 nodos
+  trackeados; `disco_medir`, la auditoria y el test de barrera no mueven el mtime;
+  los plugins de opencode (`conda-env.js`, `nvm-env.js`) solo leen `~/.nvm`; VS
+  Code server no corre. Y la pista que si resulto util: **el toque solo ocurre con
+  el asistente activo, nunca en reposo** (8 min de pasividad: 0 eventos de
+  inotify), por lo que ningun watcher pasivo podia verlo. Queda como unico
+  candidato el proceso `opencode` (pid 6076) por correlacion, no por prueba; no se
+  le hizo `strace` porque hospeda esta sesion, y `auditd` exigiria root.
+  **Lo decisivo no era quien.** Lo medido es que `git status` dentro del clon mueve
+  el mtime de `.git` sin reescribir `.git/index`, y que un `.git` falso en un
+  directorio de control nunca se toca (o sea: requiere repo valido). Ese es
+  bookkeeping de una herramienta, no actividad de una persona — la misma
+  distincion que la dimension `entornos` con `.pyc`, aqui al reves. Como el
+  usuario eligio la opcion 1, la guarda ahora mide trabajo humano:
+  `BOOKKEEPING_VCS = (".git", ".hg", ".svn", ".bzr")` se aparta en
+  `hay_entradas_recientes_de_target()` (todos los modos, no solo `glob`) y en
+  `edad_util_de_target()`, que ahora sale de la misma lista
+  `candidatas_de_guarda()` para que informe y guarda no puedan discrepar.
+  `tmp-clones`: 115,4 MB de `conservado_reciente` a purgable, edad 19,9 d.
+  Recuperable 787,5 -> 866,6 MB. **La guarda NO se debilito**: de los 14 targets
+  que siguen conservados, los 14 lo estan por trabajo real y ninguno solo por
+  `.git` (verificado target por target). No se purgo nada: la purga exige `--yes`.
+  Riesgo asumido y escrito: un clon al que se le haga `git fetch` pero no se
+  edite pasaria a ser purgable; son clones temporales de
+  `flujo_libro_a_skill`/`flujo_repo_a_skill`, no checkouts de trabajo.
+  Dos trampas encontradas al implementarlo, ambas cazadas por el test: (a) el
+  grupo `-o` inicial deja la expresion de `find` mal formada y `find` no imprime
+  nada — un guard que nunca dice "reciente" es peor que no tener guard; (b)
+  `du_pies_carpeta()` aplana el arbol y devuelve tambien las entradas internas de
+  `.git`, a las que el flag `ignorar_vcs` ya no llega porque le pasan el hijo
+  desmontado. Por eso el filtro vive en `candidatas_de_guarda()` y **no** en
+  `du_pies_carpeta()`, que comparten `disco_purgar` (plan de borrado) y
+  `disco_medir` (medicion): tocarla habria cambiado que se borra.
 - **P2 obsoleto, se corrige la anotacion** el P2 anterior de `tmp-clones`
   ("marcado conservado_reciente por el `.git` interno de 19,8/22,9 dias") era
   medio verdad y senalaba a la solucion equivocada. El sintoma se ve igual, pero la
