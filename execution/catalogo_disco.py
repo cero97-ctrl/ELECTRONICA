@@ -62,6 +62,15 @@ class Target:
                    encuentra; si no, se cae al `fallback`.
     fallback       (ruta, modo) alternativos cuando el comando nativo no existe o falla.
     recrear        Tras purgar un `directorio`, recrear el directorio vacío.
+    medir_exclusivo
+                   Que `bytes_purgables` sea el peso en bloques EXCLUSIVOS
+                   (st_nlink == 1) y no el tamano aparente. Es necesario en
+                   los targets con hardlinks: `du` cuenta un fichero con
+                   n>1 una vez por recorrido, asi que midiendo solo `pkgs/`
+                   sigue contando bloques que un entorno vivo sigue
+                   enlazando. Borrar la entrada de `pkgs` no libera ese
+                   bloque: sigue vivo en `envs/`. Purgar segun el peso
+                   aparente promete espacio que no existe.
     """
 
     id: str
@@ -75,6 +84,7 @@ class Target:
     mantener: int = 0
     patron: str = "*"
     recrear: bool = False
+    medir_exclusivo: bool = False
 
     def ruta_resuelta(self) -> Path:
         return Path(self.ruta).expanduser()
@@ -235,13 +245,18 @@ CATALOGO: tuple[Target, ...] = (
         modo="nativo",
         cmd="conda clean --all -y",
         descripcion="Cache de paquetes de conda: tarballs, indice y paquetes sin uso. "
-                    "MEDIR antes de prometer cifras: la carpeta ronda los 11 GB, pero solo "
-                    "~2.4 GB son recuperables; el resto son paquetes EN USO por los envs, y "
-                    "conda clean no los toca. Ojo: 'conda clean --all' no comprueba paquetes "
-                    "instalados con enlaces simbolicos al cache, por lo que puede romper esos "
-                    "envs; verificado antes que ningun env de esta maquina los usa. -y es "
+                    "MEDIDURA OBLIGATORIA EN EXCLUSIVO: conda hardlinkea cada paquete "
+                    "contra los entornos que lo usan, asi que la carpeta ronda los 7 GB "
+                    "aparentes y solo ~2 GB son bloques exclusivos. Los demas siguen "
+                    "enlazados desde envs/: 'conda clean' no los toca y borrarlos no "
+                    "libera ni un byte. Por eso este target lleva medir_exclusivo=True; "
+                    "prometer los 7 GB seria mentir con una medicion real. Ojo: "
+                    "'conda clean --all' no comprueba paquetes instalados con enlaces "
+                    "simbolicos al cache, por lo que puede romper esos envs; "
+                    "verificado antes que ningun env de esta maquina los usa. -y es "
                     "necesario porque el flujo lo ejecuta sin terminal interactiva.",
         min_edad_dias=1,
+        medir_exclusivo=True,
     ),
     Target(
         id="arduino-packages",
@@ -576,6 +591,60 @@ def tamano(ruta: Path | str) -> tuple[int, int, int]:
         except (OSError, PermissionError):
             continue
     return aparente, disco, entradas
+
+
+def bytes_exclusivos(ruta: Path | str) -> tuple[int, int]:
+    """(bytes de bloques EXCLUSIVOS, nº de entradas). Sin seguir symlinks.
+
+    `tamano()` cuenta `st_blocks * 512`, que es el espacio asignado, pero suma
+    los bloques de un fichero hardlinkeado tantas veces como enlaces tenga. Eso
+    esta bien para "cuanto ocupa esto" y esta mal para "cuanto se recupera al
+    borrarlo": si el mismo inodo esta enlazado desde otro sitio, borrar una de
+    las dos rutas no devuelve sus bloques, solo baja el contador de enlaces.
+
+    Aqui solo se cuentan los bloques con `st_nlink == 1`, que son los que de
+    verdad se devuelven. Es la diferencia que hacia que el catalogo declarara
+    9,68 GB de `conda-pkgs` donde habia ~2,2 GB reales: conda hardlinkea cada
+    entorno contra la cache, asi que el 85,6 % de los ficheros de `pkgs` eran
+    bloques de algun entorno y no se podian liberar.
+
+    Excepcion deliberada: los DIRECTORIOS se cuentan siempre. POSIX prohibe
+    hardlinkear directorios, asi que sus bloques son suyos aunque `st_nlink`
+    valga 2 o mas (ese numero cuenta los subdirectorios, no enlaces externos).
+    Sin esta excepcion se perderian los bloques de directorio, que en un arbol
+    con 200k entradas no son despreciables.
+    """
+    r = Path(ruta)
+    if r.is_symlink():
+        return 0, 0
+    if r.is_file():
+        try:
+            st = r.stat()
+        except OSError:
+            return 0, 0
+        return (st.st_blocks * 512, 1) if st.st_nlink == 1 else (0, 1)
+    total = entradas = 0
+    stack = [r]
+    while stack:
+        actual = stack.pop()
+        try:
+            with os.scandir(actual) as it:
+                for entrada in it:
+                    try:
+                        if entrada.is_symlink():
+                            continue
+                        es_dir = entrada.is_dir(follow_symlinks=False)
+                        st = entrada.stat(follow_symlinks=False)
+                    except OSError:
+                        continue
+                    entradas += 1
+                    if es_dir or st.st_nlink == 1:
+                        total += st.st_blocks * 512
+                    if es_dir:
+                        stack.append(Path(entrada.path))
+        except (OSError, PermissionError):
+            continue
+    return total, entradas
 
 
 def du_bytes_lote(rutas: list[Path], trocear: int = 400) -> int:

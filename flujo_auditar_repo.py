@@ -316,6 +316,52 @@ def _interpreta_bitacoras(rc: int, stdout: str, timeout: bool) -> dict[str, Any]
     }
 
 
+def _interpreta_entornos(rc: int, stdout: str, timeout: bool) -> dict[str, Any]:
+    """auditar_envs_conda.py: ya trae 'estado', pero no se copia sin validar.
+
+    El script decide el veredicto porque es quien tiene el criterio. Aqui solo
+    se comprueba que la forma sea la esperada y que 'estado' sea uno de los
+    cuatro estados que la algebra compartida acepta: un JSON bien formado con
+    un estado inventado es peor que ningun JSON, porque el compositor lo
+    contaria como dimension medida.
+    """
+    if timeout:
+        return _dim_no_verificado("timeout al ejecutarse")
+    # 3 es "el que llama escribio mal el flag", no "no se pudo medir". Si
+    # aparece aqui, el defecto es de la auditoria, no del entorno medido.
+    if rc == 3:
+        return _dim_no_verificado("auditar_envs_conda.py recibio un argumento invalido")
+    datos = _json_o_texto(stdout)
+    if not isinstance(datos, dict) or "estado" not in datos or "evidencia" not in datos:
+        return _dim_no_verificado("la salida no trae 'estado' con 'evidencia'")
+    estado = datos["estado"]
+    if estado not in VA.PRIORIDAD:
+        return _dim_no_verificado(f"estado fuera de la algebra compartida: {estado!r}")
+    if rc != 0 and estado != "no_verificado":
+        # El script fallo pero salio optimista: no se acepta un verde con
+        # codigo de salida de error detrás.
+        return _dim_no_verificado(f"salida {estado!r} con codigo de salida {rc}")
+
+    evidencia = datos.get("evidencia", {})
+    frios = (evidencia.get("reparto") or {}).get("frio", [])
+    cuerpo = {
+        "estado": estado,
+        "resumen": datos.get("resumen", ""),
+        "evidencia": evidencia,
+    }
+    if estado == "aviso" and frios:
+        # Un entorno frio no es un defecto: ocupa espacio, y quien decide si
+        # sobra es la persona. Por eso esto es 'aviso' y nunca 'fallo', y por
+        # eso la dimension no borra nada.
+        cuerpo["accion"] = (
+            f"{len(frios)} entorno(s) sin ejecucion en la ventana y referenciados "
+            f"por ningun script: {', '.join(frios)}. No se borra nada aqui. "
+            f"Antes de decidir, comparar con la recipe en "
+            f"docs/ENTORNOS_CONDA/recetas/ y con la lista de proyectos vivos."
+        )
+    return cuerpo
+
+
 def _dim_no_verificado(motivo: str) -> dict[str, Any]:
     return {
         "estado": "no_verificado",
@@ -363,6 +409,13 @@ DIMENSIONES_REUTILIZADAS: list[dict[str, Any]] = [
         "script": "execution/test_verificar_texto.py", "args": [],
         "timeout": 900, "lenta": True,
         "interpreta": lambda rc, out, to: _interpreta_test(out, to),
+    },
+    {
+        "nombre": "entornos", "capa": "reutilizada",
+        "descripcion": ("entornos conda sin ejecucion en 90 dias y sin referencia "
+                        "en el workspace, y cuanto ocupan en bloques exclusivos"),
+        "script": "execution/auditar_envs_conda.py", "args": ["--json"],
+        "timeout": 900, "lenta": True, "interpreta": _interpreta_entornos,
     },
 ]
 

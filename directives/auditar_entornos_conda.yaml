@@ -1,0 +1,84 @@
+goal: |
+  Clasificar cada entorno conda de la maquina segun si se ha EJECUTADO
+  realmente en los ultimos 90 dias, y medir cuantos bytes ocupa en bloques
+  EXCLUSIVOS (los unicos que borrar liberarian de verdad). Solo lectura: no
+  borra, no crea y no desinstala nada.
+
+  Existe por una trampa concreta de conda: `conda env list` y `du -sh` mienten
+  en el mismo sentido y por el mismo motivo. Los entornos se construyen con
+  HARDLINKS contra `pkgs/`, asi que el tamano que se ve en cada entorno esta
+  contadopara los dos lados de un mismo bloque de disco. Sumando los 16
+  entornos se obteniria una foto del disco de 40 GB con 8 GB reales detras.
+  Medir solo bloques con `st_nlink == 1` es lo que convierte un numero de
+  pantalla en una cifra de decision.
+
+layer: orchestration
+references:
+  orchestrator: flujo_auditar_repo.py
+  scripts: execution/auditar_envs_conda.py, execution/test_auditar_entornos.py
+  reuses: |
+    execution/catalogo_disco.py (bytes_exclusivos, compartida con el flujo de disco),
+    execution/veredicto_algebra.py (algebra compartida de veredictos)
+  input: el arbol de entornos de conda en disco y el workspace de repos (sin ficheros de entrada)
+  output: informe por stdout y JSON con una fila por entorno
+
+status: implementado
+
+required_inputs:
+  - name: --envs-root RUTA
+    description: "Raiz de los entornos. Por defecto, `<conda>/envs` deduced de la ruta del propio interprete. Es un parametro para poder medir entornos de otra instalacion de conda, no para elegir que se audita."
+  - name: --workspace RUTA
+    description: "Raiz donde se buscan las referencias a los entornos. Por defecto, el padre del repo. Es lo que decide si un entorno frio esta ABANDONADO o solo callado."
+  - name: --dias N
+    description: "Ventana de uso, en dias. Por defecto 90. El corte es estricto: cuenta lo mas reciente que hace 90 dias, no lo que coincide exactamente con el instante limite (esa marca no ocurre nunca con reloj real)."
+  - name: --timeout N
+    description: "Segundos por cada subproceso externo (find, grep). Por defecto 120. Un escaneo que se pasa de tiempo se declara no medido, no se acepta a medias."
+  - name: --protegidos A,B
+    description: "Reemplaza la lista de entornos protegidos por politica. Por defecto `elect_env,IA`. Un entorno protegido se informa pero NUNCA se ofrece como recuperable, aunque este frio: la politica gana a la medicion."
+  - name: --sin-refs
+    description: "No busca referencias en el workspace. Divide el tiempo por dos a costa de dejar de distinguir 'abandonado' de 'solo callado'; se usa para medir rapido y para probar en aislamiento."
+  - name: --json
+    description: "Emite el JSON por stdout. Sin esta flag emite una tabla legible."
+
+steps:
+  - id: 1
+    run: python3 execution/auditar_envs_conda.py --json
+    why: |
+      Se invoca como dimension reutilizada del compositor con `--json`. La capa
+      3 decide el estado; el compositor solo valida la forma y lo integra en el
+      veredicto global.
+  - id: 2
+    run: python3 execution/test_auditar_entornos.py
+    why: |
+      Las regresiones de esta dimension: bordes de `nlink`, umbral de dias por
+      los dos lados, anclajes de referencia con control positivo y contrato de
+      codigos de salida. Debe dar 0 fallos antes de creerle a la dimension.
+
+expected_outputs:
+  - "Un JSON con `dimension`, `estado`, `resumen` y `evidencia` (`reparto`, `recuperable_bytes_exclusivos`, `detalle_frios`)."
+  - "Una clase por entorno: `en_uso`, `protegido`, `referenciado` o `frio`, mas su `bytes_exclusivos` y sus `referencias`."
+  - "Codigo de salida 0 con la medicion hecha, 2 si algo no se pudo medir, 3 si se llamo mal (argumento invalido)."
+
+edge_cases:
+  - caso: "Un entorno tiene .pyc dentro de la ventana de dias"
+    protocolo: "Clase `en_uso`. No se le pide la fecha del ultimo .pyc: la pregunta ya esta respondida y la fecha seria adorno."
+  - caso: "Un entorno frio cuyo nombre aparece como palabra suelta en el workspace"
+    protocolo: "No cuenta como referencia. Solo cuentan los ANCLAJES: `conda activate`, `envs/<n>/`, `ENV_NAME=`, `conda create/export/remove/clone/rename -n|--name <n>`. Sin anclajes, `IA` da 226 lineas en este workspace y ninguna es una activacion."
+  - caso: "Un entorno frio y ademas protegido por politica"
+    protocolo: "Clase `protegido`. Se lista y no se ofrece: `recuperable_bytes_exclusivos` no lo cuenta. Un entorno que ocupa espacio no es un defecto, es una decision del operador."
+  - caso: "Un entorno frio referenciado por un script"
+    protocolo: "Clase `referenciado`. Aparece en la evidencia con sus rutas, pero no se ofrece para borrar: la referencia es la senal de que la eliminacion tendria un coste que esta dimension no puede medir."
+  - caso: "El find o el grep se pasan de tiempo o fallan"
+    protocolo: "Estado `no_verificado` con el motivo. No se degrada a `ok` ni se cuenta a medias un entorno que no se pudo medir; `no_verificado` impide el verde global."
+  - caso: "Un entorno sin ningun .pyc"
+    protocolo: "Clase `frio` y `ultimo_pyc: null`. La ausencia de dato no se rellena con una fecha inventada."
+  - caso: "La raiz de entornos no existe o no contiene entornos"
+    protocolo: "Estado `no_verificado`, no una lista vacia. Una lista vacia y un fallo de descubrimiento se verian igual en el compositor."
+  - caso: "Un directorio con dos puntos en el nombre"
+    protocolo: "La ruta se recorta con un regex que ancla `:<digitos>:`. Partir por los dos ultimos dos puntos dejaria el numero de linea pegado a la ruta cuando el contenido de la linea tambien trae dos puntos."
+
+notas_de_diseno:
+  - "La capa 3 NO decide nada: `clasificar` devuelve hechos y no emite clave `estado`; el veredicto nace en `construir_resultado`. Hay un assert que lo vigila."
+  - "La busqueda de referencias es UN solo `grep` para todos los entornos, con las extensiones filtradas: ~1,3 s frente a los ~2 min de 16 recorridos. Se usa `grep` sin `-l` a proposito: `-l` imprime solo el nombre del fichero y con el nombre del fichero no se puede saber QUE entorno nombra. La primera version lo uso y devolvia siempre vacio, sin error, indistinguible de un 'no hay nada que limpiar'."
+  - "La dimension es de solo lectura por separacion de poderes: la que audita no borra, igual que en `flujo_auditar_sistema.py`. Si las dos cosas fueran el mismo comando, un `aviso` y un borrado serian indistinguibles."
+  - "Un entorno frio no es un `fallo`. Ocupar disco no es un defecto del repo, asi que nunca hay `fallo` aqui; el peor estado global lo seguiran poniendo las dimensiones que si miden defectos."

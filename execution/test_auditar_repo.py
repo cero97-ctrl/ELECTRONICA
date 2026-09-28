@@ -469,9 +469,11 @@ comprobar("las 7 dimensiones nuevas estan declaradas", len(AR.DIMENSIONES_NUEVAS
           str(sorted(AR.DIMENSIONES_NUEVAS)))
 comprobar("'logs' es dimension nueva: enumera los 19 logs, no un script fijo",
           "logs" in AR.DIMENSIONES_NUEVAS)
-comprobar("las 6 reutilizadas estan declaradas", len(FA.DIMENSIONES_REUTILIZADAS) == 6,
+comprobar("las 7 reutilizadas estan declaradas", len(FA.DIMENSIONES_REUTILIZADAS) == 7,
           str(len(FA.DIMENSIONES_REUTILIZADAS)))
-comprobar("13 dimensiones en total", len(AR.DIMENSIONES_NUEVAS) + len(FA.DIMENSIONES_REUTILIZADAS) == 13)
+comprobar("14 dimensiones en total", len(AR.DIMENSIONES_NUEVAS) + len(FA.DIMENSIONES_REUTILIZADAS) == 14)
+comprobar("'entornos' es reutilizada: la capa 3 decide, el compositor valida la forma",
+          "entornos" in {d["nombre"] for d in FA.DIMENSIONES_REUTILIZADAS})
 comprobar("toda dimension reutilizada tiene interprete y timeout",
           all("interpreta" in d and d.get("timeout", 0) > 0 for d in FA.DIMENSIONES_REUTILIZADAS))
 comprobar("ninguna dimension reutilizada puede borrar nada",

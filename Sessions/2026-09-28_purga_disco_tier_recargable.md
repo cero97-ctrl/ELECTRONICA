@@ -184,6 +184,79 @@ los 536,7 MB, por dos razones honestas:
 Lo unico afirmable: los 44 paquetes no referenciados ya no estan. Lo que el sistema de
 ficheros devolvio queda por debajo de la resolucion de lo medido.
 
+## La dimension `entornos` (tercera parte de la sesion)
+
+Se kodifico el criterio que estaba solo escrito en `docs/ENTORNOS_CONDA/README.md`. Tres
+capas, como manda el marco: `directives/auditar_entornos_conda.yaml` (capa 1),
+`flujo_auditar_repo.py` (capa 2) y `execution/auditar_envs_conda.py` (capa 3).
+
+Veredicto actual: `aviso`, `1 de 4 entornos frios, 0.37 GB de bloques exclusivos`
+(`bio_env`). Medido en 14,7 s como dimension del compositor; 13,5 s en solitario.
+
+### `bytes_exclusivos()` vive en la capa 3, no en el script de la dimension
+
+La medicion compartida esta en `execution/catalogo_disco.py`, junto a `tamano()` y
+`du_bytes()`, que es donde ya vivian las primitivas de disco. `auditar_envs_conda.py` la
+importa. La alternativa era duplicar el recorrido en el script de la dimension, que es
+justo la forma de tener dos medidas de lo mismo que divergen en silencio.
+
+La regla que hace que funcione: se cuenta un directorio SIEMPRE (con su `st_nlink >= 2`,
+que en un directorio cuenta subdirectorios, no enlaces) y un fichero solo si
+`st_nlink == 1`. Medido: `pkgs` 6,81 GB aparentes / **2,00 GB exclusivos**; `elect_env`
+5,87 / 5,90; `IA` 2,33 / 1,48. Los 2,00 GB de `pkgs` confirman el ~2,2 GB que se venia
+estimando a mano.
+
+### Dos bugs reales, encontrados por escribir el control positivo
+
+1. **`grep -l` hacia inutil el detector de referencias.** `buscar_referencias` usaba
+   `grep -rIl`, que imprime SOLO el nombre del fichero, y luego atribuia cada
+   coincidencia a un entorno mirando el contenido de la linea. El contenido no estaba
+   ahi, asi que la funcion devolvia SIEMPRE vacio, sin error y sin nota: exactamente
+   indistinguible de "no hay nada que limpiar". Seillo con un control positivo
+   (`pcb_env`, que si esta referenciado) en vez de dar por buena la salida vacia.
+   Ahora usa `grep -rIn` y atribuye con la MISMA funcion que genera el patron.
+
+2. **El flag del entorno solo se cubria en corto.** Los anclajes aceptaban `conda
+   create -n x` pero no `conda create --name x`, que es la forma que usa el `setup.sh`
+   mas legible de todos, el que la gente copia al crear un entorno. Anadido `--name`
+   a los cinco anclajes.
+
+El recorte de la ruta tambien estaba mal: `rsplit(":", 2)` sobre `ruta:linea:contenido`
+parte por los dos ultimos dos puntos, y como el contenido puede traer los suyos, el
+numero de linea se quedaba pegado a la ruta. Resuelto anclando `:(digitos):`.
+
+### Un fallo mio, no del codigo, que conviene no repetir
+
+La primera asercion de borde del test afirmaba que "90 dias exactos cuenta como
+dentro", y habia puesto el `.pyc` 5 s MAS ALLA del corte. El corte de `find -newermt` es
+un `>` estricto y por tanto estaba bien; la afirmacion era mia. Se sustituyo por los dos
+lados del borde con margen (89,9 dias dentro / 90,1 fuera) y se documento que la
+semantica del corte se escribe, no se hereda sola.
+
+Lo mismo con dos lineas de prueba: la de `envs/cyber_env/` y la de `-n agent_env` se
+probaban contra el patron de `pcb_env`. Fallaban, y el fallo parecia del detector.
+
+### El compositor obliga a actualizar la expectativa, no a derivar en silencio
+
+`test_auditar_repo.py` falló 2 de 127 al anadir la dimension, por dos aserciones de
+conteo (6 reutilizadas, 13 totales). Actualizadas a 7 y 14, mas una asercion nueva que
+comprueba que `entornos` es reutilizada. Ese test es lo que impide que el numero de
+dimensiones se quede viejo en silencio.
+
+Bateria completa en verde: barrera 83/0, `test_auditar_repo` 128/0, `test_auditar_sistema`
+102/0, `test_verificar_texto` 22/0, `test_auditar_entornos` 58/0. Auditoria completa: 14
+dimensiones en 85,8 s, `con_avisos`, exit 0, 0 con fallo.
+
+### `conda-pkgs` deja de prometer 7 GB que no existen
+
+El P2 de arriba era la tercera vez que se veia la misma sobreestimacion. Se cierra de
+una vez con `medir_exclusivo=True` en el `Target`: `bytes_purgables` pasa a ser el peso
+exclusivo y el aparente se conserva aparte, para que la diferencia (6,8 GB / 1,9 GB)
+sea visible y no una cifra magica. La descripcion del target, que hardcodeaba "11 GB" y
+"~2,4 GB", esta actualizada: esas cifras estavam escritas a mano y ya no son ciertas.
+Aviso de coste: el recorrido en exclusivo sobre `pkgs` son ~14 s extra en la dimension
+`disco`.
+
 ## Pendientes
 - **P1** `flujo_auditar_repo.py:521` retira `run_state.json` al cerrar, igual que
   `flujo_auditar_sistema.py`. Y desambiguar `STATE_FILE` por flujo
@@ -192,13 +265,15 @@ ficheros devolvio queda por debajo de la resolucion de lo medido.
 - **P1** `flujo_disco.py:141` imprime `0 B` para `--tier todos`: "todos" no es
   clave de `reclaimable_por_tier`. Regresion del arreglo de `3959955`, que solo
   cubria el default. Con regresion.
-- **P1** `execution/auditar_envs_conda.py` como dimension `entornos` de
-  `flujo_auditar_repo.py`. Motivacion medida: la dimension `disco` del compositor
-  declara "39,2 MB recuperables" mientras la respuesta buena eran 4 GB de conda que
-  no mira. El criterio (`.pyc` en 90 dias + referencias en
-  `~/MEGA/VS_CODE_WORKSPACE`) ya esta escrito y razonado en
-  `docs/ENTORNOS_CONDA/README.md`: falta solo codificarlo. Enquanto sea manual, la
-  proxima sesion vuelve a reconstruir la evidencia a mano.
+- ~~**P1** `execution/auditar_envs_conda.py` como dimension `entornos`.~~
+  **RESUELTO**: registrada y en verde (`aviso`, `1 de 4 frios, 0.37 GB`). El criterio
+  que estaba solo en prosa ya esta en codigo, con directiva y con test.
+- **P2** `bio_env` aparece como `frio` en la dimension, aunque su proyecto
+  (BIOANALISIS) esta vivo. No esta protegido por politica y ningun script lo declara por
+  nombre, asi que el detector no tiene forma de saberlo: por construccion solo ve
+  ejecucion y referencias. Decision pendiente: anadirlo a `--protegidos`, o aceptar que
+  un proyecto vivo sin entorno declarado se lea como frio. La dimension no borra nada,
+  asi que el riesgo es de lectura, no de perdida.
 - **P2** `conda clean --packages` mide **536,7 MB** (44 paquetes) huerfanos en
   `anaconda3/pkgs` tras la limpieza. **RESUELTO más abajo.**
 - **P2** 3 referencias colgantes a interpretes ya eliminados, **no reparadas**
@@ -207,10 +282,11 @@ ficheros devolvio queda por debajo de la resolucion de lo medido.
   la mencion documental en `TELEMEDICINA/README.md:39` + `.gemini/AGENT_FRAMEWORK.md:18`
   (`agent_env`). Son proyectos congelados; tocarlos es trabajo en repos inactivos.
   Los recipes de todos estan en `docs/ENTORNOS_CONDA/recetas/`.
-- **P2** `flujo_disco.py` sobreestima `conda-pkgs` contando el peso bruto de un
-  directorio lleno de hardlinks. Medir `pkgs/cache` + tarballs, no la carpeta.
-  Sobreestimacion ya anotada en sesiones previas; hoy cuantificada: ~2,2 GB reales
-  frente a 9,68 GB declarados.
+- ~~**P2** `flujo_disco.py` sobreestima `conda-pkgs`.~~ **RESUELTO** con
+  `medir_exclusivo=True`: `bytes_purgables` es 1,9 GB (exclusivo) y el aparente (6,8 GB)
+  se conserva aparte. Medir `pkgs/cache` + tarballs era la otra salida, pero recortaba
+  una carpeta en vez de medir la diferencia real, y habria vuelto a mentir en el otro
+  sentido si conda cambiara de layout.
 - **P2** `tmp-clones` se marca `conservado_reciente` con `min_edad=7` siendo que
   los clones tienen 19,8 y 22,9 dias. El guard `find -newermt` encuentra el
   `.git` interno del clon como reciente. Senal de vida confundida con ruido: un

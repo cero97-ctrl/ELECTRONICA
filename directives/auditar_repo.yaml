@@ -40,7 +40,7 @@ references:
 
 required_inputs:
   - name: --dimension NOMBRE
-    description: "Repetible. Limita la pasada a esas dimensiones (secretos, directivas, capas, peso_git, untracked, pdf_stale, texto, estado_sesion, bitacoras, logs, disco, barrera, test_texto). Repetir una dimension no la ejecuta dos veces."
+    description: "Repetible. Limita la pasada a esas dimensiones (secretos, directivas, capas, peso_git, untracked, pdf_stale, texto, estado_sesion, bitacoras, logs, disco, barrera, test_texto, entornos). Repetir una dimension no la ejecuta dos veces."
   - name: --solo A,B
     description: "Alias de --dimension como lista separada por comas. Ambas formas se unen, de modo que `--dimension texto --solo disco` restringe a las dos. Repetir una dimension no la ejecuta dos veces."
   - name: --json
@@ -77,6 +77,7 @@ dimensions:
     - disco: execution/disco_medir.py (filesystem e inodos)
     - barrera: execution/test_barrera_disco.py (barrera anti-borrado)
     - test_texto: execution/test_verificar_texto.py (regresion del detector de prosa)
+    - entornos: execution/auditar_envs_conda.py (entornos conda sin uso en 90 dias, en bloques exclusivos)
 
 steps:
   - name: acotar
