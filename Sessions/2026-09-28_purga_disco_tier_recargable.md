@@ -258,13 +258,34 @@ Aviso de coste: el recorrido en exclusivo sobre `pkgs` son ~14 s extra en la dim
 `disco`.
 
 ## Pendientes
-- **P1** `flujo_auditar_repo.py:521` retira `run_state.json` al cerrar, igual que
-  `flujo_auditar_sistema.py`. Y desambiguar `STATE_FILE` por flujo
-  (`run_state_{run_id}.json` o un subdirectorio por flujo), porque el emparejamiento
-  vista<->log es justo lo que `estado_sesion.py` verifica.
-- **P1** `flujo_disco.py:141` imprime `0 B` para `--tier todos`: "todos" no es
-  clave de `reclaimable_por_tier`. Regresion del arreglo de `3959955`, que solo
-  cubria el default. Con regresion.
+- ~~**P1** `flujo_auditar_repo.py:521` retira `run_state.json` al cerrar.~~
+  **RESUELTO**: la vista pasa a `run_state_{run_id}.json` y se borra al cerrar la
+  corrida, con el mismo criterio y los mismos comentarios que
+  `flujo_auditar_sistema.py`. Verificado: tras una pasada completa no queda ninguna
+  vista de la corrida, y la dimension `estado_sesion` dejo de reportar huerfanos.
+- **P2** el problema de fondo es de REPO, no de este flujo: **16 flujos siguen
+  escribiendo el mismo `run_state.json`** (`flujo_disco`, `flujo_verificar_texto`,
+  `flujo_evaluar_examen`, `flujo_elaborar_examen`, `flujo_analizar_imagen`,
+  `flujo_consultar_docs`, `flujo_curar_dataset`, `flujo_diagnostico`,
+  `flujo_elaborar_ejercicios`, `flujo_empaquetar_dataset`, `flujo_imagen_a_kicad`,
+  `flujo_libro_a_skill`, `flujo_motor_fallback`, `flujo_publicar_hf`,
+  `flujo_repo_a_skill`, `flujo_resolver_skill`). Con nombre fijo, dos flujos
+  simultaneos se pisan la vista y el emparejamiento vista<->log que verifica
+  `estado_sesion.py` atribuye la vista de uno al log del otro. NO se ha tocado
+  ninguno: son 16 ficheros y la decision (migrar todos a `run_state_{run_id}.json`
+  como hizo `auditar_sistema`, o un subdirectorio por flujo) merece su propia
+  sesion, con su test, en vez de colarse aqui.
+- ~~**P1** `flujo_disco.py:141` imprime `0 B` para `--tier todos`.~~
+  **RESUELTO**. El arreglo no fue poner la clave que faltaba: la impresion y la
+  decision leian el diccionario por dos caminos distintos, asi que el flujo podia
+  decir una cifra y decidir sobre otra. Ahora las dos salen de `bytes_tier`, y el
+  formateo se importa de `catalogo_disco.TAMANO_HUMANO` en vez de reimplementar el
+  redondeo (dos redondeos distintos para el mismo numero hacen dudar de los dos).
+  Medido: `--tier todos` pasa de `0 B` a `751,0 MB`.
+- **P3** `.tmp/run_state_sismico.json` no tiene `run_id` ni `status`: la dimension
+  `estado_sesion` lo reporta como "sin log append-only" y correctamente NO lo borra.
+  Preexistente y ajeno a este trabajo; queda anotado para no confundirlo con un
+  efecto secundario.
 - ~~**P1** `execution/auditar_envs_conda.py` como dimension `entornos`.~~
   **RESUELTO**: registrada y en verde (`aviso`, `1 de 4 frios, 0.37 GB`). El criterio
   que estaba solo en prosa ya esta en codigo, con directiva y con test.

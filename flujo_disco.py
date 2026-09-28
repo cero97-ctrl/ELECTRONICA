@@ -43,6 +43,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
+EJECUCION = SCRIPT_DIR / "execution"
+if str(EJECUCION) not in sys.path:
+    sys.path.insert(0, str(EJECUCION))
 PYTHON = sys.executable
 MEDIR = SCRIPT_DIR / "execution" / "disco_medir.py"
 PURGAR = SCRIPT_DIR / "execution" / "disco_purgar.py"
@@ -119,6 +122,18 @@ def formatear_uso(fs: dict) -> str:
             f"| inodos {fs['inodos_usados_pct']}%")
 
 
+def formatear_bytes(n: int | float) -> str:
+    """Cifra legible desde bytes, con la misma escala que usa la capa 3.
+
+    Se importa de `catalogo_disco` en vez de reimplementar el redondeo: dos
+    funciones que dan "1,9 GB" y "1.86 GiB" para el mismo numero hacen dudar de
+    las dos, y el redondeo es justo el sitio donde una cifra de disco miente sin
+    que se note.
+    """
+    from catalogo_disco import TAMANO_HUMANO  # noqa: E402  (capa 3, resolución explícita)
+    return TAMANO_HUMANO(n)
+
+
 def pasar(args, state: dict) -> int:
     """Una pasada completa: medir → decidir → purgar → verificar → alertar."""
     inicio = time.time()
@@ -135,11 +150,17 @@ def pasar(args, state: dict) -> int:
 
     fs = antes["filesystem"]
     resumen = antes["resumen_catalogo"]["reclaimable_por_tier"]
-    bytes_tier = resumen.get(args.tier, {}).get("bytes", 0) if args.tier != "todos" else \
-        antes["resumen_catalogo"]["reclaimable_total_bytes"]
+    # `todos` no es una clave de `reclaimable_por_tier`, asi que la cifra se
+    # saca del total cuando el tier es `todos`. Se imprime y se decide con la
+    # MISMA variable: antes se imprimia una vez con una busqueda en el
+    # diccionario y se decidia con otra, asi que el flujo podia decir una cifra
+    # y decidir sobre otra. Con `--tier todos` la impresion caia en el default
+    # '0 B' mientras la decision si veia los bytes reales.
+    bytes_tier = (resumen.get(args.tier, {}).get("bytes", 0)
+                  if args.tier != "todos"
+                  else antes["resumen_catalogo"]["reclaimable_total_bytes"])
     print(f"  ANTES   {formatear_uso(fs)}")
-    print(f"          recuperable {args.tier}: "
-          f"{resumen.get(args.tier, {}).get('humano', '0 B')}")
+    print(f"          recuperable {args.tier}: {formatear_bytes(bytes_tier)}")
 
     purgar, razon = decidir(fs["uso_pct"], args.umbral, bytes_tier, args.check)
     registrar_evento(state, "flujo/paso", {"paso": "decision", "purga": purgar, "razon": razon})

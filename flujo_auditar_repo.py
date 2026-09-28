@@ -43,7 +43,13 @@ from typing import Any, Callable
 RAIZ = Path(__file__).resolve().parent        # este flujo vive en la raiz del repo
 EJECUCION = RAIZ / "execution"                 # capa 3
 TMP = RAIZ / ".tmp"
-STATE_FILE = TMP / "run_state.json"
+# La vista de estado lleva el run_id en el nombre. Con un nombre fijo
+# `run_state.json`, dos flujos que corren a la vez se pisan la misma vista y el
+# emparejamiento vista<->log que verifica `estado_sesion.py` deja de tener
+# sentido: la vista de la corrida B se atribuira al log de la corrida A. El
+# log append-only es la verdad permanente; la vista es un andamio, y el
+# andamio necesita nombre propio.
+STATE_FILE_PLANTILLA = "run_state_{run_id}.json"
 INFORME = TMP / "auditoria_repo.json"
 SESION_LOG = EJECUCION / "sesion_log.py"
 PYTHON = sys.executable
@@ -507,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
 
     TMP.mkdir(parents=True, exist_ok=True)
     run_id = f"auditoria-repo-{time.strftime('%Y%m%d-%H%M%S')}"
+    ruta_estado = TMP / STATE_FILE_PLANTILLA.format(run_id=run_id)
     inicio = datetime.now(timezone.utc)
 
     def trazar(tipo: str, datos: dict[str, Any]) -> bool:
@@ -571,13 +578,22 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     INFORME.write_text(json.dumps(informe, ensure_ascii=False, indent=2), encoding="utf-8")
-    STATE_FILE.write_text(json.dumps({
+    ruta_estado.write_text(json.dumps({
         "run_id": run_id, "current_step": 1, "status": salud["veredicto"],
         "salud": salud, "exit_code": salud["exit_code"],
         "updated_at": datetime.now().isoformat(timespec="seconds"),
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     if not trazar("flujo/fin", {"veredicto": salud["veredicto"], "exit_code": salud["exit_code"]}):
         print("  aviso: no se pudo escribir 'flujo/fin' en el log append-only", file=sys.stderr)
+    # La corrida cerro: se retira el andamio. Antes se dejaba puesto, y una
+    # vista de una corrida terminada es un huerfano por construccion:
+    # `estado_sesion.py` avisaba de ello y, peor, envenenaba las respuestas MCP
+    # con el estado de una corrida que ya no existe. El log append-only queda
+    # intacto, que es donde vive la verdad.
+    try:
+        ruta_estado.unlink()
+    except OSError:
+        pass  # un andamio que no se puede retirar no puede tumbar el informe
 
     if args.json:
         print(json.dumps(informe, ensure_ascii=False, indent=2))
