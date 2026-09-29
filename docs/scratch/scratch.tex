@@ -1,0 +1,708 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\renewcommand{\iconoBanda}{cat}
+
+% ── Caja de consejos ─────────────────────────────────────────────────────────
+\newtcolorbox{cajaTips}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=amarilloNota!6!white,
+    colframe=amarilloNota, boxrule=1pt,
+    borderline west={4pt}{0pt}{amarilloNota},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{lightbulb}~Consejos para enseñar},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=amarilloNota, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=amarilloNota!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Banda de título personalizada para Scratch ───────────────────────────────
+\newcommand{\bandaTituloScratch}{%
+  \bandaTitulo[verdeTurquesa]{Scratch}{Programa. Juega. Aprende.}%
+}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% PORTADA — Banda de título
+% ══════════════════════════════════════════════════════════════════════════════
+\bandaTituloScratch
+
+\begin{center}
+{\large\textcolor{grisTexto}{
+  Guía completa para empezar a programar en \textbf{\textcolor{azulNoche}{Scratch}}
+  con una adolescente de 14 años en \textbf{\textcolor{azulNoche}{GNU/Linux Mint}}.}}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{puzzle-piece}{¿Qué es Scratch?}}
+
+\textbf{Scratch} es un lenguaje de programación \textbf{visual} desarrollado por el
+\textbf{MIT Media Lab} (dirigido por Mitchel Resnick). En lugar de escribir código
+textual, los programas se construyen encajando \textbf{bloques visuales} como piezas
+de un rompecabezas.
+
+\begin{cajaConcepto}
+\textbf{Programar en Scratch es encajar bloques.} Cada bloque representa una
+instrucción (mover, sonar, repetir, decidir). Te enseñan la \textbf{lógica de
+programación} sin la barrera de la sintaxis, ideal para aprender pensamiento
+computacional y creatividad digital.
+\end{cajaConcepto}
+
+Principales capacidades:
+\begin{itemize}
+  \item Crear \textbf{juegos}, animaciones e historias interactivas.
+  \item Incorporar \textbf{sonidos}, \textbf{sprites} (personajes) y fondos personalizados.
+  \item \textbf{Comunidad online} para compartir proyectos (como GitHub, pero para Scratch).
+  \item Extensible con extensiones: \texttt{micro:bit}, Makey Makey, LEGO, etc.
+\end{itemize}
+
+Uso recomendado:
+\begin{itemize}
+  \item Enseñar \textbf{lógica y estructura de programación} sin sintaxis.
+  \item Prototipos rápidos de interacción y animación.
+  \item Educación STEM en escuelas y aprendizaje en casa.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{layer-group}{Versiones y plataformas}}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{l l X}
+\toprule
+\textbf{Versión} & \textbf{Público} & \textbf{Plataformas} \\
+\midrule
+\textbf{ScratchJr}   & Niños 5--7 años        & Tablets (iOS, Android, Chromebook) \\
+\textbf{Scratch 3.0} & 8--16+ años            & Navegador web, Windows, macOS, \textbf{Linux} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Nota: la \textbf{aplicación de escritorio} para GNU/Linux es \textbf{Scratch
+Desktop}. También está disponible \textbf{Scratch 4.x} en versión de escritorio.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{wrench}{Instalación en GNU/Linux Mint}}
+
+Opciones disponibles (ya instalada en nuestro equipo):
+
+\begin{center}
+\begin{tabularx}{\linewidth}{l X X}
+\toprule
+\textbf{Método} & \textbf{Ventaja} & \textbf{Desventaja} \\
+\midrule
+\textbf{AppImage} & Portátil, no modifica el sistema, funciona siempre &
+Tan solo hay que descargarlo manualmente \\
+\textbf{Flatpak}  & Se integra con el Gestor de Software de Mint &
+Descarga algo pesada (runtime \SI{300}{\mega\byte}) \\
+\textbf{Scratch online} & Sin instalar nada, listo para usar &
+Requiere conexión y un navegador (Firefox/Chromium) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{thumbs-up}~Recomendación: AppImage}]
+Es el método más limpio para GNU/Linux Mint: no
+depende de Snap (problemático en Mint) ni de Flatpak. Pasos rápidos:
+\begin{enumerate}
+  \item Descargar desde \url{https://scratch.mit.edu/download}.
+  \item Darle permisos de ejecución con \texttt{chmod +x Scratch-*.AppImage}.
+  \item Ejecutarlo con doble clic o desde terminal con `./Scratch-*.AppImage`.
+\end{enumerate}
+\end{tcolorbox}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{gamepad}{Plan de aprendizaje por fases}}
+
+\subsection{Fase 1: Familiarización (semanas 1--2)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l X c}
+\toprule
+\textbf{Proyecto} & \textbf{Qué aprende} & \textbf{Dificultad} \\
+\midrule
+Hola Mundo            & Bloques de movimiento, apariencia y sonido       & \facil \\
+Animación básica      & Secuencias, bucles \texttt{repeat}, \texttt{esperar} & \facil \\
+El gato bailarín      & Bucle \texttt{forever}, eventos al hacer clic en la bandera verde & \facil \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Fase 2: Interactividad (semanas 3--4)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l X c}
+\toprule
+\textbf{Proyecto} & \textbf{Qué aprende} & \textbf{Dificultad} \\
+\midrule
+Pong clásico          & Teclado, colisiones, variables (puntos)          & \intermedio \\
+Historia interactiva  & Condicionales \texttt{si/si-no}, diálogos         & \intermedio \\
+Quiz / Trivia         & Lógica, comparaciones y retroalimentación         & \intermedio \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Fase 3: Juegos (semanas 5--8)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l X c}
+\toprule
+\textbf{Proyecto} & \textbf{Qué aprende} & \textbf{Dificultad} \\
+\midrule
+Laberinto saltarín       & Detección de bordes, coordenadas X/Y             & \dificil \\
+Plataformas              & Física básica, gravedad y clonación              & \dificil \\
+Space Invaders           & Clonación masiva y dificultad progresiva         & \dificil \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{book}{Recursos recomendados}}
+
+\subsection{Scratch 3 Programming Playground — libro gratuito online}
+
+\textbf{Al Sweigart} (No Starch Press). Gratis para leer en línea bajo licencia
+Creative Commons, con proyectos completos y progresivos:
+\url{https://inventwithscratch.com/book3}.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{c X}
+\toprule
+\textbf{Capítulo} & \textbf{Proyecto / contenido} \\
+\midrule
+0 & Introducción y conceptos básicos \\
+1 & Primeros pasos: interfaz, movimiento y eventos \\
+2 & Líneas Arcoíris: bucles, colores y lápiz \\
+3 & \textbf{Laberinto}: colisiones, coordenadas y condiciones \\
+4 & \textbf{Baloncesto con gravedad}: física, variables y teclado \\
+5 & \textbf{Brick Breaker pulido}: clonación, puntuación y niveles \\
+6 & \textbf{Asteroides en el espacio}: enemigos múltiples y dificultad \\
+7 & \textbf{Plataformas avanzado}: gravedad, saltos y \textit{scrolling} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+  \item Incluye \textbf{descargables} de sprites y fondos:
+        \url{https://inventwithscratch.com/ScratchPlayground3_resources.zip}.
+  \item Ejercicios al final de cada capítulo con retos de personalización.
+  \item Proyectos en orden creciente de dificultad, ideales para 14 años.
+\end{itemize}
+
+\subsection{Curso gratuito en Udemy}
+
+\textit{Scratch Game Programming}, también de \textbf{Al Sweigart}, sigue los
+primeros 6 proyectos del libro: \url{https://www.udemy.com/scratch-game-programming/}.
+
+\subsection{Manual para padres y profesores}
+
+\textit{Scratch Class Handbook} (PDF gratuito, actualizado oct 2020):
+\url{https://inventwithscratch.com/Scratch_Class_Handbook_v3.pdf}.
+Contiene estrategias para conducir la sesión, tiempos y evaluación.
+
+\subsection{Tutoriales oficiales de Scratch}
+
+\begin{itemize}
+  \item Tutoriales paso a paso: \url{https://scratch.mit.edu/tutorials}.
+  \item Proyectos de la comunidad para inspirarse: \url{https://scratch.mit.edu/explore}.
+  \item Información para padres: \url{https://scratch.mit.edu/parents}.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{calendar-alt}{Plan de estudio detallado (8 semanas)}}
+
+\subsection{Semanas 1--2: Fundamentos}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{c l X}
+\toprule
+\textbf{Día} & \textbf{Actividad (30 min)} & \textbf{Referencia} \\
+\midrule
+L & Interfaz de Scratch y crear cuenta        & Capítulo 1 \\
+M & Primer sprite: movimiento con teclado     & Capítulo 1 \\
+X & Añadir sonido y fondo                     & Capítulo 1 \\
+J & Proyecto: ``Mi primer dibujo'' (lápiz)    & Capítulo 2 \\
+V & Líneas arcoíris                           & Capítulo 2 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Semana 3: Condicionales}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{c l X}
+\toprule
+\textbf{Día} & \textbf{Actividad} & \textbf{Referencia} \\
+\midrule
+L & Colisiones básicas              & Capítulo 3 \\
+M & Laberinto (parte 1: movimiento) & Capítulo 3 \\
+X & Laberinto (parte 2: paredes)    & Capítulo 3 \\
+J & Laberinto (parte 3: meta)       & Capítulo 3 \\
+V & Personalizar el laberinto       & Capítulo 3 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Semana 4: Variables y puntuación}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{c l X}
+\toprule
+\textbf{Día} & \textbf{Actividad} & \textbf{Referencia} \\
+\midrule
+L & Concepto de variables              & Capítulo 4 \\
+M & Baloncesto (parte 1: la pelota)    & Capítulo 4 \\
+X & Baloncesto (parte 2: la canasta)   & Capítulo 4 \\
+J & Baloncesto (parte 3: gravedad)     & Capítulo 4 \\
+V & Baloncesto (parte 4: puntuación)   & Capítulo 4 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Semana 5: Clonación}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{c l X}
+\toprule
+\textbf{Día} & \textbf{Actividad} & \textbf{Referencia} \\
+\midrule
+L & Concepto de clones                  & Capítulo 5 \\
+M & Brick Breaker (parte 1: la pelota)  & Capítulo 5 \\
+X & Brick Breaker (parte 2: ladrillos)  & Capítulo 5 \\
+J & Brick Breaker (parte 3: niveles)    & Capítulo 5 \\
+V & Brick Breaker (parte 4: pulir)      & Capítulo 5 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Semanas 6--7: Juegos avanzados}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l l X}
+\toprule
+\textbf{Semana} & \textbf{Proyecto} & \textbf{Referencia} \\
+\midrule
+6 & Asteroides en el espacio     & Capítulo 6 \\
+7 & Plataformas saltarinas       & Capítulo 7 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Semana 8: Proyecto libre}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{X X}
+\toprule
+\textbf{Actividad} \\
+\midrule
+La alumna elige un juego o animación que le guste y lo completa \\
+Se publica en la comunidad Scratch (\url{https://scratch.mit.edu}) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{youtube}{Canales de YouTube en español}}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l X}
+\toprule
+\textbf{Canal} & \textbf{Tipo de contenido} \\
+\midrule
+Scratch en Español            & Tutoriales paso a paso desde cero \\
+Programación para Niños       & Juegos y animaciones guiados \\
+CodeaKids                     & Proyectos creativos y lúdicos \\
+Profesor Sheldon              & Cursos completos en español \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{lightbulb}{Consejos para enseñar (14 años)}}
+
+\begin{cajaTips}
+\begin{enumerate}
+  \item \textbf{Empieza con proyectos que ella elija}: ¿juegos, animaciones, música?
+  \item No intentes ``enseñar programación'' directamente: deja que ella descubra
+        cómo lograr lo que quiere.
+  \item Sesiones de \textbf{30--45 minutos} máximo; la atención se pierde rápido.
+  \item Usa proyectos de la comunidad como \textbf{punto de partida} (fork).
+  \item \textbf{Celebra cada logro}: el primer sprite que se mueve es motivador.
+  \item Alterna práctica y teoría corta: 10 minutos de concepto, 20 de construir.
+\end{enumerate}
+\end{cajaTips}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{clipboard-check}{Lista de verificación para empezar}}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{l X}
+\toprule
+\textbf{Estado} & \textbf{Paso} \\
+\midrule
+\faCheckSquare & Scratch instalado en GNU/Linux Mint \\
+$\square$      & Crear cuenta en \url{https://scratch.mit.edu} (guardar proyectos) \\
+$\square$      & Abrir el libro gratuito: \url{https://inventwithscratch.com/book3} \\
+$\square$      & Descargar recursos: \url{https://inventwithscratch.com/ScratchPlayground3_resources.zip} \\
+$\square$      & Empezar el Capítulo 1 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section*{\iconotexto{link}{Referencias}}
+\addcontentsline{toc}{section}{Referencias}
+
+\begin{itemize}
+  \item Scratch (sitio oficial): \url{https://scratch.mit.edu}
+  \item Invent with Scratch (Al Sweigart): \url{https://inventwithscratch.com}
+  \item Scratch 3 Programming Playground (libro online): \url{https://inventwithscratch.com/book3}
+  \item Curso Audiovisual en Udemy: \url{https://www.udemy.com/scratch-game-programming/}
+  \item Scratch Class Handbook (PDF): \url{https://inventwithscratch.com/Scratch_Class_Handbook_v3.pdf}
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,1055 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+
+% ── Cajas específicas de este documento (problemas resueltos) ──────────────────
+\newtcolorbox{problemaBox}[1]{
+  enhanced, breakable, arc=6pt, outer arc=6pt,
+  colback=azulNoche!5!white, colframe=azulNoche, boxrule=1pt,
+  borderline west={4pt}{0pt}{cyanNeon},
+  fonttitle=\bfseries\small\color{white}, title={#1},
+  attach boxed title to top left={yshift=-3mm, xshift=6mm},
+  boxed title style={colback=azulNoche, colframe=azulNoche, arc=4pt, boxrule=0pt},
+  drop fuzzy shadow=azulNoche!20!white,
+  left=10pt, right=10pt, top=10pt, bottom=8pt,
+}
+\newtcolorbox{solucionBox}{
+  enhanced, breakable, arc=6pt, outer arc=6pt,
+  colback=verdeSignal!6!white, colframe=verdeSignal, boxrule=1pt,
+  borderline west={4pt}{0pt}{verdeSignal},
+  fonttitle=\bfseries\small\color{white},
+  title={\faIcon{check-circle}~Solución paso a paso},
+  attach boxed title to top left={yshift=-3mm, xshift=6mm},
+  boxed title style={colback=verdeSignal!75!black, colframe=verdeSignal!75!black, arc=4pt, boxrule=0pt},
+  left=10pt, right=10pt, top=10pt, bottom=8pt,
+}
+\newtcolorbox{porqueBox}{
+  enhanced, breakable, arc=6pt, outer arc=6pt,
+  colback=amarilloNota!12!white, colframe=amarilloNota, boxrule=1pt,
+  borderline west={4pt}{0pt}{amarilloNota},
+  fonttitle=\bfseries\small\color{naranjaVivo!80!black},
+  title={\faIcon{comments}~¿Por qué? En palabras sencillas},
+  attach boxed title to top left={yshift=-3mm, xshift=6mm},
+  boxed title style={colback=amarilloNota, colframe=amarilloNota, arc=4pt, boxrule=0pt},
+  left=10pt, right=10pt, top=8pt, bottom=6pt,
+}
+
+\begin{document}
+
+\fancyhead[L]{\footnotesize\color{grisTexto}Problemas resueltos \textbullet\ Temas 7 y 8}
+\fancyhead[R]{\footnotesize\color{cyanNeon}\faIcon{microchip}~CIRC\_DISP\_ELECT}
+
+\bandaTitulo{Problemas Resueltos: Temas 7 y 8}{Respuesta A.C.\ del BJT \textbullet\ Modelo Híbrido \textbullet\ Explicados paso a paso}
+
+\section*{\iconotexto{graduation-cap}{Cómo usar esta hoja}}
+\addcontentsline{toc}{section}{Cómo usar esta hoja}
+
+Esta hoja tiene \textbf{20 problemas resueltos} (10 del Tema~7 y 10 del Tema~8) pensados para que los entienda alguien de \textbf{15 años} que ya vio la teoría. Cada problema tiene tres partes:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{El problema} (caja azul): qué se pide y qué datos tienes.
+  \item \textbf{Solución paso a paso} (caja verde): los cálculos, uno a uno, sin saltos.
+  \item \textbf{¿Por qué?} (caja amarilla): la idea con palabras sencillas, para que no memorices sino que \emph{entiendas}.
+\end{itemize}
+
+Cada problema marca su dificultad: \facil\ (practicar la idea), \intermedio\ (usar fórmulas con números) y \dificil\ (juntar varias ideas). Empieza por los fáciles.
+
+\begin{cajaRecuerda}
+\textbf{Notación y ``trucos'' que usaremos todo el tiempo:}
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt]
+  \item \textbf{c.c.} = corriente continua (lo constante, la ``alimentación''). \textbf{c.a.} = corriente alterna (la señal que cambia, la música o la voz).
+  \item Letras \textbf{mayúsculas} ($V_{CE}$, $I_C$) = valor total. Letras \textbf{minúsculas} ($v_{ce}$, $i_c$) = solo la parte que varía (la señal c.a.).
+  \item $R_C \parallel R_L$ se lee ``$R_C$ en \textbf{paralelo} con $R_L$'' y vale $\dfrac{R_C \cdot R_L}{R_C + R_L}$. Es \emph{siempre} más chica que la menor de las dos.
+  \item $V_T \approx 25\ \text{mV}$ es el ``voltaje térmico'' a temperatura ambiente.
+  \item \textbf{Regla práctica} para el modelo híbrido: $r_e \approx \dfrac{V_T}{I_{CQ}}$, \quad $h_{ie} \approx \beta \cdot r_e \approx \beta\cdot\dfrac{25\ \text{mV}}{I_{CQ}}$, \quad $h_{fe} \approx \beta$.
+\end{itemize}
+\end{cajaRecuerda}
+
+%═══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{wave-square}{Parte I --- Tema 7: Respuesta A.C.\ del BJT}}
+%═══════════════════════════════════════════════════════════════════════════════
+
+\begin{cajaConcepto}
+\textbf{El circuito de ejemplo.} Casi todos los problemas del Tema~7 usan el mismo amplificador \emph{emisor común}. Sus datos son:
+\[
+V_{CC}=12\ \text{V},\quad R_C=2.2\ \text{k}\Omega,\quad R_E=220\ \Omega,\quad R_L=4.7\ \text{k}\Omega
+\]
+\[
+\beta=100,\quad V_{BE}=0.7\ \text{V},\quad V_{CEsat}=0.2\ \text{V}
+\]
+Un dato útil que repetiremos: $R_C \parallel R_L = \dfrac{2.2\cdot 4.7}{2.2+4.7}\ \text{k}\Omega \approx 1.5\ \text{k}\Omega$.
+\end{cajaConcepto}
+
+\begin{cajaRecuerda}
+\textbf{Fórmulas clave del Tema 7:}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+  \item Thévenin de la polarización: $V_{BB}=V_{CC}\dfrac{R_1}{R_1+R_2}$, \quad $R_B=\dfrac{R_1 R_2}{R_1+R_2}$.
+  \item Recta de carga \textbf{d.c.}: $V_{CC}=V_{CE}+I_C(R_C+R_E)$.
+  \item Recta de carga \textbf{a.c.} (con $C_E$): $V_{CE}=V_{CEQ}-(I_C-I_{CQ})(R_C\parallel R_L)$.
+  \item Cortes de la recta a.c.: $V_{CE\max}=V_{CEQ}+I_{CQ}(R_C\parallel R_L)$; \ $I_{C\max}=\dfrac{V_{CEQ}}{R_C\parallel R_L}+I_{CQ}$.
+  \item Máximo Desplazamiento Simétrico (MDS): $V_{CEQ}=V_{CEsat}+I_{CQ}(R_C\parallel R_L)$.
+  \item Sin $C_E$: aparece $R_E$ en c.a.\ $\Rightarrow (R_C\parallel R_L)$ se vuelve $(R_C\parallel R_L)+R_E$.
+\end{itemize}
+\end{cajaRecuerda}
+
+%──────────────────────── Problema 7.1 ────────────────────────
+\begin{problemaBox}{Problema 7.1 --- El papel de los condensadores \quad \facil}
+En el amplificador emisor común hay tres condensadores: $C_1$ y $C_2$ (de \textbf{acoplo}) y $C_E$ (de \textbf{desacoplo} o ``bypass''). Explica con tus palabras qué hace cada uno y por qué, para la señal c.a., un condensador se comporta como un \textbf{cortocircuito}, mientras que para la c.c.\ es un \textbf{circuito abierto}.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. La idea del cortocircuito/circuito abierto.} Un condensador se opone a los \emph{cambios} de voltaje. Con c.c.\ (nada cambia) se ``llena'' y deja de pasar corriente: circuito abierto. Con c.a.\ (cambia rapidísimo) nunca se llena del todo y deja pasar la señal: cortocircuito.
+
+\textbf{Paso 2. $C_1$ (acoplo de entrada).} Deja pasar la señal c.a.\ $v_i$ hacia la base, pero \emph{bloquea} la c.c.\ para que la fuente no se mezcle con la polarización del transistor.
+
+\textbf{Paso 3. $C_2$ (acoplo de salida).} Deja pasar la señal amplificada hacia la carga $R_L$, pero bloquea la c.c.\ para que la carga solo reciba señal y no la componente continua.
+
+\textbf{Paso 4. $C_E$ (desacoplo de emisor).} En c.a.\ ``cortocircuita'' a $R_E$: la señal no ve a $R_E$, así que toda la señal aparece en la salida. En c.c.\ $C_E$ está abierto y $R_E$ sí actúa, dando estabilidad al punto de trabajo.
+\end{solucionBox}
+
+\begin{porqueBox}
+Piensa en los condensadores como \textbf{puertas que solo dejan pasar lo que cambia}. La c.c.\ es ``quieta'' y se queda afuera; la c.a.\ es ``movida'' y pasa. $C_E$ es especial: ``puentea'' a $R_E$ para la señal, de modo que la ganancia no se reduzca.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.2 ────────────────────────
+\begin{problemaBox}{Problema 7.2 --- Equivalente de Thévenin de la polarización \quad \facil}
+La base se polariza con un divisor de tensión. Dados $V_{CC}=12\ \text{V}$, $R_1=2.5\ \text{k}\Omega$ (la de abajo, a tierra) y $R_2=18.5\ \text{k}\Omega$ (la de arriba, a $V_{CC}$), calcula el voltaje y la resistencia de Thévenin vistos desde la base: $V_{BB}$ y $R_B$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Voltaje de Thévenin} (divisor de tensión):
+\[
+V_{BB}=V_{CC}\cdot\frac{R_1}{R_1+R_2}=12\cdot\frac{2.5}{2.5+18.5}=12\cdot\frac{2.5}{21}=12\cdot 0.119\approx 1.43\ \text{V}
+\]
+
+\textbf{Paso 2. Resistencia de Thévenin} (las dos en paralelo, porque para c.a.\ $V_{CC}$ es tierra):
+\[
+R_B=\frac{R_1 R_2}{R_1+R_2}=\frac{2.5\cdot 18.5}{21}\ \text{k}\Omega=\frac{46.25}{21}\ \text{k}\Omega\approx 2.2\ \text{k}\Omega
+\]
+
+\textbf{Resultado:} $V_{BB}\approx 1.43\ \text{V}$ y $R_B\approx 2.2\ \text{k}\Omega$.
+\end{solucionBox}
+
+\begin{porqueBox}
+$V_{BB}$ es ``el voltaje que de verdad llega a la base'' tras el divisor, y $R_B$ es ``la resistencia que la señal ve'' mirando hacia el divisor. Reducir $R_1$ y $R_2$ a un solo $V_{BB}$ y una sola $R_B$ hace que todos los cálculos siguientes sean mucho más fáciles.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.3 ────────────────────────
+\begin{problemaBox}{Problema 7.3 --- Recta de carga d.c.\ y punto Q \quad \intermedio}
+Para el amplificador de ejemplo: (a) escribe la ecuación de la recta de carga d.c.; (b) halla sus dos cortes con los ejes; (c) si la corriente de colector en el punto de trabajo es $I_{CQ}=3\ \text{mA}$, ¿cuánto vale $V_{CEQ}$?
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1 (a). Ecuación d.c.} En c.c.\ los condensadores están abiertos, así que por $R_C$ y $R_E$ circula la misma corriente:
+\[
+V_{CC}=V_{CE}+I_C(R_C+R_E)\quad\Rightarrow\quad 12=V_{CE}+I_C(2200+220)=V_{CE}+I_C\cdot 2420
+\]
+
+\textbf{Paso 2 (b). Corte con el eje $v_{CE}$} (hacemos $I_C=0$): $V_{CE}=V_{CC}=12\ \text{V}$.
+
+\textbf{Paso 3 (b). Corte con el eje $i_C$} (hacemos $V_{CE}=0$):
+\[
+I_C=\frac{V_{CC}}{R_C+R_E}=\frac{12}{2420}\approx 4.96\ \text{mA}
+\]
+
+\textbf{Paso 4 (c). $V_{CEQ}$ con $I_{CQ}=3\ \text{mA}$:}
+\[
+V_{CEQ}=V_{CC}-I_{CQ}(R_C+R_E)=12-(3\times10^{-3})(2420)=12-7.26=4.74\ \text{V}
+\]
+
+\textbf{Resultado:} punto Q $\approx (V_{CEQ}=4.74\ \text{V},\ I_{CQ}=3\ \text{mA})$.
+\end{solucionBox}
+
+\begin{porqueBox}
+La recta de carga d.c.\ es ``el menú de combinaciones $(V_{CE}, I_C)$ que permite el circuito''. Los extremos son los topes: si no corre corriente, todo el voltaje cae en el transistor ($12\ \text{V}$); si el transistor es un cortocircuito, la corriente es máxima ($4.96\ \text{mA}$). El punto Q es dónde ``se sienta'' el transistor cuando no hay señal.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.4 ────────────────────────
+\begin{problemaBox}{Problema 7.4 --- El circuito equivalente en c.c.\ y c.a. \quad \facil}
+Describe cómo se transforma el amplificador de ejemplo al hacer el \textbf{análisis en c.a.}: ¿qué le pasa a $V_{CC}$, a $C_1$, $C_2$ y $C_E$, y qué resistencia queda entre la base y tierra? Justifica por qué la salida cumple $v_L=v_{ce}$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. $V_{CC}$ se vuelve tierra.} Para la señal c.a.\ una fuente de voltaje constante es un ``punto fijo'', o sea, tierra de señal.
+
+\textbf{Paso 2. Los condensadores se vuelven cortocircuitos.} $C_1$ conecta la fuente $v_i$ a la base; $C_2$ conecta el colector a la carga $R_L$; $C_E$ cortocircuita a $R_E$.
+
+\textbf{Paso 3. Resistencia base-tierra.} Como $V_{CC}$ es tierra, $R_1$ y $R_2$ quedan ambas entre la base y tierra: es $R_B=R_1\parallel R_2$ (la del Problema 7.2, $\approx 2.2\ \text{k}\Omega$).
+
+\textbf{Paso 4. Salida.} Con $C_E$ cortocircuitando $R_E$, el emisor está a tierra de señal, de modo que el voltaje colector-emisor es justo el de salida: $v_L=v_{ce}$. La carga efectiva que ve el colector es $R_C\parallel R_L$.
+\end{solucionBox}
+
+\begin{porqueBox}
+El ``truco'' del análisis c.a.\ es \textbf{apagar lo continuo y cortocircuitar los condensadores}. El circuito que queda (con el transistor reemplazado por su modelo) es el que se usa en el Tema~8: ver la Figura~\ref{fig:hibrido}. Por eso $R_E$ ``desaparece'' cuando $C_E$ está presente.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.5 ────────────────────────
+\begin{problemaBox}{Problema 7.5 --- Recta de carga a.c.\ \quad \intermedio}
+Con el punto Q del Problema 7.3 ($V_{CEQ}=4.74\ \text{V}$, $I_{CQ}=3\ \text{mA}$) y $R_C\parallel R_L\approx1.5\ \text{k}\Omega$: (a) escribe la ecuación de la recta de carga a.c.; (b) calcula sus cortes $V_{CE\max}$ e $I_{C\max}$. Ubica todo en la Figura~\ref{fig:rectascarga}.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1 (a). Ecuación a.c.} La señal ve la carga $R_C\parallel R_L$:
+\[
+V_{CE}=V_{CEQ}-(I_C-I_{CQ})(R_C\parallel R_L)=4.74-(I_C-3\ \text{mA})(1500)
+\]
+
+\textbf{Paso 2 (b). Corte $V_{CE\max}$} (cuando $I_C=0$):
+\[
+V_{CE\max}=V_{CEQ}+I_{CQ}(R_C\parallel R_L)=4.74+(3\times10^{-3})(1500)=4.74+4.5=9.24\ \text{V}
+\]
+
+\textbf{Paso 3 (b). Corte $I_{C\max}$} (cuando $V_{CE}=0$):
+\[
+I_{C\max}=\frac{V_{CEQ}}{R_C\parallel R_L}+I_{CQ}=\frac{4.74}{1500}+3\times10^{-3}=3.16\times10^{-3}+3\times10^{-3}=6.16\ \text{mA}
+\]
+
+\textbf{Resultado:} la recta a.c.\ pasa por Q y corta en $V_{CE\max}=9.24\ \text{V}$ e $I_{C\max}=6.16\ \text{mA}$.
+\end{solucionBox}
+
+\begin{porqueBox}
+La recta a.c.\ es \textbf{más inclinada} que la d.c.\ porque en señal la carga es $R_C\parallel R_L$ (más chica que $R_C+R_E$). Ambas rectas se cruzan justo en el punto Q: la señal ``baila'' sobre la recta a.c.\ alrededor de Q.
+\end{porqueBox}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.82, font=\small]
+  \draw[->,thick] (0,0) -- (13.3,0) node[right]{$v_{CE}\ (\text{V})$};
+  \draw[->,thick] (0,0) -- (0,7.2) node[above]{$i_C\ (\text{mA})$};
+  \draw[azulNoche,very thick] (12,0) -- (0,4.96);
+  \node[azulNoche] at (9.6,2.4) {\footnotesize Recta d.c.};
+  \draw[rojoAlerta,very thick] (9.24,0) -- (0,6.16);
+  \node[rojoAlerta] at (6.0,3.4) {\footnotesize Recta a.c.};
+  \fill (4.74,3.0) circle (2.2pt) node[above right,black]{\textbf{Q}};
+  \draw[dashed,grisTexto] (4.74,0) -- (4.74,3.0);
+  \draw[dashed,grisTexto] (0,3.0) -- (4.74,3.0);
+  \node[below] at (4.74,0) {\footnotesize $V_{CEQ}$};
+  \node[left]  at (0,3.0) {\footnotesize $I_{CQ}$};
+  \node[below] at (9.24,0) {\footnotesize $V_{CE\max}$};
+  \draw[|->,verdeSignal,thick] (4.74,3.0) -- (9.24,0);
+  \node[verdeSignal] at (7.6,1.9) {\footnotesize $v_{cep}$};
+  \fill (0.25,0) circle (1.5pt);
+  \node[below] at (0.25,0) {\footnotesize $V_{CEsat}$};
+  \node[left] at (0,6.16) {\footnotesize $I_{C\max}$};
+  \node[left] at (0,4.96) {\footnotesize $\tfrac{V_{CC}}{R_C+R_E}$};
+\end{tikzpicture}
+\caption{Rectas de carga d.c.\ (azul) y a.c.\ (roja) sobre las curvas del transistor. El punto Q es su cruce. La flecha verde es el desplazamiento máximo $v_{cep}$ hacia $V_{CE\max}$. Valores del circuito de ejemplo con $I_{CQ}=3\ \text{mA}$.}
+\label{fig:rectascarga}
+\end{figure}
+
+%──────────────────────── Problema 7.6 ────────────────────────
+\begin{problemaBox}{Problema 7.6 --- MDS cuando Q está cerca de la saturación \quad \intermedio}
+Imagina un punto Q con $V_{CEQ}=1.5\ \text{V}$, muy cerca de la saturación ($V_{CEsat}=0.3\ \text{V}$). ¿Cuál es la amplitud pico máxima de la señal de salida $v_{cep}$ sin que el transistor recorte? ¿Qué pasa si intentas una señal más grande?
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Identifica hacia dónde hay ``espacio''.} Q está cerca de $V_{CEsat}$, así que la señal solo puede bajar hasta $V_{CEsat}$ antes de recortar. El margen útil es hacia arriba, pero limita la distancia a saturación.
+
+\textbf{Paso 2. Amplitud máxima (la manda el lado cercano):}
+\[
+v_{cep}=V_{CEQ}-V_{CEsat}=1.5-0.3=1.2\ \text{V}
+\]
+
+\textbf{Paso 3. Conclusión.} Si la señal intenta superar $1.2\ \text{V}$ de pico, la parte negativa ``choca'' con la saturación y se \textbf{recorta} (se aplasta), deformando la salida.
+\end{solucionBox}
+
+\begin{porqueBox}
+La señal puede moverse hasta el ``techo'' ($V_{CE\max}$) o el ``piso'' ($V_{CEsat}$), lo que esté \textbf{más cerca}. Aquí el piso está cerquísima, así que el máximo lo fija la distancia al piso: $v_{cep}=V_{CEQ}-V_{CEsat}$. Por eso un Q muy bajo da poca señal.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.7 ────────────────────────
+\begin{problemaBox}{Problema 7.7 --- MDS cuando Q está cerca de $V_{CE\max}$ \quad \intermedio}
+Ahora el punto Q tiene $V_{CEQ}=6\ \text{V}$ y el corte de la recta a.c.\ está en $V_{CE\max}=9\ \text{V}$, con $V_{CEsat}=0.3\ \text{V}$. Calcula $v_{cep}$ máximo y compara las distancias al techo y al piso.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Distancia al techo:} $V_{CE\max}-V_{CEQ}=9-6=3\ \text{V}$.
+
+\textbf{Paso 2. Distancia al piso:} $V_{CEQ}-V_{CEsat}=6-0.3=5.7\ \text{V}$.
+
+\textbf{Paso 3. Gana la menor} (el techo está más cerca):
+\[
+v_{cep}=V_{CE\max}-V_{CEQ}=3\ \text{V}\quad(\text{equivale a } I_{CQ}(R_C\parallel R_L))
+\]
+\end{solucionBox}
+
+\begin{porqueBox}
+Es el caso ``espejo'' del anterior: ahora Q está alto, cerca del techo, y la señal se recorta por arriba si te pasas de $3\ \text{V}$. \textbf{Regla de oro:} $v_{cep}$ siempre lo manda el borde (techo o piso) que esté \emph{más cerca} de Q.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.8 ────────────────────────
+\begin{problemaBox}{Problema 7.8 --- Máximo Desplazamiento Simétrico (MDS) \quad \intermedio}
+Para el amplificador de ejemplo ($V_{CC}=12\ \text{V}$, $R_C=2.2\ \text{k}\Omega$, $R_E=220\ \Omega$, $R_L=4.7\ \text{k}\Omega$, $V_{CEsat}=0.2\ \text{V}$), halla el punto Q que da \textbf{MDS} (máxima salida sin recorte) y la amplitud pico $v_{cep}$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Condición de MDS.} Q debe quedar \emph{equidistante} del piso ($V_{CEsat}$) y del techo ($V_{CE\max}$). Eso ocurre cuando:
+\[
+V_{CEQ}=V_{CEsat}+I_{CQ}(R_C\parallel R_L)
+\]
+
+\textbf{Paso 2. Combina con la recta d.c.} $V_{CC}=V_{CEQ}+I_{CQ}(R_C+R_E)$ para despejar $I_{CQ}$:
+\[
+I_{CQ}=\frac{V_{CC}-V_{CEsat}}{(R_C\parallel R_L)+(R_C+R_E)}=\frac{12-0.2}{1500+2420}=\frac{11.8}{3920}\approx 3.01\ \text{mA}
+\]
+
+\textbf{Paso 3. $V_{CEQ}$ de MDS:}
+\[
+V_{CEQ}=0.2+(3.01\times10^{-3})(1500)=0.2+4.52\approx 4.72\ \text{V}
+\]
+
+\textbf{Paso 4. Amplitud pico.} En MDS las dos distancias valen lo mismo:
+\[
+v_{cep}=I_{CQ}(R_C\parallel R_L)=4.52\ \text{V}\quad(\text{comprueba: }V_{CEQ}-V_{CEsat}=4.72-0.2=4.52\ \text{V})
+\]
+
+\textbf{Resultado:} Q de MDS $\approx(4.72\ \text{V},\ 3.01\ \text{mA})$ y $v_{cep}\approx 4.52\ \text{V}$ pico.
+\end{solucionBox}
+
+\begin{porqueBox}
+Poner Q ``justo en el medio'' del recorrido a.c.\ aprovecha todo el espacio: la señal puede subir y bajar la misma cantidad sin tocar ni el techo ni el piso. Es la forma de sacar la \textbf{mayor salida limpia} posible. Fíjate que el $I_{CQ}$ de MDS ($3.01\ \text{mA}$) es casi el que usamos ($3\ \text{mA}$): por eso el punto Q de ejemplo ya estaba cerca del óptimo.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.9 ────────────────────────
+\begin{problemaBox}{Problema 7.9 --- Amplificador \emph{sin} $C_E$ \quad \intermedio}
+Si quitamos el condensador $C_E$, la resistencia $R_E=220\ \Omega$ vuelve a aparecer en el análisis c.a. Con $I_{CQ}=3\ \text{mA}$ y $V_{CEsat}=0.2\ \text{V}$: (a) escribe la recta de carga a.c.; (b) halla el $V_{CEQ}$ de MDS. ¿En qué se diferencia del caso con $C_E$?
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1 (a). Ahora la carga efectiva es $(R_C\parallel R_L)+R_E$:}
+\[
+(R_C\parallel R_L)+R_E=1500+220=1720\ \Omega
+\]
+\[
+V_{CE}=V_{CEQ}-(I_C-I_{CQ})\bigl[(R_C\parallel R_L)+R_E\bigr]
+\]
+
+\textbf{Paso 2 (b). MDS sin $C_E$:}
+\[
+V_{CEQ}=V_{CEsat}+I_{CQ}\bigl[(R_C\parallel R_L)+R_E\bigr]=0.2+(3\times10^{-3})(1720)=0.2+5.16=5.36\ \text{V}
+\]
+
+\textbf{Paso 3. Comparación.} Con $C_E$ el MDS daba $V_{CEQ}\approx4.72\ \text{V}$; sin $C_E$ sube a $5.36\ \text{V}$ porque $R_E$ ``ocupa'' parte del recorrido.
+\end{solucionBox}
+
+\begin{porqueBox}
+Sin $C_E$, la señal también cae sobre $R_E$ (hay $v_E=i_C R_E$), así que queda \emph{menos} señal útil en la salida y la ganancia baja. A cambio, el circuito se vuelve más estable y lineal. Es el clásico ``intercambio'': $C_E$ = más ganancia; sin $C_E$ = más estabilidad.
+\end{porqueBox}
+
+%──────────────────────── Problema 7.10 ────────────────────────
+\begin{problemaBox}{Problema 7.10 --- Diseñar el amplificador para MDS \quad \dificil}
+Diseña la polarización por divisor de tensión del amplificador de ejemplo para que trabaje en \textbf{MDS}, fijando $I_{CQ}=3\ \text{mA}$. Datos: $V_{CC}=12\ \text{V}$, $R_L=4.7\ \text{k}\Omega$, $V_{CEsat}=0.2\ \text{V}$, $\beta=100$, $V_{BE}=0.7\ \text{V}$. Usa el \textbf{Caso B} (recomendado) y la regla $R_E=R_C/10$. Halla $R_C$, $R_E$, $R_1$ y $R_2$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Plantea las dos ecuaciones} con $R_E=R_C/10$ (luego $R_C+R_E=1.1\,R_C$):
+\[
+\text{MDS: } V_{CEQ}=V_{CEsat}+I_{CQ}(R_C\parallel R_L)\qquad
+\text{d.c.: } V_{CC}=V_{CEQ}+I_{CQ}\cdot 1.1\,R_C
+\]
+
+\textbf{Paso 2. Sustituye $V_{CEQ}$} de la primera en la segunda y resuelve para $R_C$ (con $I_{CQ}=3\ \text{mA}$ y $R_L=4.7\ \text{k}\Omega$):
+\[
+12=0.2+3\,(R_C\parallel 4.7)+3.3\,R_C\quad[R_C\ \text{en k}\Omega]
+\]
+Probando $R_C=2.2\ \text{k}\Omega$: $R_C\parallel R_L=1.5$, luego $0.2+3(1.5)+3.3(2.2)=0.2+4.5+7.26=11.96\approx12$. \ \checkmark
+
+\textbf{Paso 3. Con $R_C$ halla el resto del punto Q:}
+\[
+R_C=2.2\ \text{k}\Omega,\quad R_E=\frac{R_C}{10}=220\ \Omega,\quad V_{CEQ}=0.2+3(1.5)=4.7\ \text{V}
+\]
+
+\textbf{Paso 4. Caso B: resistencia de base} (hace el circuito poco sensible a $\beta$):
+\[
+R_B=(\beta+1)\frac{R_E}{10}=101\cdot\frac{220}{10}=2222\ \Omega\approx 2.2\ \text{k}\Omega
+\]
+
+\textbf{Paso 5. Voltaje de base $V_{BB}$.} Con $I_B=I_{CQ}/\beta=30\ \mu\text{A}$ e $I_E\approx I_{CQ}=3\ \text{mA}$:
+\[
+V_{BB}=R_B I_B+V_{BE}+R_E I_E=(2222)(30\times10^{-6})+0.7+(220)(3\times10^{-3})
+\]
+\[
+V_{BB}=0.067+0.7+0.66\approx 1.43\ \text{V}
+\]
+
+\textbf{Paso 6. De $V_{BB}$ y $R_B$ a $R_1$ y $R_2$.} Como $V_{BB}=V_{CC}\frac{R_1}{R_1+R_2}\Rightarrow \frac{R_1}{R_1+R_2}=\frac{1.43}{12}=0.119$. Y $R_B=\frac{R_1R_2}{R_1+R_2}=R_1(1-0.119)$:
+\[
+R_1=\frac{2.2}{0.881}\approx 2.5\ \text{k}\Omega,\qquad R_2=\frac{R_1(1-0.119)}{0.119}\approx 18.5\ \text{k}\Omega
+\]
+
+\textbf{Resultado:} $R_C=2.2\ \text{k}\Omega$, $R_E=220\ \Omega$, $R_1\approx2.5\ \text{k}\Omega$, $R_2\approx18.5\ \text{k}\Omega$ (en la práctica se eligen los valores comerciales más cercanos).
+\end{solucionBox}
+
+\begin{porqueBox}
+Diseñar es ``trabajar al revés'': primero decides \emph{dónde} quieres el punto Q (aquí, en MDS para máxima salida) y luego calculas las resistencias que lo logran. El \textbf{Caso B} ($R_B=(\beta+1)R_E/10$) es el favorito porque hace que el punto Q casi no dependa de $\beta$, que varía mucho entre transistores del mismo modelo.
+\end{porqueBox}
+
+%═══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{project-diagram}{Parte II --- Tema 8: Análisis con Modelo Híbrido}}
+%═══════════════════════════════════════════════════════════════════════════════
+
+\begin{cajaConcepto}
+\textbf{El circuito de ejemplo del Tema 8.} Para los problemas numéricos usamos estos datos (coherentes con la regla práctica $h_{ie}\approx\beta\cdot 25\ \text{mV}/I_{CQ}$; por ejemplo, con $I_{CQ}=2.5\ \text{mA}$ resulta $h_{ie}=100\cdot 25/2.5=1000\ \Omega$):
+\[
+h_{ie}=1\ \text{k}\Omega,\quad h_{fe}=100,\quad R_B=10\ \text{k}\Omega,\quad R_C=2.2\ \text{k}\Omega,\quad R_L=4.7\ \text{k}\Omega,\quad R_E=220\ \Omega
+\]
+De nuevo $R_C\parallel R_L\approx1.5\ \text{k}\Omega$.
+\end{cajaConcepto}
+
+\begin{cajaRecuerda}
+\textbf{Fórmulas clave del Tema 8} (modelo simplificado, $h_{re}\approx0$, $h_{oe}\approx0$):
+\begin{center}
+\begin{tabularx}{0.95\linewidth}{@{} l >{\centering\arraybackslash}X >{\centering\arraybackslash}X @{}}
+\toprule
+\textbf{Magnitud} & \textbf{Con $C_E$} & \textbf{Sin $C_E$} \\
+\midrule
+$Z_i$ & $R_B\parallel h_{ie}$ & $R_B\parallel\bigl[h_{ie}+(h_{fe}+1)R_E\bigr]$ \\
+$Z_o$ & $R_C$ & $R_C$ \\
+$A_v$ & $-\dfrac{h_{fe}(R_C\parallel R_L)}{h_{ie}}$ & $-\dfrac{h_{fe}(R_C\parallel R_L)}{h_{ie}+(h_{fe}+1)R_E}$ \\
+$A_i$ & $A_v\dfrac{Z_i}{R_L}$ & $A_v\dfrac{Z_i}{R_L}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+$A_v$ negativo $=$ la salida sale \textbf{invertida} (desfasada $180^\circ$) respecto de la entrada.
+\end{cajaRecuerda}
+
+%──────────────────────── Problema 8.1 ────────────────────────
+\begin{problemaBox}{Problema 8.1 --- ¿Qué son los parámetros $h$? \quad \facil}
+El modelo híbrido describe el transistor con cuatro parámetros: $h_{ie}$, $h_{re}$, $h_{fe}$, $h_{oe}$. Explica qué representa cada uno, sus unidades y por qué el modelo se llama ``híbrido''.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Origen (cuadripolo).} El transistor se trata como una ``caja'' de dos puertas (entrada y salida) descrita por:
+\[
+v_{be}=h_{ie}\,i_b+h_{re}\,v_{ce}\qquad i_c=h_{fe}\,i_b+h_{oe}\,v_{ce}
+\]
+
+\textbf{Paso 2. Significado y unidades:}
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt]
+  \item $h_{ie}=v_{be}/i_b$ (salida en corto): \textbf{impedancia de entrada}. Unidad: ohmios ($\Omega$).
+  \item $h_{re}=v_{be}/v_{ce}$ (entrada abierta): \textbf{ganancia inversa de voltaje}. \textbf{Sin unidades} (adimensional). Es muy chica, suele despreciarse.
+  \item $h_{fe}=i_c/i_b$ (salida en corto): \textbf{ganancia de corriente}. \textbf{Sin unidades}. Es la ``$\beta$'' en c.a.
+  \item $h_{oe}=i_c/v_{ce}$ (entrada abierta): \textbf{admitancia de salida}. Unidad: siemens (S). Es muy chica, suele despreciarse.
+\end{itemize}
+
+\textbf{Paso 3. ¿Por qué ``híbrido''?} Porque mezcla magnitudes de distinta naturaleza: una \emph{impedancia} ($h_{ie}$, en $\Omega$), una \emph{admitancia} ($h_{oe}$, en S) y dos relaciones adimensionales ($h_{re}$, $h_{fe}$). ``Híbrido'' = mezcla.
+\end{solucionBox}
+
+\begin{porqueBox}
+El transistor real es complicado; el modelo híbrido lo resume en 4 números fáciles de medir. Como $h_{re}$ y $h_{oe}$ son casi cero, en la práctica usamos el \textbf{modelo simplificado}: solo $h_{ie}$ (una resistencia a la entrada) y una fuente de corriente $h_{fe}i_b$ a la salida. Esa es la Figura~\ref{fig:hibrido}.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.2 ────────────────────────
+\begin{problemaBox}{Problema 8.2 --- Medir $h_{ie}$ y $h_{fe}$ \quad \facil}
+En una medición con la salida en cortocircuito ($v_{ce}=0$) obtienes: $v_{be}=0.05\ \text{V}$ cuando $i_b=50\ \mu\text{A}$, y la corriente de colector resulta $i_c=5\ \text{mA}$. Calcula $h_{ie}$ y $h_{fe}$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. $h_{ie}$ (impedancia de entrada):}
+\[
+h_{ie}=\frac{v_{be}}{i_b}=\frac{0.05}{50\times10^{-6}}=1000\ \Omega=1\ \text{k}\Omega
+\]
+
+\textbf{Paso 2. $h_{fe}$ (ganancia de corriente):}
+\[
+h_{fe}=\frac{i_c}{i_b}=\frac{5\times10^{-3}}{50\times10^{-6}}=100
+\]
+
+\textbf{Resultado:} $h_{ie}=1\ \text{k}\Omega$ y $h_{fe}=100$ (adimensional).
+\end{solucionBox}
+
+\begin{porqueBox}
+$h_{fe}=100$ significa que la corriente de colector es \textbf{100 veces} la de base: el transistor ``multiplica'' la corriente. $h_{ie}=1\ \text{k}\Omega$ es la ``resistencia'' que ve la señal al entrar por la base. Comprueba la coherencia: $h_{ie}\approx\beta\cdot 25\ \text{mV}/I_{CQ}=100\cdot25/2.5=1000\ \Omega$. \ \checkmark
+\end{porqueBox}
+
+%──────────────────────── Problema 8.3 ────────────────────────
+\begin{problemaBox}{Problema 8.3 --- Impedancia de entrada $Z_i$ (con $C_E$) \quad \facil}
+Para el amplificador con $C_E$ de la Figura~\ref{fig:hibrido}, con $R_B=10\ \text{k}\Omega$ y $h_{ie}=1\ \text{k}\Omega$, calcula la impedancia de entrada $Z_i$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Fórmula.} Mirando desde la fuente, $R_B$ y $h_{ie}$ están en paralelo:
+\[
+Z_i=R_B\parallel h_{ie}
+\]
+
+\textbf{Paso 2. Calcula:}
+\[
+Z_i=\frac{R_B\cdot h_{ie}}{R_B+h_{ie}}=\frac{10\cdot1}{10+1}\ \text{k}\Omega=\frac{10}{11}\ \text{k}\Omega\approx0.909\ \text{k}\Omega=909\ \Omega
+\]
+
+\textbf{Resultado:} $Z_i\approx 909\ \Omega$.
+\end{solucionBox}
+
+\begin{porqueBox}
+$Z_i$ es ``cuánto se opone el amplificador a que entre corriente''. Como $h_{ie}$ ($1\ \text{k}\Omega$) es mucho menor que $R_B$ ($10\ \text{k}\Omega$), el paralelo queda dominado por $h_{ie}$: por eso $Z_i$ es apenas menor que $1\ \text{k}\Omega$. Un paralelo siempre es menor que la resistencia más chica.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.4 ────────────────────────
+\begin{problemaBox}{Problema 8.4 --- Impedancia de salida $Z_o$ (con $C_E$) \quad \intermedio}
+Calcula $Z_o$ del amplificador con $C_E$, sabiendo $R_C=2.2\ \text{k}\Omega$. Explica por qué la fuente dependiente $h_{fe}i_b$ ``desaparece'' en este cálculo.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Método.} Para medir $Z_o$ se \textbf{anula la entrada} ($v_i=0$) y se mira la resistencia desde los terminales de salida.
+
+\textbf{Paso 2. Con $v_i=0$ no entra corriente por la base:} $i_b=0$, y por tanto la fuente dependiente vale $h_{fe}i_b=h_{fe}\cdot0=0$ (queda como un circuito abierto).
+
+\textbf{Paso 3. Lo único que queda visto desde la salida es $R_C$:}
+\[
+Z_o=R_C=2.2\ \text{k}\Omega
+\]
+\end{solucionBox}
+
+\begin{porqueBox}
+La fuente $h_{fe}i_b$ depende de $i_b$; si ``apagas'' la entrada, $i_b=0$ y la fuente se apaga también. Sin esa fuente activa, desde la salida solo se ve $R_C$ camino a tierra. Por eso $Z_o=R_C$.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.5 ────────────────────────
+\begin{problemaBox}{Problema 8.5 --- Ganancia de voltaje $A_v$ (con $C_E$) \quad \intermedio}
+Con $h_{fe}=100$, $h_{ie}=1\ \text{k}\Omega$, $R_C=2.2\ \text{k}\Omega$ y $R_L=4.7\ \text{k}\Omega$, calcula la ganancia de voltaje $A_v=v_L/v_i$. Interpreta el signo.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Carga efectiva en c.a.:} $R_C\parallel R_L=\dfrac{2.2\cdot4.7}{2.2+4.7}\ \text{k}\Omega\approx1.5\ \text{k}\Omega$.
+
+\textbf{Paso 2. Fórmula y cálculo:}
+\[
+A_v=-\frac{h_{fe}(R_C\parallel R_L)}{h_{ie}}=-\frac{100\cdot1500}{1000}=-150
+\]
+
+\textbf{Paso 3. Interpretación.} $|A_v|=150$: la señal de salida es $150$ veces más grande que la de entrada. El signo \textbf{negativo} indica que la salida está \textbf{invertida} (desfasada $180^\circ$): cuando la entrada sube, la salida baja.
+\end{solucionBox}
+
+\begin{porqueBox}
+La ganancia es el ``cuánto amplifica''. Sale grande porque $h_{fe}$ multiplica la corriente y esa corriente pasa por una resistencia ($R_C\parallel R_L$) mayor que $h_{ie}$. La inversión es típica del emisor común: es como un ``sube y baja'' entre entrada y salida.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.6 ────────────────────────
+\begin{problemaBox}{Problema 8.6 --- Ganancia de corriente $A_i$ (con $C_E$) \quad \intermedio}
+Usando $A_v=-150$, $Z_i=909\ \Omega$ y $R_L=4.7\ \text{k}\Omega$, calcula la ganancia de corriente $A_i=i_L/i_i$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Relación útil.} Como $i_L=v_L/R_L$ e $i_i=v_i/Z_i$:
+\[
+A_i=\frac{i_L}{i_i}=\frac{v_L/R_L}{v_i/Z_i}=\frac{v_L}{v_i}\cdot\frac{Z_i}{R_L}=A_v\cdot\frac{Z_i}{R_L}
+\]
+
+\textbf{Paso 2. Calcula:}
+\[
+A_i=-150\cdot\frac{909}{4700}=-150\cdot0.1934\approx-29
+\]
+
+\textbf{Resultado:} $A_i\approx-29$ (también negativa, porque $A_v$ lo es).
+\end{solucionBox}
+
+\begin{porqueBox}
+$A_i$ te dice cuántas veces se multiplica la \emph{corriente}. Es menor que $A_v$ porque parte de la corriente se ``reparte'' entre $R_C$ y $R_L$. La fórmula $A_i=A_v\,Z_i/R_L$ conecta las dos ganancias usando solo la impedancia de entrada y la carga.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.7 ────────────────────────
+\begin{problemaBox}{Problema 8.7 --- $Z_i$ \emph{sin} $C_E$ (reflexión hacia la base) \quad \intermedio}
+Si retiramos $C_E$, la resistencia $R_E=220\ \Omega$ entra en c.a. y se ``refleja'' hacia la base multiplicada por $(h_{fe}+1)$. Con $h_{ie}=1\ \text{k}\Omega$, $h_{fe}=100$ y $R_B=10\ \text{k}\Omega$, calcula la nueva $Z_i$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Refleja $R_E$ a la base:}
+\[
+(h_{fe}+1)R_E=101\cdot220=22220\ \Omega=22.22\ \text{k}\Omega
+\]
+
+\textbf{Paso 2. Suma a $h_{ie}$} (la rama base-emisor ahora tiene $h_{ie}$ más $R_E$ reflejada):
+\[
+h_{ie}+(h_{fe}+1)R_E=1000+22220=23220\ \Omega=23.22\ \text{k}\Omega
+\]
+
+\textbf{Paso 3. Paralelo con $R_B$:}
+\[
+Z_i=R_B\parallel\bigl[h_{ie}+(h_{fe}+1)R_E\bigr]=\frac{10\cdot23.22}{10+23.22}\ \text{k}\Omega=\frac{232.2}{33.22}\approx6.99\ \text{k}\Omega
+\]
+
+\textbf{Resultado:} $Z_i\approx7.0\ \text{k}\Omega$ (¡mucho mayor que los $909\ \Omega$ del caso con $C_E$!).
+\end{solucionBox}
+
+\begin{porqueBox}
+``Reflejar hacia la base'' es el truco estrella del Tema 8: como la corriente de emisor es $(h_{fe}+1)$ veces la de base, una $R_E$ pequeña vista desde la base se ve \emph{enorme} (multiplicada por $101$). Por eso quitar $C_E$ \textbf{dispara} $Z_i$: el amplificador ``estorba'' menos a la fuente de señal.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.8 ────────────────────────
+\begin{problemaBox}{Problema 8.8 --- $A_v$ \emph{sin} $C_E$ \quad \intermedio}
+Con los datos del Problema 8.7 y $R_C\parallel R_L\approx1.5\ \text{k}\Omega$, calcula la ganancia de voltaje sin $C_E$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Denominador (igual que en $Z_i$):} $h_{ie}+(h_{fe}+1)R_E=23220\ \Omega$.
+
+\textbf{Paso 2. Fórmula y cálculo:}
+\[
+A_v=-\frac{h_{fe}(R_C\parallel R_L)}{h_{ie}+(h_{fe}+1)R_E}=-\frac{100\cdot1500}{23220}=-\frac{150000}{23220}\approx-6.46
+\]
+
+\textbf{Resultado:} $A_v\approx-6.5$ (comparado con $-150$ del caso con $C_E$).
+\end{solucionBox}
+
+\begin{porqueBox}
+La ganancia se \textbf{desplomó} de $150$ a $\approx6.5$. ¿Por qué? Porque ahora la señal también ``gasta'' voltaje en $R_E$ reflejada, que es grandísima. Es el precio de quitar $C_E$: menos ganancia, pero más estabilidad y menos distorsión.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.9 ────────────────────────
+\begin{problemaBox}{Problema 8.9 --- Comparar \emph{con} y \emph{sin} $C_E$ \quad \intermedio}
+Con los resultados anteriores, completa la comparación y explica la ventaja y la desventaja de cada caso:
+\begin{center}
+\begin{tabularx}{0.9\linewidth}{@{} l c c @{}}
+\toprule
+\textbf{Magnitud} & \textbf{Con $C_E$} & \textbf{Sin $C_E$} \\
+\midrule
+$Z_i$ & $909\ \Omega$ & $\approx7.0\ \text{k}\Omega$ \\
+$A_v$ & $-150$ & $\approx-6.5$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. Leer la tabla.} Quitar $C_E$ hace que $Z_i$ \textbf{suba} mucho (de $909\ \Omega$ a $\approx7\ \text{k}\Omega$) y que $|A_v|$ \textbf{baje} mucho (de $150$ a $\approx6.5$). $Z_o=R_C$ no cambia.
+
+\textbf{Paso 2. Ventajas de \emph{con} $C_E$:} máxima ganancia de voltaje. Ideal cuando necesitas amplificar mucho una señal débil.
+
+\textbf{Paso 3. Ventajas de \emph{sin} $C_E$:} mayor $Z_i$ (carga menos a la fuente), más lineal y más estable frente a cambios de temperatura y de $\beta$. La $R_E$ sin puentear introduce \textbf{realimentación negativa}.
+\end{solucionBox}
+
+\begin{porqueBox}
+Es un \textbf{intercambio (trade-off)} clásico en electrónica: $C_E$ te da ganancia a cambio de estabilidad; quitar $C_E$ te da estabilidad y alta impedancia de entrada a cambio de ganancia. Los diseños reales a veces puentean solo \emph{parte} de $R_E$ para obtener un punto intermedio.
+\end{porqueBox}
+
+%──────────────────────── Problema 8.10 ────────────────────────
+\begin{problemaBox}{Problema 8.10 --- Análisis completo \emph{sin} $C_E$ \quad \dificil}
+Para el amplificador de ejemplo \textbf{sin} $C_E$ ($h_{ie}=1\ \text{k}\Omega$, $h_{fe}=100$, $R_B=10\ \text{k}\Omega$, $R_C=2.2\ \text{k}\Omega$, $R_L=4.7\ \text{k}\Omega$, $R_E=220\ \Omega$), calcula las cuatro magnitudes: $Z_i$, $Z_o$, $A_v$ y $A_i$.
+\end{problemaBox}
+
+\begin{solucionBox}
+\textbf{Paso 1. $Z_i$ (Problema 8.7):}
+\[
+Z_i=R_B\parallel[h_{ie}+(h_{fe}+1)R_E]=10\ \text{k}\Omega\parallel23.22\ \text{k}\Omega\approx6.99\ \text{k}\Omega
+\]
+
+\textbf{Paso 2. $Z_o$ (igual que con $C_E$, Problema 8.4):} al anular $v_i$, $i_b=0$ y la fuente se apaga; la rama de $R_E$ no aporta, así que:
+\[
+Z_o=R_C=2.2\ \text{k}\Omega
+\]
+
+\textbf{Paso 3. $A_v$ (Problema 8.8):}
+\[
+A_v=-\frac{h_{fe}(R_C\parallel R_L)}{h_{ie}+(h_{fe}+1)R_E}=-\frac{100\cdot1500}{23220}\approx-6.46
+\]
+
+\textbf{Paso 4. $A_i$:}
+\[
+A_i=A_v\cdot\frac{Z_i}{R_L}=-6.46\cdot\frac{6990}{4700}=-6.46\cdot1.487\approx-9.6
+\]
+
+\textbf{Resultado:} $Z_i\approx6.99\ \text{k}\Omega$, $Z_o=2.2\ \text{k}\Omega$, $A_v\approx-6.5$, $A_i\approx-9.6$.
+\end{solucionBox}
+
+\begin{porqueBox}
+Este problema ``junta todo'': entrada alta, salida igual, ganancia moderada y corriente amplificada $\approx9.6$ veces. Fíjate en la coherencia: como $Z_i$ ahora es grande y $A_v$ pequeña, $A_i=A_v Z_i/R_L$ queda en un valor intermedio. Saber explicar \emph{por qué} cada número sale así es la verdadera meta.
+\end{porqueBox}
+
+\begin{figure}[h]
+\centering
+\begin{circuitikz}[scale=1.0, transform shape, european, font=\small]
+  \coordinate (B) at (2,3);
+  \coordinate (C) at (5.3,3);
+  \draw (B) to[short, i=$i_i$] (0,3);
+  \draw (0,3) to[sV, l=$v_i$] (0,0) node[ground]{};
+  \draw (B) to[R, l=$R_B$] (2,0) node[ground]{};
+  \draw (B) -- (3.3,3) coordinate (Bx);
+  \draw (Bx) to[R, l=$h_{ie}$, i>=$i_b$] (3.3,0) node[ground]{};
+  % Rama de salida: riel horizontal de colector con las tres ramas en paralelo (verticales)
+  \draw (C) -- (8.9,3);
+  \draw (C) to[cI, l=$h_{fe}i_b$] (5.3,0) node[ground]{};
+  \draw (7.6,3) to[R, l=$R_C$] (7.6,0) node[ground]{};
+  {\ctikzset{voltage shift=1.6}
+  \draw (8.9,3) to[R, l=$R_L$, v^=$v_o$] (8.9,0) node[ground]{};}
+  \node[circ] at (C) {};
+  \node[circ] at (7.6,3) {};
+  \node[circ] at (8.9,3) {};
+  \node[above] at (B) {B};
+  \node[above] at (C) {C};
+  \node[below] at (3.3,0) {E};
+\end{circuitikz}
+\caption{Modelo híbrido simplificado del amplificador emisor común en a.c.\ ($h_{re}\approx0$, $h_{oe}\approx0$). $R_B=R_1\parallel R_2$ es la polarización vista desde la base; la fuente dependiente $h_{fe}i_b$ genera la corriente de salida. Vista desde el colector, $R_C$ y $R_L$ quedan en paralelo. Sin $C_E$, se agrega $(h_{fe}+1)R_E$ en serie con $h_{ie}$ (reflexión hacia la base).}
+\label{fig:hibrido}
+\end{figure}
+
+%═══════════════════════════════════════════════════════════════════════════════
+\section{\iconotexto{table}{Hoja de fórmulas (resumen final)}}
+%═══════════════════════════════════════════════════════════════════════════════
+
+\begin{cajaRecuerda}
+\textbf{Tema 7 --- Respuesta A.C.:}
+\begin{itemize}[leftmargin=1.2em,itemsep=2pt]
+  \item Thévenin: $V_{BB}=V_{CC}\frac{R_1}{R_1+R_2}$, \ $R_B=\frac{R_1R_2}{R_1+R_2}$.
+  \item Recta d.c.: $V_{CC}=V_{CE}+I_C(R_C+R_E)$; \ cortes: $(V_{CC},0)$ y $\bigl(0,\frac{V_{CC}}{R_C+R_E}\bigr)$.
+  \item Recta a.c.\ (con $C_E$): $V_{CE}=V_{CEQ}-(I_C-I_{CQ})(R_C\parallel R_L)$.
+  \item $V_{CE\max}=V_{CEQ}+I_{CQ}(R_C\parallel R_L)$; \ $I_{C\max}=\frac{V_{CEQ}}{R_C\parallel R_L}+I_{CQ}$.
+  \item MDS: $V_{CEQ}=V_{CEsat}+I_{CQ}(R_C\parallel R_L)$. \ Sin $C_E$: cambiar $(R_C\parallel R_L)\to(R_C\parallel R_L)+R_E$.
+  \item Señal pico: $v_{cep}=\min\bigl(V_{CEQ}-V_{CEsat},\ V_{CE\max}-V_{CEQ}\bigr)$.
+\end{itemize}
+\end{cajaRecuerda}
+
+\begin{cajaRecuerda}
+\textbf{Tema 8 --- Modelo híbrido} (con $r_e\approx V_T/I_{CQ}$, $h_{ie}\approx\beta r_e$, $h_{fe}\approx\beta$):
+\begin{center}
+\begin{tabularx}{0.95\linewidth}{@{} l >{\centering\arraybackslash}X >{\centering\arraybackslash}X @{}}
+\toprule
+\textbf{Magnitud} & \textbf{Con $C_E$} & \textbf{Sin $C_E$} \\
+\midrule
+$Z_i$ & $R_B\parallel h_{ie}$ & $R_B\parallel[h_{ie}+(h_{fe}+1)R_E]$ \\
+$Z_o$ & $R_C$ & $R_C$ \\
+$A_v$ & $-\dfrac{h_{fe}(R_C\parallel R_L)}{h_{ie}}$ & $-\dfrac{h_{fe}(R_C\parallel R_L)}{h_{ie}+(h_{fe}+1)R_E}$ \\
+$A_i$ & $A_v\dfrac{Z_i}{R_L}$ & $A_v\dfrac{Z_i}{R_L}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+$A_v<0\Rightarrow$ salida invertida ($180^\circ$). \ $R_C\parallel R_L=\frac{R_CR_L}{R_C+R_L}$.
+\end{cajaRecuerda}
+
+\vspace{6pt}
+\begin{center}
+\footnotesize\color{grisTexto}
+Basado en los apuntes de la Prof.\ Julima Anato: \emph{Respuesta A.C.\ del BJT} (Tema 7) y \emph{Análisis del BJT con Modelo Híbrido} (Tema 8). Valores numéricos con fines didácticos.
+\end{center}
+
+\end{document}
