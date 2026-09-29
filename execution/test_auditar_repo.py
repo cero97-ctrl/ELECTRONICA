@@ -416,6 +416,9 @@ with tempfile.TemporaryDirectory() as tmp:
               any(r["script"] == "oculta.py" for r in d7["evidencia"]["rotas"]),
               str(d7["evidencia"]["rotas"]))
 
+    # (los casos de flag fantasma van mas abajo, en un temporal propio: aqui
+    # conviven fixtures con referencias rotas que contaminarian el veredicto)
+
     # capas: deteccion por EXISTENCIA, no por forma de la ruta
     (raiz / "flujo_bueno.py").write_text(
         'MEDIR = SCRIPT_DIR / "execution" / "existe.py"\n', encoding="utf-8")
@@ -567,6 +570,90 @@ with tempfile.TemporaryDirectory() as _td:
     _dur2 = AR.DIMENSIONES_NUEVAS["directivas"](_raiz).get("duracion_s")
     comprobar("toda comprobacion expone duracion_s, no solo una",
               isinstance(_dur2, (int, float)), f"duracion_s={_dur2!r}")
+
+# --- Flags fantasma: la directiva documenta `--x` que su orquestador no acepta.
+# Temporal PROPIO: los bloques anteriores dejan fixtures con referencias rotas
+# que contaminarian el veredicto global y harian fallar casos que aqui son ok.
+with tempfile.TemporaryDirectory() as _tdf:
+    _r = Path(_tdf)
+    (_r / "directives").mkdir()
+    (_r / "execution").mkdir()
+    (_r / "execution" / "helper.py").write_text(
+        'import argparse\np = argparse.ArgumentParser()\n'
+        'p.add_argument("--dimension", default="x")\n'
+        'if __name__ == "__main__":\n    p.print_help()\n', encoding="utf-8")
+    (_r / "flujo_flag.py").write_text(
+        'import argparse\np = argparse.ArgumentParser()\n'
+        'p.add_argument("--real", default="x")\n'
+        'if __name__ == "__main__":\n    p.print_help()\n', encoding="utf-8")
+
+    def _solo_directiva(nombre: str, flag: str, plan: bool = False) -> dict:
+        """Escribe UNA directiva y la mide sola (sin ruido de otras)."""
+        for _f in (_r / "directives").glob("*.yaml"):
+            _f.unlink()
+        cab = "Status: planificado\n" if plan else ""
+        (_r / "directives" / nombre).write_text(
+            cab + "references:\n  orchestrator: flujo_flag.py\n"
+            "  scripts: execution/helper.py\n"
+            f"required_inputs:\n  - name: {flag}\n"
+            "steps:\n  - action: x\n    script: execution/helper.py\n",
+            encoding="utf-8")
+        return AR.comprobar_directivas(_r)
+
+    d_ok = _solo_directiva("ok.yaml", "--real V")
+    comprobar("un flag que el orquestador SI acepta no se marca",
+              d_ok["evidencia"]["flags_fantasma"] == []
+              and d_ok["estado"] == "ok",
+              f"{d_ok['estado']} | {d_ok['evidencia']['flags_fantasma']}")
+
+    d_bad = _solo_directiva("malo.yaml", "--fantasma V")
+    comprobar("un flag fantasma se detecta y degrada a 'fallo'",
+              d_bad["estado"] == "fallo"
+              and [f["flag"] for f in d_bad["evidencia"]["flags_fantasma"]] == ["--fantasma"],
+              f"{d_bad['estado']} | {d_bad['evidencia']['flags_fantasma']}")
+
+    d_plan = _solo_directiva("plan.yaml", "--otro V", plan=True)
+    comprobar("en 'planificado' el mismo flag es aviso, no fallo (el hueco esta declarado)",
+              d_plan["estado"] == "aviso"
+              and d_plan["evidencia"]["flags_fantasma"][0]["declarada"] is True,
+              f"{d_plan['estado']} | {d_plan['evidencia']['flags_fantasma']}")
+
+    # Una dimension reutilizada no tiene CLI propia: el compositor no expone
+    # `--dimension`, lo expone su script de references/scripts. Mirar solo el
+    # orquestador daria ~49 falsos positivos sobre las directivas reales.
+    d_dim = _solo_directiva("dim.yaml", "--dimension N")
+    comprobar("una dimension acepta un flag que su script de references expone, "
+              "aunque el compositor no lo tenga (evita 49 falsos positivos)",
+              d_dim["evidencia"]["flags_fantasma"] == [],
+              str(d_dim["evidencia"]["flags_fantasma"]))
+
+    # Un orquestador sin argparse no puede serializar flags: no se afirma nada
+    # en vez de marcar todo como fantasma.
+    (_r / "flujo_mudo.py").write_text("X = 1\n", encoding="utf-8")
+    for _f in (_r / "directives").glob("*.yaml"):
+        _f.unlink()
+    (_r / "directives" / "mudo.yaml").write_text(
+        "references:\n  orchestrator: flujo_mudo.py\n"
+        "  scripts: execution/helper.py\n"
+        "required_inputs:\n  - name: --lo-que-sea V\n"
+        "steps:\n  - action: x\n    script: execution/helper.py\n", encoding="utf-8")
+    d_mudo = AR.comprobar_directivas(_r)
+    comprobar("un orquestador sin argparse no genera falsos positivos",
+              d_mudo["evidencia"]["flags_fantasma"] == [],
+              str(d_mudo["evidencia"]["flags_fantasma"]))
+
+    # Un orquestador inexistente: la dimension no puede afirmar nada de sus flags.
+    for _f in (_r / "directives").glob("*.yaml"):
+        _f.unlink()
+    (_r / "directives" / "sin_orch.yaml").write_text(
+        "references:\n  orchestrator: flujo_inexistente.py\n"
+        "  scripts: execution/helper.py\n"
+        "required_inputs:\n  - name: --fantasma V\n"
+        "steps:\n  - action: x\n    script: execution/helper.py\n", encoding="utf-8")
+    d_orch = AR.comprobar_directivas(_r)
+    comprobar("sin orquestador resoluble no se inventan flags fantasma",
+              d_orch["evidencia"]["flags_fantasma"] == [],
+              str(d_orch["evidencia"]["flags_fantasma"]))
 
 print()
 if FALLOS:

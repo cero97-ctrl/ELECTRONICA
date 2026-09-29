@@ -377,6 +377,78 @@ def probar_veredicto() -> None:
     comprobar("estados que la algebra acepta",
               all(ALG.estado_valido(e) for e in validos), f"{validos}")
 
+    # 7. proteger un entorno NO puede convertirlo en "no hay entornos frios".
+    #    Este es el caso de bio_env: frio desde 2026-06-25, 0,37 GB, con su
+    #    proyecto (BIOANALISIS) vivo. Al meterlo en PROTEGIDOS_POR_POLITICA deja
+    #    de ser recuperable, que es lo correcto, pero sigue siendo un entorno sin
+    #    ejecucion que ocupa disco. Un resumen que lo borre de la lectura diria
+    #    que el espacio desaparecio cuando sigue ahi.
+    r = AEC.construir_resultado({"entornos": [
+        _fila("a", "en_uso", True), _fila("bio_env", "protegido", False, 368),
+    ], "nota_refs": ""}, 90)
+    comprobar("protegido y frio NO es recuperable",
+              r["evidencia"]["recuperable_bytes_exclusivos"] == 0)
+    comprobar("protegido y frio sigue informado, no borrado de la lectura",
+              len(r["evidencia"]["frios_conservados"]) == 1
+              and r["evidencia"]["frios_conservados"][0]["entorno"] == "bio_env",
+              f"{r['evidencia']['frios_conservados']}")
+    comprobar("el resumen nombra los frios conservados",
+              "conservados a proposito" in r["resumen"], r["resumen"])
+    comprobar("el resumen NO afirma que no hay frios",
+              "no hay entornos frios" not in r["resumen"].lower(), r["resumen"])
+    comprobar("la accion NO ofrece borrar conservados",
+              "no borrarlo" not in r["accion"] and "recuperable" in r["accion"],
+              r["accion"])
+    comprobar("peso de los conservados visible en el resumen",
+              "0.00 GB" in r["resumen"], r["resumen"])
+
+    # 8. sin frios y sin conservados -> si, aqui si se puede decir que no hay
+    #    frios, porque no hay ninguno. Distinguir este caso del anterior es
+    #    justo lo que evita que el mensaje "no hay frios" sea una mentira.
+    r = AEC.construir_resultado({"entornos": [
+        _fila("a", "en_uso", True), _fila("b", "en_uso", True),
+    ], "nota_refs": ""}, 90)
+    comprobar("todos en uso -> el si afirma que no hay frios",
+              r["resumen"] == "los 2 entornos estan en uso", r["resumen"])
+    comprobar("todos en uso -> sin conservados que informar",
+              r["evidencia"]["frios_conservados"] == [])
+
+    # 9. un referenciado tambien es un frio conservado: son dimensiones
+    #    distintas (el porque se conserva), no una categoria aparte de "frio".
+    r = AEC.construir_resultado({"entornos": [
+        _fila("z", "referenciado", False, 900, ["otro/setup.sh"])], "nota_refs": ""}, 90)
+    comprobar("referenciado cuenta como frio conservado, no como recuperable",
+              len(r["evidencia"]["frios_conservados"]) == 1
+              and r["evidencia"]["recuperable_bytes_exclusivos"] == 0)
+    comprobar("el motivo del referenciado se explica",
+              "script" in r["evidencia"]["frios_conservados"][0]["motivo"],
+              r["evidencia"]["frios_conservados"][0]["motivo"])
+
+
+def probar_politica_congelada() -> None:
+    # 10. La lista de protegidos es una DECISION del operador, no un hecho que
+    #     la medicion deduzca. Se congela en test a proposito: cambiarla es
+    #     cambiar politica (anadir bio_env por su proyecto BIOANALISIS vivo), y
+    #     un cambio debe tenerse que romper el test a proposito, no colarse.
+    comprobar("elect_env protegido (lo fija el plugin de opencode)",
+              "elect_env" in AEC.PROTEGIDOS_POR_POLITICA)
+    comprobar("IA protegido (unico TensorFlow funcional)",
+              "IA" in AEC.PROTEGIDOS_POR_POLITICA)
+    comprobar("bio_env protegido (proyecto BIOANALISIS vivo, entorno inactivo)",
+              "bio_env" in AEC.PROTEGIDOS_POR_POLITICA,
+              f"protegidos={AEC.PROTEGIDOS_POR_POLITICA}")
+    comprobar("la politica no crece sola: 3 entradas, sin duplicados",
+              len(AEC.PROTEGIDOS_POR_POLITICA) == 3
+              and len(set(AEC.PROTEGIDOS_POR_POLITICA)) == 3,
+              f"protegidos={AEC.PROTEGIDOS_POR_POLITICA}")
+    # La politica se publica en la evidencia: una excepcion que no se ve es una
+    # excepcion que el proximo no puede ni cuestionar.
+    r = AEC.construir_resultado({"entornos": [_fila("a", "en_uso", True)],
+                                 "nota_refs": ""}, 90)
+    comprobar("la evidencia publica la lista de protegidos",
+              r["evidencia"]["criterio"]["protegidos_por_politica"]
+              == list(AEC.PROTEGIDOS_POR_POLITICA))
+
 
 def probar_contrato_cli() -> None:
     py = sys.executable
@@ -411,6 +483,7 @@ def main() -> int:
     probar_umbral_dias()
     print("== veredicto: la politica gana a la medicion ==")
     probar_veredicto()
+    probar_politica_congelada()
     print("== contrato de salida ==")
     probar_contrato_cli()
 

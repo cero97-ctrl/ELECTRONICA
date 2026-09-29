@@ -23,10 +23,14 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 SCRIPT = PROJECT_ROOT / "execution" / "verificar_texto.py"
 TMP = PROJECT_ROOT / ".tmp"
-STATE = TMP / "run_state.json"
 INFORME = TMP / "verificacion_texto.json"
 SESION_LOG = PROJECT_ROOT / "execution" / "sesion_log.py"
 PYTHON = sys.executable
+
+# La vista de estado vive en `execution/run_state.py` (capa 3): nombre por
+# corrida, escritura atomica y validacion del `run_id` en un solo sitio.
+sys.path.insert(0, str(PROJECT_ROOT / "execution"))
+import run_state as RS  # noqa: E402  (capa 3, resolucion explicita)
 
 CODIGO_OK = 0
 CODIGO_HALLAZGOS = 1
@@ -132,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     for ex in args.exclude:
         cmd += ["--exclude", ex]
 
-    run_id = f"verificar-texto-{time.strftime('%Y%m%d-%H%M%S')}"
+    run_id = RS.run_id_de_la_corrida("verificar-texto")
     started_at = now_iso()
     trazar(run_id, "flujo/inicio", {"ficheros": len(args.rutas), "diff": args.diff,
                              "clases": args.clases or ["script", "conocido"]})
@@ -157,9 +161,6 @@ def main(argv: list[str] | None = None) -> int:
     }
     TMP.mkdir(exist_ok=True)
     INFORME.write_text(json.dumps(estado, ensure_ascii=False, indent=2), encoding="utf-8")
-    # `run_id` es obligatorio: sin el, execution/estado_sesion.py clasifica este
-    # run_state.json como corrupto (no puede casarlo con su log append-only).
-    # El bug se detecto al auditar con este mismo flujo, no al escribirlo.
     state = {
         "run_id": run_id,
         "current_step": 3,
@@ -170,9 +171,14 @@ def main(argv: list[str] | None = None) -> int:
         "started_at": started_at,
         "updated_at": now_iso(),
     }
-    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    # `run_id` es obligatorio en el estado: sin el, `estado_sesion.py` clasifica
+    # la vista como corrupto (no puede casarla con su log append-only). El bug
+    # se detecto al auditar con este mismo flujo, no al escribirlo. Con la vista
+    # por corrida el `run_id` viaja ademas en el NOMBRE del fichero, que es
+    # justo de donde lo saca `estado_sesion.py` para emparejar vista<->log.
+    RS.escribir_vista(RS.ruta_vista(run_id), state)
     # Trazabilidad append-only: el log es la fuente de verdad y sobrevive a que
-    # otro flujo sobrescriba .tmp/run_state.json.
+    # otro flujo escriba su propia vista en .tmp/.
     if not trazar(run_id, "flujo/fin", {"veredicto": veredicto, "exit_code": proc.returncode}):
         print("  aviso: no se pudo escribir en el log append-only", file=sys.stderr)
 

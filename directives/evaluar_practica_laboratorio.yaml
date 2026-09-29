@@ -46,7 +46,7 @@ steps:
 
   - step: 2
     description: >
-      Guardar el resultado JSON en .tmp/run_state.json para auditoría y generar
+      Guardar el resultado JSON en .tmp/run_state_<run_id>.json para auditoría y generar
       el informe LaTeX de la práctica evaluada.
     script: "execution/generar_informe.py"
     inputs:

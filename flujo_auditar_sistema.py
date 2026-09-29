@@ -66,6 +66,7 @@ PYTHON = sys.executable
 sys.path.insert(0, str(EJECUCION))
 import auditar_sistema as AS  # noqa: E402  (capa 3, medicion)
 import veredicto_algebra as VA  # noqa: E402  (capa 3, algebra compartida)
+import run_state  # noqa: E402  (capa 3, vista por corrida)
 
 # ---------------------------------------------------------------------------
 # Umbrales. Constantes, no flags: se documentan en el informe para que el
@@ -396,7 +397,7 @@ def main(argv: list[str] | None = None) -> int:
         return VA.EXIT_USO_INCORRECTO
 
     TMP.mkdir(parents=True, exist_ok=True)
-    run_id = f"auditar-sistema-{time.strftime('%Y%m%d-%H%M%S')}"
+    run_id = run_state.run_id_de_la_corrida("auditar-sistema")
     ruta_estado = TMP / STATE_FILE_PLANTILLA.format(run_id=run_id)
     inicio = datetime.now(timezone.utc)
 

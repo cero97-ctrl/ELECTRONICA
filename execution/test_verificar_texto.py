@@ -42,6 +42,20 @@ def ejecutar(args: list[str], guion: Path = SCRIPT) -> tuple[int, str]:
     return proc.returncode, proc.stdout
 
 
+def comprobar_existe_la_vista_por_corrida() -> bool:
+    """True si hay una vista POR CORRIDA nueva de `verificar-texto`.
+
+    Desde P2-1 el estado vive en `run_state_<run_id>.json`, y cada corrida
+    escribe la suya. Comprobar un nombre fijo (`run_state.json`) daria un falso
+    rojo: ese nombre ya no lo escribe nadie.
+    """
+    tmp = PROJECT_ROOT / ".tmp"
+    if not tmp.is_dir():
+        return False
+    return any(p.name.startswith("run_state_verificar-texto-")
+               for p in tmp.glob("run_state*.json"))
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
@@ -127,14 +141,17 @@ def main() -> int:
         comprobar("con tilde se detecta", rc_a == 1, f"exit={rc_a}")
         comprobar("sin tilde tambien (insensible a diacriticos)", rc_b == 1, f"exit={rc_b}")
 
-        # Este test corre el flujo real, que escribe en el .tmp REAL del
-        # proyecto. Antes se dejaba la vista puesta y `estado_sesion.py` la
-        # reportaba como huerfana en cada ejecucion: el test contaminaba el
-        # estado que despues audita. El snapshot va ANTES de la primera
-        # invocacion (las siguientes ya lo crean), y al final se retira solo lo
-        # que el test creo, sin tocar una vista preexistente de otro flujo.
-        _vista = PROJECT_ROOT / ".tmp" / "run_state.json"
-        _preexistente = _vista.is_file()
+        # Este test corre el flujo real, que escribe vistas en el .tmp REAL del
+        # proyecto. P2-1 movio el estado de un nombre fijo (`run_state.json`) a
+        # una vista POR CORRIDA (`run_state_<run_id>.json`), asi que este test
+        # debe mirar el patron, no una ruta fija. Sin snapshot previo, cada
+        # invocacion dejaba una vista que `estado_sesion.py` reportaba luego
+        # como huerfana: el test contaminaba el estado que despues audita.
+        # El snapshot va ANTES de la primera invocacion y al final se retiran
+        # solo las vistas que el test creo, sin tocar logs ni vistas ajenas.
+        _tmp = PROJECT_ROOT / ".tmp"
+        _vistas_antes = {p.name for p in _tmp.glob("run_state*.json")} \
+            if _tmp.is_dir() else set()
         print("== Flujo (capa 2) ==")
         rc, out = ejecutar([str(base)], guion=FLUJO)
         comprobar("el flujo propaga exit 1 con hallazgos", rc == 1, f"exit={rc}")
@@ -145,12 +162,16 @@ def main() -> int:
         comprobar("y advierte que no comprobo nada", "NO ha comprobado nada" in out)
 
         rc, out = ejecutar([str(base)], guion=FLUJO)
-        comprobar("el flujo escribe estado en run_state", _vista.is_file())
+        comprobar("el flujo escribe estado en run_state",
+                  comprobar_existe_la_vista_por_corrida(),
+                  f"no aparecio ninguna vista run_state_*.json nueva en {_tmp}")
 
-    # Retirar la vista que este test creo (ver el snapshot mas arriba). El
-    # log append-only NO se toca: es la verdad permanente.
-    if "_vista" in dir() and not _preexistente and _vista.is_file():
-        _vista.unlink()
+    # Retirar SOLO las vistas que este test creo (ver el snapshot mas arriba).
+    # El log append-only NO se toca: es la verdad permanente.
+    if _tmp.is_dir():
+        for _p in _tmp.glob("run_state*.json"):
+            if _p.name not in _vistas_antes:
+                _p.unlink()
 
     print()
     if FALLOS:

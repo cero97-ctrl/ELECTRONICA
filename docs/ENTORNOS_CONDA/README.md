@@ -41,6 +41,39 @@ Si un entorno falla cualquiera de las dos, se conserva.
 | `agro_env` | 0,8 GB | **En uso.** 67 `.pyc` en 90 días; `Agente-IA-Agro-Inteligente` tuvo commit el 2026-08-23 y lo declara en su `AGENTS.md`. |
 | `bio_env` | 0,5 GB | Frío (0 `.pyc` desde 2026-06-25) pero `BIOANALISIS` tuvo commit el 2026-08-12 y 354 ficheros tocados en 90 días. Proyecto vivo, entorno inactivo. |
 
+### Por qué `bio_env` está en `PROTEGIDOS_POR_POLITICA` y no se "arregló" el detector
+
+`bio_env` es el caso que el criterio **no puede deducir**. El detector ve dos cosas:
+ejecución (`.pyc` generados) y referencias (anclajes de conda en el workspace). Un
+proyecto vivo cuyo entorno no aparece en ningún `setup.sh` —porque quien lo usa lo
+activó a mano y ya no lo nombra en ninguna parte— es **invisible** para las dos señales
+a la vez. Por eso salió `frío` con el proyecto corriendo.
+
+La tentación era relajar el heurístico para que "un proyecto con commits recientes
+cuente como uso". Eso sería **inventar un hecho**: commits recientes en un repo que
+puede que ni siquiera se abra este mes. La alternativa elegida es declarar la
+excepción donde ya vivían las otras dos:
+
+```python
+# execution/auditar_envs_conda.py
+PROTEGIDOS_POR_POLITICA = ("elect_env", "IA", "bio_env")
+```
+
+Consecuencias, y son deliberadas:
+
+- `bio_env` **deja de ofrecerse** como recuperable. Es correcto: la decisión de
+  conservarlo ya está tomada y no la toma un script.
+- `bio_env` **sigue informándose** en `frios_conservados`, con su peso exclusivo
+  (0,37 GB), su `ultimo_pyc` y el motivo. Proteger cambia *si se recupera*, no
+  *si se informa*: un entorno sin ejecución que ocupa disco sigue siendo un hecho,
+  aunque la decisión sea conservarlo.
+- La lista está **congelada en `test_auditar_entornos.py`**. Ampliarla tiene que
+  romper un test a propósito, no colarse como consecuencia de otra medición.
+
+La lista también se publica en la evidencia de la dimensión
+(`criterio.protegidos_por_politica`): una excepción que no se ve es una excepción
+que el próximo no puede ni cuestionar.
+
 ## Entornos eliminados (2026-09-28)
 
 12 entornos, **5,6 GB** liberados. Todos con recipe en `recetas/` y todos cumpliendo
@@ -97,10 +130,17 @@ proyecto vuelve a la vida.
 
 ## Lo que este documento NO cubre
 
-- La detección es manual. Para que sea reproducible falta la dimensión `entornos` en
-  `flujo_auditar_repo.py` (pendiente, no implementado).
+- ~~La detección es manual. Falta la dimensión `entornos` en `flujo_auditar_repo.py`.~~
+  **Resuelto el 2026-09-28**: la dimensión existe (`execution/auditar_envs_conda.py`,
+  directiva `directives/auditar_entornos_conda.yaml`, 73 aserciones en
+  `execution/test_auditar_entornos.py`) y aplica exactamente este criterio, más
+  `bytes_exclusivos`. Las dos diferencias con la inspección manual: la dimensión no
+  conoce la política de este documento por sí sola (la recibe en
+  `PROTEGIDOS_POR_POLITICA`) y no cruza commits, porque no es una señal de ejecución.
 - `.pyc` no distingue "se ejecutó" de "se importó sin ejecutar nada" (un `import` en un
-  REPL también compila). Para uso real habría que cruzarlo con `conda-meta/history`,
-  `.bash_history` y los commits de los workspaces, como se hizo aquí a mano.
+  REPL también compila). Es el límite conocido del criterio: por eso los entornos
+  protegidos por política siguen informándose en vez de desaparecer de la lectura.
 - Los tamaños de esta tabla salen de un recorrido de ficheros que salta symlinks
-  (`os.walk` + `islink`), así que difieren en torno a un 5 % de `du -B1`.
+  (`os.walk` + `islink`), así que difieren en torno a un 5 % de `du -B1`. La dimensión
+  ya no tiene esa limitación: usa `bytes_exclusivos` de `catalogo_disco.py`, que es
+  la cifra que de verdad se recuperaría.

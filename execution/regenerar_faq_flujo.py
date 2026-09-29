@@ -311,7 +311,13 @@ def _llm_edits(model: str, fallback: list[str], tokens: int, critico: bool,
             edits = _parse_edits(raw)
             if not isinstance(edits, list) or len(edits) > MAX_EDITS_PER_BLOCK:
                 raise ValueError(f"Lista de edits no v\u00e1lida (got {len(edits) if isinstance(edits, list) else '?'})")
-            return edits
+            # Valida DENTRO del bucle: un 'old' mal citado es un fallo del
+            # modelo, no un fallo de la corrida, y merece gastar otro intento
+            # del retry budget (y probar el siguiente tier) en vez de tumbar
+            # todo el flujo. Antes se validaba en el llamador, fuera del bucle:
+            # un solo 'old' desalineado abortaba los otros dos intentos que el
+            # presupuesto ya autorizaba.
+            return _edits_validos(edits, block_tex)
         except Exception as e:  # noqa: BLE001 — agotar el retry budget del framework
             last_error = f"[modelo {model_candidate}, intento {n_attempt + 1}/{RETRY_BUDGET}] {e}"
     raise RuntimeError(f"Fall\u00f3 la re-traducci\u00f3n LLM tras {RETRY_BUDGET} intentos. \u00daltimo error: {last_error}")
@@ -433,7 +439,7 @@ def main() -> int:
 
         edits = _llm_edits(args.modelo, [], tokens, args.critico, block,
                            item["seccion"], cambios_por_seccion[item["seccion"]]["hunks"])
-        edits = _edits_validos(edits, block)
+        # Ya validados dentro de `_llm_edits` (dentro del retry budget).
         nuevo_block = _aplicar_edits(block, edits)
 
         # Invariante de geometría: mismo número de nodos en el bloque

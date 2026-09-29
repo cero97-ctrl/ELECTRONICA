@@ -25,6 +25,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,7 +35,10 @@ ENRUTAR = SCRIPT_DIR / "execution" / "enrutador.py"
 RESOLVER = SCRIPT_DIR / "execution" / "resolver_skill.py"
 ALERTAR = SCRIPT_DIR / "execution" / "alert_user.py"
 TMP_DIR = SCRIPT_DIR / ".tmp"
-STATE_FILE = TMP_DIR / "run_state.json"
+# La vista de estado vive en `execution/run_state.py` (capa 3): nombre por
+# corrida, escritura atomica y validacion del `run_id` en un solo sitio.
+sys.path.insert(0, str(SCRIPT_DIR / "execution"))
+import run_state as RS  # noqa: E402  (capa 3, resolucion explicita)
 
 
 def now_iso() -> str:
@@ -67,18 +71,33 @@ def run_script(args, capture_json=False) -> tuple[int, str | dict | None]:
     return proc.returncode, out
 
 
-def load_state() -> dict:
-    if not STATE_FILE.is_file():
-        return {"steps_completed": [], "steps_failed": []}
-    try:
-        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {"steps_completed": [], "steps_failed": []}
+_ESTADO_VACIO = {"run_id": None, "steps_completed": [], "steps_failed": []}
+
+
+def load_state(run_id: str) -> dict:
+    """Reanuda la vista de ESTA corrida. Nunca la de otra.
+
+    Con el nombre fijo `run_state.json`, `load_state()` sin argumentos devolvia
+    la vista que hubiera dejado la corrida anterior, y `estado_ok` la fusionaba
+    con la nueva: `steps_completed` era la UNION de todas las corridas que
+    hubieran pasado por el fichero, sin relacion con lo que esta haciendo la
+    de ahora. Un `load_state` que reanuda una corrida ajena no es un bug
+    visible —el flujo termina bien y prints sus pasos— es informacion
+    silenciosamente falsa, que es peor.
+
+    Ahora la vista lleva el `run_id` en el nombre, asi que la reanudacion solo
+    puede alcanzar la corrida que lo pidio. Al empezar no existe todavia, y el
+    valor por defecto es el correcto: empezar de cero.
+    """
+    vista = RS.leer_vista(RS.ruta_vista(run_id))
+    if not isinstance(vista, dict) or "steps_completed" not in vista:
+        return {**_ESTADO_VACIO, "run_id": run_id}
+    vista["run_id"] = run_id
+    return vista
 
 
 def save_state(state: dict) -> None:
-    TMP_DIR.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    RS.escribir_vista(RS.ruta_vista(state.get("run_id")), state)
 
 
 def estado_ok(state: dict, paso: int) -> None:
@@ -112,8 +131,13 @@ def main() -> int:
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta audible.")
     args = parser.parse_args()
 
+    # El `run_id` se crea ANTES de tocar la vista, no despues: es lo que decide
+    # que vista se lee y se escribe. Sin el, `estado_sesion.py` clasifica la
+    # vista como corrupto por no poder emparejarla con un log append-only.
+    run_id = RS.run_id_de_la_corrida("flujo-resolver")
+
     # ── Paso 1: validación de entradas ──
-    state = load_state()
+    state = load_state(run_id)
     print_step(1, 3, "Validación de entradas")
     problema = (args.problema or "").strip()
     if not problema:

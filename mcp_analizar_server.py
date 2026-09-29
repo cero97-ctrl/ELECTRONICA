@@ -6,6 +6,10 @@ import json
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
+#: Nombre corto de este servidor: entra en el `run_id` cuando el MCP es el
+#: orquestador de la corrida y nadie ha fijado `ELECTRONICA_RUN_ID`.
+PREFIX = "analizar"
+
 # Cargar variables de entorno desde el .env absoluto del proyecto
 project_root = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(project_root, ".env"))
@@ -14,6 +18,38 @@ load_dotenv(os.path.join(project_root, ".env"))
 mcp = FastMCP("Circuit Vision Server")
 
 @mcp.tool()
+# --- Lectura de la vista por corrida ---------------------------------------
+# Todo lo de la vista vive en `execution/run_state.py` (capa 3). Este servidor no
+# reimplementa el emparejamiento vista<->log ni el nombre: los usa. Una copia
+# del criterio aqui seria una segunda verdad divergiendo en silencio.
+def _importar_run_state(project_root: str):
+    """Importa el helper de capa 3. `None` si no esta disponible (y se avisa)."""
+    ejecucion = os.path.join(project_root, "execution")
+    if ejecucion not in sys.path:
+        sys.path.insert(0, ejecucion)
+    try:
+        import run_state  # noqa: E402  (capa 3, resolucion explicita)
+        return run_state
+    except Exception as exc:  # pragma: no cover
+        print(f"aviso: no se pudo importar execution/run_state.py ({exc}); "
+              f"el estado del flujo no se reportara", file=sys.stderr)
+        return None
+
+
+def _leer_vista(rs, run_id: str) -> dict:
+    """La vista de ESTA corrida, o `{}` si el flujo no llegó a escribir.
+
+    Con el `run_id` fijado por el orquestador la lectura es exacta: no hay que
+    deducir cual de las vistas es la nuestra. `{}` significa "el flujo salio
+    antes de escribir, o fallo sin llegar" — un estado real que el MCP debe
+    reportar como tal, no rellenando con la vista de otra corrida.
+    """
+    if rs is None or not run_id:
+        return {}
+    datos = rs.leer_vista(rs.ruta_vista(run_id))
+    return datos if isinstance(datos, dict) else {}
+
+
 def analizar_imagenes_circuito(
     imagenes: str,
     prompt: str = "Describe detalladamente lo que ves en la(s) imagen(es).",
@@ -59,31 +95,34 @@ def analizar_imagenes_circuito(
         
     print(f"Ejecutando análisis de imágenes: {' '.join(cmd)}")
     
-    state_file = os.path.join(project_root, ".tmp", "run_state.json")
-    mtime_before = os.path.getmtime(state_file) if os.path.exists(state_file) else None
+    # Foto de las vistas ANTES de lanzar el subproceso (capa 3: `run_state.py`).
+    # Con un nombre fijo bastaba un `mtime`; con la vista por corrida la
+    # pregunta es "¿que vistas escribio ESTA corrida?", y la foto la responde sin
+    # depender de un reloj ni de adivinar el nombre del fichero de esta corrida.
+    _RS = _importar_run_state(project_root)
+    # El MCP es el ORQUESTADOR de esta corrida, asi que le fija el nombre. Sin
+    # esto solo puede buscar "la vista nueva mas reciente", y si otra corrida
+    # escribe a la vez se atribuye su vista a esta: un fallo silencioso que
+    # devuelve el resultado de OTRO flujo con exit code 0.
+    _run_id = _RS.run_id_de_la_corrida(f"mcp-{PREFIX}") if _RS else ""
+    _entorno = dict(os.environ)
+    if _run_id:
+        _entorno[_RS.ENV_RUN_ID] = _run_id
     try:
         resultado = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
             encoding="utf-8",
-            cwd=project_root
+            cwd=project_root,
+            env=_entorno
         )
         
-        # Leer el estado final SOLO si el run_state.json fue reescrito por ESTA
-        # corrida (si el flujo salió antes de escribir o falló sin llegar, el
-        # archivo conserva un mtime viejo de otra corrida → vista HUÉRFANA que
-        # no debe reportarse como resultado actual; ver execution/estado_sesion.py).
-        state_data = {}
-        if os.path.exists(state_file):
-            try:
-                if mtime_before is not None and os.path.getmtime(state_file) <= mtime_before:
-                    pass  # archivo no modificado por esta corrida: no usar
-                else:
-                    with open(state_file, "r", encoding="utf-8") as f:
-                        state_data = json.load(f)
-            except Exception:
-                state_data = {}
+        # Estado final: SOLO la vista que escribio ESTA corrida (nueva o
+        # modificada respecto a la foto). Una vista huerfana —el flujo salio
+        # antes de escribir, o fallo sin llegar al ultimo save— no se reporta
+        # como resultado actual; ver `execution/estado_sesion.py`.
+        state_data = _leer_vista(_RS, _run_id)
                 
         if resultado.returncode == 0:
             descripcion = state_data.get("context", {}).get("descripcion", "N/A")

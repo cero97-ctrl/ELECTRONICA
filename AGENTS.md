@@ -113,7 +113,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 | **Núcleo Privilegiado** | No aplica (arquitectura layered fija) | Ningún núcleo centralizado; cualquier componente puede ser reemplazado mediante plugins |
 | **Carga de Configuración** | Directivas YAML únicas por flujo; `opencode.json` carga `.agent/*.md` | Layered: Bundles → Perfil → Parche home → Parches CLI; plugins npm instalables |
 | **Interfaz de Usuario** | Línea de comandos (CLI) centrada; some flujos con servidores MCP FastMCP | UI web local (`http://127.0.0.1:3080`) + modo headless CLI; transición fluida entre ambos |
-| **Gestión de Sesiones** | `.tmp/run_state.json` por flujo; logs en `Sessions/` markdown | **Trayectoria (Trajectory)**: append-only event log en `~/.dsh/sessions` con prompts, razonamiento, llamadas a herramientas y resultados; resume/fork/resume soportado nativamente |
+| **Gestión de Sesiones** | `.tmp/run_state_<run_id>.json` por corrida; logs en `Sessions/` markdown | **Trayectoria (Trajectory)**: append-only event log en `~/.dsh/sessions` con prompts, razonamiento, llamadas a herramientas y resultados; resume/fork/resume soportado nativamente |
 | **Modelos Soportados** | Tiers definidos: flash (gemini-3.7-flash), deepseek (deepseek-v4.1-flash), glm (z-ai/glm-5.2), opus (claude-opus-5) | Cualquier modelo OpenAI-compatible via adaptadores; proveedores oficiales (`deepseek-official`), compatibles (`llm-pi-ai`), custom gateways |
 | **Ruteo de Decisiones** | 100% determinista en código; mismo descriptor → mismo tier/siempre | Configurable: default por agente overridable en sesión; multi-model en un mismo session posible |
 | **Consumo de Créditos** | Matriz documentada: orquestación gratis; scripts `execution/` consumen vía `openrouter_chat` | No especificado en documentación básica; dependería de proveedores configurados |
@@ -198,7 +198,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 ## Output conventions
 
 - Intermediate JSON lives in `.tmp/` (e.g., `.tmp/analisis_*.json`)
-- `.tmp/run_state.json` tracks multi-step flow progress (step, exit code, timestamp)
+- `.tmp/run_state_<run_id>.json` tracks multi-step flow progress (step, exit code, timestamp). The `run_id` is in the FILENAME, so two concurrent runs never fight over one file; the definition of the name, the atomic write and the `run_id` validation live once in `execution/run_state.py` (never reimplement them per flow). An orchestrator (an MCP server) pins the `run_id` of the run it launches via `ELECTRONICA_RUN_ID`
 - Datasets de entrenamiento LLM: raw capture en `datasets/*.jsonl` (`execution/data_capture.py`, pasivo, gitignored); curado/particionado en `datasets/curated/` (`execution/curar_datasets.py` o `flujo_curar_dataset.py`); paquetes HF (Parquet+LICENSE+README) en `datasets/paquetes/` (`execution/empaquetar_dataset.py` o `flujo_empaquetar_dataset.py`); publicación HF Hub (`execution/publicar_hf.py` o `flujo_publicar_hf.py`, requiere `HF_TOKEN` en `.env`)
 - LaTeX deliverables go to `docs/` or `cursos/` under their topic directories
 - LaTeX build artifacts go to `.tmp/latex_build/` (auto-cleaned by `compile_latex.py`)

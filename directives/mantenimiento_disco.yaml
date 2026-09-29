@@ -11,7 +11,7 @@ references:
   orchestrator: flujo_disco.py
   scripts: execution/catalogo_disco.py, execution/disco_medir.py, execution/disco_purgar.py, execution/test_barrera_disco.py, execution/generar_diagrama_flujo.py
   input: / (filesystem a medir via statvfs)
-  output: .tmp/disco_informe.json, .tmp/disco_medicion.json, .tmp/run_state.json, docs/MANTENIMIENTO_DISCO/disco_flujo.pdf
+  output: .tmp/disco_informe.json, .tmp/disco_medicion.json, .tmp/run_state_<run_id>.json, docs/MANTENIMIENTO_DISCO/disco_flujo.pdf
 
 required_inputs:
   - name: --tier

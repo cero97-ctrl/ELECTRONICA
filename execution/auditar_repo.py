@@ -235,6 +235,43 @@ ESTADO_PLANIFICADO = "planificado"
 ESTADOS_DIRECTIVA = {ESTADO_ACTIVO, ESTADO_PLANIFICADO}
 
 
+def _flags_de_script(raiz: Path, rel: str,
+                     cache: dict[str, set[str] | None]) -> set[str] | None:
+    """Flags que `<rel>.py` (ruta relativa a la raiz) acepta, o None si no se pudo saber.
+
+    Se relanza con `--help` y se leen sus `usage:`. Es caro (arranca Python),
+    asi que se cachea por ruta. Subproceso con timeout corto: un script colgado
+    en la importacion no puede tumbar la auditoria.
+    """
+    if rel in cache:
+        return cache[rel]
+
+    ruta = raiz / rel
+    if not ruta.is_file():
+        cache[rel] = None
+        return None
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(ruta), "--help"],
+            capture_output=True, text=True, timeout=20,
+            cwd=str(raiz),
+        )
+    except (OSError, subprocess.SubprocessError):
+        cache[rel] = None
+        return None
+
+    texto = (proc.stdout or "") + (proc.stderr or "")
+    if "usage:" not in texto.lower():
+        # No es argparse (p. ej. un modulo sin CLI). No se afirma nada en vez
+        # de inventar flags.
+        cache[rel] = None
+        return None
+
+    cache[rel] = set(re.findall(r"(--[A-Za-z][A-Za-z0-9\-]*)", texto))
+    return cache[rel]
+
+
 def comprobar_directivas(raiz: Path) -> dict[str, Any]:
     """Directivas que invocan scripts de execution/ que no existen.
 
@@ -261,9 +298,19 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
     rotas: list[dict[str, Any]] = []
     obsoletos: list[dict[str, Any]] = []
     marcadores_invalidos: list[dict[str, Any]] = []
+    flags_fantasma: list[dict[str, Any]] = []
     total_refs = 0
     patron = re.compile(r"\bexecution/([A-Za-z0-9_.\-]+\.py)\b")
     patron_status = re.compile(r"^Status:\s*([A-Za-z_]+)\s*$", re.MULTILINE)
+    # Flags declarados en la directiva: "- name: --algo" (p. ej. `--proteger A,B`).
+    patron_flag = re.compile(r"^\s*-\s*name:\s*(--[A-Za-z][A-Za-z0-9\-]*)", re.MULTILINE)
+    # El orquestador es quien posee la INTERFAZ del flujo (sus flags), no la capa 3.
+    patron_orch = re.compile(r"^\s*orchestrator:\s*([A-Za-z0-9_.\-]+\.py)\s*$", re.MULTILINE)
+    # Una dimension reutilizada declara `scripts:` en references: sus flags de
+    # input las consume uno de esos scripts, no el compositor.
+    patron_scripts = re.compile(r"^\s*scripts:\s*(.+)$", re.MULTILINE)
+    # Cache de flags reales por ruta de script (arrancar Python es caro).
+    _flags_cache: dict[str, set[str] | None] = {}
 
     for y in directivas:
         try:
@@ -312,6 +359,48 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
                               f"{len(vistas)} referencia(s) existen",
                 })
 
+        # Flag fantasma: la directiva documenta `--x` que ni su orquestador ni
+        # ninguno de sus scripts lo aceptan. Nadie lo detecta al leer: el flujo
+        # solo falla cuando alguien teclea el comando. Se valida contra el
+        # orquestador (posee la interfaz del flujo) y, si el orquestador es un
+        # compositor, tambien contra los `scripts:` de references: (una
+        # dimension reutilizada NO tiene CLI propia: sus flags los consume el
+        # script que ejecuta). Nunca contra la capa 3 suelta.
+        orch = patron_orch.search(texto)
+        scripts_ref = patron_scripts.search(texto)
+        if orch and (raiz / orch.group(1)).is_file():
+            # El orquestador es la voz del flujo. Si no habla argparse, no puede
+            # serializar sus flags y no se afirma nada: mirar los scripts de
+            # capa 3 daria falsos positivos (sus flags internos no son la
+            # interfaz del flujo).
+            orch_flags = _flags_de_script(raiz, orch.group(1), _flags_cache)
+            if orch_flags is not None:
+                # Dimension reutilizada: el compositor no expone los flags de
+                # input, los consume uno de los scripts de references/scripts.
+                candidatos = [orch.group(1)]
+                if scripts_ref:
+                    candidatos += re.findall(
+                        r"(execution/[A-Za-z0-9_.\-]+\.py)", scripts_ref.group(1))
+                flags_reales = set(orch_flags)
+                for rel in dict.fromkeys(candidatos[1:]):
+                    extra = _flags_de_script(raiz, rel, _flags_cache)
+                    if extra is not None:
+                        flags_reales |= extra
+                for flag in dict.fromkeys(patron_flag.findall(texto)):
+                    if flag not in flags_reales:
+                        flags_fantasma.append({
+                            "directiva": y.name,
+                            "flag": flag,
+                            "orquestador": orch.group(1),
+                            "motivo": f"documenta {flag} pero ni {orch.group(1)} "
+                                      "ni sus scripts lo aceptan",
+                            # El estado de la DIRECTIVA decide la gravedad: un
+                            # flag fantasma en un 'planificado' es aviso (el
+                            # hueco esta declarado); en uno activo, fallo.
+                            "declarada": estado_dir == ESTADO_PLANIFICADO,
+                            "estado_directiva": estado_dir,
+                        })
+
     if total_refs == 0:
         return _no_verificado(
             "directivas",
@@ -320,10 +409,11 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
 
     silenciosas = [r for r in rotas if not r.get("declarada")]
     declaradas = [r for r in rotas if r.get("declarada")]
-
-    if silenciosas:
+    fantasma_fallos = [r for r in flags_fantasma if not r.get("declarada")]
+    fantasma_avisos = [r for r in flags_fantasma if r.get("declarada")]
+    if silenciosas or fantasma_fallos:
         estado = "fallo"
-    elif declaradas or obsoletos or marcadores_invalidos:
+    elif declaradas or obsoletos or marcadores_invalidos or fantasma_avisos:
         estado = "aviso"
     else:
         estado = "ok"
@@ -331,6 +421,14 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
     partes = []
     if silenciosas:
         partes.append(f"{len(silenciosas)} referencia(s) rota(s) SIN declarar")
+    if fantasma_fallos:
+        partes.append(
+            f"{len(fantasma_fallos)} flag(s) documentado(s) que el orquestador no acepta"
+        )
+    if fantasma_avisos:
+        partes.append(
+            f"{len(fantasma_avisos)} flag(s) fantasma(s) en directiva(s) planificada(s)"
+        )
     if declaradas:
         nombres = sorted({r['directiva'] for r in declaradas})
         partes.append(
@@ -353,14 +451,24 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
             "resuelven y ningun marcador esta obsoleto"
         )
 
-    if silenciosas:
-        accion = (
-            "Una directiva que apunta a un script inexistente SIN declarar que "
-            "la capacidad no esta implementada es una trampa: no avisa, "
-            "simplemente nunca se ejecuta. Corregir la referencia, marcar la "
-            "directiva como 'Status: planificado' si es un roadmap, o retirarla."
-        )
-    elif declaradas or obsoletos or marcadores_invalidos:
+    if silenciosas or fantasma_fallos:
+        accion = ""
+        if silenciosas:
+            accion += (
+                "Una directiva que apunta a un script inexistente SIN declarar que "
+                "la capacidad no esta implementada es una trampa: no avisa, "
+                "simplemente nunca se ejecuta. Corregir la referencia, marcar la "
+                "directiva como 'Status: planificado' si es un roadmap, o retirarla. "
+            )
+        if fantasma_fallos:
+            accion += (
+                f"{len(fantasma_fallos)} flag(s) documentado(s) no lo acepta(n) su "
+                "orquestador: una instruccion imposible de seguir, que solo falla "
+                "cuando alguien teclea el comando. Corregir la directiva para que use "
+                "el flag real (el codigo es la fuente de verdad)."
+            )
+        accion = accion.strip()
+    elif declaradas or obsoletos or marcadores_invalidos or fantasma_avisos:
         capas = []
         if declaradas:
             capas.append(
@@ -380,11 +488,18 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
                 f"{len(marcadores_invalidos)} marcador(es) de Status fuera del "
                 f"vocabulario {sorted(ESTADOS_DIRECTIVA)}."
             )
+        if fantasma_avisos:
+            capas.append(
+                f"{len(fantasma_avisos)} flag(s) fantasma(s) en directiva(s) "
+                "'Status: planificado': el nombre documentado no sera valido cuando "
+                "se implemente, asi que hay que corregirlo ANTES de que exista el script."
+            )
         accion = " ".join(capas)
     else:
         accion = (
             "Toda referencia execution/*.py de las directivas resuelve a un "
-            "fichero real y ningun marcador de estado esta obsoleto."
+            "fichero real, ningun marcador de estado esta obsoleto y todo flag "
+            "documentado existe en el orquestador que lo expone."
         )
 
     return {
@@ -399,6 +514,7 @@ def comprobar_directivas(raiz: Path) -> dict[str, Any]:
             "referencias_declaradas_no_implementadas": len(declaradas),
             "marcadores_obsoletos": obsoletos,
             "marcadores_invalidos": marcadores_invalidos,
+            "flags_fantasma": flags_fantasma,
             "rotas": rotas,
         },
         "accion": accion,

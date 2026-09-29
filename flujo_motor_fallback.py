@@ -37,7 +37,10 @@ APLICAR = SCRIPT_DIR / "execution" / "aplicar_switch_modelo.py"
 ALERTAR = SCRIPT_DIR / "execution" / "alert_user.py"
 SUPERVISOR = SCRIPT_DIR / "start_opencode.sh"
 TMP = SCRIPT_DIR / ".tmp"
-STATE_FILE = TMP / "run_state.json"
+# La vista de estado vive en `execution/run_state.py` (capa 3): nombre por
+# corrida, escritura atomica y validacion del `run_id` en un solo sitio.
+sys.path.insert(0, str(SCRIPT_DIR / "execution"))
+import run_state as RS  # noqa: E402  (capa 3, resolucion explicita)
 WATCH_STATE = TMP / "motor_watch_state.json"
 CONFIG_GLOBAL = Path.home() / ".config/opencode/opencode.jsonc"
 
@@ -53,15 +56,36 @@ def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+#: La vista de estado lleva el `run_id` en el nombre (capa 3, `run_state.py`).
+#: Aqui el `run_id` es POR PROCESO, no por invocacion de `_guardar_run_state`:
+#: un `watch` es un bucle largo que llama a `_guardar_run_state` en cada
+#: iteracion, y todas esas llamadas tienen que escribir en la MISMA vista de la
+#: MISMA corrida. Si el `run_id` se fabricara en cada llamada, un `watch` de una
+#: hora crearia miles de vistas y ninguna seria la que el operador mira.
+#: Por eso se fija una vez, al importar, y las subcomandos lo heredan.
+RUN_ID = f"motor-fallback-{time.strftime('%Y%m%d-%H%M%S')}"
+
+
 def _guardar_run_state(step: str, exit_code: int) -> None:
+    """Escribe la vista de ESTA corrida. El log append-only no aplica aqui.
+
+    Este flujo no tiene traza append-only, y no es un olvido que se pueda
+    tapar migratingolo: `_leer_watch_state()` es de hecho su memoria entre
+    iteraciones, y anadir un log mas seria un segundo estado con las mismas
+    reglas de conflicto. Se documenta el limite en vez de fingir que la vista
+    es trazabilidad: la vista es un andamio, y en este flujo es el unico
+    registro que se escribe.
+    """
     TMP.mkdir(exist_ok=True)
-    try:
-        prev = json.loads(STATE_FILE.read_text(encoding="utf-8")) if STATE_FILE.is_file() else {}
-    except (OSError, json.JSONDecodeError):
+    ruta = RS.ruta_vista(RUN_ID)
+    if ruta is None:
+        return
+    prev = RS.leer_vista(ruta) or {}
+    if not isinstance(prev, dict):
         prev = {}
-    prev.update({"flujo_motor_fallback": {"step": step, "exit_code": exit_code,
-                                          "timestamp": _utcnow()}})
-    STATE_FILE.write_text(json.dumps(prev, ensure_ascii=False, indent=2), encoding="utf-8")
+    prev.update({"run_id": RUN_ID, "flujo_motor_fallback": {
+        "step": step, "exit_code": exit_code, "timestamp": _utcnow()}})
+    RS.escribir_vista(ruta, prev)
 
 
 def _leer_watch_state() -> dict:

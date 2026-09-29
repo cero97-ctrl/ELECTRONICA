@@ -27,7 +27,12 @@ PYTHON       = sys.executable
 CONSULTAR    = SCRIPT_DIR / "execution" / "consultar_docs.py"
 ALERTAR      = SCRIPT_DIR / "execution" / "alert_user.py"
 TMP_DIR      = SCRIPT_DIR / ".tmp"
-STATE_FILE   = TMP_DIR / "run_state.json"
+# La vista de estado vive en `execution/run_state.py` (capa 3): nombre por
+# corrida, escritura atomica y validacion del `run_id` en un solo sitio. La
+# importacion es explicita y va aqui (y no arriba del todo) porque necesita
+# `SCRIPT_DIR`, que se define justo encima.
+sys.path.insert(0, str(SCRIPT_DIR / "execution"))
+import run_state as RS  # noqa: E402  (capa 3, resolucion explicita)
 
 
 def now_iso() -> str:
@@ -35,8 +40,16 @@ def now_iso() -> str:
 
 
 def save_state(state: dict) -> None:
-    TMP_DIR.mkdir(exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    """Delega en `execution/run_state.py`: vista por corrida + escritura atomica.
+
+    La vista lleva el `run_id` en el nombre porque `run_state.json` a pelo es un
+    fichero compartido por todos los flujos: dos corridas simultaneas se pisan
+    la misma vista, y el emparejamiento vista<->log que verifica
+    `estado_sesion.py` atribuye la vista de una corrida al log de otra. El log
+    append-only es la verdad permanente; la vista es un andamio, y el andamio
+    necesita nombre propio.
+    """
+    RS.escribir_vista(RS.ruta_vista(state.get("run_id")), state)
 
 
 def run_script(cmd: list[str], capture_json: bool = False) -> tuple[int, dict | str]:
@@ -55,7 +68,7 @@ def flujo_consultar(
     topic: str | None,
     max_chars: int,
 ) -> int:
-    run_id = f"flujo-docs-{now_iso()[:19].replace(':', '-')}"
+    run_id = RS.run_id_de_la_corrida("flujo-docs")
 
     state = {
         "run_id": run_id,

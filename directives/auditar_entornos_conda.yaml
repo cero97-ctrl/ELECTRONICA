@@ -33,8 +33,8 @@ required_inputs:
     description: "Ventana de uso, en dias. Por defecto 90. El corte es estricto: cuenta lo mas reciente que hace 90 dias, no lo que coincide exactamente con el instante limite (esa marca no ocurre nunca con reloj real)."
   - name: --timeout N
     description: "Segundos por cada subproceso externo (find, grep). Por defecto 120. Un escaneo que se pasa de tiempo se declara no medido, no se acepta a medias."
-  - name: --protegidos A,B
-    description: "Reemplaza la lista de entornos protegidos por politica. Por defecto `elect_env,IA`. Un entorno protegido se informa pero NUNCA se ofrece como recuperable, aunque este frio: la politica gana a la medicion."
+  - name: --proteger A,B
+    description: "Reemplaza la lista de entornos protegidos por politica. Por defecto `elect_env,IA,bio_env`. Un entorno protegido se informa pero NUNCA se ofrece como recuperable, aunque este frio: la politica gana a la medicion. Proteger NO borra el entorno de la lectura: sigue apareciendo en `frios_conservados` con su peso, porque un entorno sin ejecucion que ocupa disco es un hecho aunque la decision sea conservarlo."
   - name: --sin-refs
     description: "No busca referencias en el workspace. Divide el tiempo por dos a costa de dejar de distinguir 'abandonado' de 'solo callado'; se usa para medir rapido y para probar en aislamiento."
   - name: --json
@@ -65,7 +65,9 @@ edge_cases:
   - caso: "Un entorno frio cuyo nombre aparece como palabra suelta en el workspace"
     protocolo: "No cuenta como referencia. Solo cuentan los ANCLAJES: `conda activate`, `envs/<n>/`, `ENV_NAME=`, `conda create/export/remove/clone/rename -n|--name <n>`. Sin anclajes, `IA` da 226 lineas en este workspace y ninguna es una activacion."
   - caso: "Un entorno frio y ademas protegido por politica"
-    protocolo: "Clase `protegido`. Se lista y no se ofrece: `recuperable_bytes_exclusivos` no lo cuenta. Un entorno que ocupa espacio no es un defecto, es una decision del operador."
+    protocolo: "Clase `protegido`. Se lista y no se ofrece: `recuperable_bytes_exclusivos` no lo cuenta. Un entorno que ocupa espacio no es un defecto, es una decision del operador. **Y sigue informado**: entra en `frios_conservados` con su peso, su `ultimo_pyc` y el motivo, y el resumen nombra cuantos hay sin ejecucion en la ventana. Proteger cambia si se RECUPERA, no si se INFORMA: si el resumen pasara a decir 'no hay entornos frios' estaria affirmando que ese espacio desaparecio, y sigue en el disco."
+  - caso: "Un entorno frio cuyo proyecto esta vivo pero no lo declara por ningun sitio"
+    protocolo: "Es `bio_env`, y es la razon por la que existe la proteccion por politica: el detector ve ejecucion (`.pyc`) y anclajes de referencia, y un proyecto vivo cuyo entorno no aparece en ningun `setup.sh` es INVISIBLE para el. No se relaja el heuristico para darlo por usado (seria inventar un hecho); se declara la excepcion en `PROTEGIDOS_POR_POLITICA` y se congela en el test, para que ampliarla sea un acto y no una consecuencia."
   - caso: "Un entorno frio referenciado por un script"
     protocolo: "Clase `referenciado`. Aparece en la evidencia con sus rutas, pero no se ofrece para borrar: la referencia es la senal de que la eliminacion tendria un coste que esta dimension no puede medir."
   - caso: "El find o el grep se pasan de tiempo o fallan"

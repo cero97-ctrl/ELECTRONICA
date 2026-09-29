@@ -294,17 +294,17 @@ N1 & Es el primitivo de \emph{hash-chain}, pero sin merkle trees, sin consenso, 
 \end{tcolorbox}
 \end{center}
 
-\faIcon{arrow-right}~\textbf{Contraste con \texttt{run\_state.json}:} el log es
-\emph{criptográficamente encadenado} (toda edición es detectable), mientras que la vista
-es un JSON plano que se sobrescribe sin rastro. Por eso el log es \textbf{fuente de
-verdad} y \texttt{run\_state*.json} una \textbf{vista derivada}.
+\faIcon{arrow-right}~\textbf{Contraste con la vista \texttt{.tmp/run\_state\_<run\_id>.json}:} el log es
+\emph{criptográficamente encadenado} (cualquier edición es detectable), mientras que la
+vista es un JSON plano que se sobrescribe sin rastro. Por eso el log es \textbf{fuente de
+verdad} y la vista una \textbf{derivada}.
 
 % ══ Sección 2: Guardia MCP ═══════════════════════════════════════════════════
 \section{\iconotexto{shield-alt}{Guardia MCP: ¿el estado leído pertenece a la corrida actual?}}
 
-La guardia usa la comparación de \emph{mtime antes/después} de la corrida. Es la única
-señal que vincula temporalmente el archivo al subproceso sin conocer el \texttt{run\_id}
-de antemano.
+La guardia fija el \texttt{run\_id} en el punto donde nace la corrida y lee esa vista
+exacta. El orquestador lo pasa al MCP por entorno (\texttt{ELECTRONICA\_RUN\_ID}) y la
+vista, el log append-only y la lectura comparten un único identificador.
 
 \begin{center}
 \begin{tikzpicture}[flujo, scale=0.72, transform shape]
@@ -348,18 +348,18 @@ de antemano.
 \toprule
 \textbf{Etiqueta} & \textbf{Significado} \\ \midrule
 T1 & Corrida MCP lanzada. \\
-P1 & Toma \texttt{mtime\_before} = \texttt{mtime(run\_state.json)} antes de la corrida (\texttt{None} si el archivo no existe). \\
+P1 & El orquestador fija el \texttt{run\_id} y lo pasa al MCP por entorno (\texttt{ELECTRONICA\_RUN\_ID}). \\
 P2 & Ejecutar el flujo (\texttt{subprocess}). \\
-D1 & ¿Existe \texttt{run\_state.json} al término de la corrida? \\
+D1 & ¿Existe la vista \texttt{.tmp/run\_state\_<run\_id>.json} al término de la corrida? \\
 T2 & \texttt{state\_data = \{\}} (sin vista): el flujo no escribió estado. \\
-D2 & ¿\texttt{mtime\_before} = \texttt{None}? (el archivo no existía antes de la corrida). \\
-E1 & Leer el estado: fue \emph{creado} durante esta corrida. \\
+D2 & ¿El \texttt{run\_id} es válido? (el orquestador lo fijó en \texttt{ELECTRONICA\_RUN\_ID}). \\
+E1 & Leer la vista exacta \texttt{.tmp/run\_state\_<run\_id>.json}. \\
 T3 & Vista pertenece a la corrida. \\
-D3 & ¿\texttt{mtime\_ahora} > \texttt{mtime\_before}? (el estado sí fue reescrito en esta corrida). \\
-P3 & No usar: vista huérfana (\texttt{mtime} de otra corrida). \\
-E2 & Leer el estado: fue \emph{reescrito} durante esta corrida. \\
+D3 & ¿El \texttt{run\_id} de la vista coincide con el de la corrida? \\
+P3 & No usar: vista de otra corrida (\texttt{run\_id} distinto). \\
+E2 & Leer la vista exacta \texttt{.tmp/run\_state\_<run\_id>.json}. \\
 T4 & Vista pertenece a la corrida. \\
-N1 & \texttt{flujo/fin} \textbf{no} sirve de guardia: es un evento de \emph{ciclo de vida} que aparece en los dos casos opuestos (huérfano: el run de hace 1\,h terminó y dejó su estado; legítimo: el flujo recién lanzado terminó bien). Con el criterio ``¿hay flujo/fin?$\rightarrow$descartar'' se descartaría el estado legítimo que el MCP lee \emph{después} de que el flujo termina. \\
+N1 & \texttt{flujo/fin} \textbf{no} sirve de guardia: es un evento de \emph{ciclo de vida} que aparece en los dos casos opuestos (huérfano: el run de hace 1\,h terminó y dejó su estado; legítimo: el flujo recién lanzado terminó bien). Lección: cuando el identificador puede fijarse en el punto donde nace, fijar el nombre es más simple y más exacto que deducirlo después por fecha. \\
 \bottomrule
 \end{tabularx}
 \end{tcolorbox}

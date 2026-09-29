@@ -89,7 +89,7 @@ steps:
     script: flujo_resolver_skill.py (guardado + alerta)
     description: >
       Persiste el resultado en .tmp/resolucion_<fecha>.json, registra el estado
-      en .tmp/run_state.json y emite alerta audible (success/error).
+      en .tmp/run_state_<run_id>.json y emite alerta audible (success/error).
 
 expected_outputs:
   - >

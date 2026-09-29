@@ -96,9 +96,18 @@ expected_outputs:
       adelante; inmutable por convención y por detección criptográfica.
   - name: checkpoint_derivado
     description: >
-      Vista opcional del log (run_state.json o .tmp/run_state_<run_id>.json) que
-      resume current_step, pasos completados y errores. Es derivable en cualquier
-      momento con `state`; si se borra, se regenera desde el log.
+      Vista opcional del log (.tmp/run_state_<run_id>.json) que resume
+      current_step, pasos completados y errores. Es derivable en cualquier
+      momento con `state`; si se borra, se regenera desde el log. El nombre
+      lleva el run_id POR CORRIDA: con un nombre fijo (run_state.json), dos
+      flujos simultaneos se pisan la misma vista y el emparejamiento vista<->log
+      atribuye la vista de una corrida al log de otra. La definición del
+      nombre, la escritura atomica y la validacion del run_id viven en UN solo
+      sitio, execution/run_state.py (capa 3): no se reimplementan en cada flujo.
+    helper: >
+      execution/run_state.py — run_id_de_la_corrida(), ruta_vista(),
+      escribir_vista(), retirar_vista(), listar_vistas(), leer_vista().
+      Los flujos migran con dos lineas: importar el helper y delegar save_state.
 
 edge_cases:
   - case: "Alguien modifica o elimina una línea del log (manipulación)"
@@ -123,15 +132,23 @@ edge_cases:
       si no hay error). El orquestador reinicia SUBSECUENTES scripts sin re-escribir
       los eventos previos; añade flujo/inicio (comentario de reanudación) en el log
       de la misma corrida o de una nueva.
-  - case: "run_state.json obsoleto o huérfano al inicio de una sesión/consulta MCP"
+  - case: "run_state obsoleto o huérfano al inicio de una sesión/consulta MCP"
     recovery: >
-      El log append-only es la fuente de verdad; run_state*.json son vistas derivadas
-      que pueden SOBREVIVIR a su corrida (p. ej. quedó de un dry-run terminado con
-      flujo/fin, o referencia un modelo ya discontinuado). Antes de usar el estado
-      global de .tmp/run_state.json, ejecutar execution/estado_sesion.py check y,
-      si marca algo como huerfano/corrupto, purgarlo con clean (borra SOLO vistas
-      cuya corrida terminó; nunca toca los logs, fuente inmutable). Los flujos que
-      solo usan save_state() (sin trazabilidad) no son verificables y NO se borran.
+      El log append-only es la fuente de verdad; .tmp/run_state_<run_id>.json son
+      vistas derivadas que pueden SOBREVIVIR a su corrida (p. ej. quedó de un
+      dry-run terminado con flujo/fin, o referencia un modelo ya discontinuado).
+      Con la vista por corrida el caso es NORMAL, no una avería: cada corrida
+      deja la suya, y por eso el número de huérfanos crece con el uso. MEDIDO
+      (2026-09-29): 0,24 KB por vista y ~10,5 corridas/día ≈ 2,5 KB/día ≈
+      0,9 MB/año. Es basura-negligible y NO justifica automatizar la retirada:
+      automatizar exige un criterio de edad, y una retirada al final del flujo
+      ROMPERÍA a los MCP, que leen la vista después de que el subproceso
+      termina. Contraste: .tmp/ pesa 124 MB, de los cuales 85 MB son un único
+      clon de git (tmp-clones, regla de antigüedad de 7 días). Ejecutar
+      execution/estado_sesion.py check y, si marca algo
+      como huerfano/corrupto, purgarlo con clean (borra SOLO vistas cuya corrida
+      terminó; nunca toca los logs, fuente inmutable). Los flujos que solo usan
+      save_state() (sin trazabilidad) no son verificables y NO se borran.
       Escanear periódicamente con check es higiene de contexto: evita responder con
       estado de OTRA corrida.
   - case: "No se escribió la bitácora semántica de la sesión (contexto de ALTO nivel)"
@@ -175,7 +192,10 @@ metadata:
     Inspirado en la trazabilidad append-only de dsh (eventos turn/*, step/*,
     user/message, tool/*). Adaptado: vocabulario reducido (flujo/*, tool/*) y
     hash encadenado por línea para detección de manipulación. La relación
-    run_state.json ↔ log: run_state.json deja de ser la fuente primaria y pasa a
-    ser una vista derivada (comando state). Los flujos existentes que solo usan
-    save_state() pueden migrarse de forma gradual: añadir los eventos
-    flujo/inicio, flujo/paso, flujo/fin sin romper su checkpoint actual.
+    vista ↔ log: .tmp/run_state_<run_id>.json deja de ser la fuente primaria y
+    pasa a ser una vista derivada (comando state), con el run_id en el NOMBRE
+    para que el emparejamiento con su log sea unívoco. Migración aplicada a los
+    18 flujos y a los 5 servidores MCP: el orquestador fija el run_id de la
+    corrida que lanza mediante ELECTRONICA_RUN_ID (execution/run_state.py), que
+    es lo que permite a un MCP leer SU vista sin deducirla por fecha. Los flujos
+    que solo usan save_state() siguen sin trazabilidad y son "no verificables".

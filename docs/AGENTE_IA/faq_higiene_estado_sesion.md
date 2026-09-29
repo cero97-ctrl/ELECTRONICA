@@ -31,10 +31,10 @@ Sí, por diseño estructural (`execution/sesion_log.py`):
   es detectable.
 - **Marca `"append_only": true`**: exigida por `integrity`.
 
-Contraste con `run_state.json`: el log es *criptográficamente encadenado*
-(cualquier edición es detectable), mientras que `run_state.json` es un JSON plano
-que se sobrescribe sin rastro. Por eso el log es **fuente de verdad** y el estado
-una **vista derivada**.
+Contraste con la vista `.tmp/run_state_<run_id>.json`: el log es
+*criptográficamente encadenado* (cualquier edición es detectable), mientras que
+la vista es un JSON plano que se sobrescribe sin rastro. Por eso el log es
+**fuente de verdad** y la vista una **derivada**.
 
 ### ¿Es un blockchain?
 
@@ -56,7 +56,7 @@ consenso ni incentivos. *Tamper-evident* sí; blockchain propiamente, no.
 
 ## 2. Guardia MCP
 
-### ¿Por qué se descartó `flujo/fin` como guardia para validar `run_state.json`?
+### ¿Por qué se descartó `flujo/fin` como guardia para validar la vista?
 
 Porque responde a una pregunta equivocada. El guard necesita **identidad**
 ("¿este estado pertenece a la corrida que acabo de lanzar?") y `flujo/fin` es un
@@ -72,29 +72,43 @@ legítimo — exactamente el que el MCP lee *después* de que el flujo termina.
 `flujo/fin` sí sirve para `resume()` (reanudabilidad), pero no para decidir a
 quién pertenece una vista.
 
-### ¿Qué mecanismo asegura que el `run_state.json` leído pertenece a la corrida actual?
+### ¿Qué mecanismo asegura que la vista leída pertenece a la corrida actual?
 
-**Comparación de mtime antes/después de la corrida** (`mcp_evaluar_server.py:72-96`,
-idéntico en los otros 4 servers):
+**El orquestador fija el `run_id` y lee esa vista exacta.** El MCP es quien
+lanza el subproceso, así que le pasa el nombre por entorno
+(`ELECTRONICA_RUN_ID`) y lo lee por la misma vía:
 
 ```python
-mtime_before = os.path.getmtime(state_file) if os.path.exists(state_file) else None
-resultado = subprocess.run(cmd, ...)
-state_data = {}
-if os.path.exists(state_file):
-    if mtime_before is not None and os.path.getmtime(state_file) <= mtime_before:
-        pass  # NO modificado por esta corrida → vista huérfana, no usar
-    else:
-        state_data = json.load(open(state_file))
+_run_id = _RS.run_id_de_la_corrida(f"mcp-{PREFIX}") if _RS else ""
+_entorno = dict(os.environ)
+if _run_id:
+    _entorno[_RS.ENV_RUN_ID] = _run_id
+resultado = subprocess.run(cmd, ..., env=_entorno)
+state_data = _leer_vista(_RS, _run_id)   # .tmp/run_state_<run_id>.json
 ```
 
-- `mtime_ahora > mtime_before` → reescrito durante esta corrida → pertenece a ella.
-- `mtime_ahora <= mtime_before` → conserva mtime de otra corrida → no se reporta.
-- Si no existía antes (`mtime_before = None`), se lee si ahora existe (si el
-  flujo lo creó, es de esta corrida).
+En el flujo, `run_state.run_id_de_la_corrida()` respeta esa variable si es
+válida; si no, se fabrica uno propio. La vista, el log append-only y la lectura
+del MCP comparten así un único identificador.
 
-Es la única señal que vincula temporalmente el archivo al subproceso sin conocer
-el `run_id` de antemano.
+#### Por qué ya no se usa mtime
+
+Históricamente la respuesta era comparar el `mtime` de un `.tmp/run_state.json`
+de nombre fijo. Al migrar las vistas a nombre por corrida ese guard dejó de ser
+correcto, no solo frágil:
+
+- **Dejó de servir**: el flujo ya no escribe ese fichero, así que su `mtime` no
+  cambia nunca. La comparación da siempre «no modificado por esta corrida» y el
+  MCP reportaría `N/A` con exit code 0 — un fallo silencioso que aparenta éxito.
+- **Nunca fue bastante**: con dos flujos en paralelo, la vista nueva más
+  reciente es la de la otra corrida. El MCP se atribuía el resultado ajeno.
+
+La primera corrección —buscar «la vista nueva o modificada» entre una foto
+anterior y la posterior— falló precisamente en el caso de dos corridas
+simultáneas, y eso está registrado como una aserción de
+`execution/test_run_state.py`. Lección: cuando el identificador puede fijarse
+en el punto donde nace, fijar el nombre es más simple y más exacto que
+deducirlo después por fecha.
 
 ---
 

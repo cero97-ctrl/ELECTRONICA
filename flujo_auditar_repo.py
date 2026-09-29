@@ -57,6 +57,7 @@ PYTHON = sys.executable
 sys.path.insert(0, str(EJECUCION))
 import auditar_repo as AR  # noqa: E402  (capa 3, resolucion explicita)
 import veredicto_algebra as VA  # noqa: E402  (capa 3, algebra compartida)
+import run_state  # noqa: E402  (capa 3, vista por corrida)
 
 # ---------------------------------------------------------------------------
 # Algebra de veredictos: vive en CAPA 3 (`execution/veredicto_algebra.py`) porque
@@ -512,7 +513,7 @@ def main(argv: list[str] | None = None) -> int:
     solo = pedidas
 
     TMP.mkdir(parents=True, exist_ok=True)
-    run_id = f"auditoria-repo-{time.strftime('%Y%m%d-%H%M%S')}"
+    run_id = run_state.run_id_de_la_corrida("auditoria-repo")
     ruta_estado = TMP / STATE_FILE_PLANTILLA.format(run_id=run_id)
     inicio = datetime.now(timezone.utc)
 

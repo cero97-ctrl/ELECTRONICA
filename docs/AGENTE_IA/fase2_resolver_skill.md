@@ -135,7 +135,7 @@ Paso 3  resolver_skill.py (multi-skill) + guardar resultado + alerta
   `--modelo google/gemini-3.7-flash` (flash ≈ centavos).
 - En la consola, si hay varios skills se muestra el **mejor score por skill**; si la confianza es
   `baja`, sugiere añadir más PDFs del dominio.
-- Guarda `.tmp/resolucion_<ts>.json`, registra `.tmp/run_state.json`, alerta audible
+- Guarda `.tmp/resolucion_<ts>.json`, registra `.tmp/run_state_<run_id>.json`, alerta audible
   (`success`/`error`), código `3` si no se resolvió.
 
 ---

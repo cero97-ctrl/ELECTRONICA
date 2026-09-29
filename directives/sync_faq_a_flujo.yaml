@@ -12,9 +12,9 @@ goal: >-
 
 required_inputs:
   - name: md
-    description: Fuente del FAQ (default: docs/AGENTE_IA/faq_higiene_estado_sesion.md)
+    description: "Fuente del FAQ (default: docs/AGENTE_IA/faq_higiene_estado_sesion.md)"
   - name: tex
-    description: Plantilla .tex de diagramas a actualizar (default: docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex). Se edita in situ; nunca se genera desde cero.
+    description: "Plantilla .tex de diagramas a actualizar (default: docs/AGENTE_IA/faq_higiene_estado_sesion_flujo.tex). Se edita in situ; nunca se genera desde cero."
 
 steps:
   - action: detect_cambio
@@ -49,7 +49,7 @@ steps:
 
   - action: compilar
     script: execution/compile_latex.py (importado desde el orquestador)
-    description: 2 pasadas de pdflatex a .tmp/latex_build y copia del .pdf a docs/AGENTE_IA/.
+    description: "2 pasadas de pdflatex a .tmp/latex_build y copia del .pdf a docs/AGENTE_IA/."
 
   - action: verificar
     script: execution/verificar_pdf.py

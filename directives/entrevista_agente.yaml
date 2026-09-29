@@ -83,7 +83,7 @@ steps:
         titulo: "Arquitectura y memoria"
         preguntas_tipicas: >
           ¿Requiere memoria persistente (ChromaDB, archivos de estado)?
-          ¿Estado entre ejecuciones (.tmp/run_state.json)? ¿Es un flujo único
+          ¿Estado entre ejecuciones (.tmp/run_state_<run_id>.json)? ¿Es un flujo único
           o un servidor MCP? ¿Dónde viven los intermediarios?
         minimo_confirmar: "Decisión de persistencia y forma de invocación (flujo/MCP/script)."
       - id: flujo_ejecucion

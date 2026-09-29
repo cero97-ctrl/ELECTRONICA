@@ -57,10 +57,23 @@ sys.path.insert(0, str(RAIZ / "execution"))
 from catalogo_disco import bytes_exclusivos  # noqa: E402
 
 # Politica del usuario, documentada en docs/ENTORNOS_CONDA/README.md.
-# `IA` es frio segun el criterio y aun asi se conserva: es el unico TensorFlow
-# funcional de la maquina. Un entorno frio no es un entorno que se pueda borrar,
-# y esta constante es la razon por la que la medicion no decide sola.
-PROTEGIDOS_POR_POLITICA: tuple[str, ...] = ("elect_env", "IA")
+# Un entorno frio no es un entorno que se pueda borrar, y esta constante es la
+# razon por la que la medicion no decide sola. Cada entrada es una EXCEPCION
+# declarada, no un hecho medido: el detector no puede deducirla.
+#
+#   elect_env - entorno del workspace (lo fija .opencode/plugins/conda-env.js).
+#               Ademas sale `en_uso` por medicion, asi que la entrada es
+#               documental: deja la politica escrita donde se lee.
+#   IA         - frio segun el criterio (sin .pyc desde 2025-10-25) y aun asi se
+#               conserva: es el unico TensorFlow funcional de la maquina (2.19.1).
+#   bio_env    - frio segun el criterio (sin .pyc desde 2026-06-25) con el
+#               proyecto BIOANALISIS VIVO (commit 2026-08-12, 354 ficheros
+#               tocados en 90 dias). Es el caso que NO se puede deducir: el
+#               detector ve ejecucion y referencias por nombre, y un proyecto
+#               vivo cuyo entorno no aparece en ningun setup.sh es invisible
+#               para el. Anadido a proposito en vez de relajar el heuristico:
+#               esto es una excepcion de politica, no un hecho medido.
+PROTEGIDOS_POR_POLITICA: tuple[str, ...] = ("elect_env", "IA", "bio_env")
 
 # La ventana del criterio. 90 dias es lo que se aplico el 2026-09-28, cuando
 # separo 12 entornos frios de 2 vivos y no se equivocaba en ninguno.
@@ -328,22 +341,51 @@ def construir_resultado(corte_datos: dict[str, Any], dias: int) -> dict[str, Any
         }
 
     filas = corte_datos["entornos"]
+    # `frio` es la clase TECNICA: frio por medicion, no protegido y no
+    # referenciado. Es la unica que se ofrece para recuperar. Proteger un
+    # entorno sin mas NO debe dejar de informar: bio_env sigue siendo un
+    # entorno sin ejecucion desde 2026-06-25 y ocupa 0,37 GB, y si el mensaje
+    # pasara a decir "no hay entornos frios" estaria mintiendo sobre el disco.
     frios = [f for f in filas if f["clase"] == "frio"]
     protegidos = [f for f in filas if f["clase"] == "protegido"]
     referenciados = [f for f in filas if f["clase"] == "referenciado"]
     en_uso = [f for f in filas if f["clase"] == "en_uso"]
+    # `en_uso` es el unico NO frio: el orden de `clasificar` comprueba la
+    # ejecucion antes que la proteccion, asi que toda clase que no sea
+    # `en_uso` es un entorno frio que se conserva por decision.
+    conservados = protegidos + referenciados
     recuperable = sum(f["bytes_exclusivos"] for f in frios)
     aparente = sum(f.get("bytes_aparentes", 0) for f in frios)
+    peso_conservado = sum(f["bytes_exclusivos"] for f in conservados)
+
+    if frios:
+        resumen = (f"{len(frios)} de {len(filas)} entornos frios, "
+                   f"{recuperable / 1e9:.2f} GB de bloques exclusivos")
+    elif conservados:
+        resumen = (f"los {len(filas)} entornos estan en uso o protegidos; "
+                   f"{len(conservados)} de ellos sin ejecucion en la ventana, "
+                   f"conservados a proposito ({peso_conservado / 1e9:.2f} GB "
+                   f"exclusivos, no recuperables)")
+    else:
+        resumen = f"los {len(filas)} entornos estan en uso"
+
+    if frios:
+        accion = ("Hay entornos frios con peso real. Cada uno necesita un recipe "
+                  "(`conda env export`) committed ANTES de borrarlo, y decidir uno por "
+                  "uno. Esta dimension no borra nada.")
+    elif conservados:
+        accion = ("Ningun entorno frio es recuperable: los que lo estan se conservan "
+                  "por politica o porque un script los referencia, y esa decision se "
+                  "toma fuera de aqui. Para cambiarlo, edita PROTEGIDOS_POR_POLITICA "
+                  "en auditar_envs_conda.py; el espacio que ocupan sigue en el disco.")
+    else:
+        accion = ("No hay entornos frios. Si esto parece improbable despues de una "
+                  "limpieza, comprueba que el umbral de dias no se haya movido.")
 
     return {
         "dimension": "entornos",
         "estado": "aviso" if frios else "ok",
-        "resumen": (
-            f"{len(frios)} de {len(filas)} entornos frios, "
-            f"{recuperable / 1e9:.2f} GB de bloques exclusivos"
-            if frios else
-            f"los {len(filas)} entornos estan en uso o protegidos por politica"
-        ),
+        "resumen": resumen,
         "evidencia": {
             "criterio": {
                 "ventana_dias": dias,
@@ -351,6 +393,7 @@ def construir_resultado(corte_datos: dict[str, Any], dias: int) -> dict[str, Any
                          "no la instalacion de paquetes)",
                 "referencias": "anclajes de uso real de conda, no el nombre suelto "
                                "(`IA` como palabra da 226 falsos positivos)",
+                "protegidos_por_politica": list(PROTEGIDOS_POR_POLITICA),
             },
             "entornos_medidos": len(filas),
             "reparto": {
@@ -361,6 +404,17 @@ def construir_resultado(corte_datos: dict[str, Any], dias: int) -> dict[str, Any
             },
             "recuperable_bytes_exclusivos": recuperable,
             "peso_aparente_frios": aparente,
+            "frios_conservados": [
+                {
+                    "entorno": f["entorno"],
+                    "clase": f["clase"],
+                    "bytes_exclusivos": f["bytes_exclusivos"],
+                    "ultimo_pyc": f.get("ultimo_pyc"),
+                    "motivo": ("politica del operador" if f["clase"] == "protegido"
+                               else "referenciado por un script del workspace"),
+                }
+                for f in conservados
+            ],
             "detalle_frios": [
                 {
                     "entorno": f["entorno"],
@@ -372,14 +426,7 @@ def construir_resultado(corte_datos: dict[str, Any], dias: int) -> dict[str, Any
             ],
             "nota_referencias": corte_datos.get("nota_refs", ""),
         },
-        "accion": (
-            "Hay entornos frios con peso real. Cada uno necesita un recipe "
-            "(`conda env export`) committed ANTES de borrarlo, y decidir uno por "
-            "uno. Esta dimension no borra nada."
-            if frios else
-            "No hay entornos frios. Si esto parece improbable despues de una "
-            "limpieza, comprueba que el umbral de dias no se haya movido."
-        ),
+        "accion": accion,
     }
 
 

@@ -36,7 +36,7 @@ references:
     execution/disco_medir.py, execution/verificar_texto.py,
     execution/test_verificar_texto.py, execution/test_barrera_disco.py
   input: el repositorio (sin argumentos de fichero; la unidad de medida es el repo entero)
-  output: informe por stdout, .tmp/auditoria_repo.json y .tmp/run_state.json
+  output: informe por stdout, .tmp/auditoria_repo.json y .tmp/run_state_<run_id>.json
 
 required_inputs:
   - name: --dimension NOMBRE
@@ -114,8 +114,10 @@ steps:
   - name: trazar
     description: |
       Escribir flujo/inicio y flujo/fin en el log append-only con el run_id, y
-      el estado derivado en .tmp/run_state.json con el run_id presente (sin el,
-      estado_sesion.py clasifica la vista como corrupta). La trazabilidad falla
+      el estado derivado en .tmp/run_state_<run_id>.json — el run_id va en el
+      nombre de la vista, y `run_id_de_la_corrida()` respeta ELECTRONICA_RUN_ID
+      si hay un orquestador (un MCP) que fijo el nombre de la corrida. La
+      trazabilidad falla
       blanda: si el log no se puede escribir, avisa y sigue.
     script: flujo_auditar_repo.py -> trazar() / escribir_estado()
   - name: actuar
@@ -131,7 +133,7 @@ expected_outputs:
   - duracion por dimension, para saber que cuesta cada comprobacion
   - cobertura explicita: cuantas dimensiones se midieron y cuantas no
   - .tmp/auditoria_repo.json con la evidencia completa de cada dimension
-  - .tmp/run_state.json con run_id, y .tmp/session_log_<run_id>.jsonl
+  - .tmp/run_state_<run_id>.json con run_id, y .tmp/session_log_<run_id>.jsonl
 
 codigos_de_salida:
   - 0: "Todas las dimensiones medidas, sin fallos (puede haber avisos, y se listan)."

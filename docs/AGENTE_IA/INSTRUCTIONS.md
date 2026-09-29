@@ -41,7 +41,7 @@ Para cada solicitud, sigue este flujo estrictamente:
 3. **Pre-Análisis:** Predice el output esperado basado en la lógica.
 4. **Planificación:** Define los pasos invocando scripts de `execution/`.
 5. **Ejecución y Comparación:** Ejecuta las herramientas o comandos necesarios. Si el resultado difiere de la predicción, analiza la causa raíz.
-6. **Estado y Trazabilidad:** Guarda el progreso en `.tmp/run_state.json`. Cada entrada debe incluir timestamp y `exit_code`.
+6. **Estado y Trazabilidad:** Guarda el progreso en `.tmp/run_state_<run_id>.json` (el `run_id` va en el nombre; usa `execution/run_state.py`). Cada entrada debe incluir timestamp y `exit_code`.
 7. **Validación:** Confirma que el output coincide con los requisitos antes de seguir.
 8. **Notificación:** Usa el mecanismo de notificación definido en el proyecto para cambios de estado (éxito/espera).
 9. **Limpieza (Post-flight):** Elimina artefactos temporales pesados o redundantes de `.tmp/`.

@@ -119,6 +119,22 @@ def build_multimodal_content(
     return content
 
 
+def resolver_modelo(model: str) -> str:
+    """Traduce un NOMBRE DE TIER a su ID de OpenRouter (`MODEL_TIERS`).
+
+    `openrouter_chat` habla el idioma de OpenRouter, que solo conoce IDs
+    `proveedor/modelo`. El enrutador, en cambio, devuelve el *nombre* del tier
+    (`flash`, `deepseek`, ...). Traducir aquí, en la función que habla con la
+    API, evita que cada llamador tenga que acordarse: un tier sin traducir
+    llegaba tal cual a OpenRouter y devolvía
+    `400: 'deepseek' is not a valid model ID` tras gastar el intento.
+
+    Un ID completo (contiene '/') pasa intacto, así que la resolución es
+    idempotente y no interfiere con `--modelo-explicito`.
+    """
+    return MODEL_TIERS.get(model, model)
+
+
 def openrouter_chat(
     messages: list[dict],
     model: str,
@@ -141,7 +157,7 @@ def openrouter_chat(
     """
     client = get_openai_client(api_key)
     kwargs = {
-        "model": model,
+        "model": resolver_modelo(model),
         "messages": messages,
         "temperature": temperature,
         "max_tokens": max_tokens,
