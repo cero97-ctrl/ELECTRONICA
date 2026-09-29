@@ -244,13 +244,39 @@ def retirar_vista(ruta: Path) -> bool:
         return False
 
 
+def _clave_orden(p: Path) -> tuple[float, int, str]:
+    """Clave de orden TOTAL: mtime, y despues dos desempates que no son
+    caprichos.
+
+    Ordenar solo por mtime no es un orden: el kernel usa un reloj grueso
+    (granularidad de un jiffy, ~1-4 ms) y dos escrituras dentro del mismo
+    jiffy quedan con el mtime identico HASTA EL NANOSEGUNDO. Con el mtime
+    empatado, `sort` es estable y devuelve el orden de entrada, que es el del
+    glob, no el de las corridas. Y como la vista global entra primera en esa
+    lista, era ella la que ganaba los empates: un MCP que toma la primera
+    podia leer una vista legacy creyendola la corrida mas reciente.
+
+    Asi que el desempate es explicito y reproducible:
+      1. la vista global va SIEMPRE al final (es herencia, no una corrida);
+      2. entre corridas, el nombre de mayor a menor. Para los run_id reales,
+         que acaban en `AAAAMMDD-HHMMSS`, eso es orden cronologico de verdad.
+      3. si aun asi empatan, da igual: ya no hay informacion de que cual era
+         mas nueva, y lo que se busca es que el orden sea el MISMO siempre.
+    """
+    return (p.stat().st_mtime, -1 if p.name == VISTA_GLOBAL else 0, p.name)
+
+
 def listar_vistas(tmp_dir: Path | None = None) -> list[Path]:
     """Las vistas de verdad, en orden de mtime: mas reciente primero.
 
     Filtra por el prefijo y por el sufijo `.json`, para no meter en la lista ni
     un `.tmp` de una escritura a medias ni un fichero que se llame `run_state_`
     sin ser una vista. La vista global entra tambien: se lee, no se escribe ya,
-    pero mientras quede alguna tiene que seguir encontrandose.
+    pero mientras quede alguna tiene que seguir encontrandose (y al final de
+    la lista, que es donde la pone `_clave_orden`).
+
+    El desempate con mtime igual no es decorativo: es lo que evita que un MCP
+    se lea la vista equivocada. Ver `_clave_orden`.
     """
     base = Path(tmp_dir) if tmp_dir is not None else TMP_DIR
     if not base.is_dir():
@@ -264,7 +290,7 @@ def listar_vistas(tmp_dir: Path | None = None) -> list[Path]:
         if p.is_file() and p not in vistos:
             vistos.append(p)
     try:
-        vistos.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        vistos.sort(key=_clave_orden, reverse=True)
     except OSError:
         # Un fichero que desaparece entre el glob y el stat (otro flujo
         # retirando su propia vista) no es un fallo: se salta y se sigue.

@@ -26,6 +26,7 @@ Salida: 0 si todas las aserciones pasan, 1 si alguna falla.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -240,10 +241,50 @@ def probar_listar() -> None:
         comprobar("la vista global heredada tambien se lista",
                   RS.VISTA_GLOBAL in [p.name for p in RS.listar_vistas(tmp)])
         # Orden: mas reciente primero (el MCP toma la primera).
+        #
+        # Los mtime se fijan a mano a proposito. Medidos en esta maquina, cuatro
+        # ficheros escritos seguidos salen con el mtime IDENTICO hasta el
+        # nanosecondo (el kernel usa un reloj grueso, de un jiffy), asi que
+        # antes esta asercion dependia de que las escrituras cruzaran el
+        # frontera del tick: fallaba 2 de cada 3 veces. El orden es lo que hay
+        # que comprobar, no la resolucion del reloj del sistema.
         RS.escribir_vista(RS.ruta_vista("l-3", tmp), {"run_id": "l-3"})
+        base = 1_700_000_000.0
+        for i, nombre in enumerate(("l-1", "l-2", "l-3")):
+            os.utime(tmp / f"run_state_{nombre}.json", (base + i, base + i))
+        os.utime(tmp / RS.VISTA_GLOBAL, (base - 10, base - 10))
         orden = [p.name for p in RS.listar_vistas(tmp)]
         comprobar("la mas reciente va primera",
                   orden[0] == "run_state_l-3.json", str(orden))
+
+        # Regresion del empate: varias vistas escritas dentro del mismo jiffy
+        # comparten mtime, y con el mtime empatado el orden que sale es el que
+        # fija el desempate de `listar_vistas`, no el del glob. Lo que NO puede
+        # pasar es que la vista global heredada gane: un MCP que toma la
+        # primera se leeria una vista legacy creyendola la corrida viva.
+        empate = 1_800_000_000.0
+        for nombre in ("e-1", "e-2", "e-3"):
+            # La ruta se pide aparte: `escribir_vista` devuelve un bool de si
+            # se escribio, no la ruta. (Usar su retorno aqui fue el error
+            # inicial de este test: `os.utime(True, ...)` no falla, cambia el
+            # mtime del descriptor 1, o sea de nuestra propia salida.)
+            RS.escribir_vista(RS.ruta_vista(nombre, tmp), {"run_id": nombre})
+            os.utime(RS.ruta_vista(nombre, tmp), (empate, empate))
+        os.utime(tmp / RS.VISTA_GLOBAL, (empate, empate))
+        orden_empate = [p.name for p in RS.listar_vistas(tmp)]
+        comprobar("con mtime empatado la vista global NO gana",
+                  orden_empate[0] != RS.VISTA_GLOBAL, str(orden_empate))
+        # "Al final" es al final DEL GRUPO QUE EMPATA, no de la lista entera:
+        # las vistas de l-1..l-3 tienen mtime anterior de verdad y por eso van
+        # detras. El invariante que importa es que la legacy no se cuele por
+        # delante de las corridas que comparten su mtime.
+        grupo_empatado = [n for n in orden_empate
+                          if n.startswith("run_state_e-") or n == RS.VISTA_GLOBAL]
+        comprobar("dentro del grupo empatado la global va ultima",
+                  grupo_empatado[-1] == RS.VISTA_GLOBAL, str(grupo_empatado))
+        comprobar("el empate se resuelve de forma reproducible",
+                  orden_empate == [p.name for p in RS.listar_vistas(tmp)],
+                  str(orden_empate))
 
 
 def probar_retirar() -> None:
