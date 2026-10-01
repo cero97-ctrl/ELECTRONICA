@@ -8,7 +8,12 @@ evaluación académica estructurada.
 
 Uso:
     python3 execution/evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
-    python3 execution/evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250] [--rubrica <ruta_yaml>]
+    python3 execution/evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250]
+                                        [--tipo examen|laboratorio] [--rubrica <ruta_yaml>]
+
+Tipos de documento (`--tipo`): `examen` (default) evalúa cada pregunta del examen
+escrito; `laboratorio` evalúa cada sección del informe. Lo que cambia es el
+encuadre de la tarea, no el contrato de salida (`SCHEMA_SALIDA` es único).
 
 Salida (stdout, JSON):
     {
@@ -22,7 +27,7 @@ Salida (stdout, JSON):
         "resumen_general": "...",
         "fortalezas": [...],
         "areas_de_mejora": [...],
-        "observaciones_por_pregunta": [...],
+        "observaciones_por_item": [...],
         "errores_conceptuales": [...],
         "errores_procedimentales": [...],
         "recomendaciones_al_estudiante": "...",
@@ -95,18 +100,42 @@ except ImportError:
 
 
 # ── System Instruction ─────────────────────────────────────────────────────────
+#
+# El prompt se compone de tres piezas, no es un bloque monolítico:
+#
+#   PERFIL_COMUN    idéntico para todo tipo de documento (dominio, nivel, el aviso
+#                   de que esto es preliminar y apoya al profesor humano).
+#   TAREA_POR_TIPO  lo ÚNICO que cambia por tipo: cómo se nombra la unidad de
+#                   evaluación (pregunta / sección) y qué se mira en ella.
+#   SCHEMA_SALIDA   UN SOLO contrato de salida para ambos tipos. No se parte a
+#                   propósito: los criterios de una práctica de laboratorio
+#                   (presentación, montaje, mediciones, análisis...) mapean 1:1
+#                   sobre la misma forma de "lista de ítems con puntaje parcial y
+#                   errores", así que partirlo obligaría a `generar_informe.py` a
+#                   ramificar sin ganar nada. Lo protege
+#                   `execution/test_evaluar_rubrica.py` (test_schema_unico).
 
-SYSTEM_INSTRUCTION = """
-Eres un asistente académico especializado en la corrección de exámenes de **Electrónica** a nivel universitario.
-Tu función es realizar una evaluación preliminar rigurosa, objetiva y pedagógicamente útil de la respuesta escrita de un estudiante.
+PERFIL_COMUN = """
+Eres un asistente académico especializado en la corrección de documentos de **Electrónica** a nivel universitario.
+Tu función es realizar una evaluación preliminar rigurosa, objetiva y pedagógicamente útil del trabajo de un estudiante.
 
 ## Tu perfil
 - Tienes dominio profundo de Electrónica: análisis de circuitos (CC y CA), dispositivos semiconductores (diodos, transistores, amplificadores operacionales), electrónica digital y analógica, leyes de Kirchhoff, teoremas de redes, respuesta en frecuencia y diseño básico de circuitos.
 - Comprendes el nivel de formación esperado en estudiantes de Ingeniería Electrónica, Ingeniería Eléctrica o carreras afines.
 - Tu evaluación es una **observación preliminar** que apoya al profesor humano, no una calificación definitiva.
 
+## Reglas de evaluación (comunes a todo tipo de documento)
+- Sé riguroso pero justo. Penaliza los errores conceptuales más que los procedimentales menores.
+- Si una respuesta está parcialmente correcta, reconócelo explícitamente.
+- Si una parte está en blanco, ilegible o ausente, indícalo.
+- No inventes contenido: evalúa solo lo que está escrito en las imágenes.
+- El puntaje total final sugerido va siempre escalado a base 10 puntos, con decimales.
+"""
+
+TAREA_POR_TIPO = {
+    "examen": """
 ## Tu tarea
-Se te entregará un conjunto de imágenes correspondientes a las páginas de un examen escrito. Debes:
+Se te entregará un conjunto de imágenes correspondientes a las páginas de un **examen escrito**. Debes:
 
 1. **Identificar cada pregunta o ítem** que aparezca en el examen.
 2. **Evaluar la respuesta de cada pregunta** considerando:
@@ -117,16 +146,38 @@ Se te entregará un conjunto de imágenes correspondientes a las páginas de un 
    - Uso de fórmulas: ¿son apropiadas y bien aplicadas?
 3. **Detectar errores conceptuales** (malentendidos de teoría de circuitos, comportamiento de componentes, polarización, etc.).
 4. **Detectar errores procedimentales** (cálculos incorrectos, pasos omitidos, errores de álgebra).
-5. **Estimar un puntaje sugerido** sobre 10 puntos (escala del 0 al 10, permitiendo decimales).
+5. **Estimar un puntaje sugerido** sobre 10 puntos.
 6. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
 
-## Reglas de evaluación
-- Sé riguroso pero justo. Penaliza los errores conceptuales más que los procedimentales menores.
-- Si una respuesta está parcialmente correcta, reconócelo explícitamente.
-- Si una pregunta está en blanco o ilegible, indícalo.
-- No inventes contenido: evalúa solo lo que está escrito en las imágenes.
-- Si detectas que el examen tiene una estructura de puntaje visible (ej: "Pregunta 1: 20 pts" o "Pregunta 1: 2 pts"), úsala como referencia para ponderar, pero el puntaje total final sugerido debe ser escalado a base 10 puntos (ej. 8.5/10).
+Si el examen declara una estructura de puntaje visible (ej: "Pregunta 1: 20 pts"), úsala como referencia para ponderar cada ítem, sin dejar de escalar el total a base 10.
+""",
 
+    "laboratorio": """
+## Tu tarea
+Se te entregará un conjunto de imágenes correspondientes a las páginas de un **informe de práctica de laboratorio**. La unidad de evaluación es la SECCIÓN del informe, no una pregunta. Debes:
+
+1. **Identificar cada sección del informe** (presentación, marco teórico, diagramas, montaje, mediciones, análisis, conclusiones y las que aparezcan).
+2. **Evaluar cada sección** considerando:
+   - Corrección conceptual: ¿comprende los principios físicos y eléctricos involucrados?
+   - Corrección procedimental: ¿los cálculos, el montaje y el análisis de datos son correctos?
+   - Claridad y organización: ¿la sección es legible y coherente con el resto del informe?
+   - Manejo de unidades: ¿las unidades son correctas y consistentes?
+   - Uso de fórmulas y referencias: ¿son apropiadas y están bien aplicadas?
+3. **Detectar errores conceptuales** (malentendidos de teoría, comportamiento de componentes, conexiones mal identificadas).
+4. **Detectar errores procedimentales** (cálculos incorrectos, pasos omitidos, errores de álgebra, lecturas mal tomadas).
+5. **Valorar la evidencia experimental**: si la sección de mediciones existe, es completa y los valores son razonables; si el montaje está documentado con diagramas o fotografías.
+6. **Estimar un puntaje sugerido** sobre 10 puntos.
+7. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
+
+El montaje experimental (protoboard, instrumentación, polaridad) puede estar fotografiado: si una imagen no es interpretable con confianza, NO la inventes — dilo en `nota_para_el_profesor` como punto que requiere revisión manual.
+""",
+}
+
+# Un SOLO contrato para los dos tipos. `observaciones_por_item` es el nombre neutro
+# (sirve para una pregunta de examen y para una sección de informe). El alias
+# `observaciones_por_pregunta` se acepta al LEER, para que un JSON ya generado
+# siga rindiendo informe; ver `execution/generar_informe.py`.
+SCHEMA_SALIDA = """
 ## Formato de respuesta
 Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional antes ni después, con exactamente esta estructura:
 
@@ -142,11 +193,11 @@ Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional ante
   "areas_de_mejora": [
     "Descripción de área de mejora 1"
   ],
-  "observaciones_por_pregunta": [
+  "observaciones_por_item": [
     {
-      "pregunta": "Pregunta 1 (o descripción del ítem)",
-      "puntaje_parcial": "X.X/2.0 (o el peso correspondiente de la pregunta en base a 10)",
-      "evaluacion": "Descripción detallada de la evaluación de esta pregunta.",
+      "item": "Pregunta 1 / Sección 'Mediciones' (o descripción del ítem)",
+      "puntaje_parcial": "X.X/2.0 (o el peso correspondiente del ítem en base a 10)",
+      "evaluacion": "Descripción detallada de la evaluación de este ítem.",
       "errores": ["error específico 1", "error específico 2"]
     }
   ],
@@ -160,10 +211,53 @@ Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional ante
   "nota_para_el_profesor": "Observaciones especiales para el profesor: ambigüedades encontradas, respuestas dudosas, ítems que requieren revisión manual, etc."
 }
 ```
-""".strip()
+"""
+
+TIPOS = tuple(TAREA_POR_TIPO.keys())
+
+# Encabezado de la rúbrica cuando se concatena al prompt. Es texto CRUDO pegado al
+# final del prompt, no configuración estructurada: por eso una clave mal escrita en
+# una rúbrica no da error, simplemente el modelo la ignora. Ver AGENTS.md.
+RUBRICA_ENCABEZADO = "## Rúbrica específica de este documento"
+
+
+def componer_system_instruction(tipo: str, rubrica_texto: str | None = None) -> str:
+    """
+    Compone el System Instruction completo. PURA: mismo (tipo, rubrica) -> mismo
+    string, siempre. No toca disco ni red; leer el fichero de la rúbrica es otra
+    función (`leer_rubrica`), igual que separar la medición de la política.
+    """
+    if tipo not in TAREA_POR_TIPO:
+        raise ValueError(
+            f"Tipo de documento desconocido: {tipo!r}. Validos: {', '.join(TIPOS)}"
+        )
+    partes = [PERFIL_COMUN.strip(), TAREA_POR_TIPO[tipo].strip(), SCHEMA_SALIDA.strip()]
+    if rubrica_texto:
+        partes.append(f"{RUBRICA_ENCABEZADO}\n{rubrica_texto.strip()}")
+    return "\n\n".join(partes)
+
+
+# Alias histórico. Se conserva porque el resto del repo lo referencia, y porque un
+# JSON ya generado debe seguir siendo legible.
+SYSTEM_INSTRUCTION = componer_system_instruction("examen")
 
 
 # ── Funciones de renderizado PDF ───────────────────────────────────────────────
+
+def leer_rubrica(rubrica_path: str) -> str:
+    """
+    Lee el fichero de rúbrica. Falla ruidosamente si no existe: una ruta mal escrita
+    es un error de operador, no un caso de uso, y tragarse el error produciría una
+    evaluación con el criterio por defecto sin que nadie lo notara.
+
+    Devuelve el TEXTO CRUDO. No se parsea el YAML: la rúbrica se concatena al prompt,
+    y por eso sus claves no están validadas (ver `componer_system_instruction`).
+    """
+    obj = Path(rubrica_path)
+    if not obj.exists():
+        raise FileNotFoundError(f"Rúbrica no encontrada: {rubrica_path}")
+    return obj.read_text(encoding="utf-8")
+
 
 def pdf_to_images_bytes(pdf_path: str, dpi: int = 250) -> list[bytes]:
     """
@@ -532,20 +626,22 @@ def evaluar_examen(
     rubrica_path: str | None,
     api_key: str,
     api_backend: str = "gemini",
+    tipo: str = "examen",
 ) -> dict:
     """Orquesta el pipeline completo de evaluación."""
 
     # ── 1. Renderizar PDF ──────────────────────────────────────────────────────
     images_bytes = pdf_to_images_bytes(pdf_path, dpi=dpi)
 
-    # ── 2. Construir System Instruction (con rúbrica opcional) ─────────────────
-    system_instruction = SYSTEM_INSTRUCTION
-    if rubrica_path:
-        rubrica_path_obj = Path(rubrica_path)
-        if not rubrica_path_obj.exists():
-            raise FileNotFoundError(f"Rúbrica no encontrada: {rubrica_path}")
-        rubrica_content = rubrica_path_obj.read_text(encoding="utf-8")
-        system_instruction += f"\n\n## Rúbrica específica de este examen\n{rubrica_content}"
+    # ── 2. Construir System Instruction (tipo + rúbrica opcional) ───────────────
+    # El tipo se valida ANTES de cualquier llamada: un `--tipo` inválido no puede
+    # costar una API.
+    if tipo not in TAREA_POR_TIPO:
+        raise ValueError(
+            f"Tipo de documento desconocido: {tipo!r}. Validos: {', '.join(TIPOS)}"
+        )
+    rubrica_texto = leer_rubrica(rubrica_path) if rubrica_path else None
+    system_instruction = componer_system_instruction(tipo, rubrica_texto)
 
     # ── 3. Llamar al modelo según backend ──────────────────────────────────────
     def _llamar_modelo():
@@ -606,6 +702,7 @@ def evaluar_examen(
         "paginas_procesadas": len(images_bytes),
         "evaluacion": evaluacion_dict,
         "timestamp": datetime.utcnow().isoformat() + "Z",
+        "tipo": tipo,
     }
 
     if tokens:
@@ -651,9 +748,15 @@ Ejemplos:
         help="Resolución de renderizado del PDF en DPI (default: 250). Rango recomendado: 150-300.",
     )
     parser.add_argument(
+        "--tipo",
+        default="examen",
+        choices=["examen", "laboratorio"],
+        help="Tipo de documento a evaluar (default: examen): 'examen' o 'laboratorio'.",
+    )
+    parser.add_argument(
         "--rubrica",
         default=None,
-        help="(Opcional) Ruta a un archivo YAML o TXT con la rúbrica específica del examen.",
+        help="(Opcional) Ruta a un archivo YAML o TXT con la rúbrica específica del documento.",
     )
     return parser.parse_args()
 
@@ -738,6 +841,7 @@ def main():
             modelo=args.modelo,
             dpi=args.dpi,
             rubrica_path=args.rubrica,
+            tipo=args.tipo,
             api_key=api_key,
             api_backend=args.api_backend,
         )

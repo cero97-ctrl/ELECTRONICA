@@ -5,6 +5,7 @@ Required inputs:
   - modelo: "Modelo a usar para la evaluación (opcional, default: gemini-2.5-flash; con api_backend openrouter usa anthropic/claude-opus-5)."
   - api_backend: "Backend de API a usar: gemini, openrouter o groq (opcional, default: gemini)."
   - rubrica: "Ruta al archivo YAML de la rúbrica del examen (opcional)."
+  - tipo: "Tipo de documento a evaluar: 'examen' (opcional, default) o 'laboratorio'."
   - output_dir: "Carpeta de salida del informe LaTeX (opcional)."
 
 Steps:
@@ -18,6 +19,7 @@ Steps:
       modelo: "{{modelo}}"
       api_backend: "{{api_backend}}"
       rubrica: "{{rubrica}}"
+      tipo: "{{tipo}}"
       output_dir: "{{output_dir}}"
   - step: 3
     action: "Compilar el informe LaTeX (.tex) generado a formato PDF (.pdf) y limpiar archivos auxiliares."

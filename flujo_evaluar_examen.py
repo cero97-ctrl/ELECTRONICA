@@ -167,6 +167,7 @@ def flujo_completo(
     rubrica: str | None,
     output_dir: Path,
     api_backend: str = "gemini",
+    tipo: str = "examen",
 ) -> int:
     """
     Ejecuta los 3 pasos del flujo. Retorna 0 si todo salió bien, >0 si hubo error.
@@ -201,6 +202,7 @@ def flujo_completo(
 
     cmd_evaluar = [PYTHON, str(EVALUAR), "--pdf", str(pdf_path),
                    "--modelo", modelo, "--dpi", str(dpi), "--api-backend", api_backend]
+    cmd_evaluar += ["--tipo", tipo]
     if rubrica:
         cmd_evaluar += ["--rubrica", rubrica]
 
@@ -374,8 +376,10 @@ Ejemplos:
                         help="DPI de renderizado del PDF (default: 250).")
     parser.add_argument("--rubrica", default=None,
                         help="(Opcional) Ruta a la rúbrica YAML del examen.")
+    parser.add_argument("--tipo", default="examen", choices=["examen", "laboratorio"],
+                        help="Tipo de documento: 'examen' (default) o 'laboratorio'.")
     parser.add_argument("--output-dir", default=None,
-                        help="Carpeta de salida del .tex. Por defecto: <carpeta_del_examen>/informe_examen/.")
+                        help="Carpeta de salida del .tex. Por defecto: informe_examen/ o informe_practica/ segun --tipo.")
     return parser.parse_args()
 
 
@@ -387,7 +391,8 @@ def main():
         print_err(f"PDF no encontrado: {args.pdf}")
         sys.exit(1)
 
-    output_dir = Path(args.output_dir) if args.output_dir else pdf_path.parent.parent / "informe_examen"
+    carpeta_informe = "informe_practica" if args.tipo == "laboratorio" else "informe_examen"
+    output_dir = Path(args.output_dir) if args.output_dir else pdf_path.parent.parent / carpeta_informe
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"\n{'═'*56}")
@@ -396,6 +401,7 @@ def main():
     print(f"  Directiva : evaluar_examen_estudiante.yaml")
     print(f"  Estudiante: {pdf_path.stem.replace('_', ' ')}")
     print(f"  Modelo    : {args.modelo}")
+    print(f"  Tipo doc. : {args.tipo}")
     print(f"  Backend   : {args.api_backend}  |  DPI: {args.dpi}")
     print(f"{'═'*56}")
 
@@ -406,6 +412,7 @@ def main():
         rubrica=args.rubrica,
         output_dir=output_dir,
         api_backend=args.api_backend,
+        tipo=args.tipo,
     )
     sys.exit(code)
 

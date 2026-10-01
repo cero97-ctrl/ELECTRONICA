@@ -33,12 +33,13 @@ steps:
       --pdf: "{{pdf_examen}}"
       --modelo: "{{modelo}}"
       --dpi: "{{dpi}}"
+      --tipo: "examen"
     expected_output: >
       JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
       evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
-      areas_de_mejora, observaciones_por_pregunta, errores_conceptuales,
+      areas_de_mejora, observaciones_por_item, errores_conceptuales,
       errores_procedimentales, recomendaciones_al_estudiante, nota_para_el_profesor),
-      tokens_usados, timestamp.
+      tokens_usados, timestamp, tipo.
 
   - step: 2
     description: >
@@ -137,9 +138,9 @@ edge_cases:
       nota_para_el_profesor que los diagramas deben verificarse manualmente.
 
 metadata:
-  version: "1.1"
+  version: "1.2"
   created: "2026-06-24"
-  updated: "2026-08-08"
+  updated: "2026-10-01"
   author: "agente"
   script_principal: "execution/evaluar_examen.py"
   dependencias:
@@ -160,3 +161,11 @@ metadata:
       descripcion: >
         Alineada con el orquestador flujo_evaluar_examen.py: se añaden los pasos 3 y 4
         (generar_informe.py y compile_latex.py) y se reenumera la alerta a paso 5.
+    - version: "1.2"
+      fecha: "2026-10-01"
+      descripcion: >
+        El paso 1 declara explícitamente --tipo examen y el expected_output nombra
+        observaciones_por_item (la grafía real del contrato). La clave neutral
+        sustituye a observaciones_por_pregunta porque el mismo contrato sirve ahora
+        a exámenes y a informes de laboratorio; generar_informe.py sigue aceptando
+        la grafía vieja para los JSON ya generados en .tmp/.

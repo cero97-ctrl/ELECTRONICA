@@ -28,21 +28,24 @@ steps:
     description: >
       Ejecutar el script de evaluación: renderiza el PDF en imágenes de alta
       resolución en memoria y las envía en bloque al modelo Gemini junto con la
-      System Instruction de corrección de prácticas de laboratorio. Se debe
-      proporcionar una rúbrica específica para laboratorio. Recibe la evaluación
-      estructurada en JSON.
+      System Instruction de corrección de prácticas de laboratorio. El flag
+      --tipo laboratorio cambia el ENCUADRE de la tarea (la unidad de evaluación es
+      la sección del informe, no la pregunta); el contrato de salida JSON es el
+      mismo que en los exámenes. Se debe proporcionar una rúbrica específica para
+      laboratorio. Recibe la evaluación estructurada en JSON.
     script: "execution/evaluar_examen.py"
     inputs:
       --pdf: "{{pdf_practica}}"
       --modelo: "{{modelo}}"
       --dpi: "{{dpi}}"
+      --tipo: "laboratorio"
       --rubrica: "directives/rubricas/rubrica_practica_lab.yaml"
     expected_output: >
       JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
       evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
-      areas_de_mejora, observaciones_por_seccion, errores_conceptuales,
-      errores_procedimentales, observaciones_montaje, recomendaciones_al_estudiante,
-      nota_para_el_profesor), tokens_usados, timestamp.
+      areas_de_mejora, observaciones_por_item, errores_conceptuales,
+      errores_procedimentales, recomendaciones_al_estudiante,
+      nota_para_el_profesor), tokens_usados, timestamp, tipo.
 
   - step: 2
     description: >
@@ -120,8 +123,9 @@ edge_cases:
       notificar al profesor en nota_para_el_profesor.
 
 metadata:
-  version: "1.0"
+  version: "1.1"
   created: "2026-06-26"
+  updated: "2026-10-01"
   author: "agente"
   script_principal: "execution/evaluar_examen.py"
   rubrica_asociada: "directives/rubricas/rubrica_practica_lab.yaml"
@@ -136,5 +140,20 @@ metadata:
     para laboratorio en directives/rubricas/rubrica_practica_lab.yaml que defina
     los criterios de evaluación experimentales: montaje, mediciones, análisis de
     datos, y conclusiones. El script execution/evaluar_examen.py se reutiliza
-    con el flag --rubrica para adaptar la System Instruction al contexto de
-    laboratorio.
+    con los flags --tipo laboratorio y --rubrica para adaptar la System
+    Instruction al contexto de laboratorio.
+  historial:
+    - version: "1.0"
+      fecha: "2026-06-26"
+      descripcion: >
+        Versión original: evalúa una práctica de laboratorio con
+        execution/evaluar_examen.py y la rúbrica de laboratorio.
+    - version: "1.1"
+      fecha: "2026-10-01"
+      descripcion: >
+        Añade el flag --tipo laboratorio al paso 1 y corrige el expected_output
+        del paso 1, que prometía dos claves que el prompt NUNCA emitió
+        (observaciones_por_seccion y observaciones_montaje). El contrato real es
+        observaciones_por_item, igual que en los exámenes. La deriva era silenciosa
+        porque nadie comparaba la directiva con el prompt; ahora la comprueba
+        execution/test_evaluar_rubrica.py.

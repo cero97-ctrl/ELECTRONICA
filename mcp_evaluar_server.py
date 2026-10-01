@@ -55,7 +55,8 @@ def evaluar_examen_estudiante(
     rubrica_path: str = None,
     modelo: str = "gemini-2.5-flash",
     api_backend: str = "gemini",
-    dpi: int = 250
+    dpi: int = 250,
+    tipo: str = "examen"
 ) -> str:
     """
     Evalúa un examen en PDF de un estudiante y genera un informe en LaTeX.
@@ -70,12 +71,17 @@ def evaluar_examen_estudiante(
         modelo: Nombre del modelo a usar (default: gemini-2.5-flash; con api_backend openrouter usa anthropic/claude-opus-5 automáticamente).
         api_backend: Backend de la API a usar: 'gemini', 'openrouter' o 'groq' (default: gemini).
         dpi: Resolución en DPI para renderizar las páginas del PDF a imágenes (default: 250).
+        tipo: Tipo de documento a evaluar: 'examen' (default) o 'laboratorio'.
         
     Returns:
         Un reporte estructurado con el resultado de la evaluación (puntaje, nivel de desempeño),
         rutas de los archivos generados (.tex, .json) y el registro de la ejecución.
     """
     # Resolver rutas absolutas
+    if tipo not in ("examen", "laboratorio"):
+        return (f"Error: tipo inválido {tipo!r}. "
+                "Validos: 'examen' o 'laboratorio'.")
+
     pdf_abs = os.path.abspath(pdf_path)
     if not os.path.exists(pdf_abs):
         return f"Error: El archivo de examen PDF no existe en la ruta: {pdf_path}"
@@ -93,7 +99,8 @@ def evaluar_examen_estudiante(
         "--pdf", pdf_abs,
         "--modelo", modelo,
         "--api-backend", api_backend,
-        "--dpi", str(dpi)
+        "--dpi", str(dpi),
+        "--tipo", tipo,
     ]
     
     if rubrica_path:

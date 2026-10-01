@@ -167,7 +167,24 @@ def generar_latex(data: dict) -> str:
     resumen        = ev.get("resumen_general", "")
     fortalezas     = ev.get("fortalezas", [])
     areas          = ev.get("areas_de_mejora", [])
-    por_pregunta   = ev.get("observaciones_por_pregunta", [])
+    # Alias de compatibilidad: se acepta la grafía vieja (`observaciones_por_pregunta`)
+    # porque hay JSON ya generados en .tmp/ y cambiarles la clave los volvería
+    # invisibles aquí (la tabla saldría vacía en silencio, sin error).
+    por_pregunta   = (ev.get("observaciones_por_item")
+                      or ev.get("observaciones_por_pregunta")
+                      or [])
+    # El rótulo de la columna y el texto de tabla vacía siguen al tipo de documento,
+    # no al cableado original ("por pregunta" estaba cableado al examen).
+    tipo_doc       = data.get("tipo", "examen")
+    es_lab         = tipo_doc == "laboratorio"
+    etiqueta_item  = "Sección" if es_lab else "Pregunta"
+    sin_items      = (f"No hay observaciones por sección."
+                      if es_lab
+                      else "No hay observaciones por pregunta.")
+    # El encabezado del PDF también sigue al tipo. "Informe de Evaluación" a secas
+    # era correcto para exámenes y genérico para prácticas; con los dos tipos vivos
+    # conviene que el rótulo los distinga sin decir "examen" en una práctica.
+    etiqueta_fancyshort = "Informe de Práctica" if es_lab else "Informe de Evaluación"
     err_concept    = ev.get("errores_conceptuales", [])
     err_proced     = ev.get("errores_procedimentales", [])
     recomendaciones= ev.get("recomendaciones_al_estudiante", "")
@@ -182,7 +199,7 @@ def generar_latex(data: dict) -> str:
     # ── Tabla de observaciones por pregunta ────────────────────────────────────
     filas_preguntas = []
     for obs in por_pregunta:
-        pregunta_tex   = tex(obs.get("pregunta", ""))
+        pregunta_tex   = tex(obs.get("item") or obs.get("pregunta", ""))
         puntaje_p_tex  = tex(obs.get("puntaje_parcial", ""))
         eval_tex       = tex(obs.get("evaluacion", ""))
         errores        = obs.get("errores", [])
@@ -195,11 +212,11 @@ def generar_latex(data: dict) -> str:
 
     tabla_preguntas_body = "\n".join(filas_preguntas)
     if not tabla_preguntas_body:
-        tabla_preguntas_body = "    \\multicolumn{4}{c}{\\textit{No hay observaciones por pregunta.}} \\\\"
+        tabla_preguntas_body = "    \\multicolumn{4}{c}{\\textit{" + sin_items + "}} \\\\"
 
     doc = PREAMBULO_INFOGRAFIA + r"""
 % ── Cabeceras específicas del informe ──────────────────────────────────────────
-\fancyhead[L]{\small\color{azulNoche}\textbf{Informe de Evaluación} --- Electrónica}
+\fancyhead[L]{\small\color{azulNoche}\textbf{""" + etiqueta_fancyshort + r"""} --- Electrónica}
 \fancyhead[R]{\small """ + tex(estudiante) + r"""}
 \renewcommand{\headrulewidth}{0pt}
 
@@ -214,7 +231,7 @@ def generar_latex(data: dict) -> str:
 \begin{document}
 
 % ══ PORTADA INFográfica ════════════════════════════════════════════════════════
-\bandaTitulo{ELECTRÓNICA --- Evaluación de Exámenes}{Informe de Evaluación Preliminar}
+\bandaTitulo{ELECTRÓNICA --- Evaluación de """ + (r"Informes de Práctica" if tipo_doc == "laboratorio" else r"Exámenes") + r"""}{Informe de Evaluación Preliminar}
 
 \begin{center}
   {\LARGE\bfseries\color{azulNoche} """ + tex(estudiante) + r"""}
@@ -267,12 +284,12 @@ def generar_latex(data: dict) -> str:
   \end{tcolorbox}
 \end{minipage}
 
-% ══ OBSERVACIONES POR PREGUNTA ═══════════════════════════════════════════════
-\section*{Observaciones por pregunta}
+% ══ OBSERVACIONES POR ITEM ══════════════════════════════════════════════════
+\section*{Observaciones por """ + etiqueta_item.lower() + r"""}
 
 \begin{longtable}{>{\bfseries}p{2.8cm} p{1.6cm} p{7.0cm} p{2.8cm}}
   \toprule
-  \textbf{Pregunta} & \textbf{Puntaje} & \textbf{Evaluación} & \textbf{Errores detectados} \\
+  \textbf{""" + etiqueta_item + r"""} & \textbf{Puntaje} & \textbf{Evaluación} & \textbf{Errores detectados} \\
   \midrule
   \endhead
   \bottomrule
