@@ -1,6 +1,14 @@
 # Rúbrica para evaluación de informes de práctica de laboratorio de Electrónica
-# Se inyecta como contexto adicional en la System Instruction de Gemini.
-# Cada criterio se evalúa de 0 a 4 puntos (escala: 0=No cumple, 4=Excelente).
+# Se inyecta como contexto adicional en la System Instruction del modelo.
+#
+# ESCALA: la nota final va de 0 a 10 puntos, que es el máximo de la universidad.
+# Los pesos de abajo SUMAN 10.0 EXACTAMENTE. Esa suma es la definición de la nota:
+# no hay que aplicar ningún factor de escala después. Si alguna vez no cuadra, la
+# rúbrica está mal, no el cálculo.
+#
+# Cada criterio se puntúa de 0 a SU `peso` (no a una escala común): un criterio
+# de peso 1.7 admite 0.0 a 1.7, y uno de 0.4 admite 0.0 a 0.4. Los `niveles` de
+# abajo describen el RANGO DEL TOTAL, no el de un criterio suelto.
 
 criterios:
   presentacion:
@@ -10,53 +18,55 @@ criterios:
       uso correcto de unidades y nomenclatura electrónica.
 
   marco_teorico:
-    peso: 1.5
+    peso: 1.3
     descripcion: >
       Fundamentos teóricos: explicación correcta de los principios de
       circuitos/dispositivos involucrados, fórmulas relevantes y referencias
       a leyes electrónicas (Kirchhoff, Ohm, Thévenin, etc.).
 
   diagramas:
-    peso: 1.5
+    peso: 1.3
     descripcion: >
       Diagramas y esquemas: circuitos dibujados correctamente con simbología
       electrónica estándar, valores de componentes y conexiones claras.
 
   montaje:
-    peso: 1.5
+    peso: 1.3
     descripcion: >
       Montaje experimental: disposición correcta en protoboard, identificación
       de componentes, polaridad, uso adecuado de instrumentos (multímetro,
       osciloscopio, fuente de alimentación).
 
   mediciones:
-    peso: 2.0
+    peso: 1.7
     descripcion: >
       Datos experimentales: tabla de mediciones completa, rangos correctos,
       precisión adecuada, identificación de errores de medición.
 
   analisis:
-    peso: 2.0
+    peso: 1.7
     descripcion: >
       Análisis de resultados: cálculos correctos, comparación teórico-práctica,
       uso de métodos de análisis de circuitos (nodal, mallas, superposición,
       Thévenin, etc.), gráficas si aplica.
 
   conclusiones:
-    peso: 1.5
+    peso: 1.3
     descripcion: >
       Conclusiones: relación con los objetivos, interpretación de resultados,
       identificación de fuentes de error, aprendizaje evidenciado.
 
   gramatica:
-    peso: 0.5
+    peso: 0.4
     descripcion: >
       Redacción y ortografía: claridad en la exposición, uso de lenguaje
       técnico apropiado, sin errores ortográficos graves.
 
 niveles:
-  0: "No cumple — ausente o gravemente incorrecto"
-  1: "Insuficiente — parcial, con errores conceptuales importantes"
-  2: "Suficiente — completo pero con errores menores"
-  3: "Bueno — correcto, bien desarrollado"
-  4: "Excelente — riguroso, completo y con análisis profundo"
+  # Rangos del TOTAL (0-10). Son los mismos valores de `nivel_desempeno` del
+  # contrato de salida. El total debe caer dentro del rango que declares.
+  "0.0-2.9":  "Insuficiente — ausente o gravemente incorrecto"
+  "3.0-4.9":  "Deficiente — errores conceptuales importantes"
+  "5.0-6.9":  "Suficiente — completo pero con errores menores"
+  "7.0-8.9":  "Bueno — correcto, bien desarrollado"
+  "9.0-10.0": "Excelente — riguroso, completo y con análisis profundo"

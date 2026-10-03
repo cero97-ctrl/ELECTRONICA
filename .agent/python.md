@@ -553,3 +553,186 @@ def registrar_tools(mcp, catalogo):
 - Chequear el código de la tool que falla: si su cuerpo itera una variable y el error es `'function' object is not iterable`, casi seguro es sombreado por el decorador.
 
 > **Archivo afectado:** `execution/servidor_sismico.py` (función `registrar_tools`)
+
+---
+
+## 22. Un LLM Puede Respetar el FORMATO de un JSON y Aun Así Mentir en el Total
+
+### Síntoma / Mensaje de Error
+
+Una evaluación devuelve `status: ok` y un JSON bien formado, pero la nota no cuadra
+con la suma de sus propios ítems:
+
+```text
+evaluacion.puntaje_sugerido      = "5.5/10"
+evaluacion.nivel_desempeno       = "Bueno"
+suma de observaciones_por_item  = 5.00
+```
+
+Peor: la rúbrica de origen ni siquiera permitía ese resultado (los pesos sumaban
+11.5 sobre una base declarada de 10), y ningún test lo detectó.
+
+### Causa
+
+El prompt pedía «el total es la suma de los parciales». El modelo cumplió la forma
+(salida JSON válida, campos correctos, cada ítem con su denominador) y aun así
+reportó un total que no era su suma: la aritmética la hacía el LLM, y la aritmética
+es justo lo que un modelo de lenguaje no garantiza. Peor todavía, un JSON
+estructurado da una falsa sensación de verificación: `json.loads()` no tiene nada
+que decir sobre si 5.5 es coherente con 5.0.
+
+Cambiar la prosa («sé más explícito con la suma») **no** lo arregla: se probó y los
+denominadores pasaron a ser correctos mientras el total seguía sin cuadrar. Un LLM
+no es una calculadora.
+
+### Solución (implementada en `execution/evaluar_examen.py`)
+
+Dejar al modelo **una sola** tarea — puntuar ítems — y hacer que el programa sume:
+
+```python
+# 1) El prompt/schema NO pide el total (SCHEMA_SALIDA)
+"No emitas `puntaje_sugerido` ni `nivel_desempeno`: el programa los calcula sumando
+ tus `puntaje_parcial`."
+
+# 2) La suma es una función pura, testeable y sin red (calcular_nota)
+datos, avisos = calcular_nota(evaluacion["observaciones_por_item"])
+evaluacion.update(datos)
+if avisos:
+    evaluacion["nota_para_el_profesor"] += " " + " ".join(avisos)
+
+# 3) Y por si el modelo los emite igual, se descartan ANTES de calcular
+evaluacion.pop("puntaje_sugerido", None)
+evaluacion.pop("nivel_desempeno", None)
+```
+
+Reglas que debe cumplir la función pura:
+
+- **El máximo es una invariante, no una consecuencia.** Si la suma se pasa, se
+  recorta al tope y se avisa. Un `min(10.0, suma)` es barato y elimina de raíz la
+  clase de bug «nota mayor que 10».
+- **Cada parcial se limita a su propio peso.** Un `3.0/1.0` se recorta a `1.0` y
+  deja aviso, en vez de inflar el total.
+- **Lo ilegible se cuenta y se dice.** Un ítem sin parcial (`N/A`, `""`) genera un
+  aviso; ignorarlo en silencio hace creer que el alumno contestó lo que no contestó.
+- **El denominador solo existe si hay separador explícito** (`0.5/1.7`, `0.7 de
+  1.7`, `8 out of 20`). Un número suelto (`0.5`) **no** tiene denominador:
+  interpretarlo como su propio máximo hace que el chequeo de «parcial por encima del
+  peso» se dispare solo, sobre datos correctos. Este bug existió en la primera
+  versión y lo detectó un caso de prueba, no la producción.
+- **El nivel es una función del total**, no una decisión del modelo.
+
+### Puntos Clave
+
+- «El modelo cumple el contrato» **no** significa «el modelo cumplió la aritmética».
+  Son dos contratos distintos; solo uno es verificable por parseo.
+- El síntoma de esta familia es siempre el mismo: **el campo agregado no cuadra con
+  los campos que lo componen**. Añadir un test que compare `total == sum(partials)`
+  es lo que convierte un JSON bien formado en un JSON verificable.
+- Cuando el valor lo decide el programa, el prompt debe **dejar de pedirlo**. Pedirlo
+  y sobrescribirlo produce un JSON con un campo que miente sobre quién lo decidió, y
+  desperdicia tokens del modelo en un campo que se tira.
+- Los avisos de cálculo van al campo que el humano lee (`nota_para_el_profesor`), no
+  a un canal paralelo: un recorte silencioso es peor que una nota baja.
+
+> **Archivos afectados:**
+> - `execution/evaluar_examen.py` (`calcular_nota`, `nivel_para_nota`, `_parsear_parcial`, y el punto de integración tras la llamada al modelo)
+> - `execution/test_evaluar_rubrica.py` (`test_nota_la_calcula_el_programa`, `test_el_prompt_no_pide_la_nota`)
+> - `directives/evaluar_examen_estudiante.yaml`, `directives/evaluar_practica_laboratorio.yaml` (contrato + edge case)
+> - `directives/rubricas/rubrica_practica_lab.yaml` (pesos normalizados a 10.0, niveles con clave explícita)
+
+## 23. Una Escala que No Suma 10: Sumar en Crudo Reprobaba al Alumno Correcto
+
+### Síntoma / Mensaje de Error
+
+Tras la corrección del total (ver entrada 22) la aritmética ya era del programa, pero la
+nota seguía siendo falsa, y esto solo se veía leyendo el caso, no el JSON:
+
+```text
+observaciones_por_pregunta: 3 ítems -> "0.5/1", "0.7/1", "0.3/1"
+puntaje_sugerido            = "1.5/10"
+nivel_desempeno             = "Insuficiente"      # el alumno sacaba el 50 %
+```
+
+El alumno contestaba la mitad de lo que se le pedía y quedaba reprobado. Peor: cuando el
+modelo omitía el denominador (`"0.5"`, `"0.7"`, `"0.3"`), el programa no detectaba nada
+—`maximo_alcanzable=0` no disparaba aviso porque el chequeo solo miraba los ítems con
+denominador— y publicaba `1.5/10` **en silencio**.
+
+### Causa
+
+La escala de un examen **no es 10**. Es lo que diga el examen: 3 preguntas a 1 punto
+escalan a 3, 20 preguntas a 0.5 escalan a 10, un parcial sobre 20 escala a 20. La nota
+institucional es siempre sobre 10, así que hace falta una conversión:
+
+```
+nota = 10 · (Σ obtenidos) / (Σ denominadores)
+```
+
+Sumar los parciales en crudo solo es correcto si esa escala ya es 10, y ese caso
+concreto (una rúbrica de laboratorio) es la excepción, no la regla.
+
+### Solución (implementada en `execution/evaluar_examen.py`)
+
+1. **Normalizar contra la escala conocida, siempre.** La suma cruda solo sobrevive cuando
+   `Σ denominadores == 10`, y en ese caso normalizar da el mismo número.
+2. **Avisar cuando se normaliza.** Una nota normalizada sin aviso parece una nota directa;
+   el profesor tiene que saber que hubo conversión.
+3. **Si no hay escala, no hay nota.** Sin rúbrica y sin denominadores la base es
+   indescifrable, y publicar un número inventado es peor que no publicar nada:
+
+   ```python
+   elif suma_pesos <= 0:
+       fiable = False
+       nota = 0.0
+       escala = 0.0   # 0 = escala desconocida, que es justo el problema
+       avisos.append("Cálculo automático: SIN ESCALA FIABLE. ...")
+   ```
+   Sale `nota_fiable=false`, `puntaje_numerico=null`, `puntaje_sugerido="No publicable"`
+   y `nivel_desempeno="No publicable"`. En el PDF cabe en una celda; "No publicable
+   (revisar a mano)" la partía en dos líneas, así que el detalle vive en
+   `nota_para_el_profesor`.
+4. **El invariante correcto no es `0 <= nota <= 10`, es `si hay nota, 0 <= nota <= 10`.**
+   `None` no es una nota fuera de rango: es la ausencia de nota. Comparar `None` con `<=`
+   lanza `TypeError` y hace caer el test que respaldaba toda la aritmética. Por eso el
+   test comprueba la invariante *condicional* y, cuando el valor es `None`, exige que
+   además la nota esté marcada como no publicable.
+
+### El bug espejo: omitir un criterio **subía** la nota
+
+Al principio, con rúbrica, la escala se armaba con los denominadores **que devolvió el
+modelo**. Si el modelo se comía un criterio, su peso desaparecía del denominador y todo
+lo demás se normalizaba hacia arriba:
+
+```text
+informe con montaje = 0.0/1.3 (el modelo lo omitió)  ->  4.3/10 correcto
+el mismo informe, omitiendo "montaje" del JSON     ->  4.9/10   # bonificación
+```
+
+El alumno cobraba por un fallo del modelo. Con rúbrica la escala la **fija la rúbrica**
+(sus pesos se validan al cargar y deben sumar 10) y un criterio ausente vale 0 sobre esa
+escala, sin renormalizar nada. La lista de ausentes va en `items_ausentes` para
+distinguir "el alumno no respondió" de "el modelo se lo comió".
+
+### Puntos Clave
+
+- **La escala la declara el instrumento, no el instrumento superior.** `Σ denominadores`
+  es un dato de la rúbrica/examen; la nota es una conversión a 10, siempre.
+- **Ausencia de dato ≠ dato.** Sin escala no se publica nota; se publica el motivo y la
+  suma observada, que es información útil para el humano.
+- **Un denominador faltante y un criterio faltante son el mismo agujero visto desde dos
+  lados.** Uno impide calcular la nota; el otro hacía subir la nota. Ambos se avisan.
+- **La fuente de verdad de un peso es el archivo de configuración**, no la cadena que un
+  modelo pueda haber generado: si divergen, gana el YAML y se avisa (ver entrada 22, y
+  `cargar_rubrica()` valida que los pesos cierren a 10 antes de que el modelo los vea).
+- **Una rúbrica es configuración y se valida al cargar.** Pesos que no cierran a 10, clave
+  de peso mal escrita (`pesos:` en vez de `peso:`), peso no numérico, `criterios:` que no
+  es un mapa o YAML roto: todos lanzan `ValueError` con el motivo. Sin ese chequeo, una
+  clave mal escrita significaba que el modelo nunca veía los pesos y se inventaba la
+  escala, y una evaluación sobre una rúbrica inexistente era indistinguible de una real.
+
+> **Archivos afectados:**
+> - `execution/evaluar_examen.py` (`calcular_nota`, `cargar_rubrica`, `_normalizar_nombre`,
+>   `leer_rubrica`, `evaluar_documento` y el punto de integración tras la llamada al modelo)
+> - `execution/test_evaluar_rubrica.py` (`test_escala_se_normaliza_no_se_suma_en_crudo`,
+>   `test_la_rubrica_manda_en_los_pesos`, `test_rubrica_invalida_falla_ruidosamente`)
+> - `directives/evaluar_examen_estudiante.yaml`, `directives/evaluar_practica_laboratorio.yaml`

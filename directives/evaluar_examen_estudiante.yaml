@@ -36,10 +36,20 @@ steps:
       --tipo: "examen"
     expected_output: >
       JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
-      evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
-      areas_de_mejora, observaciones_por_item, errores_conceptuales,
-      errores_procedimentales, recomendaciones_al_estudiante, nota_para_el_profesor),
-      tokens_usados, timestamp, tipo.
+      evaluacion (con resumen_general, fortalezas, areas_de_mejora, observaciones_por_item,
+      errores_conceptuales, errores_procedimentales, recomendaciones_al_estudiante,
+      nota_para_el_profesor), tokens_usados, timestamp, tipo.
+      La clave `evaluacion` incorpora puntaje_sugerido, nivel_desempeno,
+      puntaje_numerico, maximo_alcanzable, items_legibles, items_ausentes,
+      nota_fiable y escala_aplicada, pero los CALCULA el script sumando los
+      `puntaje_parcial` (no los emite el modelo).
+      La nota es `10 · obtenido/escala`: si los denominadores que dio el modelo no
+      suman 10 (un examen de 3 preguntas a 1 punto suma 3, no 10), la nota se
+      NORMALIZA a la proporción y se avisa; nunca se suman los parciales en crudo.
+      Si no hay rúbrica y ningún ítem trae denominador, la escala es indescifrable:
+      `nota_fiable=false`, `puntaje_numerico=null`, `puntaje_sugerido="No publicable"`
+      y `nivel_desempeno="No publicable"`. Publicar una suma cruda ahí reprobaba a
+      alumnos con el 50 % de 3 puntos.
 
   - step: 2
     description: >
@@ -136,6 +146,15 @@ edge_cases:
       Asegurar DPI >= 250 para capturar detalles finos de componentes, valores
       y conexiones. Si el modelo ignora parte del circuito, agregar en
       nota_para_el_profesor que los diagramas deben verificarse manualmente.
+  - case: >
+      El modelo devuelve un total que no cuadra con sus propios parciales, o lo
+      devuelve aunque no se le pida.
+    recovery: >
+      No es un fallo: `calcular_nota()` en `execution/evaluar_examen.py` descarta el
+      total del modelo, suma los `puntaje_parcial` y expone el resultado en
+      `puntaje_sugerido` y `nivel_desempeno`. Si el cálculo recortó, limó o ignoró
+      algo, el motivo queda en `nota_para_el_profesor` entre corchetes. Ocurría con
+      AskPrompting AI: dio 5.5/10 con parciales que sumaban 5.0.
 
 metadata:
   version: "1.2"

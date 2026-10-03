@@ -42,10 +42,17 @@ steps:
       --rubrica: "directives/rubricas/rubrica_practica_lab.yaml"
     expected_output: >
       JSON con las claves: status, estudiante, archivo, modelo, paginas_procesadas,
-      evaluacion (con puntaje_sugerido, nivel_desempeno, resumen_general, fortalezas,
-      areas_de_mejora, observaciones_por_item, errores_conceptuales,
-      errores_procedimentales, recomendaciones_al_estudiante,
+      evaluacion (con resumen_general, fortalezas, areas_de_mejora, observaciones_por_item,
+      errores_conceptuales, errores_procedimentales, recomendaciones_al_estudiante,
       nota_para_el_profesor), tokens_usados, timestamp, tipo.
+      La clave `evaluacion` incorpora puntaje_sugerido, nivel_desempeno,
+      puntaje_numerico, maximo_alcanzable, items_legibles, items_ausentes, nota_fiable
+      y escala_aplicada, pero los CALCULA el script sumando los `puntaje_parcial` de
+      cada ítem (no los emite el modelo). La nota nunca puede superar los 10 puntos, que
+      es el máximo de la universidad. Con rúbrica, la ESCALA la fija la rúbrica (sus
+      pesos se validan al cargar y deben sumar 10): un criterio que el modelo no devuelva
+      puntúa 0 y aparece en `items_ausentes` en lugar de desaparecer de la escala, y un
+      peso que el modelo altere se recorta al de la rúbrica con aviso.
 
   - step: 2
     description: >
@@ -121,6 +128,15 @@ edge_cases:
     recovery: >
       El modelo debe registrar las secciones ausentes en areas_de_mejora y
       notificar al profesor en nota_para_el_profesor.
+  - case: >
+      El modelo devuelve un total que no cuadra con sus propios parciales, o lo
+      devuelve aunque no se le pida.
+    recovery: >
+      No es un fallo: `calcular_nota()` en `execution/evaluar_examen.py` descarta el
+      total del modelo, suma los `puntaje_parcial` y expone el resultado en
+      `puntaje_sugerido` y `nivel_desempeno`. Si el cálculo recortó, limó o ignoró
+      algo, el motivo queda en `nota_para_el_profesor` entre corchetes. Ocurría con
+      AskPrompting AI: dio 5.5/10 con parciales que sumaban 5.0.
 
 metadata:
   version: "1.1"

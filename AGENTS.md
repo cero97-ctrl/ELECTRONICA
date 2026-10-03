@@ -143,7 +143,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 ## Commands
 
-**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos) · `python3 execution/test_auditar_repo.py` (álgebra de veredicto e interpretes de la auditoría; 127 aserciones) · `python3 execution/test_auditar_sistema.py` (umbrales en el borde, zram ≠ presión, servicios en tres estados, capa 3 sin veredictos; 96 aserciones) · `python3 execution/test_verificar_texto.py` (detector de prosa)
+**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos) · `python3 execution/test_auditar_repo.py` (álgebra de veredicto e interpretes de la auditoría; 134 aserciones) · `python3 execution/test_auditar_sistema.py` (umbrales en el borde, zram ≠ presión, servicios en tres estados, capa 3 sin veredictos; 102 aserciones) · `python3 execution/test_evaluar_rubrica.py` (nota determinista: escala, rúbrica como fuente de verdad, fixture verificable; 182 aserciones) · `python3 execution/test_verificar_texto.py` (detector de prosa)
 
 **Auditoría de higiene:** `python3 flujo_auditar_repo.py [--dimension N] [--json] [--rapido]` — 13 dimensiones (7 nuevas + 6 reutilizadas); el veredicto global es el **peor** estado, no un promedio. Salida: `0` limpio/con avisos · `1` con fallos · `2` sin verificar (nunca verde, y **reservado** para eso: un flag mal escrito devuelve `3`, no `2`) · `3` uso incorrecto. `--dimension` es repetible; `--solo A,B` es su alias de lista. `--rapido` omite texto/barrera/test_texto y **no equivale a la pasada completa** (medido: 43,5s → 24,6s, omite un 36,6% del costo). Es de **solo lectura**: no borra, no toca el índice de git ni reescribe historia; escribe solo sus tres salidas en `.tmp/`.
 
@@ -157,7 +157,7 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 ### Orchestrator flows
 ```
-flujo_evaluar_examen.py    --pdf <file.pdf> [--rubrica <yaml>]
+flujo_evaluar_examen.py    --pdf <file.pdf> [--rubrica <yaml>] [--tipo examen|laboratorio]
 flujo_analizar_imagen.py   "glob|file1,file2" [--prompt "..."]
 flujo_elaborar_examen.py   --tema "Semana 4: Condensadores" --output examenes/
 flujo_elaborar_ejercicios.py --tema "Semana 8: BJT" --path ejercicios/BJT

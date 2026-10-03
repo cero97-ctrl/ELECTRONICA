@@ -50,8 +50,18 @@ import json
 import os
 import re
 import sys
+import unicodedata
 from datetime import datetime
 from pathlib import Path
+
+# PyYAML solo se usa para validar la rúbrica (pesos y claves). La rúbrica se entrega al
+# modelo como TEXTO; el parseo existe para que el código pueda contrastar los pesos
+# reales con lo que el modelo devuelva, no para "structured output" del LLM. Si faltara,
+# el script avisa en vez de fingir que la rúbrica es válida.
+try:
+    import yaml
+except ModuleNotFoundError:  # pragma: no cover - el entorno del repo trae PyYAML
+    yaml = None
 
 # ── Dependencias externas ──────────────────────────────────────────────────────
 try:
@@ -129,7 +139,18 @@ Tu función es realizar una evaluación preliminar rigurosa, objetiva y pedagóg
 - Si una respuesta está parcialmente correcta, reconócelo explícitamente.
 - Si una parte está en blanco, ilegible o ausente, indícalo.
 - No inventes contenido: evalúa solo lo que está escrito en las imágenes.
-- El puntaje total final sugerido va siempre escalado a base 10 puntos, con decimales.
+- Puntúa cada ítem dentro de su peso, en una escala de 0 a 10 puntos.
+
+## Puntuación: qué decides tú y qué decide el programa
+
+- La escala es **0 a 10**. El 10 es el máximo de la universidad y nadie puede superarlo.
+- Tú NO emites la nota total ni el nivel de desempeño. Esos los calcula el programa sumando
+  tus `puntaje_parcial`, de forma determinista y exacta. Intentar emitirlos es un error:
+  se ignorarán.
+- Lo que sí haces es puntuar **cada ítem de 0 a su peso**, que es el denominador de la
+  rúbrica. Usa el peso exacto, no uno inventado ni uno aproximado.
+- Cuando no haya rúbrica (examen sin pesos), reparte los 10 puntos entre los ítems según
+  su importancia y usa esos mismos repartos como denominadores.
 """
 
 TAREA_POR_TIPO = {
@@ -146,10 +167,9 @@ Se te entregará un conjunto de imágenes correspondientes a las páginas de un 
    - Uso de fórmulas: ¿son apropiadas y bien aplicadas?
 3. **Detectar errores conceptuales** (malentendidos de teoría de circuitos, comportamiento de componentes, polarización, etc.).
 4. **Detectar errores procedimentales** (cálculos incorrectos, pasos omitidos, errores de álgebra).
-5. **Estimar un puntaje sugerido** sobre 10 puntos.
-6. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
+5. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
 
-Si el examen declara una estructura de puntaje visible (ej: "Pregunta 1: 20 pts"), úsala como referencia para ponderar cada ítem, sin dejar de escalar el total a base 10.
+Si el examen declara una estructura de puntaje visible (ej: "Pregunta 1: 20 pts"), úsala como referencia para ponderar cada ítem, pero recuerda que los denominadores deben sumar 10.
 """,
 
     "laboratorio": """
@@ -166,8 +186,7 @@ Se te entregará un conjunto de imágenes correspondientes a las páginas de un 
 3. **Detectar errores conceptuales** (malentendidos de teoría, comportamiento de componentes, conexiones mal identificadas).
 4. **Detectar errores procedimentales** (cálculos incorrectos, pasos omitidos, errores de álgebra, lecturas mal tomadas).
 5. **Valorar la evidencia experimental**: si la sección de mediciones existe, es completa y los valores son razonables; si el montaje está documentado con diagramas o fotografías.
-6. **Estimar un puntaje sugerido** sobre 10 puntos.
-7. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
+6. **Redactar observaciones** útiles para el estudiante (formativas) y notas para el profesor.
 
 El montaje experimental (protoboard, instrumentación, polaridad) puede estar fotografiado: si una imagen no es interpretable con confianza, NO la inventes — dilo en `nota_para_el_profesor` como punto que requiere revisión manual.
 """,
@@ -177,14 +196,17 @@ El montaje experimental (protoboard, instrumentación, polaridad) puede estar fo
 # (sirve para una pregunta de examen y para una sección de informe). El alias
 # `observaciones_por_pregunta` se acepta al LEER, para que un JSON ya generado
 # siga rindiendo informe; ver `execution/generar_informe.py`.
+#
+# `puntaje_sugerido` y `nivel_desempeno` NO se piden al modelo. Se calculan aquí con
+# `calcular_nota()` a partir de los parciales. Ver NOTAS_INVENTADAS: pedirle la suma a un
+# LLM no falla de forma visible, solo devuelve un número que no cuadra con sus propios
+# ítems (ocurrió: 5.5/10 con parciales que sumaban 5.0).
 SCHEMA_SALIDA = """
 ## Formato de respuesta
 Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional antes ni después, con exactamente esta estructura:
 
 ```json
 {
-  "puntaje_sugerido": "X.X/10",
-  "nivel_desempeno": "Excelente | Bueno | Suficiente | Deficiente | Insuficiente",
   "resumen_general": "Párrafo breve describiendo el desempeño global del estudiante.",
   "fortalezas": [
     "Descripción de fortaleza 1",
@@ -196,7 +218,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional ante
   "observaciones_por_item": [
     {
       "item": "Pregunta 1 / Sección 'Mediciones' (o descripción del ítem)",
-      "puntaje_parcial": "X.X/2.0 (o el peso correspondiente del ítem en base a 10)",
+      "puntaje_parcial": "X.X/PESO (el denominador es el peso EXACTO del criterio, en el mismo formato de la rúbrica)",
       "evaluacion": "Descripción detallada de la evaluación de este ítem.",
       "errores": ["error específico 1", "error específico 2"]
     }
@@ -211,9 +233,291 @@ Debes responder ÚNICAMENTE con un objeto JSON válido, sin texto adicional ante
   "nota_para_el_profesor": "Observaciones especiales para el profesor: ambigüedades encontradas, respuestas dudosas, ítems que requieren revisión manual, etc."
 }
 ```
+
+No emitas `puntaje_sugerido` ni `nivel_desempeno`: el programa los calcula sumando tus
+puntajes parciales.
 """
 
 TIPOS = tuple(TAREA_POR_TIPO.keys())
+
+# ── La nota se calcula AQUÍ, no la decide el modelo ────────────────────────────
+#
+# Por qué: una vez la rúbrica de práctica declaraba pesos que sumaban 11.5 mientras
+# el contrato pedía "X.X/10". El modelo recibía una escala que no cerraba y la
+# normalizaba como podía. No fallaba de forma visible: devolvía JSON bien formado con
+# un total que no cuadraba con la suma de sus propios ítems (5.5/10 cuando los
+# parciales sumaban 5.0). Ni el test ni el informe lo detectaban, porque nadie
+# comparaba la suma contra el total.
+#
+# El arreglo NO es pedirle mejor aritmética al modelo (eso ya se probó y falló: los
+# denominadores pasaron a ser correctos y el total siguió sin cuadrar). Es no pedirle
+# aritmética: el modelo puntúa ítems, que es la parte que hace bien; y la suma la
+# hace este código, que es la parte que hace bien un LLM.
+#
+# La tabla de niveles vive AQUÍ y no solo en el YAML de la rúbrica porque el rango es
+# política de la institución (la escala de calificación de la universidad), no una
+# propiedad del documento evaluado: aplica igual a exámenes y a prácticas.
+#
+# Aun así el YAML la replica (para que quien lea la rúbrica la vea), y esa duplicación
+# es un riesgo: dos tablas de niveles que divergen en silencio. Por eso
+# `test_evaluar_rubrica.py::test_niveles_yaml_y_codigo_no_divergen` las compara. Si se
+# edita una, hay que editar la otra.
+
+NOTA_MAXIMA = 10.0
+
+# (límite superior inclusivo, nombre del nivel). El último es el techo absoluto.
+NIVELES: tuple[tuple[float, str], ...] = (
+    (2.9, "Insuficiente"),
+    (4.9, "Deficiente"),
+    (6.9, "Suficiente"),
+    (8.9, "Bueno"),
+    (10.0, "Excelente"),
+)
+
+
+def nivel_para_nota(nota: float) -> str:
+    """Nivel de desempeño correspondiente a una nota. PURA y total: siempre devuelve."""
+    for techo, nombre in NIVELES:
+        if nota <= techo:
+            return nombre
+    return NIVELES[-1][1]
+
+
+def _parsear_parcial(bruto: object) -> tuple[float | None, float | None]:
+    """
+    Extrae (obtenido, denominador) de un `puntaje_parcial`.
+
+    Acepta lo que el modelo produce en la práctica: "0.5/1.7", "0.5 / 1.7", "0.5 de 1.7",
+    "0.5/10" e incluso un 0.5 a secas. Devuelve (None, None) si no hay número reconocible,
+    para que quien llama lo cuente como ítem ilegible en vez de inventar un cero.
+    """
+    if isinstance(bruto, (int, float)) and not isinstance(bruto, bool):
+        return float(bruto), None
+    if not isinstance(bruto, str):
+        return None, None
+    texto = bruto.strip().replace(",", ".")
+    # El denominador solo existe si hay un separador explicito ("x/y", "x de y",
+    # "x out of y"). Un numero suelto ("0.5") NO tiene denominador: interpretarlo como
+    # su propio maximo haria que "0.5" pareciera el tope de un criterio y que la
+    # comprobacion de "parcial por encima del peso" se disparara sola.
+    sep = re.search(
+        r"(-?\d+(?:\.\d+)?)\s*(?:/|de|out\s+of)\s*(-?\d+(?:\.\d+)?)",
+        texto,
+        re.IGNORECASE,
+    )
+    if sep:
+        return float(sep.group(1)), float(sep.group(2))
+    m = re.search(r"(-?\d+(?:\.\d+)?)", texto)
+    if not m:
+        return None, None
+    return float(m.group(1)), None
+
+
+def calcular_nota(
+    items: object,
+    *,
+    pesos: dict[str, float] | None = None,
+    nota_maxima: float = NOTA_MAXIMA,
+) -> tuple[dict, list[str]]:
+    """
+    Calcula la nota total y el nivel a partir de los ítems del modelo. PURA.
+
+    (mismos ítems, mismos pesos) -> (misma nota, mismos avisos). No toca disco ni red.
+
+    `pesos` es el mapa criterio -> peso que declara la RÚBRICA (ver `cargar_rubrica`), o
+    `None` si esta evaluación no tiene rúbrica (un examen sin pesos). Es lo que permite
+    dos cosas que antes eran imposibles:
+
+      1. **Detectar el ítem ausente.** Si la rúbrica tiene 8 criterios y el modelo
+         devuelve 7, se sabe cuál falta en vez de asumir que el alumno no lo respondió.
+      2. **No Creerle los pesos al modelo.** El peso lo escribió el profesor en la
+         rúbrica; si el modelo dice `0.4/0.5` para `gramatica`, se usa el 0.4 de la
+         rúbrica y se avisa, en vez de puntuar sobre un 10 que nadie declaró.
+
+    Escala: la nota se calcula sobre `NOTA_MAXIMA` SIEMPRE, escale lo que escale lo que
+    devuelva el modelo. Si los denominadores suman 3 (un punto por pregunta, lo normal en
+    un examen de 3 preguntas) la nota es `10 · obtenido/3`, no `obtenido`: sumar en crudo
+    daba 1.5/10 a un alumno que approved la mitad, y sin un solo aviso cuando el modelo
+    además olvidaba los denominadores. Si NO hay denominadores ni rúbrica, la escala es
+    indescifrable y la nota se marca `nota_fiable: false` en vez de publicarse como si
+    fuera buena: una nota inventada es peor que ninguna.
+
+    Devuelve `(datos, avisos)`:
+      datos  {"puntaje_sugerido": "5.0/10", "nivel_desempeno": "Suficiente",
+              "puntaje_numerico": 5.0, "maximo_alcanzable": 10.0, "items_legibles": N,
+              "items_ausentes": [...], "nota_fiable": True, "escala_aplicada": "10.0"}
+      avisos  lista de strings legible por el humano, para `nota_para_el_profesor`.
+
+    Los avisos existen porque un total calculado sin más ocultaría los fallos que un
+    modelo puede cometer al puntuar: parciales ilegibles, parciales por encima de su
+    peso, pesos que no son los de la rúbrica, ítems que faltan y denominadores que no
+    cierran a la nota máxima.
+    """
+    lista = items if isinstance(items, list) else []
+    pesos_norm = (
+        {_normalizar_nombre(k): float(v) for k, v in pesos.items()}
+        if isinstance(pesos, dict) and pesos
+        else None
+    )
+    # Nombre original de cada criterio, indexado por su clave normalizada: el aviso
+    # debe decir "marco_teorico" (lo que escribió el profesor), no una clave sin tildes.
+    nombres_rubrica = (
+        {_normalizar_nombre(k): str(k) for k in pesos} if pesos_norm else {}
+    )
+
+    suma_obtenido = 0.0
+    suma_pesos = 0.0
+    ilegibles = 0
+    excedidos = 0
+    n = 0
+    criterios_vistos: dict[str, str] = {}
+    pesos_distintos: list[str] = []
+    fuera_de_rubrica: list[str] = []
+
+    for item in lista:
+        if not isinstance(item, dict):
+            ilegibles += 1
+            continue
+        obtenido, denominador = _parsear_parcial(item.get("puntaje_parcial"))
+        if obtenido is None:
+            ilegibles += 1
+            continue
+        n += 1
+
+        # La rúbrica es la autoridad del peso; el modelo solo aporta el cuánto Sacó.
+        nombre_item = item.get("item") or item.get("criterio") or item.get("pregunta") or ""
+        esperado = pesos_norm.get(_normalizar_nombre(nombre_item)) if pesos_norm else None
+        if esperado is not None:
+            criterios_vistos[_normalizar_nombre(nombre_item)] = str(nombre_item)
+            if denominador is None:
+                denominador = esperado
+            elif abs(denominador - esperado) > 0.05:
+                pesos_distintos.append(
+                    f"{nombre_item} (modelo {denominador:g}, rúbrica {esperado:g})"
+                )
+                denominador = esperado
+
+        suma_obtenido += obtenido
+        if denominador and denominador > 0:
+            suma_pesos += denominador
+            if obtenido > denominador + 1e-9:
+                excedidos += 1
+                # No se puntúa por encima del máximo de ese ítem.
+                suma_obtenido -= (obtenido - denominador)
+            if pesos_norm is not None and _normalizar_nombre(nombre_item) not in pesos_norm:
+                fuera_de_rubrica.append(str(nombre_item))
+
+    # Ítems de la rúbrica que el modelo no devolvió. Es la diferencia entre "el alumno no
+    # respondió el montaje" y "el modelo se comió un criterio": sin esto, ambas dan la
+    # misma nota y solo una es verdad.
+    ausentes: list[str] = []
+    if pesos_norm:
+        ausentes = sorted(
+            nombres_rubrica[clave] for clave in nombres_rubrica
+            if clave not in criterios_vistos
+        )
+
+    avisos: list[str] = []
+    if ilegibles:
+        avisos.append(
+            f"Cálculo automático: {ilegibles} ítem(s) sin puntaje parcial legible; "
+            "no participaron en la suma. Revisar si el modelo los omitió."
+        )
+    if excedidos:
+        avisos.append(
+            f"Cálculo automático: {excedidos} ítem(s) con parcial por encima de su propio "
+            "peso; se recortaron al peso (un ítem no puede valer más que su máximo)."
+        )
+    if pesos_distintos:
+        avisos.append(
+            "Cálculo automático: el modelo cambió el peso de "
+            f"{len(pesos_distintos)} criterio(s) respecto a la rúbrica: "
+            + "; ".join(pesos_distintos[:6])
+            + ". Se usó el peso de la rúbrica."
+        )
+    if ausentes:
+        avisos.append(
+            f"Cálculo automático: la rúbrica declara {len(pesos_norm)} criterios y el modelo "
+            f"no devolvió {len(ausentes)} (" + ", ".join(ausentes[:8]) + "); puntúan 0 "
+            "porque no hay evidencia de ellos. Si el informe sí los contiene, el modelo "
+            "los omitió: revisar."
+        )
+    if fuera_de_rubrica:
+        avisos.append(
+            "Cálculo automático: puntuados "
+            f"{len(fuera_de_rubrica)} ítem(s) que NO están en la rúbrica ("
+            + ", ".join(sorted(set(fuera_de_rubrica))[:6])
+            + "); usa el denominador que dio el modelo."
+        )
+
+    # ── De los parciales a la nota ─────────────────────────────────────────────
+    # Con rúbrica, la escala la FIJA la rúbrica (los pesos suman `nota_maxima`, ya
+    # validado al cargar). Da igual lo que el modelo diga: si se le olvidó un criterio,
+    # ese criterio vale 0 y la escala sigue siendo 10. Al revés, si la escala se
+    # tomara de los denominadores devueltos, omitir un criterio REDIRIGE la nota hacia
+    # arriba (4.3 se convertía en 4.9 pornormalizar sobre 8.7): se bonificaba al
+    # alumno por un fallo del modelo.
+    #
+    # Sin rúbrica (examen sin pesos) la escala la declara el propio modelo con sus
+    # denominadores, y se normaliza a `nota_maxima`. Sumar en crudo solo sería
+    # correcto si esa escala ya fuese 10.
+    fiable = True
+    escala = NOTA_MAXIMA
+    if pesos_norm:
+        escala = sum(pesos_norm.values())
+        nota = suma_obtenido
+        if abs(escala - nota_maxima) > 0.05:  # pragma: no cover - cargar_rubrica lo impide
+            nota = nota_maxima * suma_obtenido / escala
+    elif suma_pesos <= 0:
+        # No hay rúbrica ni denominadores: la escala es indescifrable. Antes esto
+        # publicaba la suma cruda como si fuera sobre 10, y un examen de 3 preguntas
+        # puntuadas "0.5, 0.7, 0.3" salía 1.5/10 con cero avisos.
+        fiable = False
+        nota = 0.0
+        escala = 0.0  # 0 = escala desconocida, que es exactamente el problema
+        avisos.append(
+            "Cálculo automático: SIN ESCALA FIABLE. Los ítems no traen denominador y esta "
+            "evaluación no tiene rúbrica, así que no hay forma de saber sobre qué base "
+            "están puntuados: la nota NO es publicable tal cual. Suma de lo que el modelo "
+            f"devolvió: {suma_obtenido:.2f} (base desconocida). Repasar a mano o "
+            "evaluar con rúbrica."
+        )
+    else:
+        escala = suma_pesos
+        if abs(suma_pesos - nota_maxima) > 0.05:
+            nota = nota_maxima * suma_obtenido / suma_pesos
+            avisos.append(
+                f"Cálculo automático: los pesos de los ítems suman {suma_pesos:.2f} y la nota "
+                f"máxima es {nota_maxima:g}; la nota se normalizó a {nota_maxima:g} "
+                "(proporción obtenida/pesos), no se suman en crudo."
+            )
+        else:
+            nota = suma_obtenido
+
+    if not lista:
+        avisos.append(
+            "Cálculo automático: el modelo no devolvió ítems, así que la nota es 0. "
+            "Revisar el JSON generado."
+        )
+        fiable = False
+
+    # Techo absoluto: el máximo de la universidad. Ningún camino lo rebasa, ni aunque
+    # el modelo devuelva una suma enorme o unos pesos inflados.
+    techo = min(max(nota, 0.0), nota_maxima)
+
+    datos = {
+        "puntaje_sugerido": (
+            f"{techo:.1f}/{nota_maxima:g}" if fiable else "No publicable"
+        ),
+        "nivel_desempeno": nivel_para_nota(techo) if fiable else "No publicable",
+        "puntaje_numerico": round(techo, 2) if fiable else None,
+        "maximo_alcanzable": nota_maxima,
+        "items_legibles": n,
+        "items_ausentes": ausentes,
+        "nota_fiable": fiable,
+        "escala_aplicada": round(escala, 2),
+    }
+    return datos, avisos
 
 # Encabezado de la rúbrica cuando se concatena al prompt. Es texto CRUDO pegado al
 # final del prompt, no configuración estructurada: por eso una clave mal escrita en
@@ -246,17 +550,114 @@ SYSTEM_INSTRUCTION = componer_system_instruction("examen")
 
 def leer_rubrica(rubrica_path: str) -> str:
     """
-    Lee el fichero de rúbrica. Falla ruidosamente si no existe: una ruta mal escrita
-    es un error de operador, no un caso de uso, y tragarse el error produciría una
-    evaluación con el criterio por defecto sin que nadie lo notara.
+    Lee el fichero de rúbrica y devuelve su TEXTO CRUDO, tal cual se concatena al prompt.
 
-    Devuelve el TEXTO CRUDO. No se parsea el YAML: la rúbrica se concatena al prompt,
-    y por eso sus claves no están validadas (ver `componer_system_instruction`).
+    Falla ruidosamente si no existe: una ruta mal escrita es un error de operador, no un
+    caso de uso, y tragarse el error produciría una evaluación con el criterio por
+    defecto sin que nadie lo notara.
+
+    El texto se entrega sin parsear a propósito (el prompt lee prosa, no estructuras), pero
+    eso no exime de VALIDAR: `cargar_rubrica` hace las dos cosas y esta es la mitad
+    "solo texto" para las cosas que no necesitan pesos.
+    """
+    return cargar_rubrica(rubrica_path)[0]
+
+
+def _normalizar_nombre(nombre: str) -> str:
+    """
+    Reduce un nombre de criterio a una clave comparable: minúsculas, sin acentos, sin
+    separadores. Para que "Marco teórico", "marco_teorico" y "MARCO TEORICO" sean el
+    mismo criterio al cruzar el JSON del modelo contra la rúbrica.
+    """
+    plano = unicodedata.normalize("NFKD", str(nombre).lower())
+    sin_acentos = "".join(c for c in plano if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", "", sin_acentos)
+
+
+def cargar_rubrica(rubrica_path: str) -> tuple[str, dict[str, float] | None]:
+    """
+    Lee la rúbrica y devuelve `(texto_crudo, pesos)`.
+
+    `pesos` mapea nombre de criterio -> peso, y es `None` si la rúbrica no declara pesos
+    (examen sin rúbrica, o rúbrica sin sección de pesos). El texto crudo sigue siendo lo
+    que va al prompt: el modelo lee prosa; los pesos son para que el CÓDIGO pueda
+    contrastar lo que el modelo devuelva.
+
+    Por qué parsear además de concatenar: antes, una clave mal escrita en la rúbrica
+    (`pesos:` en vez de `peso:`) llegaba al modelo, este no encontraba los pesos y se los
+    inventaba. El resultado era una nota sobre una escala que nadie había escrito, sin un
+    solo aviso. Un fichero de configuración que se entrega al modelo pero no se valida
+    es un fichero que nadie está leyendo.
+
+    Falla ruidosamente (`ValueError`) si la rúbrica declara pesos que no cierran o que no
+    son numéricos: es un error de mantenimiento, no algo que el modelo pueda arreglar.
     """
     obj = Path(rubrica_path)
     if not obj.exists():
         raise FileNotFoundError(f"Rúbrica no encontrada: {rubrica_path}")
-    return obj.read_text(encoding="utf-8")
+    texto = obj.read_text(encoding="utf-8")
+
+    if yaml is None:  # pragma: no cover - degradación explícita, no silencio
+        raise RuntimeError(
+            "PyYAML no está instalado y la rúbrica no se puede validar. "
+            "pip install PyYAML"
+        )
+    try:
+        datos = yaml.safe_load(texto)
+    except yaml.YAMLError as exc:  # pragma: no cover - depende del fichero
+        raise ValueError(f"Rúbrica ilegible como YAML ({rubrica_path}): {exc}") from exc
+
+    # Sin YAML legible (fichero vacío o texto plano): se entrega tal cual, sin pesos.
+    if not isinstance(datos, dict):
+        return texto, None
+
+    criterios = datos.get("criterios", datos.get("criteria"))
+    if criterios is None:
+        return texto, None
+    if not isinstance(criterios, dict) or not criterios:
+        raise ValueError(
+            f"Rúbrica con 'criterios' vacío o que no es un mapa ({rubrica_path}): "
+            f"se recibió {type(criterios).__name__}"
+        )
+
+    pesos: dict[str, float] = {}
+    for nombre, cuerpo in criterios.items():
+        if not isinstance(cuerpo, dict):
+            raise ValueError(
+                f"Criterio '{nombre}' de la rúbrica no es un mapa ({rubrica_path}); "
+                "cada criterio debe tener sus claves (peso, descripcion...)"
+            )
+        # Aceptar 'peso' y 'weight': el mismo concepto con dos idiomas, y una rúbrica
+        # escrita en inglés no debería fallar por una palabra.
+        bruto = cuerpo.get("peso", cuerpo.get("weight"))
+        if bruto is None:
+            raise ValueError(
+                f"Criterio '{nombre}' de la rúbrica sin peso ni 'peso:' ({rubrica_path}). "
+                f"Claves encontradas: {sorted(cuerpo)}. Sin pesos el modelo los inventa."
+            )
+        try:
+            peso = float(bruto)
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"Peso del criterio '{nombre}' no numérico: {bruto!r} ({rubrica_path})"
+            ) from None
+        if peso <= 0:
+            raise ValueError(
+                f"Peso del criterio '{nombre}' es {peso}; debe ser > 0 ({rubrica_path})"
+            )
+        pesos[str(nombre)] = peso
+
+    suma = sum(pesos.values())
+    if abs(suma - NOTA_MAXIMA) > 0.05:
+        # El error original: pesos que sumaban 11.5 sobre una base declarada de 10. Lo
+        # queived de verdad era este número; ahora se dice al carregar la rúbrica.
+        raise ValueError(
+            f"Los pesos de la rúbrica suman {suma:.2f} y la nota máxima es {NOTA_MAXIMA:g} "
+            f"({rubrica_path}). Ajusta los pesos para que cierren; el modelo normalizaría "
+            "una escala rota y su nota no sería reproducible."
+        )
+
+    return texto, pesos
 
 
 def pdf_to_images_bytes(pdf_path: str, dpi: int = 250) -> list[bytes]:
@@ -640,7 +1041,10 @@ def evaluar_examen(
         raise ValueError(
             f"Tipo de documento desconocido: {tipo!r}. Validos: {', '.join(TIPOS)}"
         )
-    rubrica_texto = leer_rubrica(rubrica_path) if rubrica_path else None
+    # La rúbrica se lee una vez y en dos formatos: el TEXTO va al prompt y los PESOS se
+    # quedan aquí para que `calcular_nota` pueda contrastar lo que devuelva el modelo. No
+    # es solo un accessor: la validación de que los pesos cierren a 10 ocurre al leer.
+    rubrica_texto, pesos_rubrica = cargar_rubrica(rubrica_path) if rubrica_path else (None, None)
     system_instruction = componer_system_instruction(tipo, rubrica_texto)
 
     # ── 3. Llamar al modelo según backend ──────────────────────────────────────
@@ -684,7 +1088,35 @@ def evaluar_examen(
     if evaluacion_dict is None:
         raise ValueError("No se pudo extraer un JSON válido de la respuesta del modelo.")
 
-    # ── 5. Construir resultado final ───────────────────────────────────────────
+    # ── 5. Calcular la nota (determinista, no la decide el modelo) ─────────────
+    # Si el modelo emittera `puntaje_sugerido` / `nivel_desempeno` (aun sin pedírselo,
+    # los modelos tiende a añadirlos), se sobrescriben aquí. Prefijar la nota no es
+    # opcional: si un JSON viejo llega con un total inventado, el informe lo mostraría.
+    evaluacion_dict = dict(evaluacion_dict)
+    evaluacion_dict.pop("puntaje_sugerido", None)
+    evaluacion_dict.pop("nivel_desempeno", None)
+
+    # Se aceptan las dos grafías de la clave de ítems: `observaciones_por_item` es la
+    # canónica, `observaciones_por_pregunta` la histórica (ver `generar_informe.py`).
+    clave_items = next(
+        (c for c in ("observaciones_por_item", "observaciones_por_pregunta")
+         if isinstance(evaluacion_dict.get(c), list)),
+        "observaciones_por_item",
+    )
+    nota, avisos = calcular_nota(evaluacion_dict.get(clave_items), pesos=pesos_rubrica)
+
+    # Los avisos van al campo que el profesor lee, no a un canal aparte: si el cálculo
+    # automático tuvo que recortar, limar o ignorar algo, el humano tiene que saberlo.
+    if avisos:
+        nota_profesor = str(evaluacion_dict.get("nota_para_el_profesor") or "").strip()
+        bloque = " ".join(avisos)
+        evaluacion_dict["nota_para_el_profesor"] = (
+            f"{nota_profesor} [{bloque}]" if nota_profesor else f"[{bloque}]"
+        )
+
+    evaluacion_dict.update(nota)
+
+    # ── 6. Construir resultado final ───────────────────────────────────────────
     nombre_estudiante = (
         Path(pdf_path).stem
         .replace("evaluacion_", "")
