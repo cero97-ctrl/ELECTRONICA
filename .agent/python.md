@@ -736,3 +736,95 @@ distinguir "el alumno no respondió" de "el modelo se lo comió".
 > - `execution/test_evaluar_rubrica.py` (`test_escala_se_normaliza_no_se_suma_en_crudo`,
 >   `test_la_rubrica_manda_en_los_pesos`, `test_rubrica_invalida_falla_ruidosamente`)
 > - `directives/evaluar_examen_estudiante.yaml`, `directives/evaluar_practica_laboratorio.yaml`
+
+## 24. `response_format={"type":"json_object"}` NO Es un Esquema: el Modelo Puede Devolver Otra Forma y Pasa Como JSON Válido
+
+### Síntoma / Mensaje de Error
+
+Al inspeccionar visualmente una entrega escaneada (PDF de imagen de una entrega real de
+alumno) con `response_format={"type": "json_object"}`, el modelo devolvió un JSON
+**perfectamente parseable con una forma completamente distinta a la pedida**:
+
+```json
+{
+  // Nombre y C.I. omitidos: lo relevante del ejemplo es la FORMA del objeto
+  "text": "Alumno: <apellido omitido> C.I: <omitido>\nMateria: Lab II de física\n\nLa ley de Ohm...",
+  "preguntas": [],
+  "corregido_por": "",
+  "observaciones": []
+}
+```
+
+Faltaron las dos claves que el script necesita para decidir si la entrega es evaluable:
+`incluye_enunciado`, `confianza` y `tipo_documento`. Sin embargo `json.loads()` no
+lanza nada: es un objeto, es válido, y dice algo que *parece* una inspección.
+
+### Causa
+
+`response_format={"type": "json_object"}` promete **una sola cosa**: que la respuesta sea
+un objeto JSON. No promete que tenga las claves que pediste, ni sus tipos, ni su
+vocabulario. El esquema del prompt es texto en un mensaje, y el texto es la capa más débil
+del contrato: el modelo lo puede ignorar por completo sin que nada en el stack lo note.
+
+El agravante real fue otro y más tonto: la instrucción **nunca se envió**. El script
+construía el mensaje de usuario con `construir_prompt()` y se olvidaba de adjuntar
+`INSTRUCCION`, así que el modelo recibía literalmente solo la frase «devuelve SOLO el
+JSON» — sin saber de qué JSON. Respondió con la primera forma que se le ocurrió.
+
+### Solución (implementada en `execution/inspeccionar_entrega.py`)
+
+1. **Instrucción en el mensaje `system`, imágenes en el `user`.** Es el patrón que ya usa
+   `evaluar_examen.py`:
+
+   ```python
+   messages=[
+       {"role": "system", "content": INSTRUCCION},
+       {"role": "user", "content": build_multimodal_content(images, labels=..., trailing_text=...)},
+   ]
+   ```
+
+2. **Few-shot con un ejemplo completo literal** en la instrucción. Reduce mucho la
+   invención de forma, pero **no la sustituye**: no es una garantía.
+
+3. **La barrera real es `validar()` en el programa**, con vocabulario cerrado para los
+   campos enumerados (`tipo_documento`, `confianza`) y comprobación de tipos para el resto.
+   Salida `5` con la lista de problemas; el JSON del modelo se imprime para depurar pero
+   **no se acepta como informe**.
+
+4. **La clave que decide la vialidad del flujo es obligatoria, no opcional.** Aquí el
+   primer test pasó en falso: `incluye_enunciado` era la única clave que `validar()`
+   no exigía, así que un modelo que la omitiera pasaba por inspección válida y el
+   orquestador leía `None` creyendo que era «el modelo no sabe». No saber y no contestar
+   son cosas distintas, y confundirlas convierte una inspección que no inspeccionó nada
+   en un informe aparentemente confiable.
+
+   ```python
+   if "incluye_enunciado" not in datos:
+       problemas.append("falta incluye_enunciado, que es la clave que decide si la "
+                        "entrega es evaluable; su ausencia no se puede leer como 'no sé'")
+   ```
+
+   El valor `null` **explícito** sí es «no sé» y sí se acepta: la incertidumbre declarada
+   es información, la clave faltante es un defecto del emisor.
+
+### Puntos Clave
+
+- **Un JSON que se parsea no es un JSON válido para tu esquema.** `json.loads()` no sabe
+  nada de claves faltantes; el validador sí, y por eso es código y no una nota en la
+  directiva.
+- **Vocabulario cerrado en los campos enumerados.** `tipo_documento` de 5 literales en
+  vez de un string libre: si se cuela `Examen` con mayúscula o `tarea`, la comparación
+  con `==` falla en silencio y el caso no se agrupa con los que debía.
+- **Normaliza además de validar.** Si `preguntas` llega como dict, `validar()` lo reporta
+  *y* la deja en `[]`, porque quien llama (`resumir()`) viene después y no debe reventar
+  con un `KeyError`.
+- **Congela el fallo real como test.** `test_el_json_real_del_modelo_se_rechaza` mete la
+  respuesta literal que motivó el script. Un validador probado solo con sus propios casos
+  buenos no sabe qué se está rechazando.
+- **Si añades claves al esquema, tócalas en tres sitios:** instrucción, `validar()` y el
+  test. El del prompt es papel; el que manda es el validador.
+
+> **Archivos afectados:**
+> - `execution/inspeccionar_entrega.py` (`INSTRUCCION` en `system`, `validar()`)
+> - `execution/test_inspeccionar_entrega.py` (41 aserciones)
+> - `directives/inspeccionar_entrega.yaml` (edge cases)

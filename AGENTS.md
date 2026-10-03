@@ -143,11 +143,13 @@ A continuación se presenta una tabla comparativa entre nuestro proyecto ELECTRO
 
 ## Commands
 
-**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos) · `python3 execution/test_auditar_repo.py` (álgebra de veredicto e interpretes de la auditoría; 134 aserciones) · `python3 execution/test_auditar_sistema.py` (umbrales en el borde, zram ≠ presión, servicios en tres estados, capa 3 sin veredictos; 102 aserciones) · `python3 execution/test_evaluar_rubrica.py` (nota determinista: escala, rúbrica como fuente de verdad, fixture verificable; 182 aserciones) · `python3 execution/test_verificar_texto.py` (detector de prosa)
+**Tests:** `python test_generator.py` (EDA JSON, zero external deps) · `python3 execution/test_barrera_disco.py` (barrera anti-borrado del flujo de disco; debe dar 0 fallos) · `python3 execution/test_auditar_repo.py` (álgebra de veredicto e interpretes de la auditoría; 134 aserciones) · `python3 execution/test_auditar_sistema.py` (umbrales en el borde, zram ≠ presión, servicios en tres estados, capa 3 sin veredictos; 102 aserciones) · `python3 execution/test_evaluar_rubrica.py` (nota determinista: escala, rúbrica como fuente de verdad, fixture verificable; 182 aserciones) · `python3 execution/test_verificar_texto.py` (detector de prosa) · `python3 execution/test_inspeccionar_entrega.py` (el JSON del modelo no es un esquema: 41 aserciones)
 
 **Auditoría de higiene:** `python3 flujo_auditar_repo.py [--dimension N] [--json] [--rapido]` — 13 dimensiones (7 nuevas + 6 reutilizadas); el veredicto global es el **peor** estado, no un promedio. Salida: `0` limpio/con avisos · `1` con fallos · `2` sin verificar (nunca verde, y **reservado** para eso: un flag mal escrito devuelve `3`, no `2`) · `3` uso incorrecto. `--dimension` es repetible; `--solo A,B` es su alias de lista. `--rapido` omite texto/barrera/test_texto y **no equivale a la pasada completa** (medido: 43,5s → 24,6s, omite un 36,6% del costo). Es de **solo lectura**: no borra, no toca el índice de git ni reescribe historia; escribe solo sus tres salidas en `.tmp/`.
 
 **RAG:** `python rag_system.py` (chat), `python rag_system.py --update` (rebuild vectors) — LLM vía OpenRouter (`google/gemini-2.5-flash`, `OPENROUTER_API_KEY`)
+
+**Inspección de entregas escaneadas:** `python3 execution/inspeccionar_entrega.py --pdf <entrega.pdf> [--dpi 150] [--json]` (inventario visual de una entrega escaneada: ¿trae enunciado o son solo respuestas?; NO evalúa. Necesario porque un escaneo no tiene texto y `evaluar_examen.py` no tiene campo para el enunciado aparte: si la entrega no lo trae, el modelo corrige a ciegas y eso no se ve leyendo el PDF. SOP en `directives/inspeccionar_entrega.yaml`)
 
 **LaTeX repair:** `python fix_latex.py <file.tex>` (extracts math commands from `\text{}`)
 

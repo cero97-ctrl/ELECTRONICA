@@ -1,0 +1,113 @@
+goal: >
+  Describir qué contiene una entrega de alumno escaneada (PDF de imagen, sin capa de
+  texto) SIN evaluarla ni corregirla, para decidir si el flujo de evaluación es viable
+  sobre ese documento.
+
+  Responde a una sola pregunta operativa: ¿la entrega trae el enunciado que se contestó
+  o son solo respuestas? Sin enunciado, `evaluar_examen.py` manda páginas sin contexto de
+  qué se pregunta y el modelo corrige a ciegas; ese fallo no se ve mirando el texto del
+  PDF porque un escaneo no tiene texto. Hay que mirar la imagen.
+
+  NO es un corrector: no emite nota, no califica, no sugiere cambios al prompt de
+  evaluación. La verdad sobre qué error cometió el alumno la pone el profesor.
+
+required_inputs:
+  - name: pdf_entrega
+    description: >
+      Ruta al PDF de la entrega del alumno. Se escanea una página por página y se envía
+      al modelo como imagen, así que no necesita OCR ni capa de texto.
+    Ejemplo: /home/cero/MEGA/ELECTRONICA_ENTREGAS/entregas_examen/C_examen_electronica.pdf
+  - name: dpi
+    description: >
+      Resolución de renderizado. 150 basta para inventariar; súbelo a 250 si la letra es
+      pequeña y hay que leer fórmulas.
+    default: 150
+  - name: modelo
+    description: >
+      Modelo multimodal. Default flash: para inventariar, la 질문 es si hay enunciado,
+      no si el alumno acertó. Subir a opus solo si la inspección tiene que leer fórmulas
+      densas para decidir qué examen es.
+    default: google/gemini-2.5-flash
+
+steps:
+  - step: 1
+    description: >
+      Validar la entrada: el PDF existe, el DPI está entre 72 y 400 y hay
+      OPENROUTER_API_KEY en el entorno. Salida: error de uso con código 2.
+  - step: 2
+    description: >
+      Renderizar todas las páginas a PNG en memoria (reutiliza `pdf_to_images_bytes()` de
+      `evaluar_examen.py`; no reimplementar el render).
+    script: "execution/inspeccionar_entrega.py"
+    inputs:
+      --pdf: "{{pdf_entrega}}"
+      --dpi: "{{dpi}}"
+      --modelo: "{{modelo}}"
+    expected_output: >
+      JSON con status, archivo, paginas, modelo, tokens e `inspeccion` (incluye_enunciado,
+      confianza, tipo_documento, asignatura, tema, preguntas, corregido_por, observaciones).
+
+expected_outputs:
+  - description: >
+      Un JSON por stdout. El resumen legible (resumen legible antes del JSON) va a
+      stderr-free stdout y puede suprimirse con `--json` para encadenar scripts.
+  - description: >
+      `incluye_enunciado` es tri-estado a propósito: `true` hay enunciado, `false` son
+      solo respuestas, `null` no se puede determinar. `null` es una respuesta sana: es
+      preferible admitir incertidumbre a inventar.
+
+edge_cases:
+  - case: "El modelo devuelve JSON con otra forma (la clave real, no la pedida)"
+    protocol: >
+      Es el fallo que motivó el script: con `response_format={"type":"json_object"}`
+      Gemini devolvió `{"text": "<todo el documento transcrito>"}` sin ninguna de las
+      claves pedidas. La respuesta NO se acepta: `validar()` la rechaza y el script sale
+      con código 5 imprimiendo qué falta. `response_format` no es un esquema; la
+      validación en el programa es la barrera real.
+
+  - case: "La clave incluye_enunciado no viene en la respuesta"
+    protocol: >
+      Se rechaza con código 5 y se dice por qué. Es la única celda que decide si el
+      documento es evaluable, así que su ausencia no se lee como 'no sé': no saber y no
+      contestar son cosas distintas, y confundirlas hace pasar por válida una inspección
+      que no inspeccionó nada. El valor `null` explícito sí es 'no sé' y sí se acepta.
+
+  - case: "La entrega son páginas sueltas de un cuestionario más largo"
+    protocol: >
+      El modelo lo detecta comparando el número de ítem más bajo visible con el esperado y
+      lo anota en `observaciones` ('la entrega empieza en el ítem 7, faltan los
+      anteriores'). No es recuperable: sin las preguntas anteriores el ítem no se puede
+      evaluar, y eso se informa en vez de inventar el enunciado que falta.
+
+  - case: "El papel viene corregido a mano por el profesor"
+    protocol: >
+      `corregido_por` transcribe lo que dice la corrección y el resumen la destaca. Es
+      el dato de máxima prioridad, porque es verdad humana sobre el mismo documento que
+      después se va a pedir al modelo que evalúe. Se lee ANTES de cualquier evaluación
+      automática para no condicionar la verdad al modelo.
+
+  - case: "Letra ilegible o páginas en blanco"
+    protocol: >
+      Se reporta en `observaciones` de forma concreta ('la pregunta 2 es un garabato
+      ilegible'). No se rellena por coherencia ni se inventa lo que no se lee; un ítem
+      ilegible es un ítem sin dato, no un ítem aprobado.
+
+  - case: "El PDF no tiene páginas o no se puede abrir"
+    protocol: "Código 2 con el motivo. No se intenta adivinar el formato."
+
+  - case: "Falla la API (saldo, red, 429)"
+    protocol: >
+      Código 3 con el mensaje del proveedor. Reintentar hasta 3 intentos (retry budget
+      del repo) y después escalar al usuario; no degradar a una inspección inventada.
+
+notas_de_implementacion:
+  - >
+    `INSTRUCCION` va en el mensaje `role: "system"`. El primer bug de este script fue
+    enviarla nunca: se construía el mensaje de usuario con `construir_prompt()` y se
+    olvidaba adjuntar la instrucción, así que el modelo recibía solo "devuelve SOLO el
+    JSON" y respondía con la forma que quiso. Cuando `evaluar_examen.py` se modifique,
+    conservar ese patrón: instrucción en `system`, imágenes en el mensaje `user`.
+  - >
+    Si se añaden claves al esquema, hay que añadirlas a las TRES cosas: la instrucción,
+    `validar()` y `execution/test_inspeccionar_entrega.py`. El esquema del prompt es
+    papel; el que manda es el validador.
