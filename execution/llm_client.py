@@ -32,7 +32,7 @@ Uso:
     )
 
     # Cliente directo (LangChain)
-    chat = get_chat_openai(api_key, model="google/gemini-3.7-flash", max_tokens=get_max_tokens())
+    chat = get_chat_openai(api_key, model="google/gemini-2.5-flash", max_tokens=get_max_tokens())
 """
 
 import base64
@@ -43,7 +43,10 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 _APP_URL = "https://github.com/cero/MEGA/VS_CODE_WORKSPACE/ELECTRONICA"
 
 MODEL_TIERS = {
-    "flash":    "google/gemini-3.7-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
+    # flash = gemini-2.5-flash (2026-10-02): único verificado en AMBAS rutas.
+    # google/gemini-3.7-flash daba 503 sostenido por SDK directo (high demand)
+    # mientras respondía bien vía OpenRouter; 2.5 responde en las dos.
+    "flash":    "google/gemini-2.5-flash",  # Rutina: parsing/formatting, RAG, multimodal rápido
     "deepseek": "deepseek/deepseek-v4.1-flash", # Tier medio: contexto masivo (>50k tok) / razonamiento (1M ctx, JSON mode)
     "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio (1M ctx, razonamiento)
     "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico: diseño, cálculo formal, debugging

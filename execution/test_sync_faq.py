@@ -56,7 +56,7 @@ BLOQUE = (
 def _():
     llm = _load("llm_client")
     for tier, esperado in (
-        ("flash", "google/gemini-3.7-flash"),
+        ("flash", "google/gemini-2.5-flash"),
         ("deepseek", "deepseek/deepseek-v4.1-flash"),
         ("glm", "z-ai/glm-5.2"),
         ("opus", "anthropic/claude-opus-5"),
@@ -72,7 +72,7 @@ def _():
 @test("resolver_modelo: ID explícito pasa intacto e idempotencia")
 def _():
     llm = _load("llm_client")
-    for explicito in ("moonshotai/kimi-k3", "google/gemini-3.7-flash"):
+    for explicito in ("moonshotai/kimi-k3", "google/gemini-2.5-flash"):
         if llm.resolver_modelo(explicito) != explicito:
             raise AssertionError(f"un ID explícito debe pasar intacto: {explicito}")
     if llm.resolver_modelo(llm.resolver_modelo("flash")) != llm.MODEL_TIERS["flash"]:

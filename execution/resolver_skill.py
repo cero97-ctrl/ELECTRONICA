@@ -87,7 +87,7 @@ def _arg_parser() -> argparse.ArgumentParser:
                    help="Uno o más directorios de skill (SKILL.md + references/). El "
                         "resolver hace retrieval sobre TODOS y combina los resultados.")
     p.add_argument("--problema", required=True, help="Enunciado del problema a resolver.")
-    p.add_argument("--modelo", default="google/gemini-3.7-flash", help="ID de modelo OpenRouter.")
+    p.add_argument("--modelo", default="google/gemini-2.5-flash", help="ID de modelo OpenRouter.")
     p.add_argument("--max-reflexion", type=int, default=3, help="Rondas máx de reflexión (≤3).")
     p.add_argument("--top-k", type=int, default=6, help="Secciones a recuperar por embeddings.")
     p.add_argument("--min-score", type=float, default=0.05, help="Score mínimo de similitud.")

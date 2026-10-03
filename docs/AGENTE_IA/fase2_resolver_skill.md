@@ -132,7 +132,7 @@ Paso 3  resolver_skill.py (multi-skill) + guardar resultado + alerta
 
 - **Default task = `calculo_formal`** → enrutador decide **opus** (riguroso).
 - `--modelo <id>` = override explícito (salta el enrutador). Útil para **tests baratos**: ej.
-  `--modelo google/gemini-3.7-flash` (flash ≈ centavos).
+  `--modelo google/gemini-2.5-flash` (flash ≈ centavos).
 - En la consola, si hay varios skills se muestra el **mejor score por skill**; si la confianza es
   `baja`, sugiere añadir más PDFs del dominio.
 - Guarda `.tmp/resolucion_<ts>.json`, registra `.tmp/run_state_<run_id>.json`, alerta audible
@@ -183,7 +183,7 @@ python3 flujo_resolver_skill.py --problema "..." \
     ~/.config/opencode/skills/electronica_2 ~/.config/opencode/skills/fisica_electronica
 
 # Test barato con modelo flash (override, salta enrutador)
-python3 flujo_resolver_skill.py --problema "..." --skill <dir> --modelo google/gemini-3.7-flash --max-reflexion 1
+python3 flujo_resolver_skill.py --problema "..." --skill <dir> --modelo google/gemini-2.5-flash --max-reflexion 1
 
 # Solo ver qué secciones recupera de TODOS los skills (0 créditos) — incluye confianza y por_skill
 python3 execution/resolver_skill.py --skill <dir1> <dir2> --problema "..." --solo-retrieval

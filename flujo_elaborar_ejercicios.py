@@ -147,7 +147,7 @@ def flujo_completo(
             if "--api-backend" in cmd_fallback:
                 cmd_fallback[cmd_fallback.index("--api-backend") + 1] = "openrouter"
             if "--modelo" in cmd_fallback:
-                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "google/gemini-3.7-flash"
+                cmd_fallback[cmd_fallback.index("--modelo") + 1] = "google/gemini-2.5-flash"
             code, ejercicios_data = run_script(cmd_fallback, capture_json=True)
 
         if code != 0 or ejercicios_data.get("status") != "ok":

@@ -136,7 +136,7 @@ try:
 except ImportError:
     from llm_client import get_chat_openai, get_max_tokens
 OPENROUTER_MAX_TOKENS = get_max_tokens()
-llm = get_chat_openai(OPENROUTER_API_KEY, model="google/gemini-3.7-flash", temperature=0, max_tokens=OPENROUTER_MAX_TOKENS)
+llm = get_chat_openai(OPENROUTER_API_KEY, model="google/gemini-2.5-flash", temperature=0, max_tokens=OPENROUTER_MAX_TOKENS)
 
 # 6. Crear memoria conversacional y el Prompt RAG
 # 6.1 Prompt para contextualizar la pregunta usando el historial
@@ -196,7 +196,7 @@ try:
                 system_prompt=system_prompt,
                 retrieved_context=response["context"],
                 domain="electronica",
-                model="google/gemini-3.7-flash",
+                model="google/gemini-2.5-flash",
             )
         except Exception as e:
             print(f"  ⚠  (captura de datos omitida: {e})")

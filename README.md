@@ -21,7 +21,7 @@ El proyecto sigue un marco de **3 capas** que separa la lógica probabilística 
 ### Asistente RAG (`rag_system.py`)
 Chatbot académico que procesa `.md`, `.tex` y `.pdf` mediante ChromaDB + OpenRouter:
 - Embeddings multilingües (`paraphrase-multilingual-MiniLM-L12-v2`)
-- LLM vía OpenRouter con `google/gemini-3.7-flash` (tier `flash`); requiere `OPENROUTER_API_KEY` en `.env`
+- LLM vía OpenRouter con `google/gemini-2.5-flash` (tier `flash`); requiere `OPENROUTER_API_KEY` en `.env`
 - Actualizaciones incrementales vía `db_state.json`
 - Memoria conversacional
 

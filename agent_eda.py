@@ -46,8 +46,8 @@ def initialize_llm():
     except Exception as e:
         print(f"[-] Advertencia: El modelo 'anthropic/claude-opus-5' no está disponible o fue depreciado.")
         print(f"    Detalle del error: {e}")
-        print("[*] Intentando inicializar con el modelo de respaldo 'google/gemini-3.7-flash'...")
-        return get_chat_openai(api_key, model="google/gemini-3.7-flash", temperature=0.1, max_tokens=max_tokens)
+        print("[*] Intentando inicializar con el modelo de respaldo 'google/gemini-2.5-flash'...")
+        return get_chat_openai(api_key, model="google/gemini-2.5-flash", temperature=0.1, max_tokens=max_tokens)
 
 # ==========================================
 # 3. CADENA DE EXTRACCIÓN LATEX -> NETLIST

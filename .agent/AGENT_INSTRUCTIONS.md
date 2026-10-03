@@ -95,7 +95,7 @@ El archivo `.tex` se crea o edita directamente en el sistema utilizando las herr
   - **Seguridad (Crítico):** Validación estricta de cuentas y firmantes, manejo de overflow (checked math), protección contra reentrancy y ataques de escalamiento de privilegios.
   - **Integración:** Interacción de dApps Rust con la infraestructura existente del workspace (Python para herramientas de análisis, Node.js/TypeScript para clientes web).
 - **Desarrollo del Asistente RAG (`rag_system.py`):**
-  - **Stack Principal:** LangChain, ChromaDB, Hugging Face Embeddings (`paraphrase-multilingual-MiniLM-L12-v2`) y LLM vía **OpenRouter** con `google/gemini-3.7-flash` (tier `flash`), usando `get_chat_openai()` de `execution/llm_client.py`. **Ya NO usa Groq:** la migración a OpenRouter se aplicó y commiteó el 2026-08-15 (`c672c27`) tras la decomisión de Llama 3.x en Groq y el geo-bloqueo 403 desde VE. No reintroducir `ChatGroq` aquí.
+  - **Stack Principal:** LangChain, ChromaDB, Hugging Face Embeddings (`paraphrase-multilingual-MiniLM-L12-v2`) y LLM vía **OpenRouter** con `google/gemini-2.5-flash` (tier `flash`), usando `get_chat_openai()` de `execution/llm_client.py`. **Ya NO usa Groq:** la migración a OpenRouter se aplicó y commiteó el 2026-08-15 (`c672c27`) tras la decomisión de Llama 3.x en Groq y el geo-bloqueo 403 desde VE. No reintroducir `ChatGroq` aquí.
   - **Manejo de Archivos:** Procesamiento ágil de `.md`, `.tex` y `.pdf`.
   - **Optimización:** Sincronización inteligente consultando `db_state.json`. (Nota de versión: excluir bases autogeneradas como `chroma_db/` de Git).
   - **Estilo de Código:** Modularidad estricta (Extracción, Vectorización, Retrieval, Interfaz), manejo de excepciones, y Type Hinting.

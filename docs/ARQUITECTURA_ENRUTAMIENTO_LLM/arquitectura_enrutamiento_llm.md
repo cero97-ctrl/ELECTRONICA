@@ -7,7 +7,7 @@ Este documento resume la estrategia de enrutamiento por niveles (Model Routing /
 ## 1. Planteamiento Inicial
 
 El agente de IA (opencode, capa de orquestación) interactúa con múltiples LLMs según la complejidad de la tarea:
-- **Tareas rutinarias:** Asignadas a **Gemini Flash** (`google/gemini-3.7-flash`).
+- **Tareas rutinarias:** Asignadas a **Gemini Flash** (`google/gemini-2.5-flash`).
 - **Contexto extenso / razonamiento intermedio:** Asignadas a **DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`), con **GLM-5.2** de respaldo.
 - **Tareas complejas:** Asignadas a **Claude Opus** (`anthropic/claude-opus-5`).
 - **Pasarela de integración:** **OpenRouter**.
@@ -85,7 +85,7 @@ costo y velocidad con la mitad del precio. Su respaldo es **GLM-5.2**
 
 | Nivel | LLM | Rol Principal y Casos de Uso |
 | :--- | :--- | :--- |
-| **Nivel 1: Rápido / Rutinario** | **Gemini Flash** (`google/gemini-3.7-flash`) | Formateo, parsing JSON/YAML, llamadas a herramientas simples, validación sintáctica rápida y bajo costo. RAG de rutina. |
+| **Nivel 1: Rápido / Rutinario** | **Gemini Flash** (`google/gemini-2.5-flash`) | Formateo, parsing JSON/YAML, llamadas a herramientas simples, validación sintáctica rápida y bajo costo. RAG de rutina. |
 | **Nivel 2: Contexto Extenso / Razonamiento Intermedio** | **DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`), respaldo **GLM-5.2** (`z-ai/glm-5.2`) | Ingesta de documentación técnica masiva, lectura completa de múltiples archivos/código fuente, RAG extenso, destilación de logs, síntesis de datasheets. Razonamiento complejo a costo intermedio. |
 | **Nivel 3: Razonamiento Crítico** | **Claude Opus** (`anthropic/claude-opus-5`) | Diseño arquitectónico, resolución de dependencias complejas, cálculos físicos/matemáticos avanzados y debugging profundo. |
 
@@ -167,7 +167,7 @@ from execution.llm_client import openrouter_chat, load_api_key, get_max_tokens
 
 # Fuente única de IDs por nivel (definida en execution/llm_client.py)
 MODEL_TIERS = {
-    "flash":    "google/gemini-3.7-flash",  # Tareas rápidas y atómicas
+    "flash":    "google/gemini-2.5-flash",  # Tareas rápidas y atómicas
     "deepseek": "deepseek/deepseek-v4.1-flash", # Contexto masivo / razonamiento intermedio
     "glm":      "z-ai/glm-5.2",             # Respaldo del tier medio
     "opus":     "anthropic/claude-opus-5",  # Razonamiento crítico

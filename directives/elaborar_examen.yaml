@@ -25,7 +25,7 @@ optional_inputs:
   - name: modelo
     description: >
       Modelo LLM a utilizar. Default: anthropic/claude-opus-5 (tareas complejas).
-      Para OpenRouter usar IDs como anthropic/claude-opus-5 o google/gemini-3.7-flash.
+      Para OpenRouter usar IDs como anthropic/claude-opus-5 o google/gemini-2.5-flash.
     default: anthropic/claude-opus-5
   - name: api_backend
     description: >
