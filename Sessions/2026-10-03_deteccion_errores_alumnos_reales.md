@@ -164,8 +164,9 @@ directamente invalidante.
   descripciones vivían en el archivo del modelo, que reintroducía el sesgo).
 - `docs/AGENTE_IA/estudio_deteccion_errores/resultados_modelo.md` — salida histórica de las
   3 entregas de hoy. No se reutiliza: las nuevas se evalúan desde cero.
-- `/home/cero/MEGA/ELECTRONICA_ENTREGAS/` — corpus de hoy, **fuera del repo**. Si al
-  retomar ya no está, se perdió: era de la papelera.
+- `/home/cero/MEGA/ELECTRONICA_ENTREGAS/` — corpus de hoy, **fuera del repo**, con nombres
+  seudónimos y el mapa real en `_MAPEO_PRIVADO.txt`. Respaldo: el profesor declara que su
+  contenido se sube automáticamente a la nube.
 
 ### Decisión sobre el prompt: sigue en espera
 `TAREA_POR_TIPO["examen"]` **no se toca**. Con 3 casos no hay evidencia de que el estilo

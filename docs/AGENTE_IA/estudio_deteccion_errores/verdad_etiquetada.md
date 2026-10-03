@@ -42,10 +42,11 @@ tres alumnos reales, que es lo que valía la pena descartar.
 
 ## Dónde están las entregas
 
-> ⚠️ **Verificar que siguen ahí antes de este bloque.** Este material se rescató de la
-> papelera del sistema y vive fuera del repo. Si no están, comprobar
-> `~/.local/share/Trash/files/`; si ya no aparecen ahí, se perdieron y habría que
-> reconstruir el corpus desde las entregas nuevas.
+> **Respaldo**: este material se rescató de la papelera y vive fuera del repo, en
+> `/home/cero/MEGA/ELECTRONICA_ENTREGAS/` (hermano del repo, no dentro de él). El
+> profesor declara que su contenido se sube automáticamente a la nube, así que no
+> se trata como material en riesgo. Si aun asi faltara algo, la fuente original es
+> `~/.local/share/Trash/files/`.
 
 ```
 /home/cero/MEGA/ELECTRONICA_ENTREGAS/
