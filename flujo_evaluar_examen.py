@@ -9,7 +9,7 @@ Ejecuta el flujo completo definido en la directiva evaluar_examen_estudiante.yam
   4. execution/alert_user.py       → Notifica al usuario con alerta audible
 
 Uso:
-    python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+    python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/entrega_alumno.pdf
     python3 flujo_evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250]
     python3 flujo_evaluar_examen.py --pdf <ruta> [--output-dir <carpeta>] [--rubrica <yaml>]
 
@@ -360,7 +360,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+  python3 flujo_evaluar_examen.py --pdf examenes/01/examen_estudiantes/entrega_alumno.pdf
   python3 flujo_evaluar_examen.py --pdf examenes/02/examen_estudiantes/Juan_Perez.pdf --modelo gemini-1.5-pro
   python3 flujo_evaluar_examen.py --pdf <ruta> --dpi 300 --output-dir informes/
         """,

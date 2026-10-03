@@ -7,7 +7,7 @@ en memoria y se las envía en bloque a un modelo multimodal (Gemini o OpenRouter
 evaluación académica estructurada.
 
 Uso:
-    python3 execution/evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+    python3 execution/evaluar_examen.py --pdf examenes/01/examen_estudiantes/entrega_alumno.pdf
     python3 execution/evaluar_examen.py --pdf <ruta> [--modelo gemini-2.5-flash] [--dpi 250]
                                         [--tipo examen|laboratorio] [--rubrica <ruta_yaml>]
 
@@ -1151,7 +1151,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python3 execution/evaluar_examen.py --pdf examenes/01/examen_estudiantes/Ana_Alcala.pdf
+  python3 execution/evaluar_examen.py --pdf examenes/01/examen_estudiantes/entrega_alumno.pdf
   python3 execution/evaluar_examen.py --pdf <ruta> --modelo gemini-1.5-pro --dpi 300
   python3 execution/evaluar_examen.py --pdf <ruta> --api-backend openrouter --modelo qwen/qwen-2.5-vl-72b-instruct:free
   python3 execution/evaluar_examen.py --pdf <ruta> --api-backend huggingface --modelo Qwen/Qwen2.5-VL-72B-Instruct:cheapest

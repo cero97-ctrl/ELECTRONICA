@@ -6,7 +6,7 @@ Lee el JSON producido por evaluar_examen.py y genera un informe académico
 profesional en formato LaTeX listo para compilar con pdflatex o xelatex.
 
 Uso:
-    python3 execution/generar_informe.py --json .tmp/evaluacion_Ana_Alcala.json --output examenes/01/examen_estudiantes/informe_Ana_Alcala.tex
+    python3 execution/generar_informe.py --json .tmp/evaluacion_alumno.json --output examenes/01/examen_estudiantes/informe_alumno.tex
     python3 execution/generar_informe.py --json <ruta_json> --output <ruta_tex>
     # También acepta stdin:
     cat .tmp/evaluacion.json | python3 execution/generar_informe.py --output informe.tex
@@ -347,7 +347,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python3 execution/generar_informe.py --json .tmp/evaluacion_Ana_Alcala.json --output examenes/01/examen_estudiantes/informe_Ana_Alcala.tex
+  python3 execution/generar_informe.py --json .tmp/evaluacion_alumno.json --output examenes/01/examen_estudiantes/informe_alumno.tex
   evaluar_examen --pdf ... | python3 execution/generar_informe.py --output informe.tex
         """,
     )
