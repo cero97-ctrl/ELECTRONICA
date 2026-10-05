@@ -83,6 +83,17 @@ no certifican nada. Todo se juzga parseando `^! ` del `.log`.
 - `validar_una_pagina_por_diapositiva`: páginas == frames (post-compilación).
 
 ## Pendientes
+- **Los PDF del deck y del handout se versionan SIN su `.tex` de origen** (detectado al
+  commitear el 2026-10-05, commit `da55a68`). En `docs/AGENTE_IA/` hay
+  `charlada_ia_3_capas.pdf` y `charlada_ia_3_capas_material.pdf` pero no existen sus
+  `.tex`; el único fuente presente es `charlada_flujo.tex`, que viene del generador de
+  diagramas. Consecuencia: **el deck y el handout no son regenerables desde el repo**, que
+  es lo contrario de la tesis del proyecto. Dos causas posibles a cerrar: (a) el generador
+  de capa 3 escribía el `.tex` en `.tmp/latex_build/` y solo se copió el PDF — entonces
+  el fix es que `generar_charlada_latex.py` persista el `.tex` junto al PDF; (b) el `.tex`
+  existe en algún sitio fuera del repo y hay que tra back. Verificar primero cuál de las
+  dos, porque el arreglo es distinto. Sin esto, la capa 3 no es reproducible y la
+  condición de "el material se construyó con el mismo patrón que defiende" queda a medias.
 - **Autor real y título definitivo**: siguen los valores por defecto.
 - **Confirmar Beamer** como formato (fue un supuesto, ver Decisión 8).
 - **Ensayo cronometrado de 30 minutos**: no hecho. El generador avisa si 17 diapositivas
