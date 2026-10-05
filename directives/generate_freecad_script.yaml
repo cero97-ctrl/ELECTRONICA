@@ -1,10 +1,78 @@
 # Estado HONESTO: capacidad declarada y NO implementada. Los scripts de los
 # pasos de abajo no existen en execution/, y esta directiva no tiene orquestador.
-# Falta: no hay nada de FreeCAD en el repo; requiere FreeCAD headless, que no esta instalado.
 # Se conserva como roadmap declarado, no como SOP ejecutable. Mientras no se implemente,
 # la dimension 'directivas' de la auditoria la cuenta como aviso nombrandola, no
 # como fallo silencioso. Ver directives/auditar_repo.yaml (edge case
 # declaracion_honesta) y docs/MATENIMIENTO/como_evaluar_higiene.md seccion 3.
+#
+# APLAZADO POR DECISION DEL USUARIO el 2026-10-05: no es 'imposible', es que la
+# GUI de FreeCAD no cabe en la RAM de esta maquina. Ver abajo y
+# Sessions/2026-10-05_freecad_mcp_proyecto_aplazado.md.
+#
+# POR QUE NO ES IMPOSIBLE (verificado, no supuesto):
+#   - La arquitectura de docs/FreeCAD/guia-mcp-freecad.md es AGNOSTICA AL LLM:
+#     LLM -> cliente MCP -> freecad-mcp (Python) -> XML-RPC 127.0.0.1:9875 ->
+#     add-on dentro de FreeCAD. El modelo solo aporta el tool-calling loop, asi
+#     que sirve cualquier cliente MCP; 'GPT-6 Astra' no aparece en ninguna pieza
+#     critica de la cadena.
+#   - freecad-mcp existe y esta vivo: v0.1.25, MIT, 17 tools, release 2026-09-24.
+#   - FreeCAD esta disponible en flathub (org.freecad.FreeCAD 1.1.4) y uvx/uv ya
+#     estan instalados en ~/.local/bin. Falta unicamente la memoria para la GUI.
+#
+# POR QUE SE APLAZA (lo unico que bloquea):
+#   - 3,63 GB de RAM totales y ~787 MB disponibles (medido el 2026-10-05 con
+#     Chrome abierto; opencode 750 MB + Chrome ~1,5 GB, zram al 100%, 492 MB de
+#     swap ya en uso). FreeCAD GUI + OCC en X11 consume ~600 MB-1 GB.
+#   - La ruta del articulo EXIGE la GUI viva: get_view (screenshots) y
+#     execute_code corren en el hilo de la GUI. De ahi el bloqueo. Ojo: este dato
+#     es una fotografia y fluctua; el veredicto formal de RAM se obtiene con
+#     'python3 flujo_auditar_sistema.py', no leyendo este comentario.
+#
+# AVISO SOBRE LA FUENTE: docs/FreeCAD/guia-mcp-freecad.md NO es una
+# especificacion tecnica, es un resumen de un video de YouTube exportado por
+# NotebookLM (las 13 referencias apuntan al mismo video, y el propio archivo dice
+# que genero 'freecad_mcp_gpt6_guide.md' sin incluirlo). Sus 6 pasos son
+# Windows-especificos (ChatGPT Desktop, PowerShell como Admin, %appdata%). No
+# tratarlo como insumo de implementacion: la fuente real es la documentacion de
+# neka-nat/freecad-mcp.
+#
+# TRAMPAS DE ENTORNO YA DESCUBIERTAS (no re-descubrirlas al retomar):
+#   1. freecad-mcp NO puede instalarse en elect_env: el conda env es Python 3.10.20
+#      y el paquete exige >=3.12. Va por uvx, que aprovisiona su propio
+#      interprete. Ademas .opencode/plugins/conda-env.js antepone elect_env al
+#      PATH, lo que altera el auto-detector de binarios del servidor MCP.
+#   2. Con flatpak, execute_code_headless no encuentra el ejecutable: el
+#      auto-detector busca 'freecadcmd' en el PATH y el flatpak no lo pone ahi.
+#      Sobrescribir con --freecadcmd "flatpak run --command=freecadcmd
+#      org.freecad.FreeCAD".
+#   3. Configurar el MCP con binario ABSOLUTO pinneado, nunca con un launcher
+#      que reinstale en cada boot (mismo criterio que platformio, ver
+#      Sessions/2026-09-26_platformio_mcp_estable.md).
+#   4. El puerto 127.0.0.1:9875 va SIN autenticacion ni cifrado, y execute_code
+#      ejecuta Python arbitrario con permisos del usuario. Localhost solo; si
+#      algun dia se habilitan conexiones remotas, token (FREECAD_MCP_TOKEN) o
+#      tunel SSH.
+#
+# DOS RUTAS AL RETOMAR (orden de preferencia):
+#   A. HEADLESS, la recomendada y la compatible con las 3 capas: freecadcmd sin
+#      GUI (~250 MB) + scripts deterministas en execution/, que es justamente lo
+#      que esta directiva ya declara. Sustituye el loop visual de screenshots
+#      por VALIDACION GEOMETRICA PROGRAMATICA (volumen, bounding box,
+#      Shape.isValid(), intersecciones, medidas de seccion con umbrales): un
+#      fallo numerico bloquea la entrega, que es reproducible y testeable. El LLM
+#      no decide geometria: descriptor JSON de parametros -> execution/enrutador.py
+#      (tier por regla pura) -> script que genera el .py de FreeCAD, ejecuta,
+#      valida y exporta STL/STEP.
+#   B. MCP COMPLETO, fiel al articulo: da el bucle visual y run_fem_analysis, pero
+#      exige la GUI viva y el add-on se instala a mano (copiar addon/FreeCADMCP a
+#      ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod/, reiniciar FreeCAD,
+#      arrancar el RPC desde el workbench o activar Auto-Start Server). Usar el MCP
+#      para lo que SI es lectura (medir un modelo de referencia), no para decidir
+#      la pieza.
+#
+# NO crear una directiva nueva para esta capacidad (p. ej. freecad_mcp.yaml):
+# seria una segunda linea de deuda para lo MISMO y dos declaraciones que
+# divergen en silencio son la forma mas cara de equivocarse.
 Status: planificado
 
 Goal: "Generar modelos 3D paramétricos (STL, STEP, OBJ, PNG), realizar operaciones booleanas, transformaciones, y calcular propiedades físicas (volumen, masa) utilizando FreeCAD en modo headless."
