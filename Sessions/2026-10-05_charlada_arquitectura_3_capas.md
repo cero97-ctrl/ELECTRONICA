@@ -82,18 +82,50 @@ no certifican nada. Todo se juzga parseando `^! ` del `.log`.
 - `validar_llaves`: balance y profundidad negativa.
 - `validar_una_pagina_por_diapositiva`: páginas == frames (post-compilación).
 
+### Corregido: el entregable se publicaba sin su fuente (2026-10-05, commit posterior a `da55a68`)
+El PDF del deck y el del handout se versionaban **sin su `.tex`**, así que no eran
+regenerables. Los `.tex` no se habían perdido: estaban en `.tmp/charlada/<job>/`, junto al
+PDF de origen, con el mismo nombre de base.
+
+Causa real, y no era la que se sospechaba: **no era la capa 3**. `generar_charlada_latex.py`
+escribe el `.tex` y compila los dos a `.tmp/charlada/<job>/`, y su `--salida-dir` es
+decorativo (crea el directorio y lo anota en el informe; nunca escribe ahí). La capa 3
+hacia bien. El bug estaba en el **paso 4 de la capa 2**, `flujo_charlada.py`, que se llama
+«Publicar los PDF en la carpeta de entrega» y copiaba solo `Path(info["pdf"])`: el `.tex`
+era hermano del PDF y se quedaba en `.tmp/`, que es justo el directorio que `flujo_disco`
+puede purgar.
+
+El error conceptual es que el flujo trataba el `.tex` como intermedio. No lo es: un
+intermedio se regenera desde otra cosa; un `.tex` es **la fuente** del entregable. Y el
+repo ya tenía el criterio resuelto — `pdf_stale` contaba 178 pares `.tex/.pdf`, todos los
+entregables LaTeX versionan su fuente —, así que la charlada era el único que se salía de
+la convención.
+
+Corregido en `flujo_charlada.py`: el paso 4 publica `.pdf` **y** `.tex`, y si falta cualquiera
+de los dos aborta con código 3. Sin la guarda, un `.tmp/` purgado entre compilar y publicar
+volvería a dejar PDF huérfano en silencio, que es el fallo original.
+
+Verificado ejecutando la capa 2 completa: publica 4 archivos en vez de 2, con el log de
+compilación limpio y las cifras cuadrando contra el disco (628 MB de RAM disponible; la
+compilación de 17 diapositivas entra justa).
+
+Dos cosas que solo aparecieron al verificar y que merecen quedar escritas:
+
+- **El `.tex` recuperaba pareja pero el par quedaba desincronizado.** Copiar el fuente con
+  `cp` le mueve el mtime, de modo que el `.tex` pasa a ser más nuevo que su PDF y
+  `pdf_stale` lo marca. Se resolvió **regenerando** (un `python3 flujo_charlada.py`), no
+  retocando el mtime: retocar la marca de tiempo para silenciar una auditoría es fabricar
+  la conformidad.
+- **Regenerar cambió una línea: «66 sesiones» → «68 sesiones».** Es el comportamiento
+  correcto y la demostración de la tesis de la propia charla: las cifras se miden en vivo
+  (`medir_cifras()`), así que derivan cuando el repo crece. El deck `.tex` salió
+  **byte-idéntico** al recuperado; el único diff en todo el material es ese contador.
+
+Efecto colateral favorable: `pdf_stale` pasó de 178 a **180 pares**, porque antes los dos
+PDF huérfanos le eran estructuralmente invisibles (recorre los `.tex`, así que un PDF sin
+fuente nunca se visita). La dimensión que debía detectarlo no podía, por construcción.
+
 ## Pendientes
-- **Los PDF del deck y del handout se versionan SIN su `.tex` de origen** (detectado al
-  commitear el 2026-10-05, commit `da55a68`). En `docs/AGENTE_IA/` hay
-  `charlada_ia_3_capas.pdf` y `charlada_ia_3_capas_material.pdf` pero no existen sus
-  `.tex`; el único fuente presente es `charlada_flujo.tex`, que viene del generador de
-  diagramas. Consecuencia: **el deck y el handout no son regenerables desde el repo**, que
-  es lo contrario de la tesis del proyecto. Dos causas posibles a cerrar: (a) el generador
-  de capa 3 escribía el `.tex` en `.tmp/latex_build/` y solo se copió el PDF — entonces
-  el fix es que `generar_charlada_latex.py` persista el `.tex` junto al PDF; (b) el `.tex`
-  existe en algún sitio fuera del repo y hay que tra back. Verificar primero cuál de las
-  dos, porque el arreglo es distinto. Sin esto, la capa 3 no es reproducible y la
-  condición de "el material se construyó con el mismo patrón que defiende" queda a medias.
 - **Autor real y título definitivo**: siguen los valores por defecto.
 - **Confirmar Beamer** como formato (fue un supuesto, ver Decisión 8).
 - **Ensayo cronometrado de 30 minutos**: no hecho. El generador avisa si 17 diapositivas

@@ -1,0 +1,425 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.92]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{fontawesome5}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{tcolorbox}
+
+% ── Paleta: generada desde estilo_infografia.PALETA (fuente única) ────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+\setbeamercolor{structure}{fg=azulMedio}
+\setbeamercolor{title}{fg=fondoOscuro,bg=white}
+\setbeamercolor{frametitle}{fg=white,bg=azulNoche}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamercolor{block title}{fg=white,bg=azulMedio}
+\setbeamercolor{block body}{bg=grisPapel,fg=fondoOscuro}
+\setbeamercolor{block title alerted}{fg=white,bg=rojoAlerta}
+\setbeamercolor{block body alerted}{bg=rojoAlerta!8,fg=fondoOscuro}
+\setbeamercolor{block title example}{fg=white,bg=verdeTurquesa}
+\setbeamercolor{block body example}{bg=verdeSignal!8,fg=fondoOscuro}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\color{cyanNeon}\faIcon{angle-right}~}
+\setbeamertemplate{itemize subitem}{\color{azulMedio}\faIcon{circle}~}
+
+\newtcolorbox{panelMono}[1][]{colback=codigoFondo,colframe=codigoFondo,boxrule=0pt,
+  arc=3pt,coltext=white,fontupper=\ttfamily\scriptsize,
+  left=7pt,right=7pt,top=6pt,bottom=6pt,#1}
+\newtcolorbox{panelRegla}[1][]{colback=cyanNeon!10,colframe=cyanNeon,boxrule=1pt,
+  arc=4pt,left=9pt,right=9pt,top=7pt,bottom=7pt,#1}
+
+% Cifra grande + su leyenda. Se usa en minipage, así que nada de \par.
+\newcommand{\cifra}[2]{%
+  \begin{minipage}[t]{0.30\textwidth}\centering
+  {\fontsize{28}{30}\selectfont\bfseries\color{azulNoche}#1}\\[3pt]
+  {\footnotesize\color{grisTexto}#2}
+  \end{minipage}}
+
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.6ex,leftskip=1em,rightskip=1em]
+    {author in head/foot}
+    \scriptsize\color{grisTexto}ELECTRONICA \enspace \textbar\enspace Patrón de arquitectura de 3 capas\hfill\insertframenumber/\inserttotalframenumber
+  \end{beamercolorbox}}}
+
+\title{IA en ingeniería con un esquema determinista de tres capas}
+\author{ELECTRONICA}
+\date{}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \begin{beamercolorbox}[sep=16pt,center]{title}
+    {\footnotesize\bfseries\color{cyanNeon}\faIcon{cogs}\ INGENIERÍA DE DATOS}\\[12pt]
+    {\LARGE\bfseries\color{fondoOscuro} IA en ingeniería con un\\ esquema determinista de tres capas}\\[12pt]
+    {\large\color{azulMedio} Por qué el 84 \% de un sistema con LLM no debería contener un LLM}\\[20pt]
+    {\footnotesize\color{grisTexto}\faIcon{user-circle}~ELECTRONICA \qquad
+      \faIcon{calendar}~2026-10-05\qquad
+      \faIcon{folder-open}~51 directivas, 62 scripts, 23 flujos}
+  \end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{Un LLM puede cumplir el contrato entero \emph{y aun así mentir}}
+  \begin{alertblock}{Lo que devolvió el modelo}
+    \begin{panelMono}
+puntaje\_sugerido : "5.5/10"       \textcolor{codigoCadena}{<- inventado}\\
+nivel\_desempeno  : "Bueno"        \textcolor{codigoCadena}{<- inventado}\\
+observaciones    : [ "0.5/1", "0.7/1", "0.3/1" ]   \textcolor{codigoNumero}{<- suma 1.5}
+    \end{panelMono}
+  \end{alertblock}
+  \smallskip
+  \begin{block}{Obsérvese lo que \emph{sí} fue correcto}
+    \begin{itemize}
+      \item JSON válido \quad \item campos presentes \quad \item denominadores correctos
+      \item \ldots y el total \textbf{no es la suma de sus propias partes}.
+    \end{itemize}
+  \end{block}
+  \begin{panelRegla}
+    Un LLM no es una calculadora. Cumplir un formato no es cumplir un contrato.
+  \end{panelRegla}
+\end{frame}
+
+\begin{frame}{La asimetría que hay que resolver}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Lo que es un LLM}
+        \begin{itemize}
+          \item Un generador de texto \emph{plausible}
+          \item Sin garantía de aritmética
+          \item Sin garantía de repetibilidad
+          \item Y sin que eso sea un defecto: es su naturaleza
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{Lo que exige la ingeniería}
+        \begin{itemize}
+          \item El mismo input $\rightarrow$ el mismo output
+          \item Que se pueda auditar \emph{por qué}
+          \item Que el error sea ruidoso, no silencioso
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \smallskip
+  \begin{panelRegla}
+    No es una discusión filosófica. Es una asimetría \textbf{medible}, y se mide
+    en fallos reales con coste concreto.
+  \end{panelRegla}
+\end{frame}
+
+\begin{frame}{La respuesta: separar por responsabilidad}
+  \begin{center}
+  \begin{tabular}{@{}c c c l@{}}
+    \toprule
+    \textbf{Capa} & \textbf{Artefacto} & \textbf{Responde} & \textbf{Contiene LLM} \\
+    \midrule
+    1 \quad Directiva & \texttt{directives/*.yaml} & ¿qué? & no \\
+    2 \quad Orquestación & \texttt{flujo\_*.py}, \texttt{mcp\_*} & ¿cuándo? & no (solo decide) \\
+    3 \quad Ejecución & \texttt{execution/*.py} & ¿cómo? & 10 de 62 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \smallskip
+  \begin{block}{La regla que sostiene el patrón}
+    La lógica de negocio no se delega al modelo. Se le pide lo único que hace
+    bien --\emph{producir texto--} y el resto se calcula en código.
+  \end{block}
+\end{frame}
+
+\begin{frame}{La frontera, con números medidos}
+  \vspace{2pt}
+  \cifra{84 \%}{scripts de ejecución sin ningún LLM}
+  \hfill
+  \cifra{10}{fronteras con LLM}
+  \hfill
+  \cifra{\$0}{coste de decidir el modelo}
+  \par\vspace{14pt}
+  \begin{block}{El enrutador es una función pura}
+    Elegir qué modelo usar \emph{no lo decide un modelo}: lo decide código local,
+    a partir de un descriptor medido. Mismo descriptor $\rightarrow$ mismo tier,
+    siempre. Y no hace ni una sola llamada a la API.
+  \end{block}
+  \begin{alertblock}{Por qué esto no es un detalle de implementación}
+    Las 10 fronteras están \textbf{declaradas}: son ficheros
+    concretos y nombrados, no un \texttt{if} repartido por el código.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Capa 1 \textbullet\ La directiva: el \emph{qué}}
+  \begin{panelMono}
+goal: >
+  Evaluar el examen del estudiante enviando las páginas del PDF
+  como imágenes al modelo y obteniendo una evaluación en JSON.
+required\_inputs:
+  - name: pdf\_examen
+    description: Ruta al PDF del examen.
+steps:
+  - step: 1
+    description: Renderizar el PDF a 250 DPI y enviarlo en bloque
+                  al modelo con la instrucción de corrección.
+  \end{panelMono}
+  \smallskip
+  \begin{block}{Por qué está en YAML y no en el prompt}
+    Porque es \textbf{configuración}, no conversación: se versiona, se revisa con
+    un diff, y lo escribe alguien que entiende el dominio, no el modelo.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Capa 2 \textbullet\ La orquestación: el \emph{cuándo}}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{Lo que sí hace}
+        \begin{itemize}
+          \item Leer la directiva
+          \item Resolver entradas y decidir el orden
+          \item Delegar cada paso en capa 3
+          \item Validar salidas y códigos de retorno
+          \item Registrar estado para poder reanudar
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{alertblock}{Lo que NO hace}
+        \begin{itemize}
+          \item \ldots calcular
+          \item \ldots sumar, comparar ni convertir
+          \item \ldots procesar datos crudos
+          \item \ldots decidir un modelo a ojo
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+  \begin{panelRegla}
+    Una capa de decisión delgada, con la lógica fina abajo.
+    Por eso el mismo fallo no se propaga a veinte sitios.
+  \end{panelRegla}
+\end{frame}
+
+\begin{frame}{Capa 3 \textbullet\ La ejecución: el \emph{cómo}}
+  \begin{itemize}
+    \item Funciones puras donde se puede: mismo input, mismo output, sin red.
+    \item Cada script valida \emph{sus propias} salidas y falla ruidosamente.
+    \item Códigos de salida tipados; un 0 significa 0, no \"no vi nada\".
+    \item Cobertura de pruebas como forma de documentar el contrato.
+  \end{itemize}
+  \smallskip
+  \begin{exampleblock}{Dónde vive la verdad}
+    Cuando hay una discrepancia, la respuesta no la da el prompt ni lo que el
+    modelo recuerda: la da el test que falla.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Fallo 1 \textbullet\ El modelo no suma: el programa suma}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Síntoma}
+        Salida con \texttt{status: ok}, JSON perfecto, cada ítem con su
+        denominador \ldots y un total que no era la suma.
+      \end{alertblock}
+      \begin{block}{Causa profunda}
+        Se le pidió al modelo el \emph{total}. La aritmética la hacía el LLM, y
+        la aritmética es justo lo que un modelo no garantiza.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{Arreglo}
+        \begin{itemize}
+          \item El esquema \emph{deja de pedir} el total
+          \item El programa suma: función pura, testeable, sin red
+          \item El máximo es un invariante, no una consecuencia
+          \item Si se pasa del tope, se recorta \emph{y se avisa}
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{panelRegla}
+    Lo que se transfiere: en cuanto un \textbf{número importa}, el número lo
+    calcula el programa.
+  \end{panelRegla}
+\end{frame}
+
+\begin{frame}{Fallo 2 \textbullet\ La escala la declara el instrumento}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \begin{alertblock}{El síntoma}
+        3 ítems de 1 punto (total 3) con la mitad respondidos. Al sumar en crudo:
+        \textbf{1.5/10} y nivel \emph{Insuficiente}. El alumno sacaba el 50 \%.
+      \end{alertblock}
+      \begin{alertblock}{Peor: el bug espejo}
+        Si el modelo se comía un criterio, su peso desaparecía del denominador
+        y el resto se normalizaba \textbf{hacia arriba}: un fallo del modelo
+        bonificaba al alumno.
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{exampleblock}{El arreglo}
+        \begin{itemize}
+          \item La escala la fija el \emph{instrumento} (la rúbrica), no quien
+                lo corrige
+          \item Normalizar a la escala institucional, siempre
+          \item Un criterio ausente vale 0 sobre esa escala: no se renormaliza
+          \item Sin escala declarada \emph{no se publica nota}, y se dice por qué
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Fallo 3 \textbullet\ El modo JSON no es un esquema}
+  \begin{panelMono}
+request:  response\_format = \{"type": "json\_object"\}   \textcolor{codigoCadena}{<- solo promete un objeto}\\
+respuesta: \{"text": "...", "preguntas": []\}          \textcolor{codigoCadena}{<- objeto válido. otro esquema.}
+    \end{panelMono}
+  \smallskip
+  \begin{block}{El agravante}
+    \texttt{response\_format} promete \textbf{una sola cosa}: que la respuesta
+    sea un objeto. No promete las claves, ni los tipos, ni el vocabulario. Y el
+    esquema del prompt es texto: la capa más débil del contrato.
+  \end{block}
+  \begin{exampleblock}{El arreglo}
+    La barrera real es un \textbf{validador en el programa}: vocabulario cerrado
+    para los campos enumerados, comprobación de tipos, y la clave que decide la
+    vialidad del flujo es \emph{obligatoria}. Salida con código 5 y la lista de
+    problemas; el JSON del modelo no se acepta como informe.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Los tres fallos, una sola regla}
+  \begin{panelRegla}
+    \centering\Large\bfseries
+    Cuando un número importa,\\ el número lo calcula el programa.
+    \par\vspace{8pt}
+    \normalsize\normalfont
+    Y cuando la forma importa, la forma la verifica el programa.
+  \end{panelRegla}
+  \vspace{8pt}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Aplicaciones fuera de la IA}
+        \begin{itemize}
+          \item Metrología y conversión de unidades
+          \item Control de calidad y criterios de aceptación
+          \item Presupuestos y dosages
+          \item Cualquier cosa donde un decimal de más sea un problema
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Por qué así se aprende}
+        \begin{itemize}
+          \item No es desconfiar del modelo: es asignar la aritmética a lo único
+                que sabe hacer aritmética.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Una idea formal que se transfiere: la álgebra de veredictos}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \begin{alertblock}{La regla}
+        \begin{itemize}
+          \item Gana el \textbf{peor} estado, nunca el promedio
+          \item Lo no verificado \textbf{impide} el verde
+          \item Se distingue \emph{no instalado} de \emph{caído} de \emph{parado}
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{exampleblock}{Por qué importa fuera de aquí}
+        \begin{itemize}
+          \item Es un promedio con tres estados en rojo y uno en amarillo: se
+                ve verde mientras algo crítico no se midió
+          \item Es exactamente la diferencia entre \emph{sin datos} y
+                \emph{con buenos datos}
+          \item Es control robusto aplicado a un pipeline de verificación
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{panelRegla}
+    Y hay una segunda: \textbf{una sola definición}, compartida por las dos
+    auditorías. Dos álgebras que divergen en silencio son la forma más cara de
+    equivocarse.
+  \end{panelRegla}
+\end{frame}
+
+\begin{frame}{Los límites, que también son parte del patrón}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \begin{alertblock}{Lo que el patrón \emph{no} resuelve}
+        \begin{itemize}
+          \item La capa 1 (directivas) aún no es verificable por auditoría:
+                es informativa
+          \item Un motor de asistente rotativo no es reproducible
+          \item El hardware disponible no entrena modelos
+          \item Sin red, parte de los proveedores no son accesibles
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{exampleblock}{Cómo se presenta esto}
+        \begin{itemize}
+          \item Un patrón cuya frontera se declara se enseña mejor que uno que
+                se vende
+          \item La reproducibilidad tampoco es gratis: cuesta discipline
+                de capa 3 y tests
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Cómo adoptarlo en su propio proyecto}
+  \begin{enumerate}
+    \item \textbf{Escriba el SOP antes del código.} Si no sabe escribirlo, aún
+          no sabe qué tiene que automatizar.
+    \item \textbf{Ponga el criterio en el programa.} Toda aritmética, toda
+          comparación, toda conversión: en código, no en el prompt.
+    \item \textbf{Valide la forma, no confíe en ella.} Un JSON que se parsea
+          no es un JSON que cumple su esquema.
+    \item \textbf{Defina la escala en el instrumento.} Y si no la hay, no
+          publique el número.
+    \item \textbf{Verifique por registro, no por bandera verde.} Un programa
+          que compila o termina con 0 puede estar mintiendo: lea su salida.
+    \item \textbf{Deje la frontera escrita.} Los ficheros con LLM se nombran;
+          todo lo demás es código.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[plain]
+  \vfill
+  \begin{center}
+    {\Large\bfseries\color{fondoOscuro} IA donde aporta.}\\[4pt]
+    {\Large\bfseries\color{azulNoche} Código donde se exige.}\\[4pt]
+    {\Large\bfseries\color{verdeTurquesa} Verificación en ambos.}\\[16pt]
+    {\normalsize\color{grisTexto}
+      La arquitectura no es una jaula para el modelo:\\
+      es lo que le permite ser útil sin dejar de ser verificable.}
+  \end{center}
+  \vfill
+\end{frame}
+
+\end{document}

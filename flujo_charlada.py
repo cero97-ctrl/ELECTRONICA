@@ -212,22 +212,30 @@ def main() -> int:
     estado["pasos"].append({"paso": 3, "verificacion": "cifras coinciden", "codigo": 0})
 
     # ── Paso 4: publicar ──────────────────────────────────────────────────────
-    paso(4, total, "Publicar los PDF en la carpeta de entrega")
+    paso(4, total, "Publicar el material (PDF y su fuente) en la carpeta de entrega")
     destino = Path(args.salida_dir)
     if not destino.is_absolute():
         destino = RAIZ / destino
     destino.mkdir(parents=True, exist_ok=True)
     publicados = []
     for nombre, info in piezas.items():
-        origen = Path(info["pdf"])
-        if not origen.exists():
-            fallo(f"{nombre}: el PDF de origen no existe {origen}")
-            avisar("error")
-            return 3
-        final = destino / origen.name
-        shutil.copy2(origen, final)
-        publicados.append(final.name)
-        ok(f"{final.relative_to(RAIZ)}")
+        # El .tex NO es un intermedio que se pueda descartar en .tmp/: es la
+        # fuente del PDF que se entrega. Todos los entregables LaTeX del repo
+        # versionan su fuente, y un PDF sin ella no se puede regenerar ni
+        # revisar, que es justo lo que hace inutilizable la auditoría
+        # pdf_stale (recorre los .tex, asi que un PDF huerfano le es
+        # invisible). Se publican los dos o no se publica nada.
+        for sufijo in (".pdf", ".tex"):
+            origen = Path(info["pdf"]).with_suffix(sufijo)
+            if not origen.exists():
+                fallo(f"{nombre}: falta {sufijo} de origen ({origen}); "
+                      "un entregable sin fuente no es publicable")
+                avisar("error")
+                return 3
+            final = destino / origen.name
+            shutil.copy2(origen, final)
+            publicados.append(final.name)
+            ok(f"{final.relative_to(RAIZ)}")
     estado["pasos"].append({"paso": 4, "publicados": publicados, "codigo": 0})
 
     # escribir_vista ya tolera ruta=None: un andamio que no se puede escribir
