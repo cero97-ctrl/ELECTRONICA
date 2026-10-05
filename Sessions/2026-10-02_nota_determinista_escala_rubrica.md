@@ -95,7 +95,7 @@ fuente de verdad de los pesos (ajuste 2).
     de detección, solo la autoinforme del modelo sobre sí mismo.
 - **Corrección de un hallazgo propio:** el "no detectó la polaridad invertida del diodo" se admite sobre un fixture fabricado por mí. Es evidencia de **un** caso, no de una limitación
   general de la evaluación automática, que es como se redactó en el resumen de la sesión.
-  No se的一般iza hasta tener PDFs reales.
+  No se generaliza hasta tener PDFs reales.
 - **Prompt sin tocar:** `TAREA_POR_TIPO["examen"]` sigue sin pedir que se señale la
   afirmación que el estudiante sostiene con seguridad y que es falsa. Es lo que falló en el
   fixture, pero cambiarlo sin datos reales sería ajustar comportamiento a ciegas.

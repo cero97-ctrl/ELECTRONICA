@@ -477,7 +477,7 @@ def test_escala_rubrica_cuadra() -> None:
               all(re.fullmatch(r"\d+\.\d+-\d+\.\d+", str(k)) for k in niveles),
               f"se esperaba un rango por clave (p. ej. '5.0-6.9'), hay: {list(niveles)}")
 
-    # Y el prompt debe限额 la aritmética al programa: el prompt NO calcula el total,
+    # Y el prompt debe limitar la aritmética al programa: el prompt NO calcula el total,
     # lo hace calcular_nota() (ver test_nota_la_calcula_el_programa). Aquí lo que se
     # vigila es que no queden restos de la regla vieja ("el total es la suma") que
     # el script ya no cumple, porque el total se ignora.

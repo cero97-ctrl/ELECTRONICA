@@ -24,7 +24,7 @@ required_inputs:
     default: 150
   - name: modelo
     description: >
-      Modelo multimodal. Default flash: para inventariar, la 질문 es si hay enunciado,
+      Modelo multimodal. Default flash: para inventariar, la pregunta es si hay enunciado,
       no si el alumno acertó. Subir a opus solo si la inspección tiene que leer fórmulas
       densas para decidir qué examen es.
     default: google/gemini-2.5-flash
