@@ -795,3 +795,113 @@ Asegurarse de terminar el contenido de la fila con el comando `\\` antes de invo
 
 > **Regla general:** Nunca escribir `\hline` sin haber usado `\\` al final del texto/contenido que lo precede inmediatamente en una tabla.
 > **Archivo afectado:** `GIDEAL/Planilla de actualizacion CIUDO con orcid.tex`
+
+---
+
+## 17. Un `.style` de `\tcbset` NO Es un Entorno: `\begin{cajaContenido}` Falla con `Environment undefined`
+
+### Síntoma / Mensaje de Error
+
+Al recompilar un documento infográfico, la compilación falla con dos errores encadenados:
+
+```text
+! LaTeX Error: Environment cajaContenido undefined.
+! LaTeX Error: \begin{document} ended by \end{cajaContenido}.
+l.548 \begin{cajaContenido}
+```
+
+El síntoma es engañoso en un aspecto concreto: **`-interaction=nonstopmode` no se detiene aquí.** Sigue, produce un PDF igual, y la "compilación" aparenta tener éxito salvo por esas dos líneas de error. Un flujo que solo comprueba "existe el PDF" (`compile_latex_code()` devuelve `success=True` si el fichero existe) **da por bueno un documento roto**.
+
+### Causa
+
+`cajaContenido` está declarada como **estilo** dentro de `\tcbset`, no como entorno:
+
+```latex
+\tcbset{
+  cajaContenido/.style={ enhanced, breakable, arc=5pt, ... },  % ← es un ESTILO
+  cajaFortaleza/.style={ ... },
+}
+```
+
+Un `.style` se consume como **opción** de un `tcolorbox`, no como `\begin{...}`. Son dos cosas distintas:
+
+| Declaración | Se usa como | Definido con |
+|---|---|---|
+| `cajaContenido/.style={...}` | `\begin{tcolorbox}[cajaContenido, title={...}]` | `\tcbset{...}` |
+| `\newtcolorbox{cajaContenido}{...}` | `\begin{cajaContenido}` | `\newtcolorbox` |
+
+Por eso el preámbulo canónico `execution/estilo_infografia.py` declara las dos familias: `\tcbset` para los **estilos** (`tarjetaDato`, `cajaContenido`, `cajaFortaleza`, `cajaMejora`, líneas 155-210) y `\newtcolorbox` para los **entornos** (`cajaRecuerda`, `cajaConcepto`, `cajaEjemplo`, `cajaEjercicio`, `cajaReto`, líneas 280-336).
+
+### Solución (aplicada en `docs/COMPUTO_PARALELO/diseno_cluster.tex`)
+
+Usar la forma que ya emplean los 10+ documentos restantes del repo:
+
+```latex
+% Antes (incorrecto — el .style no es un entorno):
+\begin{cajaContenido}
+  ...
+\end{cajaContenido}
+
+% Después (correcto — estilo como opción del tcolorbox):
+\begin{tcolorbox}[cajaContenido]
+  ...
+\end{tcolorbox}
+```
+
+> **Regla general:** antes de escribir `\begin{algo}`, comprobar si `algo` está declarado como `.style=` dentro de `\tcbset` (→ usar `[algo]`) o como `\newtcolorbox` (→ usar `\begin{algo}`). `\newtcolorbox{nombre}{...}` **crea** el entorno; `nombre/.style={...}` **solo** crea estilo. Si el nombre existe como `.style` y aun así se usa como entorno, el error es exactamente este.
+>
+> Y al revés: si quieres un entorno nuevo, no añadas un `.style` al `\tcbset` y luego lo uses como `\begin{...}`; declara `\newtcolorbox`.
+
+### Cómo se detecta: leer los errores del log, no solo la existencia del PDF
+
+`compile_latex_code()` devuelve `success=True` si el PDF existe, y en `nonstopmode` el PDF existe aunque el documento esté roto. Para afirmar que algo "compila limpio" hay que **parsear el `.log` en busca de líneas `!`**, no confiar en el flag:
+
+```python
+log = open(os.path.join(out_dir, f"{job_name}.log"), encoding="utf-8", errors="ignore").read()
+errores = re.findall(r"^! (.+)$", log, re.M)      # 0 es la condición de "limpio"
+overfull  = len(re.findall(r"Overfull \\hbox", log))   # cosmético si > 0
+```
+
+`Overfull \hbox` (texto que se sale del margen) es cosmético; `!` (error) no lo es. `Underfull \hbox` también es cosmético.
+
+### Trampa del propio `compile_latex.py`: compilar en el directorio del entregable borra ficheros
+
+`clean_latex_aux_files(output_dir)` (línea 16) hace `os.walk` sobre **todo** el `output_dir` y **borra cada fichero cuya extensión no esté en su `KEEP_EXTENSIONS`**:
+
+```python
+KEEP_EXTENSIONS = [".tex", ".pdf", ".py", ".md", ".json", ".sh", ".png", ".jpg", ".jpeg", ".zip", ".ipynb", ".kicad_sch", ".txt"]
+```
+
+Solo se limpian `.aux`, `.log`, `.out`, `.toc`… **si el destino es `.tmp/latex_build/`**. Si se compila con `output_dir=docs/MANUAL/`, la misma función recorre el directorio de entregables y puede llevarse `.svg`, `.eps`, `.docx`, `.bmp` o cualquier otra extensión que no esté en esa lista. Por eso los documentos de `docs/` se compilan **aislados** en `.tmp/latex_build/<job>/` y luego se copia el PDF resultante encima:
+
+```python
+contenido = open(ruta_tex, encoding="utf-8").read()
+res = compile_latex_code(contenido, job_name=job,
+                         output_dir=f".tmp/latex_build/{job}", clean=False)
+if not re.findall(r"^! (.+)$", log, re.M):
+    shutil.copy2(pdf_generado, ruta_tex[:-4] + ".pdf")
+```
+
+### Interfaz real del script (no acepta rutas)
+
+```text
+usage: compile_latex.py [-h] [--test]
+```
+
+No existe `compile_latex.py <fichero.tex>`. El punto de entrada es la función pública, que se invoca por importación:
+
+```python
+import sys; sys.path.insert(0, "execution")
+from compile_latex import compile_latex_code
+res = compile_latex_code(contenido, job_name="mi_doc", output_dir=..., clean=False)
+```
+
+- `output_dir` por defecto: `.tmp/latex_build/`
+- `clean=False` deja el `.log` para poder inspeccionarlo (imprescindible para el punto anterior)
+- `--test` solo hace una compilación de prueba, no compila ficheros del repo
+- El MCP `mcp_latex_server.py` es quien lo expone como herramienta
+
+> **Archivos afectados:**
+> - `docs/COMPUTO_PARALELO/diseno_cluster.tex` (líneas 548-550: `\begin{cajaContenido}` → `\begin{tcolorbox}[cajaContenido]`)
+> - `execution/compile_latex.py` (`clean_latex_aux_files`, línea 16; `compile_latex_code`, línea 29)
+> - `execution/estilo_infografia.py` (referencia: qué es `.style` y qué es `\newtcolorbox`)
