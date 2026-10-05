@@ -126,6 +126,17 @@ PDF huérfanos le eran estructuralmente invisibles (recorre los `.tex`, así que
 fuente nunca se visita). La dimensión que debía detectarlo no podía, por construcción.
 
 ## Pendientes
+- **`pdf_stale` sigue sin detectar un PDF entregable sin fuente** (surgido al corregir lo de
+  arriba, 2026-10-05, **abierto**). La dimensión recorre los `.tex` y salta cuando el PDF
+  hermano no existe (`execution/auditar_repo.py:814-820`), así que detecta deriva *dentro*
+  de un par pero un PDF sin fuente **nunca se visita**. Los dos huérfanos de esta charlada
+  le eran invisibles por construcción, y aun así la dimensión reportaba `ok` con confianza
+  («178 pares al día»): un verde sobre una medición parcial, que es justo el fallo que
+  `no_verificado` existe para impedir. Arreglo propuesto: recorrer también los `.pdf` y
+  reportar aviso cuando no tengan `.tex` hermano. **No aplicado**: `auditar_repo.py`
+  comparte `veredicto_algebra.py` con `flujo_auditar_sistema.py`, así que tocarlo merece
+  su propio commit y una decisión explícita del profesor, no un afterthought. Está en
+  `.agent/python.md`/`.agent/latex.md` como clase de fallo, no aquí.
 - **Autor real y título definitivo**: siguen los valores por defecto.
 - **Confirmar Beamer** como formato (fue un supuesto, ver Decisión 8).
 - **Ensayo cronometrado de 30 minutos**: no hecho. El generador avisa si 17 diapositivas
