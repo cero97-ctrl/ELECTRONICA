@@ -24,6 +24,7 @@ Salida: 0 si ninguna dimension esta en fallo, 1 si alguna, 2 si uso incorrecto.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import math
 import re
@@ -749,6 +750,36 @@ def comprobar_untracked(raiz: Path) -> dict[str, Any]:
     }
 
 
+_SESION_LOG: Any = None
+
+
+def _cargar_sesion_log() -> Any | None:
+    """Carga la capa 3 que verifica la cadena, POR RUTA y no por `sys.path`.
+
+    El flujo la importa con `sys.path.insert`, pero esta dimension tambien se
+    carga desde tests por localizacion de fichero, y un `import sesion_log`
+    ataria el comportamiento al cwd. La ruta se resuelve desde `__file__`, que
+    es donde el modulo vive de verdad, asi que funciona desde cualquier
+    directorio.
+    """
+    global _SESION_LOG
+    if _SESION_LOG is not None:
+        return _SESION_LOG
+    ruta = Path(__file__).resolve().parent / "sesion_log.py"
+    if not ruta.is_file():
+        return None
+    try:
+        spec = importlib.util.spec_from_file_location("sesion_log_auditoria", ruta)
+        if spec is None or spec.loader is None:
+            return None
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    except Exception:
+        return None
+    _SESION_LOG = mod
+    return mod
+
+
 def comprobar_logs_append_only(raiz: Path) -> dict[str, Any]:
     """Cadena de hashes de cada .tmp/session_log_*.jsonl.
 
@@ -757,38 +788,49 @@ def comprobar_logs_append_only(raiz: Path) -> dict[str, Any]:
     no solo el de la ultima corrida, porque un log antiguo tambien es evidencia.
 
     Sin logs no se afirma nada: `no_verificado`, nunca `ok`.
+
+    La verificacion la hace `execution/sesion_log.py:verificar_cadena` en este
+    mismo proceso. Antes se pedia por CLI (`integrity --run`), un subproceso por
+    log: con 453 logs eso son 453 arranques de interprete y 66,3 s medidos el
+    2026-10-05, el 47% de una pasada completa de 140 s. La regla de la cadena
+    sigue viviendo UNA vez, en sesion_log.py; aqui solo se consume.
     """
     tmp = raiz / ".tmp"
     sesion_log = raiz / "execution" / "sesion_log.py"
     if not sesion_log.is_file():
         return _no_verificado("no encuentro execution/sesion_log.py", "logs")
 
-    logs = sorted(p.name[len("session_log_"):-len(".jsonl")]
-                  for p in tmp.glob("session_log_*.jsonl"))
+    verificador = _cargar_sesion_log()
+    if verificador is None or not callable(getattr(verificador, "verificar_cadena", None)):
+        return _no_verificado(
+            "no se pudo cargar execution/sesion_log.py (o no expone "
+            "verificar_cadena): sin verificador no hay nada que medir", "logs")
+
+    logs = sorted(tmp.glob("session_log_*.jsonl"))
     if not logs:
         return _no_verificado("no hay ningun log append-only en .tmp/", "logs")
 
     rotos: list[dict[str, Any]] = []
     ilegibles: list[str] = []
     total_eventos = 0
-    for run_id in logs:
+    for ruta in logs:
+        run_id = ruta.name[len("session_log_"):-len(".jsonl")]
         try:
-            proc = subprocess.run(
-                [sys.executable, str(sesion_log), "integrity", "--run", run_id],
-                capture_output=True, text=True, timeout=60, cwd=raiz,
-            )
-            datos = json.loads(proc.stdout) if proc.stdout.strip() else {}
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
+            datos = verificador.verificar_cadena(ruta)
+        except Exception:
             ilegibles.append(run_id)
             continue
-        if datos.get("ok") is True:
+        if not isinstance(datos, dict):
+            ilegibles.append(run_id)
+        elif datos.get("ok") is True:
             total_eventos += int(datos.get("eventos") or 0)
         else:
             rotos.append({"run_id": run_id, "salida": datos})
 
     if ilegibles:
         return _no_verificado(
-            f"{len(ilegibles)} log(s) no se pudieron verificar (timeout o salida ilegible)", "logs")
+            f"{len(ilegibles)} log(s) no se pudieron verificar "
+            f"(ilegible o excepcion del verificador)", "logs")
 
     if rotos:
         return {
@@ -808,7 +850,8 @@ def comprobar_logs_append_only(raiz: Path) -> dict[str, Any]:
         "dimension": "logs",
         "estado": "ok",
         "resumen": f"cadena de hashes intacta en {len(logs)} log(s), {total_eventos} evento(s)",
-        "evidencia": {"logs": len(logs), "eventos": total_eventos, "rotos": []},
+        "evidencia": {"logs": len(logs), "eventos": total_eventos, "rotos": [],
+                      "verificador": "execution/sesion_log.py:verificar_cadena"},
     }
 
 

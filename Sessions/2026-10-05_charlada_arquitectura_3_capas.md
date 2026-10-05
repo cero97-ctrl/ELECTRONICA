@@ -159,6 +159,50 @@ solo los `.tex`. Lo que se zucchinió al arreglarlo:
   porque un `b"%PDF-1.4"` a pelo no tiene Info y devolvería `None`: se habría probado el
   caso «no se», que no es el que se quería probar.
 
+## Cerrado: `logs` costaba 66 s en 453 intérpretes (2026-10-05)
+
+La dimensión `logs` verificaba la cadena de hashes de cada `.tmp/session_log_*.jsonl`
+**lanzando un subproceso por log**: `python3 execution/sesion_log.py integrity --run <id>`.
+Medido: **66,33 s** para 453 logs, 0,14 s cada uno. Casi todo era arranque de intérprete,
+no verificación — el trabajo real (sha256 sobre 1069 líneas) es de milisegundos.
+
+- **La regla no se reimplementó, se movió.** `execution/sesion_log.py` gana
+  `verificar_cadena(ruta) -> dict`, que es *datos* (no imprime, no devuelve código de
+  salida), e `integrity(run)` queda como envoltura de CLI. El compositor importa ese módulo
+  **por ruta desde `__file__`**, no por `import`, porque los tests lo cargan por
+  localización de fichero y un import por nombre ataría el comportamiento al cwd.
+- **Recibe la ruta, no el `run_id`.** A propósito: `LOG_DIR` está clavado al repo, así que
+  una función atada a él no se puede probar sobre un log de laboratorio, y esta dimensión
+  se prueba justo con logs de laboratorio.
+- **El hallazgo que no estaba en el encargo:** la dimensión que custodia la fuente de verdad
+  del proyecto **no tenía ni una prueba funcional**. Solo se comprobaba
+  `callable(AR.comprobar_logs_append_only)` — que es el caso que pasa aunque no verifique
+  nada. Se congelaron los fallos que de verdad importan (línea editada, línea borrada, JSON
+  inválido, log ausente, log sano que no debe marcarse roto) con cadenas de hashes
+  **reales**, más un test que congela el mecanismo: `subprocess.run` parchado para que
+  reviente si alguien reintroduce un intérprete por log. Cobertura 146 → **165**.
+  Comprobado que los tests no son vacíos: mutando el código para desactivar el chequeo de
+  `prev`, la dimensión reportó **«cadena de hashes intacta en 3 log(s)» sobre un log
+  manipulado**. Eso es exactamente el fallo que la suite anterior no podía ver.
+- **Resultado medido:** `logs` 66,33 s → **0,17 s** (≈390×). La pasada completa baja a
+  **140,2 s** y `--rapido` a **120,3 s**.
+- **Corolario incómodo sobre `--rapido`:** ahora ahorra solo **19,9 s (14 %)**, porque
+  **`disco` (~90 s, 64 % del total) nunca se omite**. El flag ya no compra tiempo, solo
+  calla tres dimensiones. La cifra antigua de «omite el 36,6 %» era de un repo mucho
+  más pequeño y sin carga; no es comparable.
+- **Correcciones de `AGENTS.md` que salieron de la medición:** las dimensiones son **14**
+  (7 nuevas + 7 reutilizadas), no 13 (7+6); y la lista de reutilizadas estaba mal
+  clasificada — incluía `logs`, que es **nueva**, y omitía `test_texto` y `entornos`.
+  Los timings viejos (43,5 s → 24,6 s) quedan marcados como obsoletos con su fecha y su
+  causa, en vez de borrados: son evidencia de que la cifra era de otro repo.
+- **Asimetría documentada a propósito:** el sobre de error del CLI (`status/code/message`)
+  **no lleva `ok`**, mientras que el veredicto de datos sí (`ok: false`). Por eso la
+  dimensión lee `verificar_cadena` y no el CLI. Se dejó escrito para que nadie fusione las
+  dos formas creyéndolas iguales.
+- Determinismo: tres corridas sobre entrada **congelada** (468 logs) dan resultado idéntico
+  byte a byte. Las cifras que crecen entre corridas reales son porque cada auditoría
+  **genera** su propio log de sesión: cambia la entrada, no el veredicto.
+
 ## Pendientes
 - **Tres PDF entregables sin fuente de mismo nombre**, **preexistentes y no introducidos por
   esta sesión**; los acaba de sacar la dimensión ya corregida (no los produjo la charlada,

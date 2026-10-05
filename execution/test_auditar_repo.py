@@ -16,11 +16,15 @@ Ejecutar: python3 execution/test_auditar_repo.py
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import importlib.util
+import io
 import json
 import sys
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 RAIZ = Path(__file__).resolve().parent.parent
 FALLOS: list[str] = []
@@ -299,6 +303,159 @@ comprobar("no queda interprete de logs muerto en el flujo",
           not hasattr(FA, "_interpreta_logs_append_only"))
 comprobar("la dimension logs se apoya en sesion_log.py integrity",
           callable(AR.comprobar_logs_append_only))
+
+
+# --- `logs` con FUNCION, no solo "existe". La cadena append-only es la fuente
+# de verdad del repo: si una linea se edita o se borra, toda la trazabilidad de
+# esa corrida queda anulada. Antes solo se comprobaba que la dimension fuera
+# callable, que es justo el caso que pasa aunque verifique nada. Un verificador
+# probado solo con su caso bueno no sabe que esta rechazando, asi que aqui se
+# congelan los fallos que de verdad importan.
+def _log_encadenado(ruta: Path, n_eventos: int) -> None:
+    """Escribe un log append-only BIEN formado, con la cadena de hashes real.
+
+    No reimplementa la regla del verificador: construye un fixture VALIDO con
+    el mismo primitivo (sha256 de la linea anterior), que es lo que un `add`
+    real deja en disco.
+    """
+    lineas: list[bytes] = []
+    prev = b""
+    for i in range(1, n_eventos + 1):
+        ev = {"append_only": True, "datos": {"n": i},
+              "prev": hashlib.sha256(prev).hexdigest(),
+              "seq": i, "tipo": "flujo/paso"}
+        raw = json.dumps(ev, ensure_ascii=False, sort_keys=True,
+                         separators=(",", ":")).encode("utf-8")
+        lineas.append(raw)
+        prev = raw
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    ruta.write_bytes(b"\n".join(lineas) + b"\n" if lineas else b"")
+
+
+def _clonar_cadena(ruta: Path, indice: int, mutar) -> None:
+    """Edita el evento `indice` (0-based) sin recalcular el `prev` del siguiente.
+
+    Es la manipulacion que rompe el append-only: el contenido cambia, la cadena
+    ya no encaja. Escribirlo a proposito es lo que hace que la prueba valga.
+    """
+    lineas = ruta.read_bytes().splitlines()
+    ev = json.loads(lineas[indice])
+    mutar(ev)
+    lineas[indice] = json.dumps(ev, ensure_ascii=False, sort_keys=True,
+                                separators=(",", ":")).encode("utf-8")
+    ruta.write_bytes(b"\n".join(lineas) + b"\n")
+
+
+with tempfile.TemporaryDirectory() as _tdl:
+    _rl = Path(_tdl)
+    (_rl / "execution").mkdir()
+    (_rl / "execution" / "sesion_log.py").write_text("# presente\n", encoding="utf-8")
+    (_rl / ".tmp").mkdir()
+
+    # Sin logs no se afirma nada. Un "todo bien porque no hay nada que mirar"
+    # es el peor resultado posible: parece una garantia y no es ninguna.
+    comprobar("logs sin ningun log NO es ok (no_verificado, nunca verde)",
+              AR.comprobar_logs_append_only(_rl)["estado"] == "no_verificado")
+
+    comprobar("logs sin execution/sesion_log.py NO es ok (no_verificado)",
+              AR.comprobar_logs_append_only(_rl)["estado"] == "no_verificado")
+
+    _log_encadenado(_rl / ".tmp" / "session_log_bueno.jsonl", 3)
+    _log_encadenado(_rl / ".tmp" / "session_log_vacio.jsonl", 0)
+    _d_ok = AR.comprobar_logs_append_only(_rl)
+    comprobar("logs: cadenas intactas -> ok, y cuenta los eventos de verdad",
+              _d_ok["estado"] == "ok" and _d_ok["evidencia"]["eventos"] == 3,
+              str(_d_ok))
+    comprobar("logs: un log de 0 eventos no invalida la dimension (0 != corrupto)",
+              _d_ok["estado"] == "ok", str(_d_ok))
+    comprobar("logs: declara el verificador que uso (reproducibilidad)",
+              "sesion_log.py" in str(_d_ok["evidencia"].get("verificador", "")),
+              str(_d_ok["evidencia"]))
+
+    # --- El fallo real: una linea editada rompe el `prev` del siguiente.
+    _log_encadenado(_rl / ".tmp" / "session_log_tocado.jsonl", 3)
+    _clonar_cadena(_rl / ".tmp" / "session_log_tocado.jsonl", 1,
+                   lambda ev: ev["datos"].__setitem__("n", 999))
+    _d_malo = AR.comprobar_logs_append_only(_rl)
+    comprobar("logs: una linea editada -> fallo, no verde",
+              _d_malo["estado"] == "fallo", str(_d_malo))
+    comprobar("logs: el fallo NOMBRA el log roto y el motivo (no dice solo 'fallo')",
+              _d_malo["evidencia"]["rotos"][0]["run_id"] == "tocado"
+              and "NO coincide" in _d_malo["evidencia"]["rotos"][0]["salida"]["mensaje"],
+              str(_d_malo))
+    comprobar("logs: el log sano no aparece como roto (precision antes que sensibilidad)",
+              [r["run_id"] for r in _d_malo["evidencia"]["rotos"]] == ["tocado"],
+              str(_d_malo))
+    comprobar("logs: el fallo cuenta los 3 logs, no solo los rotos",
+              _d_malo["evidencia"]["logs"] == 3, str(_d_malo))
+    comprobar("logs: el fallo dice que hacer y no tocar la evidencia a mano",
+              "no se corrige a mano" in _d_malo["accion"].lower(), str(_d_malo))
+
+    # Una linea BORRADA rompe `seq`: el mismo fallo, otra causa.
+    _log_encadenado(_rl / ".tmp" / "session_log_corto.jsonl", 3)
+    _lc = (_rl / ".tmp" / "session_log_corto.jsonl").read_bytes().splitlines()
+    (_rl / ".tmp" / "session_log_corto.jsonl").write_bytes(_lc[0] + b"\n" + _lc[2] + b"\n")
+    _d_corto = AR.comprobar_logs_append_only(_rl)
+    comprobar("logs: una linea borrada rompe `seq` -> fallo",
+              _d_corto["estado"] == "fallo"
+              and any("seq esperado" in r["salida"]["mensaje"]
+                      for r in _d_corto["evidencia"]["rotos"]), str(_d_corto))
+
+    # JSON invalido: no es 'no verificado' (SI se pudo leer), es corrupto.
+    (_rl / ".tmp" / "session_log_basura.jsonl").write_bytes(b"{no es json\n")
+    _d_basura = AR.comprobar_logs_append_only(_rl)
+    comprobar("logs: JSON invalido -> fallo con 'JSON invalido', no no_verificado",
+              _d_basura["estado"] == "fallo"
+              and any("JSON inv" in r["salida"]["mensaje"]
+                      for r in _d_basura["evidencia"]["rotos"]), str(_d_basura))
+
+    # El mecanismo es la decision que ahorro 66 s: se congela para que nadie
+    # reintroduzca un interprete por log sin Notarlo en el informe.
+    def _no_subproceso(*_a, **_k):
+        raise AssertionError("logs no debe lanzar un subproceso por log")
+
+    with mock.patch.object(AR.subprocess, "run", side_effect=_no_subproceso):
+        _d_inproc = AR.comprobar_logs_append_only(_rl)
+    comprobar("logs verifica en proceso: sin subproceso y sigue detectando el fallo",
+              _d_inproc["estado"] == "fallo" and _d_inproc["evidencia"]["logs"] == 5,
+              str(_d_inproc))
+
+    # El CLI y la funcion de datos tienen que decir lo MISMO. La refactorizacion
+    # movio la regla y dejo el CLI como envoltura: si divergieran, el CLI
+    # estaria mintiendo sobre quien decide, que es peor que no tener CLI.
+    _SLG = AR._cargar_sesion_log()
+
+    def _integrity(run: str) -> tuple[int, dict]:
+        """Invoca el CLI y devuelve (codigo de salida, veredicto parseado)."""
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = _SLG.integrity(run)
+        return rc, json.loads(buf.getvalue())
+
+    with mock.patch.object(_SLG, "LOG_DIR", _rl / ".tmp"):
+        _rc_ok, _cli_ok = _integrity("bueno")
+        _rc_malo, _cli_malo = _integrity("tocado")
+        _rc_ausente, _cli_ausente = _integrity("no_existe")
+    comprobar("el CLI sale 0 en log intacto y 2 en log roto (contrato intacto)",
+              _rc_ok == 0 and _rc_malo == 2, f"ok={_rc_ok} malo={_rc_malo}")
+    comprobar("el CLI sale 2 (no 1) si el log no existe",
+              _rc_ausente == 2, f"ausente={_rc_ausente}")
+    comprobar("el CLI y verificar_cadena coinciden en eventos y cadena_hashes",
+              _cli_ok.get("eventos") == 3 and _cli_ok.get("cadena_hashes") is True,
+              str(_cli_ok))
+    # OJO, y es deliberado: el sobre de ERROR del CLI (status/code/message) NO
+    # lleva la clave `ok`; el veredicto de datos si (`ok: False`). Por eso la
+    # dimension lee `verificar_cadena` y no el CLI. Se deja escrito para que
+    # nadie introduzca una fusion de las dos formas pensando que son iguales.
+    comprobar("el sobre de error del CLI no lleva 'ok' (forma distinta a la de datos)",
+              "ok" not in _cli_malo and _cli_malo.get("status") == "error"
+              and _cli_malo.get("code") == 2, str(_cli_malo))
+    comprobar("el veredicto de datos SI lleva ok=False (es lo que lee la dimension)",
+              _SLG.verificar_cadena(_rl / ".tmp" / "session_log_tocado.jsonl")
+              .get("ok") is False)
+    comprobar("el CLI de un log ausente dice 'no existe' (no se inventa un veredicto)",
+              _cli_ausente.get("status") == "error"
+              and "No existe" in _cli_ausente.get("message", ""), str(_cli_ausente))
 
 # ---------------------------------------------------------------------------
 print("== Deteccion de secretos: precision antes que sensibilidad ==")

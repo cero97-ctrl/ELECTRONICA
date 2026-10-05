@@ -234,41 +234,62 @@ def resume(run: str) -> int:
     })
 
 
-def integrity(run: str) -> int:
-    """Verifica la cadena de hashes (append-only) y la secuencia seq/prev."""
-    ruta = _ruta_log(run)
+def verificar_cadena(ruta: Path) -> dict:
+    """Verifica la cadena de hashes (append-only) y la secuencia seq/prev.
+
+    Funcion pura de datos: recibe la RUTA del log y devuelve el veredicto, sin
+    imprimir y sin devolver codigo de salida. Existe separada de `integrity`
+    porque su otro consumidor es `comprobar_logs_append_only`
+    (execution/auditar_repo.py), que la invoca una vez por cada log del repo
+    (453 al 2026-10-05) en el mismo proceso: pedirla por CLI le costaba un
+    arranque de interprete por log, 0,14 s, y 66 s en total.
+
+    Recibe la ruta y no el `run_id` a proposito. La regla de la cadena vive
+    aqui y no debe depender de un LOG_DIR clavado al repo, o no se puede
+    probar sobre un log de laboratorio. El CLI la envuelve; no la reimplementa.
+    """
     if not ruta.exists():
-        return _error(f"No existe el log de sesión: {ruta}", code=2)
-    lineas = [l for l in ruta.read_bytes().splitlines() if l]
+        return {"archivo": str(ruta), "ok": False,
+                "mensaje": f"No existe el log de sesión: {ruta}"}
+    try:
+        lineas = [l for l in ruta.read_bytes().splitlines() if l]
+    except OSError as exc:
+        return {"archivo": str(ruta), "ok": False,
+                "mensaje": f"No se pudo leer el log: {exc}"}
     if not lineas:
-        return _ok({"archivo": str(ruta), "ok": True, "eventos": 0,
-                    "mensaje": "log vacío"})
+        return {"archivo": str(ruta), "ok": True, "eventos": 0,
+                "mensaje": "log vacío"}
     prev = b""
     for i, raw in enumerate(lineas, start=1):
         try:
             ev = json.loads(raw)
         except json.JSONDecodeError:
-            return _error(f"Evento {i} con JSON inválido en {ruta}", code=2)
+            return {"archivo": str(ruta), "ok": False,
+                    "mensaje": f"Evento {i} con JSON inválido en {ruta}"}
         if ev.get("seq") != i:
-            return _error(
-                f"Evento {i}: seq esperado {i}, obtenido {ev.get('seq')}. "
-                "¿Se eliminó u ordenó mal una línea?",
-                code=2,
-            )
+            return {"archivo": str(ruta), "ok": False,
+                    "mensaje": (f"Evento {i}: seq esperado {i}, "
+                                f"obtenido {ev.get('seq')}. "
+                                "¿Se eliminó u ordenó mal una línea?")}
         if ev.get("prev") != _hash_linea_prev(prev):
-            return _error(
-                f"Evento {i}: hash prev de la cadena NO coincide → el log fue "
-                "modificado (append-only violado).",
-                code=2,
-            )
+            return {"archivo": str(ruta), "ok": False,
+                    "mensaje": (f"Evento {i}: hash prev de la cadena NO coincide "
+                                "→ el log fue modificado (append-only violado).")}
         if not ev.get("append_only"):
-            return _error(
-                f"Evento {i}: falta la marca append_only → log corrupto.",
-                code=2,
-            )
+            return {"archivo": str(ruta), "ok": False,
+                    "mensaje": f"Evento {i}: falta la marca append_only → log corrupto."}
         prev = raw
-    return _ok({"archivo": str(ruta), "ok": True, "eventos": len(lineas),
-                "cadena_hashes": True})
+    return {"archivo": str(ruta), "ok": True, "eventos": len(lineas),
+            "cadena_hashes": True}
+
+
+def integrity(run: str) -> int:
+    """CLI de `verificar_cadena` para un run: imprime el veredicto y sale 0/2."""
+    datos = verificar_cadena(_ruta_log(run))
+    if datos.get("ok"):
+        return _ok(datos)
+    return _error(str(datos.get("mensaje") or "cadena de hashes no verificada"),
+                  code=2)
 
 
 def main() -> int:

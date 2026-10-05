@@ -73,7 +73,7 @@ dimensions:
     - texto: execution/verificar_texto.py (corrupcion de prosa)
     - estado_sesion: execution/estado_sesion.py (integridad de las vistas de estado)
     - bitacoras: execution/bitacoras.py (continuidad de Sessions/)
-    - logs: execution/sesion_log.py integrity (cadena de hashes)
+    - logs: execution/sesion_log.py verificar_cadena (cadena de hashes, en proceso)
     - disco: execution/disco_medir.py (filesystem e inodos)
     - barrera: execution/test_barrera_disco.py (barrera anti-borrado)
     - test_texto: execution/test_verificar_texto.py (regresion del detector de prosa)
