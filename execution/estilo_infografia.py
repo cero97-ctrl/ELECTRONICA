@@ -19,8 +19,58 @@ Elementos provistos:
   - estiloCodigo/estiloPython : listados de código dark-mode (listings + auto-wrap)
 """
 
+# ── Paleta de colores — fuente única de verdad ───────────────────────────────────
+# Se expone como dato de Python (no como \definecolor incrustado en el preámbulo)
+# para que otros generadores —beamer, en particular, que no puede usar las macros
+# de tcolorbox de este módulo— compartan exactamente los mismos colores sin copiar
+# la tabla a mano. Dos paletas que divergen en silencio son la forma más cara de
+# errar en un proyecto cuya tesis es el determinismo.
+#
+# clave -> (hex sin '#', comentario alineado)
+PALETA: dict[str, tuple[str, str]] = {
+    # Technological dark-mode
+    "fondoOscuro": ("0D1B2A", "Dark navy — fondo banda título"),
+    "verdeTurquesa": ("004D40", "Verde turquesa — bandas de marca"),
+    "azulNoche": ("1B3A6B", "Midnight blue — secciones, marcos"),
+    "azulMedio": ("2A5298", "Azul medio — variante de acento"),
+    "cyanNeon": ("00C8E0", "Cyan eléctrico — acentos primarios"),
+    "verdeSignal": ("00B887", "Verde señal — fortalezas, éxito"),
+    "naranjaVivo": ("FF7043", "Naranja vivo — mejoras, advertencias"),
+    "rojoAlerta": ("E53935", "Rojo alerta — errores"),
+    "grisPapel": ("F4F6FA", "Fondo tarjetas claras"),
+    "grisLinea": ("C8D0E0", "Bordes sutiles"),
+    "grisTexto": ("6B7A99", "Texto secundario"),
+    "amarilloNota": ("FFB300", "Notas / advertencias doradas"),
+    # Code blocks (dark-mode)
+    "codigoFondo": ("1E2D3D", "Fondo del bloque de código"),
+    "codigoComentario": ("7A8FA6", "Comentarios"),
+    "codigoCadena": ("FF9D5C", "Cadenas / strings"),
+    "codigoKeyword": ("00C8E0", "Palabras clave"),
+    "codigoNumero": ("00E5A0", "Números"),
+}
+
+
+def definir_colores(grupos: tuple[str, ...] | None = None) -> str:
+    """Genera el bloque `\\definecolor` a partir de PALETA.
+
+    `grupos` filtra por prefijo de clave (p. ej. ``("codigo",)``) para emitir
+    solo un subconjunto; por defecto emite la paleta completa.
+    """
+    lineas = []
+    for nombre, (hexval, comentario) in PALETA.items():
+        if grupos is not None and not any(nombre.startswith(g) for g in grupos):
+            continue
+        lineas.append(
+            f"\\definecolor{{{nombre}}}{{HTML}}{{{hexval}}}%".ljust(52)
+            + f" {comentario}"
+        )
+    return "\n".join(lineas) + "\n"
+
+
 # ── Preámbulo LaTeX compartido ─────────────────────────────────────────────────
 # No incluye \begin{document}: el generador lo añade tras su cabecera específica.
+# El bloque de colores NO está escrito aquí: se inyecta con `definir_colores()`
+# para que la paleta tenga una sola definición en todo el workspace.
 PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 
 % ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
@@ -103,26 +153,7 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 \emergencystretch 3em
 
 % ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
-\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
-\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
-\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
-\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
-\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
-\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
-\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
-\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
-\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
-\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
-\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
-\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
-
-% Colores específicos para bloques de código (dark-mode)
-\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
-\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
-\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
-\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
-\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
-
+""" + definir_colores() + r"""
 % ── Banda de título: portada infográfica ──────────────────────────────────────
 %   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
 %   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.

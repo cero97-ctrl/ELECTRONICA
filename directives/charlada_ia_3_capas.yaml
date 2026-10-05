@@ -1,0 +1,125 @@
+# directiva: charlada_ia_3_capas.yaml (Capa 1 — SOP)
+#
+# Qué hacer: producir el material de una conferencia de 30 minutos sobre el patrón
+# de arquitectura de 3 capas (directiva / orquestación / ejecución) aplicado a
+# ingeniería con LLMs.
+#
+# Cómo se invoca (Capa 2):
+#   python3 flujo_charlada.py --salida-dir docs/AGENTE_IA --autor "Nombre"
+#
+# Contrato de salida: el generador de Capa 3 devuelve JSON y el orquestador valida
+# la COMPILACIÓN por el log (`^! `), nunca por la existencia del PDF. En modo
+# nonstopmode un PDF roto se produce igual y `success=True` miente.
+
+goal: >
+  Generar dos entregables para una conferencia de 30 minutos sobre el patrón
+  transferible de arquitectura de 3 capas para ingeniería con LLMs:
+  (1) un deck beamer de proyección y (2) un material handout en A4 estilo
+  infográfico. La tesis que sostiene la charla es cuantitativa, no retórica:
+  la mayoría del sistema NO debe contener un LLM, y el patrón se demuestra con
+  fallos reales ya documentados, no con promesas.
+
+required_inputs:
+  - name: titulo
+    description: Título de la conferencia.
+    default: "IA en ingeniería con un esquema determinista de tres capas"
+  - name: subtitulo
+    description: >
+      Enunciado de la tesis. Es la única frase que el ponente no debe perder:
+      dice qué se afirma y por qué importa.
+    default: "Por qué el 80 % de un sistema con LLM no debería contener un LLM"
+  - name: autor
+    description: Autoría que aparece en la portada y el pie.
+    default: "ELECTRONICA"
+  - name: fecha
+    description: Fecha visible en la portada.
+    default: "2026-10-05"
+  - name: salida_dir
+    description: Carpeta donde se escriben los .tex y los .pdf.
+    default: "docs/AGENTE_IA"
+  - name: minutos
+    description: >
+      Duración de la charla. Governa el presupuesto de diapositivas
+      (~1.7 min/diapositiva) y el aviso de sobrecarga si se excede.
+    default: 30
+
+steps:
+  - step: 1
+    description: >
+      Ejecutar execution/generar_charlada_latex.py, que produce los .tex de las
+      dos piezas (deck beamer y handout infográfico) usando la paleta compartida
+      execution/estilo_infografia.PALETA. La paleta tiene UNA sola definición en
+      todo el workspace; copiarla a mano está prohibido por ser una divergencia
+      silenciosa.
+    script: execution/generar_charlada_latex.py
+    maps: [titulo, subtitulo, autor, fecha, salida_dir]
+
+  - step: 2
+    description: >
+      El generador compila cada .tex de forma AISLADA en .tmp/charlada/ y
+      devuelve JSON con los errores reales extraídos del .log por la expresión
+      `^! `. Un PDF existente NO prueba una compilación limpia: en nonstopmode
+      LaTeX emite el PDF aunque el documento esté roto (ver entrada 17 de
+      .agent/latex.md, el caso .style vs entorno de tcolorbox).
+    validates: "log sin líneas que empiecen por '!'"
+
+  - step: 3
+    description: >
+      Copiar los PDF generados sobre salida_dir SOLO si su log vino limpio.
+      Si algún log trae errores, abortar con código 3 y no publicar un
+      entregable roto.
+
+  - step: 4
+    description: >
+      El orquestador comprueba que las cifras citadas en el material coinciden
+      con las que devuelve la realidad (tests ejecutados, conteos de
+      ficheros). Una cifra que no se puede reproducir no se publica: se
+      imprime como NO_VERIFICADA.
+
+expected_outputs:
+  - path: "{salida_dir}/charlada_ia_3_capas.pdf"
+    description: "Deck beamer 16:9 para proyectar (~17 diapositivas para 30 min)."
+  - path: "{salida_dir}/charlada_ia_3_capas_material.pdf"
+    description: "Handout A4 estilo infográfico, con el desarrollo de los 4 fallos."
+  - path: ".tmp/charlada/deck.json"
+    description: "Informe de compilación: errores por log, overfull, páginas."
+
+edge_cases:
+  - case: "La paleta diverge entre el deck y el handout"
+    protocol: >
+      Ambos se generan desde estilo_infografia.PALETA en la misma corrida. Si
+      alguien edita un color, cambia para los dos. No hay segunda copia.
+  - case: "El PDF existe pero el documento está roto"
+    protocol: >
+      Es el fallo real de la entrada 17: nonstopmode produce PDF con errores.
+      La validación es por log, nunca por os.path.exists. Si el generador
+      devuelve errores > 0, sale con código 3 y no copia nada.
+  - case: "El presupuesto de diapositivas se pasa"
+    protocol: >
+      Si diapositivas > minutos / 1.5, el generador lo avisa por stderr y
+      registra presupuesto_excedido. No recorta slides automáticamente: decidir
+      qué quitar es una decisión editorial, no determinista.
+  - case: "Un número del material no se puede reproducir"
+    protocol: >
+      Se imprime como NO_VERIFICADA y no se maqueta. El riesgo aquí no es que
+      el dato sea inexacto, es que un docente lo intente reproducir en el
+      atril y se rompa el argumento.
+  - case: "beamer no está instalado en el TeX Live del host"
+    protocol: >
+      Se detecta con kpsewhich beamer.cls antes de generar. Si falta, el
+      generador cae al formato handout (que no usa beamer) y lo avisa por
+      stderr, en vez de emitir un .tex que nadie puede compilar.
+
+notas_de_diseno:
+  - >
+    "Solo material" (sin demo en vivo) descarta el flujo de auditoría del repo
+    como demo: era la opción natural porque corre sin red, pero el material
+    tiene que sostenerse solo, con los fallos documentados como prueba.
+  - >
+    El deck NO repite el handout. El deck afirma y muestra; el handout explica y
+    documenta. Duplicar el contenido en los dos es lo que hace que una charla
+    tenga material y se olvide de hablar.
+  - >
+    Esta charla es un flujo con 3 capas y por tanto, según la convención del
+    repo, lleva su propio diagrama ISO 5807 generado por
+    execution/generar_diagrama_flujo.py.
