@@ -42,8 +42,14 @@ Lo que salió de esa revisión:
 2. **No tocar el disco** (85.6 %): quedó a la vista, sin accionarse en esta sesión.
 3. Se commitea también `docs/AGENTE_IA/resumen-xiaomi-deepseek.md`, que estaba untracked
    desde antes de esta sesión y es un resumen de estudio (HighSpars 2 / KV cache de
-   Xiaomi), sin relación con las correcciones. Secommitió **en su propio commit**, no
+   Xiaomi), sin relación con las correcciones. Se commiteó **en su propio commit**, no
    mezclado con el fix.
+4. **El estudio de detección de errores conceptuales sigue en la nevera.** Confirmado
+   expresamente el 2026-10-05: no se retoma hasta que el profesor haga **una ronda de
+   corrección en papel**. La condición de desbloqueo es **una acción suya, no del
+   orquestador**: no hay forma de que el agente la dispare, así que «esperar a tenerla»
+   significa esperar a que el usuario la complete. No es un pendiente que el agente pueda
+   recordar por cuenta propia.
 
 ## Actividades
 - Lectura de las 3 últimas bitácoras y del estado de git (`master`, `4b58eee`).
@@ -60,8 +66,14 @@ Lo que salió de esa revisión:
 - **8 ficheros ≥5 MB trackeados**: `git rm --cached` ahorra espacio futuro pero no reduce
   el histórico; reducirlo exige reescritura, que hay que decidir con cuidado.
 - **3 PDF desfasados**: recompilar antes de entregar.
-- **Estudio de detección de errores conceptuales** (decisión del profesor el 2026-10-03):
-  aparcado hasta reunir muestra mayor de entregas reales. El prompt de
-  `TAREA_POR_TIPO["examen"]` **no se toca** hasta tener verdad etiquetada.
+- **Estudio de detección de errores conceptuales** (decisión del profesor el 2026-10-03,
+  **reconfirmada el 2026-10-05**): aparcado hasta que el profesor haga **una ronda de
+  corrección en papel**. El prompt de `TAREA_POR_TIPO["examen"]` **no se toca** hasta
+  tener verdad etiquetada.
+  Procedimiento de reanudación (del detalhe en la bitácora del 2026-10-03, sección
+  «Cómo se retoma»): reunir muestra → evaluar por lote con `flujo_evaluar_examen.py
+  --tipo examen` **inspeccionando antes cada PDF** con `inspeccionar_entrega.py` → escribir
+  la verdad del profesor sobre el papel ítem a ítem en un archivo sin nada del modelo →
+  solo entonces contrastar. No reusar `resultados_modelo.md`.
 - **El motor de opencode de esta sesión no acepta imágenes ni PDF**: cualquier revisión
   visual de informes tiene que hacerla el LLM del script o el usuario.
