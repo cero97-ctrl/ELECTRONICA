@@ -125,18 +125,53 @@ Efecto colateral favorable: `pdf_stale` pasó de 178 a **180 pares**, porque ant
 PDF huérfanos le eran estructuralmente invisibles (recorre los `.tex`, así que un PDF sin
 fuente nunca se visita). La dimensión que debía detectarlo no podía, por construcción.
 
+## Cerrado: el punto ciego de `pdf_stale` (2026-10-05)
+
+El pendiente de más abajo está **cerrado**: `pdf_stale` ahora recorre también los `.pdf`, no
+solo los `.tex`. Lo que se zucchinió al arreglarlo:
+
+- **El recorrido tenía dos sentidos y solo tenía uno.** El primero lo conduce el `.tex` y
+  detecta deriva *dentro* de un par. El segundo lo conduce el `.pdf`: pregunta «de quién es
+  este PDF y no veo a su fuente». Sin el segundo, un PDF sin fuente no era un dato
+  faltante: era un fichero que la dimensión **nunca visitaba**, y el `ok` que reportaba
+  («180 pares al día») era una afirmación sobre 180 pares, no sobre el repo. Un verde sobre
+  una medición parcial.
+- **Detectar «PDF sin .tex» a pelo daría 34 candidatos**, y 8 son libros y escaneos de
+  terceros (`cursos/TESIS/.../PROYECTO-DIALISIS-PERITONIAL.pdf`, etc.). Una dimensión que
+  llora lobo ocho veces enseña a ignorarla, que es peor que no tenerla. El discriminador son
+  los metadatos: se declara LaTeX solo si `/Producer` o `/Creator` dice `pdfTeX`, `LuaTeX` o
+  `XeTeX`. De 34 quedan **3**, y los tres son de este repo.
+- **`None` no es `False`.** Si los metadatos no se pueden leer, el resultado es «no saber»,
+  no «no es LaTeX». Sin `pypdf` (no está en `requirements.txt`, que solo declara `psutil` y
+  `PyYAML`; el resto vive en el entorno conda) *todos* los candidatos caen en
+  `pdf_sin_metadatos` y la dimensión **avisa**: degrada a «revisar a mano» en vez de ponerse
+  verde. Se prefirió ese ruido a un `ok` mentiroso.
+- **La función no diagnostica, mide y enseña.** La primera versión decía «no regenerables» y
+  era **falso en los 3 casos**: los tres tienen su fuente, pero con otro nombre. Así que
+  ahora cada huérfano lleva `tex_en_el_directorio` y la acción explica las dos ramas —con
+  un `.tex` al lado lo probable es un PDF duplicado y sobra el PDF; sin ninguno, el
+  entregable no se puede reproducir. Elegir entre las dos sin mirar sería inventar el fallo.
+- **Gravedad `aviso`, no `fallo`.** Son 3 entregables preexistentes que el repo lleva
+  arrastrando; subirlos a `fallo` dejaría el veredicto global en `con_fallos` y enseñaría
+  que la auditoría naranja es el estado normal.
+- Cobertura: **12 aserciones nuevas** (134 → **146**, todas en verde). Los tests fabrican
+  PDF **reales** con `pypdf` (`/Producer: pdfTeX-1.40.25` y `/Producer: Adobe Acrobat 6.0`)
+  porque un `b"%PDF-1.4"` a pelo no tiene Info y devolvería `None`: se habría probado el
+  caso «no se», que no es el que se quería probar.
+
 ## Pendientes
-- **`pdf_stale` sigue sin detectar un PDF entregable sin fuente** (surgido al corregir lo de
-  arriba, 2026-10-05, **abierto**). La dimensión recorre los `.tex` y salta cuando el PDF
-  hermano no existe (`execution/auditar_repo.py:814-820`), así que detecta deriva *dentro*
-  de un par pero un PDF sin fuente **nunca se visita**. Los dos huérfanos de esta charlada
-  le eran invisibles por construcción, y aun así la dimensión reportaba `ok` con confianza
-  («178 pares al día»): un verde sobre una medición parcial, que es justo el fallo que
-  `no_verificado` existe para impedir. Arreglo propuesto: recorrer también los `.pdf` y
-  reportar aviso cuando no tengan `.tex` hermano. **No aplicado**: `auditar_repo.py`
-  comparte `veredicto_algebra.py` con `flujo_auditar_sistema.py`, así que tocarlo merece
-  su propio commit y una decisión explícita del profesor, no un afterthought. Está en
-  `.agent/python.md`/`.agent/latex.md` como clase de fallo, no aquí.
+- **Tres PDF entregables sin fuente de mismo nombre**, **preexistentes y no introducidos por
+  esta sesión**; los acaba de sacar la dimensión ya corregida (no los produjo la charlada,
+  que iba con su fuente):
+  - `cursos/TESIS/.../IoT con Arduino y ESP32/IoT-con-Aeduino-y-ESP32.pdf` — **duplicado por
+    errata**: existe `IoT-con-Arduino-y-ESP32.pdf` *y* su `.tex`. Sobra el que dice «Aeduino».
+  - `docs/MANUAL/manual-2.pdf` — **copia vieja**: `manual.tex` y `manual.pdf` están al lado.
+  - `cursos/DISP_ELECTRONICOS/.../PRACTICA-2/practica-2.pdf` — el `.tex` del directorio es
+    de **otro** documento (`practica_11-1.tex`), así que este PDF sí es huérfano de verdad:
+    o se recupera el fuente o el PDF se va. Además ese directorio tiene artefactos de
+    compilación versionados (`.aux`, `.log`, `.fls`, `.fdb_latexmk`, `.synctex.gz`, `.toc`).
+  Borrar un PDF del repo es decisión del profesor y además pasa por la barrera de disco;
+  aquí solo queda medido y nombrado.
 - **Autor real y título definitivo**: siguen los valores por defecto.
 - **Confirmar Beamer** como formato (fue un supuesto, ver Decisión 8).
 - **Ensayo cronometrado de 30 minutos**: no hecho. El generador avisa si 17 diapositivas

@@ -62,6 +62,15 @@ EXTENSIONES_TEXTO = {
     ".env", ".sh", ".bash", ".tex", ".js", ".ts", ".html", ".sql", ".csv",
 }
 
+# Motores cuyos PDF SI son un entregable de LaTeX de este repo. Discrimina
+# "PDF sin fuente" (un defecto nuestro) de "PDF de terceros" (un libro, un
+# escaneo, un esquematico, la documentacion de una libreria vendorizada).
+# Medido: pdfTeX-1.40.25 / "LaTeX with hyperref" frente a Adobe Acrobat,
+# Microsoft Word, iLovePDF, jsPDF y Skia/PDF. Sin este discriminador, "PDF sin
+# .tex" daba 34 candidatos de los que 8 eran libros y escaneos: una dimension
+# que llora lobo ocho veces enseña a ignorarla.
+MOTORES_LATEX = ("pdftex", "luatex", "xetex")
+
 # Ficheros cuyo contenido es SECRETOS POR DISENO (los .env locales, gitignored).
 # No se escanean nunca, ni tracked ni untracked, para no imprimirlos.
 NUNCA_ESCANEAR_SECRETOS = {".env", ".groq_api_key", "secrets.json", "credentials.json"}
@@ -803,16 +812,50 @@ def comprobar_logs_append_only(raiz: Path) -> dict[str, Any]:
     }
 
 
-def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
-    """PDF cuyo .tex es mas reciente: el entregable esta desactualizado.
+def _es_pdf_de_latex(pdf: Path) -> bool | None:
+    """True si el PDF declara haber salido de TeX; None si no se puede saber.
 
-    Es la deriva mas comun de un repo con LaTeX: se corrige el fuente, se
-    regenera un lado, y el PDF que se entrega sigue siendo el viejo.
+    None NO es False. No poder leer los metadatos es no saber, y tratar el
+    "no se" como un "no" convierte un limite de la medicion en salud, que es
+    el mismo fallo que un `no_verificado` disfrazado de `ok`.
+    """
+    try:
+        from pypdf import PdfReader
+        meta = PdfReader(str(pdf)).metadata or {}
+    except Exception:
+        return None
+    campos = " ".join(str(v) for v in meta.values()).lower()
+    return any(m in campos for m in MOTORES_LATEX)
+
+
+def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
+    """Coherencia de cada PDF de LaTeX con su fuente .tex: dos derivas.
+
+    1. El fuente es mas nuevo que su PDF: se corrige el fuente, se regenera
+       un lado, y el PDF que se entrega sigue siendo el viejo.
+    2. El PDF de LaTeX no tiene fuente de mismo nombre: no se puede
+       regenerar ni revisar.
+
+    La segunda estuvo INVISIBLE hasta el 2026-10-05 porque el recorrido lo
+    conducia el .tex: un PDF sin .tex no se visitaba nunca. Un fallo invisible
+    no es un fallo que no exista, es un fallo que nadie puede mantener, y la
+    dimension reportaba "ok" con confianza sobre una medicion parcial. Se
+    detecto porque dos PDF de la charlada se versionaron sin fuente.
+
+    Degradacion: sin `pypdf` (no esta en requirements.txt, que solo declara
+    psutil y PyYAML; el resto vive en el entorno conda) los metadatos no se
+    pueden leer y TODOS los candidatos caen en `pdf_sin_metadatos`. Es
+    deliberado: la dimension avisa y no se pone verde, en vez de fingir que un
+    repo sin metadatos esta limpio.
     """
     desfasados: list[dict[str, Any]] = []
+    huerfanos: list[dict[str, Any]] = []
+    ilegibles: list[str] = []
     revisados = 0
+
+    # (1) Deriva DENTRO de un par existente: lo conduce el .tex.
     for tex in raiz.rglob("*.tex"):
-        if ".tmp" in tex.parts or ".git" in tex.parts:
+        if _es_vendida(str(tex.relative_to(raiz))):
             continue
         pdf = tex.with_suffix(".pdf")
         if not pdf.is_file():
@@ -829,29 +872,91 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
                 "retraso_s": int(dt_tex - dt_pdf),
             })
 
+    # (2) PDF de LaTeX sin fuente de mismo nombre: lo conduce el .pdf. Solo se
+    # abren los metadatos de los CANDIDATOS, no de los ~180 pares sanos, que es
+    # lo que mantiene el coste en milisegundos.
+    for pdf in raiz.rglob("*.pdf"):
+        rel = str(pdf.relative_to(raiz))
+        if _es_vendida(rel) or pdf.with_suffix(".tex").is_file():
+            continue
+        es_tex = _es_pdf_de_latex(pdf)
+        if es_tex is None:
+            ilegibles.append(rel)
+        elif es_tex:
+            # El vecindario DECIDE el diagnostico y aqui no se decide: si hay un
+            # .tex al lado lo probable es deriva de nombre o un PDF duplicado, y
+            # la accion es borrar el sobrante; si no hay ninguno, el entregable
+            # no tiene forma de reproducirse y hay que recuperar o versionar el
+            # fuente. Elegir entre las dos sin mirar seria inventar el fallo, asi
+            # que se mide y se enseña el vecindario.
+            vecinos = sorted(
+                t.name for t in pdf.parent.glob("*.tex")
+                if not _es_vendida(t.name)
+            )
+            huerfanos.append({"pdf": rel, "tex_en_el_directorio": vecinos})
+
     desfasados.sort(key=lambda d: -d["retraso_s"])
-    if not revisados:
+    huerfanos.sort(key=lambda h: h["pdf"])
+    ilegibles.sort()
+
+    if not revisados and not huerfanos and not ilegibles:
         return _no_verificado("pdf_stale", "ningun par .tex/.pdf comparable")
-    estado = "aviso" if desfasados else "ok"
+
+    partes = []
+    if revisados:
+        partes.append(
+            f"{len(desfasados)} de {revisados} par(es) .tex/.pdf con el fuente mas nuevo"
+            if desfasados else
+            f"los {revisados} pares .tex/.pdf estan al dia")
+    if huerfanos:
+        partes.append(f"{len(huerfanos)} PDF de LaTeX sin fuente de mismo nombre")
+    if ilegibles:
+        partes.append(f"{len(ilegibles)} PDF sin metadatos legibles, a revisar a mano")
+
+    # Nunca `ok` con un candidato sin clasificar. Un limite de la medicion que
+    # sale como salud es exactamente el fallo que arrastro esta dimension.
+    estado = "aviso" if (desfasados or huerfanos or ilegibles) else "ok"
+
+    acciones = []
+    if huerfanos:
+        acciones.append(
+            "PDF de LaTeX sin .tex de mismo nombre. Con un .tex en el mismo "
+            "directorio lo probable es un PDF duplicado o un nombre que se "
+            "quedo viejo: sobra el PDF, se borra. Sin ningun .tex al lado el "
+            "entregable no tiene forma de reproducirse: hay que recuperar o "
+            "versionar su fuente. Cada caso trae su vecindario en la evidencia.")
+    if desfasados:
+        acciones.append(
+            "Recompilar antes de entregar. El PDF es lo que lee el usuario final; "
+            "un .tex bonito con un PDF viejo no comunica nada.")
+    if ilegibles:
+        acciones.append(
+            "PDF cuyos metadatos no se pudieron leer: no se puede afirmar que sean "
+            "entregables de este repo, asi que quedan como 'revisar a mano'.")
+    if not acciones:
+        acciones.append("Todos los PDF reflejan su fuente.")
+
     return {
         "dimension": "pdf_stale",
         "estado": estado,
-        "resumen": (
-            f"{len(desfasados)} de {revisados} par(es) .tex/.pdf con el fuente mas nuevo"
-            if desfasados else
-            f"los {revisados} pares .tex/.pdf estan al dia"
-        ),
+        "resumen": "; ".join(partes),
         "evidencia": {
             "pares_revisados": revisados,
             "desfasados": desfasados[:25],
             "nota": f"muestra truncada a 25 de {len(desfasados)}",
+            "pdf_sin_fuente": huerfanos[:25],
+            "pdf_sin_fuente_nota": (
+                f"muestra truncada a 25 de {len(huerfanos)}"
+                if len(huerfanos) > 25 else
+                "criterio: PDF cuyo /Producer o /Creator declara pdfTeX, LuaTeX o "
+                "XeTeX y sin .tex de mismo nombre; un libro o un escaneo de terceros "
+                "no cuentan. tex_en_el_directorio es lo que separa 'PDF duplicado' "
+                "de 'entregable sin fuente'."
+            ),
+            "pdf_sin_metadatos": ilegibles[:25],
+            "discriminador": list(MOTORES_LATEX),
         },
-        "accion": (
-            "Recompilar antes de entregar. El PDF es lo que lee el usuario final; "
-            "un .tex bonito con un PDF viejo no comunica nada."
-            if desfasados else
-            "Todos los PDF reflejan su fuente."
-        ),
+        "accion": " ".join(acciones),
     }
 
 

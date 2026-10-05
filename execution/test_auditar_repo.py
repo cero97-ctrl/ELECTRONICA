@@ -37,6 +37,33 @@ def comprobar(nombre: str, condicion: bool, detalle: str = "") -> None:
         FALLOS.append(nombre)
 
 
+def _pdf_con_metadatos(producer: str, creator: str) -> bytes:
+    """PDF minimo de una pagina con el /Producer y /Creator que se le fijan.
+
+    El discriminador de `pdf_stale` lee metadatos REALES, asi que el test no
+    puede simularlos con un fichero de texto: un b'%PDF-1.4' no tiene Info y
+    devolveria None, que es el caso 'no se', no el caso 'no'.
+    """
+    import io
+    from pypdf import PdfWriter
+    w = PdfWriter()
+    w.add_blank_page(width=72, height=72)
+    w.add_metadata({"/Producer": producer, "/Creator": creator})
+    buf = io.BytesIO()
+    w.write(buf)
+    return buf.getvalue()
+
+
+def _pdf_de_latex() -> bytes:
+    """Como lo produce el pipeline del repo: pdfTeX con hyperref."""
+    return _pdf_con_metadatos("pdfTeX-1.40.25", "LaTeX with hyperref")
+
+
+def _pdf_de_terceros() -> bytes:
+    """Como los libros y escaneos que hay en el repo: no es nuestro."""
+    return _pdf_con_metadatos("Adobe Acrobat 6.0", "QuarkXPress")
+
+
 def _cargar(fichero: str, nombre_modulo: str):
     spec = importlib.util.spec_from_file_location(nombre_modulo, RAIZ / fichero)
     mod = importlib.util.module_from_spec(spec)
@@ -457,6 +484,92 @@ with tempfile.TemporaryDirectory() as tmp:
     d = AR.comprobar_pdf_stale(raiz)
     comprobar("sin pares comparables -> sin verificar, no ok",
               d["estado"] == "no_verificado", d["resumen"])
+
+    # PDF de LaTeX sin fuente de mismo nombre: el fallo que hasta el 2026-10-05
+    # era INVISIBLE, porque el recorrido lo conducia el .tex y un PDF sin .tex
+    # no se visitaba nunca. La dimension reportaba "ok" sobre medicion parcial.
+    #
+    # Se deja un par sano, de mismo nombre y misma fecha, para que el veredicto
+    # dependa SOLO del huerfano. Sin el, un repo sin pares da `no_verificado` y
+    # la prueba no distinguiria "no vi nada" de "vi y no hay nada".
+    (raiz / "sano.tex").write_text("x\n", encoding="utf-8")
+    (raiz / "sano.pdf").write_bytes(_pdf_de_latex())
+    _t0 = _t.time()
+    os.utime(raiz / "sano.tex", (_t0, _t0))
+    os.utime(raiz / "sano.pdf", (_t0, _t0))
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("par sano de LaTeX, nada que senalar -> ok",
+              d["estado"] == "ok", d["resumen"])
+
+    # El huerfano: PDF de LaTeX cuyo .tex NO existe con ese nombre. El .tex que
+    # hay al lado se llama sano.tex, para que la prueba no dependa de que el
+    # directorio este vacio de fuentes.
+    (raiz / "huerfano.pdf").write_bytes(_pdf_de_latex())
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("PDF de LaTeX sin .tex de mismo nombre -> aviso, no ok",
+              d["estado"] == "aviso", d["resumen"])
+    comprobar("y lo nombra en el resumen", "sin fuente" in d["resumen"], d["resumen"])
+    comprobar("y lo lista en la evidencia",
+              any(h["pdf"].endswith("huerfano.pdf")
+                  for h in d["evidencia"]["pdf_sin_fuente"]), str(d["evidencia"]))
+    comprobar("y trae el vecindario, que separa duplicado de sin fuente",
+              any(h["pdf"].endswith("huerfano.pdf")
+                  and "sano.tex" in h["tex_en_el_directorio"]
+                  and not any(t.startswith("huerfano")
+                              for t in h["tex_en_el_directorio"])
+                  for h in d["evidencia"]["pdf_sin_fuente"]), str(d["evidencia"]))
+
+    # El caso limite del otro lado: sin NINGUN .tex en el directorio, el
+    # entregable no tiene forma de reproducirse. El vecindario vacio lo dice,
+    # sin que la funcion tenga que adivinarlo.
+    (raiz / "sano.tex").unlink()
+    (raiz / "sano.pdf").unlink()
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("PDF de LaTeX sin NINGUN .tex en el dir -> aviso igual",
+              d["estado"] == "aviso", d["resumen"])
+    comprobar("y su vecindario no ofrece ninguna fuente con su nombre (nada que renombrar)",
+              any(h["pdf"].endswith("huerfano.pdf")
+                  and not any(t.startswith("huerfano")
+                              for t in h["tex_en_el_directorio"])
+                  for h in d["evidencia"]["pdf_sin_fuente"]), str(d["evidencia"]))
+
+    # Un PDF de TERCEROS sin .tex NO es un defecto nuestro: lo produce Adobe, no
+    # TeX. Sin este discriminador la dimension daba 34 candidatos de los que 8
+    # eran libros y escaneos, y una dimension que llora lobo ocho veces
+    # enseña a ignorarla.
+    (raiz / "libro.pdf").write_bytes(_pdf_de_terceros())
+    (raiz / "huerfano.pdf").unlink()
+    (raiz / "sano.tex").write_text("x\n", encoding="utf-8")
+    (raiz / "sano.pdf").write_bytes(_pdf_de_latex())
+    _t0 = _t.time()
+    os.utime(raiz / "sano.tex", (_t0, _t0))
+    os.utime(raiz / "sano.pdf", (_t0, _t0))
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("PDF de terceros (Adobe) sin .tex, con un par sano -> NO es aviso",
+              d["estado"] == "ok", d["resumen"])
+    comprobar("y no aparece como huerfano",
+              not d["evidencia"]["pdf_sin_fuente"], str(d["evidencia"]))
+    (raiz / "libro.pdf").unlink()
+
+    # Un PDF que NO se puede leer NO es un "no": es no saber, y no saber no
+    # puede salir como salud. monkeypatch porque los metadatos los decide el
+    # lector de PDF, no esta funcion.
+    real = AR._es_pdf_de_latex
+    try:
+        AR._es_pdf_de_latex = lambda p: None
+        (raiz / "ilegible.pdf").write_bytes(b"%PDF-1.4\n")
+        d = AR.comprobar_pdf_stale(raiz)
+        comprobar("metadatos ilegibles -> aviso, nunca ok (no saber no es sano)",
+                  d["estado"] == "aviso", d["resumen"])
+        comprobar("y queda en su propia lista para revision a mano",
+                  any(p.endswith("ilegible.pdf")
+                      for p in d["evidencia"]["pdf_sin_metadatos"]), str(d["evidencia"]))
+        AR._es_pdf_de_latex = lambda p: False
+        d = AR.comprobar_pdf_stale(raiz)
+        comprobar("y si se sabe que NO es de TeX, no cuenta como ilegible",
+                  d["estado"] == "ok", d["resumen"])
+    finally:
+        AR._es_pdf_de_latex = real
 
 # ---------------------------------------------------------------------------
 print("== Umbrales y tabla de dimensiones ==")
