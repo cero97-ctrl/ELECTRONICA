@@ -67,8 +67,22 @@ dimensions:
       que_mide: "Ficheros sin trackear, con umbral de aviso en 20."
       por_que_nueva: "Es la forma mas comun de perder trabajo: un `git add .` se lleva el trabajo de otra sesion."
     - name: pdf_stale
-      que_mide: "Pares .tex/.pdf donde el fuente es mas nuevo que el PDF."
-      por_que_nueva: "Un .tex bonito con un PDF viejo no comunica nada: el PDF es lo que lee el usuario final."
+      que_mide: |
+        Tres derivas de los PDF de LaTeX del repo: (1) el par .tex/.pdf cuyo
+        fuente es mas nuevo que el PDF (se corrigio el fuente y se entrega el
+        PDF viejo); (2) PDF de LaTeX sin .tex de mismo nombre (huerfano: no se
+        puede regenerar ni revisar; el vecindario de .tex se lista para
+        separar 'duplicado' de 'sin fuente'); (3) PDF cuyos metadatos no se
+        pueden leer (ilegibles, revision a mano). Los PDF bajo una ruta con
+        componente RUTAS_REFERENCIA (hoy docs/REFERENCIA/) se excluyen de (2)
+        y (3) por convencion y se cuentan aparte en evidencia pdf_referencia.
+      por_que_nueva: |
+        Un .tex bonito con un PDF viejo no comunica nada: el PDF es lo que lee
+        el usuario final. Y un PDF de LaTeX sin fuente no tiene forma de
+        reproducirse. El discriminador por metadatos (pdfTeX/LuaTeX/XeTeX)
+        separa libros y escaneos de terceros, pero NO un paper de arXiv de un
+        informe nuestro: ambos son TeX. Ese caso solo se distingue por ruta,
+        que es para lo que existe RUTAS_REFERENCIA.
   reutilizadas:
     - texto: execution/verificar_texto.py (corrupcion de prosa)
     - estado_sesion: execution/estado_sesion.py (integridad de las vistas de estado)
@@ -165,6 +179,7 @@ edge_cases:
   - fixture_inventado_no_prueba: "Los tests de disco usaban fixtures escritos a mano que omitian resumen_catalogo entero, asi que la rama del recuperable nunca se ejecutaba y el test pasaba con la clave equivocada. Un fixture que omite el campo que importa no prueba el contrato de ese campo. Cada interprete se prueba con la forma REAL capturada del script."
   - declaracion_honesta: "El estado 'planificado' de una directiva baja la gravedad de sus referencias rotas de fallo a aviso, NUNCA a ok: el hueco sigue contado y nombrado. Tres guardas evitan que el marcador sea un escondite: (1) vocabulario cerrado {activo, planificado}, y ausente equivale a 'activo', que es el default conservador; (2) un 'planificado' cuyas referencias SI resuelven es un marcador OBSOLETO y se reporta, porque entonces la directiva miente en sentido contrario; (3) el texto se escanea entero, comentarios incluidos, para que comentar un paso no sirva como forma de pasar. Medido: 12 referencias rotas en 10 directivas, de las que 0 se podian reapuntar (ningun script existio jamas);ademas, git_update.yaml mentia sobre un script real, lo cual es peor que una referencia muerta."
   - no_todo_se_implementa: "El error de Estado con 12 referencias rotas no era 'arreglalas': 8 capacidades enteras (4 CLI de memoria, web search x2, FreeCAD, KiCad PCB) no estan pedidas por nadie. La via correcta es hacer la declaracion honesta, no inventar los scripts. Implementar de mas cuesta dias y anade superficie que nadie mantiene."
+  - pdf_referencia_excluido: "Los PDF de terceros descargados se guardan en docs/REFERENCIA/ (convencion y politica en su README.md) y la dimension pdf_stale los excluye por ruta (RUTAS_REFERENCIA en execution/auditar_repo.py), porque el discriminador por metadatos no basta: un paper de arXiv o unas slides universitarias son pdfTeX igual que un informe nuestro y se marcarian como huerfanos propios. Tres guardas: (1) la exclusion NUNCA es invisible, cada PDF excluido se cuenta en evidencia.pdf_referencia y en el resumen; (2) solo excluye la rama de huerfanos: un par .tex/.pdf real dentro de la carpeta se mide como cualquiera; (3) un repo sin pares sanos sigue saliendo no_verificado aunque tenga mil PDFs de referencia: el material de terceros no es evidencia de que nuestros entregables esten sanos. La ruta coincide por componente de Path, igual que _es_vendida, mover la carpeta no apaga la cobertura en silencio."
 
 invariants:
   - "El veredicto global es el PEOR estado de las dimensiones, nunca un promedio ni una media ponderada."

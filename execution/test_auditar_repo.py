@@ -728,6 +728,63 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         AR._es_pdf_de_latex = real
 
+    # Exclusion por politica (RUTAS_REFERENCIA): los PDF bajo una carpeta
+    # REFERENCIA son material de terceros descargado, no entregables. El
+    # discriminador por metadatos NO basta aqui: un paper de arXiv o unas
+    # slides de conferencia son pdfTeX IGUAL que un informe nuestro, y sin una
+    # ruta propia la dimension loria lobo con cada descarga. La exclusion se
+    # cuenta aparte (pdf_referencia) porque una exclusion invisible es un
+    # agujero de medicion disfrazado de limpieza.
+    (raiz / "ilegible.pdf").unlink()
+    (raiz / "REFERENCIA").mkdir()
+    (raiz / "REFERENCIA" / "paper_arxiv.pdf").write_bytes(_pdf_de_latex())
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("PDF de TeX de terceros en REFERENCIA -> NO es aviso",
+              d["estado"] == "ok", d["resumen"])
+    comprobar("y no se cuela en los huerfanos",
+              not d["evidencia"]["pdf_sin_fuente"], str(d["evidencia"]))
+    comprobar("pero SI queda contado en su propia lista (exclusion visible)",
+              d["evidencia"]["pdf_referencia"] == ["REFERENCIA/paper_arxiv.pdf"],
+              str(d["evidencia"]))
+    comprobar("y el resumen lo declara, sin callarlo",
+              "excluidos por convencion" in d["resumen"], d["resumen"])
+
+    # El contrato de la ruta es por COMPONENTE, como _es_vendida: mover la
+    # carpeta de sitio no debe apagar la exclusion en silencio.
+    comprobar("la ruta coincide por componente en cualquier profundidad",
+              AR._es_referencia("docs/REFERENCIA/libro.pdf")
+              and AR._es_referencia("cursos/TEMA/REFERENCIA/x.pdf")
+              and not AR._es_referencia("docs/OTRO/x.pdf"),
+              "RUTAS_REFERENCIA=" + str(AR.RUTAS_REFERENCIA))
+
+    # Coexistencia: un huerfano propio FUERA de la ruta sigue marcando aviso,
+    # y el de dentro no aparece en su lista. La exclusion no diluye la
+    # sensibilidad de la dimension donde si manda.
+    (raiz / "huerfano_fuera.pdf").write_bytes(_pdf_de_latex())
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("el huerfano propio fuera de REFERENCIA sigue dando aviso",
+              d["estado"] == "aviso", d["resumen"])
+    comprobar("y SOLO el de fuera esta en pdf_sin_fuente",
+              [h["pdf"] for h in d["evidencia"]["pdf_sin_fuente"]]
+              == ["huerfano_fuera.pdf"], str(d["evidencia"]))
+    comprobar("y el de dentro sigue contado como referencia",
+              d["evidencia"]["pdf_referencia"] == ["REFERENCIA/paper_arxiv.pdf"],
+              str(d["evidencia"]))
+    (raiz / "huerfano_fuera.pdf").unlink()
+
+    # El material de terceros NO tapa el "no se": sin ningun par comparable la
+    # dimension queda sin verificar, nunca en ok. La exclusion es de politica,
+    # no de salud, y el conteo de excluidos viaja en la evidencia para que el
+    # "sin verificar" diga cuanto midio y cuanto dejo fuera.
+    (raiz / "sano.tex").unlink()
+    (raiz / "sano.pdf").unlink()
+    d = AR.comprobar_pdf_stale(raiz)
+    comprobar("solo REFERENCIA y sin pares -> sin verificar, nunca ok",
+              d["estado"] == "no_verificado", d["resumen"])
+    comprobar("y el conteo de excluidos queda declarado en la evidencia",
+              d["evidencia"].get("pdf_referencia_excluidos") == 1,
+              str(d["evidencia"]))
+
 # ---------------------------------------------------------------------------
 print("== Umbrales y tabla de dimensiones ==")
 # ---------------------------------------------------------------------------

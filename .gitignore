@@ -45,6 +45,14 @@ datasets/
 # consciente, no un efecto secundario de tener el fichero en la carpeta.
 docs/AGENTE_IA/*.mp4
 
+# Material de referencia de terceros descargado (papers, libros, datasheets).
+# Convención completa en docs/REFERENCIA/README.md: no viaja en el clone (es
+# re-descargable y pesa), RAG sí lo indexa y la auditoría (pdf_stale) lo
+# excluye por ruta contándolo aparte. Se ignora TODO salvo el README, que es
+# la documentación de la propia convención y sí debe viajar.
+docs/REFERENCIA/**
+!docs/REFERENCIA/README.md
+
 # Dependencias de terceros instaladas: 321 MB de node_modules que `npm install`
 # regenera. Versionar un node_modules congela sus vulnerabilidades y sus
 # licencias: los forks se los descargan enteros y no los pueden actualizar.

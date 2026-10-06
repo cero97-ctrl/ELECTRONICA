@@ -56,6 +56,15 @@ RUTAS_VENDIDAS = (
     "chroma_db", "__pycache__", ".venv", "venv", ".tox", "site-packages",
 )
 
+# Carpetas destino del material de terceros descargado (papers, libros,
+# datasheets). El discriminador por metadatos (MOTORES_LATEX) separa un libro
+# de un entregable nuestro SOLO cuando el libro no salio de TeX: un paper de
+# arXiv, una slides de conferencia o un apunte de universidad son pdftex igual
+# que un informe nuestro, y sin una ruta propia la dimension no tiene forma de
+# distinguirlos (lloria lobo con cada descarga). La convencion completa vive en
+# docs/REFERENCIA/README.md; aqui el nombre de carpeta es el contrato.
+RUTAS_REFERENCIA = ("REFERENCIA",)
+
 # Extensiones que se inspeccionan buscando secretos. Se excluyen a proposito
 # los binarios: un matcher de patrones sobre un .pdf solo produce ruido.
 EXTENSIONES_TEXTO = {
@@ -890,10 +899,19 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
     pueden leer y TODOS los candidatos caen en `pdf_sin_metadatos`. Es
     deliberado: la dimension avisa y no se pone verde, en vez de fingir que un
     repo sin metadatos esta limpio.
+
+    Exclusion por politica: los PDF bajo una ruta en RUTAS_REFERENCIA son
+    material de terceros descargado (docs/REFERENCIA/), no entregables, y no
+    entran en `huerfanos` ni en `ilegibles`. Se cuentan aparte en la evidencia
+    (`pdf_referencia`) porque una exclusion invisible es un agujero de
+    medicion disfrazado de limpieza: el conteo es lo que permite auditar la
+    propia exclusion. Solo aplica a la rama (2); un par .tex/.pdf real dentro
+    de la carpeta se mide igual que cualquier otro.
     """
     desfasados: list[dict[str, Any]] = []
     huerfanos: list[dict[str, Any]] = []
     ilegibles: list[str] = []
+    referencia: list[str] = []
     revisados = 0
 
     # (1) Deriva DENTRO de un par existente: lo conduce el .tex.
@@ -920,6 +938,9 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
     # lo que mantiene el coste en milisegundos.
     for pdf in raiz.rglob("*.pdf"):
         rel = str(pdf.relative_to(raiz))
+        if _es_referencia(rel):
+            referencia.append(rel)
+            continue
         if _es_vendida(rel) or pdf.with_suffix(".tex").is_file():
             continue
         es_tex = _es_pdf_de_latex(pdf)
@@ -941,9 +962,16 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
     desfasados.sort(key=lambda d: -d["retraso_s"])
     huerfanos.sort(key=lambda h: h["pdf"])
     ilegibles.sort()
+    referencia.sort()
 
     if not revisados and not huerfanos and not ilegibles:
-        return _no_verificado("pdf_stale", "ningun par .tex/.pdf comparable")
+        extra = (
+            {"pdf_referencia_excluidos": len(referencia),
+             "nota": "excluidos por RUTAS_REFERENCIA: el material de terceros "
+                     "no es evidencia de que los entregables esten sanos"}
+            if referencia else None
+        )
+        return _no_verificado("pdf_stale", "ningun par .tex/.pdf comparable", extra)
 
     partes = []
     if revisados:
@@ -955,6 +983,10 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
         partes.append(f"{len(huerfanos)} PDF de LaTeX sin fuente de mismo nombre")
     if ilegibles:
         partes.append(f"{len(ilegibles)} PDF sin metadatos legibles, a revisar a mano")
+    if referencia:
+        partes.append(
+            f"{len(referencia)} PDF de terceros en rutas de referencia "
+            "(excluidos por convencion)")
 
     # Nunca `ok` con un candidato sin clasificar. Un limite de la medicion que
     # sale como salud es exactamente el fallo que arrastro esta dimension.
@@ -997,6 +1029,16 @@ def comprobar_pdf_stale(raiz: Path) -> dict[str, Any]:
                 "de 'entregable sin fuente'."
             ),
             "pdf_sin_metadatos": ilegibles[:25],
+            "pdf_referencia": referencia[:25],
+            "pdf_referencia_nota": (
+                f"muestra truncada a 25 de {len(referencia)}"
+                if len(referencia) > 25 else
+                f"criterio: ruta con componente {list(RUTAS_REFERENCIA)}; "
+                "material de terceros descargado, excluido por convencion "
+                "(docs/REFERENCIA/README.md). No es entregable del repo, "
+                "pero se cuenta: una exclusion que no se reporta es un "
+                "agujero de medicion."
+            ),
             "discriminador": list(MOTORES_LATEX),
         },
         "accion": " ".join(acciones),
@@ -1011,6 +1053,17 @@ def _es_vendida(rel: str) -> bool:
     """True si la ruta cae en codigo de terceros o artefactos de build."""
     partes = set(Path(rel).parts)
     return bool(partes & set(RUTAS_VENDIDAS))
+
+
+def _es_referencia(rel: str) -> bool:
+    """True si la ruta es material de terceros bajo una carpeta de referencia.
+
+    Mismo mecanismo que `_es_vendida` (coincidencia por componente de ruta):
+    `docs/REFERENCIA/...` y cualquier `.../REFERENCIA/...` cuentan, para que
+    mover la carpeta de sitio no apague la exclusion en silencio.
+    """
+    partes = set(Path(rel).parts)
+    return bool(partes & set(RUTAS_REFERENCIA))
 
 
 def _no_verificado(dimension: str, motivo: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
