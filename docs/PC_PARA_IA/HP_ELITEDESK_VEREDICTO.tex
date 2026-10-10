@@ -1,0 +1,630 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\hypersetup{
+    pdftitle={Veredicto de Hardware: HP EliteDesk 805 G6 Mini},
+}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% Cabecera específica de este documento
+\fancyhead[L]{\small\color{azulNoche}\textbf{PC para IA --- Veredicto de Hardware}}
+\fancyhead[R]{\small\color{grisTexto}\itshape HP EliteDesk 805 G6 Mini}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\color{cyanNeon}\hrule width\headwidth height 0.6pt}
+
+\renewcommand{\iconoBanda}{desktop}
+
+\begin{document}
+
+% ══ PORTADA INFográfica ══════════════════════════════════════════════════════
+\bandaTitulo{Veredicto de Hardware: HP EliteDesk 805 G6 Mini}{Ryzen 5 PRO 4650GE, dos unidades (512\,GB y 256\,GB) --- ¿sirven como nodo del workspace ELECTRONICA?}
+
+\begin{center}
+  \vspace{2pt}
+  {\large \textbf{Autor:} Prof. CERO \hfill \textbf{Fecha:} \today} \\[6pt]
+  \color{cyanNeon}\rule{\linewidth}{0.4pt}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% ══ 1. RESUMEN EJECUTIVO ═════════════════════════════════════════════════════
+\section[Resumen Ejecutivo]{\iconotexto{info-circle}{Resumen Ejecutivo}}
+
+Se evaluaron \textbf{dos unidades} del \textbf{HP EliteDesk 805 G6 Mini PC} ofrecidas
+como equipo renovado. Ambas comparten procesador (Ryzen 5 PRO 4650GE), memoria
+(16\,GB de RAM) y gráficos integrados, y \textbf{solo difieren en el almacenamiento}:
+
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Unidad A} --- SSD de 512\,GB, por \textbf{\$279{,}99} más
+    \textbf{\$168{,}73} de envío e importación a Venezuela (\textbf{\$448{,}72} puestos en
+    el país).
+    \item \textbf{Unidad B} --- SSD de 256\,GB, por \textbf{\$340} disponibles en un local
+    comercial en Venezuela: \textbf{sin envío ni importación} (compra inmediata, sin aduana).
+\end{itemize}
+
+El veredicto se emite frente a las capacidades que el proyecto \texttt{ELECTRONICA}
+exige, aplica por igual a las dos variantes y solo se separa en el margen de disco.
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{thumbs-up}~Veredicto rápido: SÍ sirve}]
+Es un \textbf{salto sustancial} sobre el equipo actual (Celeron N4020, 2 núcleos,
+3{,}63\,GB de RAM, sin AVX) y \textbf{desbloquea deudas ya declaradas} del proyecto
+(la GUI de FreeCAD y la ejecución local de TensorFlow sin \emph{instrucción ilegal}).
+\textbf{No} es un servidor de entrenamiento ni sustituye a las builds AM4/AM5 que el
+repo ya propone: es la opción \emph{económica de desbloqueo}, con techo de ampliación.
+\end{tcolorbox}
+
+\begin{cajaRecuerda}
+El cómputo pesado (entrenamiento de modelos) \textbf{no} se hace en local por política
+del proyecto: va siempre a \textbf{Google Colab con TensorFlow}. Esta máquina se juzga
+por lo que el proyecto sí permite ejecutar en local: inferencia, prototipos, validación
+y orquestación.
+\end{cajaRecuerda}
+
+% ══ 2. LA OFERTA ═════════════════════════════════════════════════════════════
+\section[La Oferta]{\iconotexto{tag}{La Oferta}}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{coins}~HP EliteDesk 805 G6 Mini PC (dos unidades renovadas)}]
+\begin{tabular}{ll}
+\toprule
+\textbf{Procesador} & AMD Ryzen 5 PRO 4650GE \\
+\textbf{Memoria} & 16\,GB de RAM \\
+\textbf{Almacenamiento} & Unidad A: SSD 512\,GB; Unidad B: SSD 256\,GB \\
+\textbf{Sistema operativo} & Windows 11 Pro \\
+\textbf{Conectividad} & Wi-Fi + Bluetooth \\
+\textbf{Estado} & Renovado (\textit{Amazon Renewed}) \\
+\textbf{Precio Unidad A (512\,GB)} & \$279{,}99 + \$168{,}73 envío = \textbf{\$448{,}72} puestos en VE \\
+\textbf{Precio Unidad B (256\,GB)} & \textbf{\$340} en local comercial en VE (sin envío) \\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{exclamation-triangle}~La ficha del anuncio contiene un dato falso}]
+El listado declara como ``coprocesador de gráficos'' una
+\textbf{Intel UHD Graphics 630}. Eso es \textbf{imposible}: un procesador AMD Ryzen no
+lleva gráficos Intel. La iGPU real del Ryzen 5 PRO 4650GE es una
+\textbf{AMD Radeon Vega 6}. El vendedor mezcló las especificaciones de la variante
+Intel (\emph{EliteDesk 800 G6}). El dato de caché (``9\,MB'') también está inflado
+(son \SI{8}{\mega\byte}). \textbf{Confirma el modelo y la CPU exactos antes de comprar.}
+\end{tcolorbox}
+
+\subsection{Las dos unidades, lado a lado}
+
+\begin{longtable}{p{3.8cm} p{5.0cm} p{5.2cm}}
+\toprule
+\textbf{Característica} & \textbf{Unidad A (512\,GB)} & \textbf{Unidad B (256\,GB)} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Procesador & Ryzen 5 PRO 4650GE (6C/12T) & \emph{idéntico} \\
+Memoria & 16\,GB DDR4-3200 & \emph{idéntica} \\
+Gráficos & Radeon Vega 6 & \emph{idénticos} \\
+Sistema operativo & Windows 11 Pro & \emph{idéntico} \\
+Almacenamiento & \textbf{SSD 512\,GB} & \textbf{SSD 256\,GB} \\
+Precio puesto en Venezuela & \$448{,}72 & \textbf{\$340} \\
+Disponibilidad & Importación (envío + aduana) & Local en VE, compra inmediata \\
+\bottomrule
+\end{longtable}
+
+\begin{cajaConcepto}
+Lado a lado, la \textbf{única} diferencia tangible de hardware es el tamaño del SSD; por
+eso el análisis técnico (AVX2, núcleos, RAM, desbloqueo de FreeCAD y TensorFlow) es
+\emph{común} a las dos unidades. La diferencia de \emph{compra} también cuenta: la Unidad A
+implica importación (envío y aduana) mientras que la Unidad B está a precio \textbf{total}
+en un local en Venezuela, sin riesgo de importación.
+\end{cajaConcepto}
+
+% ══ 3. FICHA TÉCNICA DEL PROCESADOR ══════════════════════════════════════════
+\section[Ficha del Procesador]{\iconotexto{microchip}{Ficha Técnica del Procesador (AMD Ryzen 5 PRO 4650GE)}}
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{microchip}~AMD Ryzen 5 PRO 4650GE}]
+\begin{tabular}{ll}
+\toprule
+\textbf{Arquitectura} & Zen 2 (Renoir, APU) \\
+\textbf{Núcleos / Hilos} & 6 / 12 \\
+\textbf{Frecuencia} & \SI{3.3}{\giga\hertz} base / \SI{4.2}{\giga\hertz} turbo \\
+\textbf{Instrucciones SIMD} & \textbf{AVX2, FMA3, AVX} \\
+\textbf{Caché (L2 / L3)} & 3\,MB / 8\,MB \\
+\textbf{TDP} & \SI{35}{\watt} \\
+\textbf{Gráficos integrados} & Radeon Vega 6 (6 CU), \emph{sin ROCm} \\
+\textbf{Memoria} & DDR4-3200, doble canal, SODIMM (ampliable) \\
+\textbf{Formato} & Mini PC (sin ranura para GPU dedicada) \\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+\begin{itemize}
+    \item \textbf{AVX2 + FMA3: el punto decisivo.} El equipo actual (Celeron N4020) solo
+    tiene SSE4.1/SSE4.2 y \textbf{no} soporta AVX. Eso hacía que las wheels modernas de
+    TensorFlow murieran con \texttt{SIGILL} (exit 132). Zen 2 sí trae AVX2/FMA3, así que
+    los binarios modernos de IA corren de forma nativa y sin ``Instrucción Ilegal''.
+    \item \textbf{6 núcleos / 12 hilos.} Triplica los núcleos del equipo actual, lo que
+    permite el trabajo multi-agente (varios procesos Python, ChromaDB, servidores MCP y
+    terminales en paralelo) sin fricción.
+    \item \textbf{Eficiencia térmica.} Un TDP de \SI{35}{\watt} mantiene temperaturas
+    estables y consumo bajo para un equipo que operará encendido de forma continua.
+\end{itemize}
+
+% ══ 4. COMPARACIÓN CON EL EQUIPO ACTUAL ══════════════════════════════════════
+\section[Comparación con el Equipo Actual]{\iconotexto{exchange-alt}{Comparación con el Equipo Actual}}
+
+Medición de referencia del equipo vigente (Lenovo, sesión
+\texttt{2026-09-26\_capacidad\_hardware\_pc\_ml}):
+
+\begin{longtable}{p{4.0cm} p{5.0cm} p{5.2cm}}
+\toprule
+\textbf{Dimensión} & \textbf{Equipo actual} & \textbf{HP EliteDesk 805 G6} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+CPU & Celeron N4020, \textbf{2 núcleos}, \SI{1.1}{\giga\hertz} & Ryzen 5 PRO 4650GE, \textbf{6 núcleos / 12 hilos} \\
+Instrucciones SIMD & \textbf{solo SSE4.1 / SSE4.2} (sin AVX) & \textbf{AVX2 + FMA3} \\
+Memoria RAM & 3{,}63\,GB (787\,MB libres medidos) & \textbf{16\,GB} (ampliable) \\
+Almacenamiento & NVMe 238{,}5\,GB (91\,\% usado) & SSD 512\,GB / 256\,GB \\
+GPU & Intel UHD 600 (no aprovechable) & Radeon Vega 6 (débil, sin ROCm) \\
+TensorFlow local & \texttt{SIGILL} en wheels modernas & Ejecución estable (con AVX2) \\
+FreeCAD GUI & \textbf{imposible} (RAM insuficiente) & \textbf{viable} (16\,GB cubren la GUI) \\
+\bottomrule
+\end{longtable}
+
+\begin{cajaConcepto}
+La diferencia de mayor impacto \textbf{no} es la RAM, sino el \textbf{soporte de AVX2}.
+El cuello de botella técnico del proyecto nunca fue la velocidad en bruto, sino la
+\emph{incompatibilidad} de la CPU con los binarios modernos de IA.
+\end{cajaConcepto}
+
+% ══ 5. QUÉ DESBLOQUEA ════════════════════════════════════════════════════════
+\section[Qué Desbloquea]{\iconotexto{unlock}{Qué Desbloquea en el Proyecto}}
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{unlock}~Capacidades que se habilitan}]
+\begin{itemize}
+    \item \textbf{TensorFlow local sin SIGILL.} La máquina actual solo tiene un TF
+    funcional (\texttt{env IA}); en este equipo los binarios modernos de TF/PyTorch
+    corren con normalidad para \emph{inferencia}, prototipos y validación.
+    \item \textbf{La GUI de FreeCAD (ruta MCP aplazada).} El proyecto FreeCAD-controlado-por-LLM
+    quedó \textbf{aplazado por RAM}, no por software. La GUI de FreeCAD + OCC pide
+    $\sim$\SI{1}{\giga\byte}; con 16\,GB cabe con holgura, mientras que con 787\,MB libres
+    era inviable. Se puede reanudar la \textbf{ruta B} (MCP completo con bucle visual).
+    \item \textbf{Workflow multi-agente real.} ChromaDB, embeddings, varios entornos
+    conda, Docker y servidores MCP en paralelo, sin ahogar la memoria.
+    \item \textbf{Ampliable a 64\,GB.} El chasis tiene 2 ranuras SODIMM DDR4, así que la
+    RAM puede crecer más adelante sin cambiar de equipo.
+    \item \textbf{Almacenamiento ampliable.} El chasis ofrece un \textbf{segundo punto de
+    disco} (M.2 2280 PCIe 3.0 y/o bahía de 2{,}5'' SATA3, según configuración), de modo
+    que el límite de 256\,GB \emph{no} es definitivo: se resuelve con un SSD adicional.
+\end{itemize}
+\end{tcolorbox}
+
+% ══ 6. LIMITACIONES Y ADVERTENCIAS ═══════════════════════════════════════════
+\section[Limitaciones y Advertencias]{\iconotexto{exclamation-triangle}{Limitaciones y Advertencias}}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{ban}~Lo que hay que asumir}]
+\begin{itemize}
+    \item \textbf{No entrena.} Por política del proyecto, el entrenamiento va a Colab.
+    Además, la Radeon Vega 6 no tiene soporte ROCm y no sirve para ML acelerado:
+    trátese como \emph{CPU-only} para IA.
+    \item \textbf{Windows 11 Pro rompe el entorno.} El workspace es Linux (bash,
+    conda \texttt{elect\_env}, plugins de opencode). Habría que instalar una
+    distribución Linux (¿borrar Windows o arranque dual?).
+    \item \textbf{Mini PC = sin GPU dedicada.} No hay ranura de expansión; el cómputo
+    local no puede crecer más allá de la CPU. Aceptable porque el flujo es 100\,\% API,
+    pero marca el techo del equipo.
+    \item \textbf{16\,GB es el mínimo cómodo, no holgado.} Las builds AM4/AM5 del repo
+    pedían 32--64\,GB. Con la GUI de FreeCAD, Chrome y varios agentes abiertos, 16\,GB
+    se quedan justos.
+    \item \textbf{El disco es el factor decisivo entre las dos unidades.} El repo ya opera
+    cerca del 91\,\% en 238\,GB, así que el SSD de \textbf{512\,GB} (Unidad A) deja margen
+    pero conviene vigilarlo, mientras que el de \textbf{256\,GB} (Unidad B) queda casi al
+    mismo tamaño que el disco actual ya lleno y \textbf{se queda corto} con Linux, entornos
+    conda, \texttt{chroma\_db} y datasets. Se mitiga con el segundo disco del chasis, pero
+    \emph{exige} esa ampliación para no quedar asfixiado.
+    \item \textbf{Equipo renovado.} Garantía típica de 90 días con Amazon Renewed;
+    verificar estado físico y de la batería interna (RTC).
+\end{itemize}
+\end{tcolorbox}
+
+% ══ 7. COMPARACIÓN CON LAS PROPUESTAS DEL REPO ═══════════════════════════════
+\section[Comparación con las Propuestas]{\iconotexto{balance-scale}{Comparación con las Propuestas Existentes del Repo}}
+
+\begin{longtable}{p{3.4cm} p{1.8cm} p{3.6cm} p{2.3cm} p{2.6cm}}
+\toprule
+\textbf{Opción} & \textbf{Precio} & \textbf{CPU} & \textbf{RAM} & \textbf{Formato} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+HP EliteDesk 805 G6 (512\,GB) & \$449 & Ryzen 5 PRO 4650GE (6C/12T) & 16\,GB (amp.\ 64\,GB) & Mini \\
+HP EliteDesk 805 G6 (256\,GB) & \$340 & Ryzen 5 PRO 4650GE (6C/12T) & 16\,GB (amp.\ 64\,GB) & Mini \\
+Ensamble AM4 (\texttt{PC\_IA.tex}) & \$809 & Ryzen 5 5500 (6C/12T) & 32--64\,GB DDR4 & ATX \\
+Workstation AM5 (\texttt{B650}) & \$995 & Ryzen 7 7700X (8C/16T) & 64\,GB DDR5 & ATX \\
+\bottomrule
+\end{longtable}
+
+\begin{cajaConcepto}
+El EliteDesk es \textbf{la mitad de precio} que la build AM4 y \textbf{menos de la mitad}
+que la AM5, pero \textbf{no comparte su rasgo clave}: la capacidad de crecer (más RAM,
+GPU dedicada, doble NVMe). Es la opción correcta si el objetivo es \emph{desbloquear
+hoy} las tareas pendientes con el menor gasto; las builds del repo siguen siendo la
+meta si se busca una estación de trabajo definitiva.
+\end{cajaConcepto}
+
+% ══ 8. VEREDICTO FINAL ═══════════════════════════════════════════════════════
+\section[Veredicto Final]{\iconotexto{flag-checkered}{Veredicto Final}}
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{thumbs-up}~Conclusión}]
+El HP EliteDesk 805 G6 \textbf{sí sirve para el proyecto}: corrige el defecto más
+limitante del equipo actual (falta de AVX2), cuadruplica la RAM y triplica los núcleos.
+Con él se cierran deudas pendientes (FreeCAD GUI, TF local) y se habilita el trabajo
+multi-agente. \textbf{No} sirve para entrenar modelos (política: Colab) ni ofrece
+ampliación de cómputo local.
+
+Las dos unidades evaluadas son \textbf{técnicamente equivalentes}: misma CPU, misma RAM y
+mismos gráficos; solo cambia el SSD (512\,GB por \textbf{\$448{,}72} puestos en VE con
+importación, frente a 256\,GB por \textbf{\$340} a precio \textbf{total} en un local en
+Venezuela, sin envío). \textbf{Recomendación:} si la diferencia de precio
+($\sim$\$109) no es decisiva, preferir la \textbf{Unidad A (512\,GB)}, que evita la
+ampliación inmediata de disco; elegir la \textbf{Unidad B (256\,GB)} solo si se planea
+añadir un segundo SSD. La Unidad B compensa su disco menor con la \textbf{compra
+inmediata y sin riesgo de importación}. En ambos casos, adquirir el equipo como
+\emph{nodo de desbloqueo} es razonable si el presupuesto es la restricción principal; con
+el doble de inversión, una build AM4 (\texttt{PC\_IA.tex}) ofrece una mejor ruta de
+crecimiento. Antes de comprar, \textbf{exigir confirmación por escrito del modelo de CPU}
+(la ficha mezcla especificaciones Intel y AMD).
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{gavel}~Decisión tomada --- Unidad B}]
+\textbf{Se elige la Unidad B} (256\,GB, \textbf{\$340} total en local en Venezuela,
+2026-10-10). Ventaja clave: \textbf{disponibilidad inmediata} (disponible la próxima
+semana) y cero riesgo de importación/aduana: permite \textbf{empezar a trabajar sin
+esperar}. Contrapartida aceptada: disco de 256\,GB, que se gestiona con el segundo slot
+del chasis (M.2 2280 / bahía 2{,}5'') y con los datos pesados (modelos, datasets,
+\texttt{chroma\_db}) fuera del disco del sistema.
+\end{tcolorbox}
+
+% ══ 9. VERIFICACIÓN AL RECIBIR EL EQUIPO ═════════════════════════════════════
+\section[Verificación al Recibir]{\iconotexto{check-circle}{Verificación al Recibir el Equipo}}
+
+La idoneidad \textbf{de esa unidad concreta} se confirma con los instrumentos
+deterministas que ya existen en el repo (no a ojo):
+
+\begin{lstlisting}[language=Bash]
+python3 execution/env_diagnostic.py      # SO, CPU, RAM, discos, AVX
+python3 flujo_auditar_sistema.py         # RAM, CPU, servicios, GPU -> veredicto
+python3 flujo_auditar_repo.py --rapido   # higiene del entorno replicado
+\end{lstlisting}
+
+\begin{cajaRecuerda}
+\textbf{Criterio de aceptación.} Que \texttt{env\_diagnostic.py} confirme
+\textbf{AVX2 presente} y que \texttt{flujo\_auditar\_sistema.py} dé veredicto
+\texttt{ok} con la GUI de FreeCAD y Chrome abiertos. Si la RAM queda en el borde,
+la ruta \textbf{headless} de FreeCAD (\texttt{freecadcmd}) no necesita esperar.
+\end{cajaRecuerda}
+
+\end{document}
