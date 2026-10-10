@@ -1,3 +1,26 @@
+---
+origen: https://youtu.be/9_H3OLNQN-U?si=M-THdri3W42CgOdz
+fuente_primaria: https://arxiv.org/abs/2609.37725
+tipo_fuente: video
+fecha_captura: 2026-10-10
+fecha_fuente: 2026-09-29
+autor_declarado: "Rin Xia et al."
+autor_verificado: no
+citable: no
+estado: analizado
+analisis: Sessions/2026-10-10_analisis_doc_clm_meta.md
+---
+
+> **Cabecera de procedencia (convención `docs/AGENTE_IA/fuentes/`).**
+> Este archivo es una **conversión a markdown de una fuente externa** (video de
+> YouTube), **no un entregable del repo ni una especificación**. El campo
+> `autor_verificado: no` indica que la atribución del propio texto ("Rin Xia et
+> al.", "Meta AI", "Claude 3.5 Sonnet") es **incorrecta**: la fuente real es
+> Rulin Shao et al. (UW + Meta Superintelligence Labs + MIT + Trillium Labs),
+> arXiv 2609.37725. **No es citable**; úsese solo como material de análisis. El
+> análisis crítico y las contradicciones con la arquitectura de 3 capas están en
+> `Sessions/2026-10-10_analisis_doc_clm_meta.md`.
+
 # Arquitectura y Mecanismo Operativo de los Context-Language Models (CLM)
 ## Solución al Desbordamiento de Ventana de Contexto y Alucinaciones en Tareas Prolongadas de Agentes
 

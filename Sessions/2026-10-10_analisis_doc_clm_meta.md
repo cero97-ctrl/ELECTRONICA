@@ -6,7 +6,9 @@ Análisis crítico del documento `docs/AGENTE_IA/clm-meta-context-language-model
 arquitectura de 3 capas del repositorio.
 
 ## Contexto
-- El usuario copió `docs/AGENTE_IA/clm-meta-context-language-model.md` "para
+- El usuario copió `docs/AGENTE_IA/fuentes/clm-meta-context-language-model.md`
+  (entonces en `docs/AGENTE_IA/`; movido en la sesión posterior
+  `2026-10-10_protocolo_fuentes_externas.md`) "para
   analizarlo en detalle". El documento se autodenomina *"Manual técnico y
   directiva arquitectónica"* dirigido a un LLM, y propone que el modelo edite
   libremente su propio contexto (Bash como única herramienta, `C_{t+1} =
@@ -104,3 +106,6 @@ append-only; CLM es una tercera postura mutacional contradictoria con ambas.
 - **No se adopta CLM** por violar el determinismo (decisión registrada).
 - El `.md` permanece sin cambios; su calidad de "fuente secundaria no citable"
   vive solo en esta bitácora.
+- **Reversión (sesión `2026-10-10_protocolo_fuentes_externas.md`):** el `.md` SÍ
+  se modificó después (se le añadió una cabecera de procedencia) y se movió a
+  `docs/AGENTE_IA/fuentes/`.
