@@ -1,34 +1,84 @@
-# Estado HONESTO: capacidad declarada y NO implementada. Los scripts de los
-# pasos de abajo no existen en execution/, y esta directiva no tiene orquestador.
-# Falta: no hay buscador; execution/scrape_single_site.py raspa una URL ya conocida, no busca.
-# Se conserva como roadmap declarado, no como SOP ejecutable. Mientras no se implemente,
-# la dimension 'directivas' de la auditoria la cuenta como aviso nombrandola, no
-# como fallo silencioso. Ver directives/auditar_repo.yaml (edge case
-# declaracion_honesta) y docs/MATENIMIENTO/como_evaluar_higiene.md seccion 3.
-Status: planificado
+# Estado HONESTO: capacidad IMPLEMENTADA. El orquestador es
+# flujo_research_topic.py y los scripts de capa 3 existen en execution/
+# (web_search.py + process_search_results.py). Historial: v1 era un roadmap
+# planificado (Status: planificado) sin scripts; se implementó el 2026-10-08
+# con buscador DuckDuckGo vía curl_cffi (requests plano recibe 202/decoy de
+# DDG; ver .agent/python.md #18) y síntesis LLM con tier decidido por
+# execution/enrutador.py. Se conserva la regla de declaración honesta de
+# directives/auditar_repo.yaml (edge case declaracion_honesta).
+Status: activo
 
-Goal: "Investigar sobre un tema determinado en la internet y guardar el resultado en un archivo de texto."
+Goal: "Investigar sobre un tema determinado en la internet y guardar el resultado en un archivo de texto reutilizable (markdown)."
+
+Real scripts:
+  - "execution/web_search.py"
+  - "execution/process_search_results.py"
+orchestrator: "flujo_research_topic.py"
 
 Required inputs:
   - topic: "El tema o término a investigar."
-  - output_file: "Ruta del archivo donde se guardará la investigación."
+
+Opciones CLI (del orquestador; la fuente de verdad es `flujo_research_topic.py --help`):
+  - name: "--tema"
+    description: "Tema a investigar (obligatorio)."
+  - name: "--output"
+    description: "Carpeta del entregable (default docs/INVESTIGACIONES)."
+  - name: "--max-results"
+    description: "Número de resultados de búsqueda a pedir (default 8)."
+  - name: "--max-pages"
+    description: "Páginas a raspar para el corpus (default 4)."
+  - name: "--modelo"
+    description: "Override explícito de modelo (tier o ID OpenRouter). Si va vacío, la decisión es del enrutador determinista (regla pura, sin créditos)."
+  - name: "--no-llm"
+    description: "Evitar créditos: el informe es el corpus en bruto (modo bruto)."
+  - name: "--dry-run"
+    description: "Mostrar el plan y salir sin ejecutar."
+  - name: "--no-alert"
+    description: "No emitir alerta audible al terminar."
 
 Steps:
   - step: 1
-    action: "Ejecutar búsqueda web"
+    action: "Buscar en la web (DuckDuckGo, sin API key)"
     script: "execution/web_search.py"
     inputs:
-      query: "{{topic}}"
+      query: "--query {{topic}}"
+      max_results: "--max-results {{max_results}}"
+    step_notes:
+      - "curl_cffi impersona TLS; se rotan motor (html -> lite) y huella; budget máx 3 intentos de transporte, luego se escala."
+      - "Salida .tmp/research_search_<slug>.json."
   - step: 2
-    action: "Procesar y guardar resultados"
+    action: "Decidir el modelo (decisión 100% determinista)"
+    script: "execution/enrutador.py"
+    inputs:
+      task: "--task destilacion"
+    step_notes:
+      - "Solo si el usuario no dio --modelo. Decide sin consumir créditos; el resultado es el tier a usar."
+  - step: 3
+    action: "Raspar las N primeras fuentes y sintetizar el informe"
     script: "execution/process_search_results.py"
     inputs:
-      raw_results: "{{search_output}}"
-      output_file: "{{output_file}}"
+      raw_results: "--search .tmp/research_search_<slug>.json"
+      tema: "--tema {{topic}}"
+      output_file: "--output {{output}}"
+      modelo: "--modelo {{tier}}"
+    step_notes:
+      - "Usa execution/scrape_single_site.py (fetch_html + html_to_markdown) por fuente."
+      - "Si el LLM falla o llegó --no-llm, degrada a modo bruto (corpus crudo) y lo avisa en el entregable."
 
 Expected outputs:
-  - "Un documento de texto consolidado con información relevante sobre el tema solicitado."
+  - "Un archivo markdown en docs/INVESTIGACIONES/<slug>.md con el informe (resumen, secciones temáticas y fuentes) o el corpus en bruto si no hubo LLM."
+  - "JSON por stdout del último paso con la ruta del entregable y el modo (llm | bruto)."
 
 Edge cases:
-  - error: "No se encontraron resultados relevantes."
+  - error: "DuckDuckGo bloquea o devuelve decoys (202/resultados ajenos)."
+    recovery: "curl_cffi + rotación de huella; fallback a motor lite. Si persiste (código 2), reportar al usuario y ofrecer otro término."
+  - error: "No se encontraron resultados relevantes (búsqueda vacía)."
     recovery: "Notificar al usuario y pedir un término de búsqueda más general o alternativo."
+  - error: "Ninguna fuente se puede raspar (403/JS)."
+    recovery: "El script sale con código 1 y lista las fuentes con su motivo; el orquestador escala al usuario (no reitenta en bucle)."
+  - error: "LLM falla o no hay clave OPENROUTER_API_KEY."
+    recovery: "Degradación a modo bruto sin inventar: el entregable muestra los textos raspados y un aviso. El flujo NO falla; el fichero sigue siendo útil."
+  - error: "Red sin datos / timeout de transporte."
+    recovery: "web_search.py tiene reintentos con backoff máx 3; agotados, sale con código 2 y el orquestador reporta. Reintentos que agotan el budget no se solapan en el orquestador."
+  - error: "Consumo de créditos OpenRouter (paso 3)."
+    recovery: "La síntesis con --modelo consume créditos de OPENROUTER_API_KEY. Evitar con --no-llm o backend gemini si se prefiere la cuota free. Avisar al usuario antes del paso LLM."
