@@ -1,0 +1,742 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Guía del estudiante}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Guía del estudiante}{Laboratorio II de Física --- cómo se trabaja y se entrega}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+
+\section{\iconotexto{info-circle}{Cómo funciona el curso}}
+
+Cada semana tiene una práctica de laboratorio presencial de tres horas y una entrega digital el domingo. En la mesa se trabaja por grupos con cuatro roles que rotan por fase; fuera de la mesa se procesan los datos en Python y se redacta el informe. El docente revisa el repositorio del grupo al cierre de la semana y devuelve observaciones antes de la práctica siguiente.
+
+\section{\iconotexto{users}{Grupos y roles}}
+
+El curso trabaja con 4 grupos. Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada uno. Los roles rotan al inicio de cada fase para que todos los integrantes pasen por la medición, el análisis, la documentación y la verificación.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Medición: Monta el circuito, comprueba rangos y polaridad antes de energizar, toma las lecturas y anota la resolución de cada instrumento. Aporta: La tabla de datos crudos de la semana y el registro de condiciones ambientales y de instrumento.
+  \item Análisis: Propaga incertidumbres, ajusta por mínimos cuadrados, grafica y extrae los parámetros físicos del modelo. Aporta: El script de análisis, las figuras con unidades y el presupuesto de incertidumbres del resultado final.
+  \item Documentación: Redacta el informe, integra tablas y figuras, cita fuentes y mantiene el repositorio ordenado según la estructura acordada. Aporta: El informe de la semana y el README de la carpeta semanal.
+  \item Verificación: Contrasta el resultado con el modelo y con una medición independiente, busca errores sistemáticos y firma la trazabilidad de los datos. Aporta: La comparación con el valor nominal o simulado y la lista de desvíos con su causa probable.
+\end{itemize}
+
+Al inicio de cada fase los roles giran una posición en sentido horario, de modo que en la fase 3 cada integrante haya ocupado los cuatro roles.
+
+\textbf{Asignación de roles por fase}
+
+\begin{tabularx}{\linewidth}{@{}l X X X X@{}}
+\toprule
+Fase & Grupo 1 & Grupo 2 & Grupo 3 & Grupo 4\\
+\midrule
+Fase 1 & Medición & Análisis & Documentación & Verificación \\
+Fase 2 & Análisis & Documentación & Verificación & Medición \\
+Fase 3 & Documentación & Verificación & Medición & Análisis \\
+\bottomrule
+\end{tabularx}
+
+Cada grupo crea un repositorio GitHub privado con el docente como colaborador de lectura. El repositorio es la entrega: se revisa al cierre de cada semana y es la evidencia del trabajo del semestre.
+
+\section{\iconotexto{code-branch}{Repositorio del grupo y entregas semanales}}
+
+La entrega se hace en GitHub. Un repositorio privado por grupo, con el docente como colaborador de lectura. El repositorio es la entrega; no se reciben informes por correo ni impresos, salvo indicación expresa del docente.
+
+El docente revisa el repositorio al finalizar cada semana de práctica y devuelve observaciones antes de la semana siguiente.
+
+Corte de cada semana: Domingo a las 23:59 de la semana correspondiente. Lo entregado después del corte se corrige con la penalización prevista en las políticas.
+
+\textbf{Estructura del repositorio}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item README.md con integrantes, roles de la fase y tabla de semanas entregadas.
+  \item semana\_NN/informe.pdf con el informe de la práctica.
+  \item semana\_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.
+  \item semana\_NN/analisis/ con los scripts de Python que reproducen cada figura.
+  \item semana\_NN/figuras/ con las gráficas en PDF o PNG generadas por los scripts.
+  \item semana\_NN/README.md con lo que se hizo, lo que no se pudo verificar y por qué.
+\end{itemize}
+
+\textbf{Reglas de entrega}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Los datos crudos no se editan nunca; toda corrección vive en el script de análisis.
+  \item Cada cifra del informe debe salir de una tabla de datos o de un script entregado.
+  \item Los scripts se ejecutan de punta a punta sin pasos manuales intermedios.
+  \item Nada de credenciales ni tokens en el repositorio; las claves van en .env ignorado.
+  \item El informe es grupal, pero las conclusiones se firman individualmente.
+  \item Un resultado sin incertidumbre no se acepta como resultado.
+\end{itemize}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} La entrega es el repositorio del grupo, no un archivo suelto. Un informe sin sus datos crudos y sin el script que genera sus figuras no es trazable y se corrige como incompleto.
+\end{tcolorbox}
+
+\section{\iconotexto{cube}{Puesta en marcha del laboratorio}}
+
+El laboratorio físico es presencial y obligatorio: los montajes se hacen en la mesa con instrumentos reales. El contenedor es opcional y sirve solo para el análisis de datos cuando el equipo del grupo no tiene Python instalado.
+
+Requiere alrededor de 2 GB de RAM libre y 3 GB de disco. La imagen incluye NumPy, SciPy, Matplotlib y Pandas, suficientes para todos los ajustes del curso.
+
+Si se usa el laboratorio de la carpeta del curso, se levanta con docker compose -f laboratorio/docker-compose.yml up -d. Los servicios quedan accesibles solo en localhost y en la red doméstica de cada grupo.
+
+\begin{tabularx}{\linewidth}{@{}l l r@{}}
+\toprule
+Servicio & Imagen & URL local\\
+\midrule
+analisis & \texttt{jupyter/scipy-notebook:latest} & \texttt{localhost:8888} \\
+\bottomrule
+\end{tabularx}
+
+\begin{cajaRecuerda}Para reiniciar el laboratorio a su estado inicial: \texttt{docker compose down -v} y volver a levantarlo. Ningún cambio debe sobrevivir entre prácticas sin documentarse.
+\end{cajaRecuerda}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item El contenedor procesa datos; nunca sustituye una medición real en la mesa.
+  \item Se accede en localhost y no se expone a Internet.
+  \item Los CSV crudos se montan de solo lectura para impedir edición accidental.
+  \item Cada grupo usa su propio equipo; no hay red ni servidores compartidos del curso.
+  \item Lo que no se midió no se simula como si se hubiera medido.
+\end{itemize}
+
+\section{\iconotexto{code}{Contrato de datos de los scripts}}
+
+\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
+\begin{lstlisting}[language=Python,style=estiloPython]
+{
+  "status": "ok",
+  "practica": 1,
+  "magnitud": "resistencia",
+  "valor": 99.4,
+  "unidad": "ohm",
+  "incertidumbre": 0.6,
+  "metodo": "ajuste_lineal_minimos_cuadrados",
+  "n_puntos": 8,
+  "residual_max": 0.012,
+  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
+  "errores": []
+}
+
+\end{lstlisting}
+\end{cajaConcepto}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Un script por análisis, con type hints, docstrings y sin rutas absolutas.
+  \item Los datos crudos se leen del CSV y no se modifican en memoria ni en disco.
+  \item El resultado se imprime como un único objeto JSON por la salida estándar.
+  \item status vale ok o error; si es error, errores explica el motivo y el programa sale con código distinto de cero.
+  \item Toda magnitud se reporta con su unidad explícita y su incertidumbre.
+  \item Las figuras se generan desde el script, nunca a mano sobre una captura.
+\end{itemize}
+
+\section{\iconotexto{clipboard-check}{Evaluación}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Concepto & Peso (\%)\\
+\midrule
+Prácticas de laboratorio (semanas 1 a 9) & 60,0 \\
+Controles de fase (semanas 4 y 8) & 20,0 \\
+Evaluación final práctica y portafolio (semana 10) & 20,0 \\
+\bottomrule
+\end{tabularx}
+
+Cada práctica se corrige con la misma rúbrica de siete criterios que suma 10 puntos y que se publica en evaluaciones/rubrica\_practica.yaml. La nota del curso sale de los pesos del sílabo, nunca de un promedio de impresiones.
+
+\section{\iconotexto{balance-scale}{Seguridad, integridad académica y manejo de datos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item La seguridad eléctrica es previa a cualquier medición; se corta la alimentación antes de modificar un montaje.
+  \item Ningún instrumento se conecta sin verificar rango y polaridad, y ningún capacitor electrolítico se conecta invertido.
+  \item Los datos crudos son inalterables; toda corrección se documenta en el script de análisis y se explica en el informe.
+  \item Todo resultado se expresa en unidades del Sistema Internacional con cifras significativas coherentes con su incertidumbre.
+  \item Un resultado sin incertidumbre no se acepta, y una conclusión sin contraste con el modelo tampoco.
+  \item El informe es grupal, pero cada integrante firma sus propias conclusiones y debe poder defenderlas en la oral.
+  \item La entrega fuera de corte pierde el 20 por ciento de la nota de la práctica por cada día de retraso, hasta tres días.
+  \item Se considera falta grave fabricar, alterar o copiar datos, o entregar el informe de otro grupo; se aplica el reglamento disciplinario.
+  \item El instrumental prestado se devuelve completo y revisado; un daño por mal uso se reporta de inmediato al docente.
+  \item La asistencia al laboratorio es obligatoria; dos inasistencias injustificadas a prácticas invalidan la evaluación de esa fase.
+  \item Los repositorios son privados y no contienen datos personales de terceros ni credenciales.
+\end{itemize}
+
+\section{\iconotexto{calendar-alt}{Calendario resumido}}
+
+\begin{tabularx}{\linewidth}{@{}r p{4.1cm} X@{}}
+\toprule
+Sem. & Tema & Entregable\\
+\midrule
+1 & Manejo del instrumental eléctrico y característica corriente-tensión & Tabla de datos crudos en CSV, gráfica de la característica con ajuste y banda de incertidumbre, script que reproduce la figura, y valor de la resistencia con su incertidumbre comparado contra el nominal. \\
+2 & Determinación de una resistencia eléctrica por tres métodos & Tabla comparativa de los cuatro métodos con incertidumbres, discusión de cuál es más confiable y por qué, y scripts de corrección de los montajes. \\
+3 & Resistencia interna de instrumentos y de una fuente real & Recta de carga con ajuste, curva de potencia, valores de las tres resistencias internas con incertidumbre y discusión del efecto de carga. \\
+4 & Circuitos eléctricos y teoremas fundamentales & Tabla de calculado contra medido, verificación explícita de las dos leyes de Kirchhoff, comparación de los montajes serie y paralelo, y, si se realiza la ampliación, el equivalente de Thévenin comprobado con la carga. \\
+5 & Elementos no lineales y el diodo semiconductor & Curva en directa e inversa del diodo con la corrección por corriente derivada, parámetros del modelo exponencial con su incertidumbre y, si se realiza la ampliación, la comparación con Zener y LED. \\
+6 & Respuesta de R, L y C a la tensión senoidal & Gráficas de $V_C$ y $V_L$ frente a $I$ con sus ajustes, valores de $X_C$ y $X_L$, y de C y L con su incertidumbre, comparados con el inventario del laboratorio. \\
+7 & Circuitos resonantes serie y paralelo & Curvas $i$--$f$ de los circuitos serie y paralelo, frecuencia de resonancia determinada gráficamente e inductancia obtenida de ella, comparada con el apéndice. \\
+8 & Carga y descarga de un capacitor & Curvas de carga y descarga capturadas, recta linealizada con su ajuste, capacitancia con su incertidumbre y desviación porcentual frente al valor del fabricante. \\
+9 & Práctica integradora, caracterización completa de un circuito RLC & Informe integrador con los dos métodos, la simulación superpuesta a la medición, el presupuesto de incertidumbres del sistema y una conclusión que cierre el semestre experimental. \\
+10 & Evaluación final práctica y defensa del portafolio & Informe individual de la evaluación, defensa oral y portafolio del grupo completo con las correcciones aplicadas y el README actualizado. \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{paperclip}{Series normalizadas de resistores}}
+
+Los resistores comerciales no se fabrican en valores arbitrarios sino en series normalizadas. La serie E12 tiene doce valores por década con tolerancia del 10 por ciento y la E24 tiene veinticuatro valores con tolerancia del 5 por ciento. Al pedir un valor en el laboratorio, elegir el más cercano de la serie y calcular con el valor real, no con el nominal.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Valores base por década de las series E12 y E24}\par\smallskip
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Serie & Tolerancia & Valores base \\
+\midrule
+E12 & $\pm$10 \% & 10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82 \\
+E24 & $\pm$5 \% & E12 más 11, 13, 16, 20, 24, 30, 36, 43, 51, 62, 75, 91 \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Multiplicar por la década correspondiente, de 1 $\Omega$ a 10 M$\Omega$.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Capacitores del laboratorio}}
+
+Valores medidos de los capacitores que se usan en las prácticas 6, 7 y 8. La numeración identifica la posición en la lista del laboratorio, no un código patrimonial: sirve para que cada grupo anote qué unidad usó y pueda comparar en el informe contra el mismo valor que otro grupo.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Capacitancia medida de cada unidad disponible}\par\smallskip
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Unidad & Tipo o forma & Capacitancia medida \\
+\midrule
+1 & --- & 2,152 $\mu$F \\
+2 & --- & 103,0 nF \\
+3 & --- & 10,09 nF \\
+4 & --- & 5,106 $\mu$F \\
+5 & --- & 3,495 $\mu$F \\
+6 & --- & 45,52 nF \\
+7 & --- & 5,081 nF \\
+8 & Arcilla & 4,368 nF \\
+9 & Rectangular & 1,014 $\mu$F \\
+10 & Negro & 229,2 nF \\
+11 & Arcilla & 7,577 nF \\
+12 & Arcilla & 100,7 nF \\
+13 & Mostaza & 489,2 nF \\
+14 & Arcilla & 6,860 nF \\
+15 & Gris & 198,6 nF \\
+16 & --- & 1,004 $\mu$F \\
+17 & Arcilla & 8,810 nF \\
+18 & Negro & 228,7 nF \\
+19 & Arcilla & 3,942 nF \\
+20 & Amarillo & 1,013 $\mu$F \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Verificar la tensión máxima antes de energizar y descargar el capacitor entre ensayos.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Inductancias del laboratorio}}
+
+Las bobinas del laboratorio tienen tomas intermedias, de modo que el mismo devanado ofrece tres inductancias según se conecte entre extremo y medio (A-M), entre medio y extremo (M-E) o entre extremos (A-E). En la práctica 6 hay que anotar qué conexión se usó: comparar la L medida contra otra toma es un error de referencia, no un error experimental.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Inductancia medida según el tipo de conexión}\par\smallskip
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Unidad & A-M & M-E & A-E \\
+\midrule
+1 & 1,962 mH & 2,706 mH & 8,54 mH \\
+2 & 1,942 mH & 2,748 mH & 8,55 mH \\
+3 & 0,975 H & 1,468 H & 4,421 H \\
+4 & 0,966 H & 1,411 H & 4,324 H \\
+5 & 7,845 mH & 11,32 mH & 34,62 mH \\
+6 & 7,902 mH & 11,70 mH & 35,34 mH \\
+7 & 502,1 $\mu$H & 703,8 $\mu$H & 2,188 mH \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize La numeración identifica la posición en la lista del laboratorio.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Inductancias de cinco terminales}}
+
+Dos bobinas del laboratorio tienen cinco terminales y permiten elegir la toma por saltos, desde el extremo inferior hasta el superior. Se usan cuando se necesita una inductancia intermedia que no está en la tabla anterior.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Inductancia medida entre terminales}\par\smallskip
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+Unidad & Inferior & Diagonal 1 & Medio & Diagonal 2 & Superior \\
+\midrule
+1 & 8,6 $\mu$H & 8,5 $\mu$H & 17,8 $\mu$H & 8,6 $\mu$H & 2,9 $\mu$H \\
+2 & 7,7 $\mu$H & 7,6 $\mu$H & 17,2 $\mu$H & 7,4 $\mu$H & 2,9 $\mu$H \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Cada columna es la conexión entre el terminal inferior y el indicado.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Multimedidor Keithley 175 y 175-A}}
+
+Especificaciones de fábrica del instrumento que se usa en la mayoría de las prácticas. La precisión se expresa como porcentaje de la lectura más un número de dígitos del último lugar, y es esa la que entra en el presupuesto de incertidumbres de cada informe.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Especificaciones del Keithley 175 y 175-A (hoja del laboratorio)}\par\smallskip
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Función & Rango & Resolución & Precisión \\
+\midrule
+V DC & 200 mV & 10 $\mu$V & 0,03 \% + 2 d \\
+V DC & 2 V & 100 $\mu$V & 0,03 \% + 2 d \\
+V DC & 20 V & 1 mV & 0,03 \% + 2 d \\
+V DC & 200 V & 10 mV & 0,03 \% + 2 d \\
+V DC & 1000 V & 100 mV & 0,03 \% + 2 d \\
+I DC & 200 $\mu$A & 10 nA & 0,15 \% + 2 d \\
+I DC & 2 mA & 100 nA & 0,15 \% + 2 d \\
+I DC & 20 mA & 1 $\mu$A & 0,15 \% + 2 d \\
+I DC & 200 mA & 10 $\mu$A & 0,2 \% + 2 d \\
+I DC & 2000 mA & 100 $\mu$A & 0,2 \% + 2 d \\
+I DC & 10 A & 1 mA & 0,75 \% + 2 d \\
+R & 200 $\Omega$ & 10 m$\Omega$ & 0,05 \% + 2 d \\
+R & 2 k$\Omega$ & 100 m$\Omega$ & 0,05 \% + 2 d \\
+R & 20 k$\Omega$ & 1 $\Omega$ & 0,05 \% + 2 d \\
+R & 200 k$\Omega$ & 10 $\Omega$ & 0,05 \% + 2 d \\
+R & 2 M$\Omega$ & 100 $\Omega$ & 0,05 \% + 2 d \\
+R & 20 M$\Omega$ & 1 k$\Omega$ & 0,2 \% + 2 d \\
+R & 200 M$\Omega$ & 10 k$\Omega$ & 2,0 \% + 1 d \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Resistencia de entrada en continua, 11 M$\Omega$ en 200 mV, 2 V y 20 V, y 10 M$\Omega$ en 200 V y 1000 V.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Multimedidor Keithley 179 y 179-A}}
+
+El 179 es el instrumento de mayor resolución del laboratorio y el que se usa cuando se necesita comparar dos modelos en la práctica 3. Su resistencia de entrada en continua es de 10 M$\Omega$, distinta de la del 175, y esa diferencia es precisamente la que se mide y se discute en el informe.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Especificaciones del Keithley 179 y 179-A (hoja del laboratorio)}\par\smallskip
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Función & Rango & Resolución & Precisión \\
+\midrule
+V DC & 200 mV & 10 $\mu$V & 0,04 \% + 3 d \\
+V DC & 2 V & 100 $\mu$V & 0,04 \% + 1 d \\
+V DC & 20 V & 1 mV & 0,04 \% + 1 d \\
+V DC & 200 V & 10 mV & 0,04 \% + 1 d \\
+V DC & 1200 V & 100 mV & 0,04 \% + 1 d \\
+V AC & 200 mV & 10 $\mu$V & 0,7 \% + 15 d \\
+V AC & 2 V a 1200 V & 100 $\mu$V a 100 mV & 0,6 \% + 15 d \\
+I DC & 200 $\mu$A a 2000 mA & 10 nA a 100 $\mu$A & 0,2 \% + 2 d \\
+I AC & 200 $\mu$A a 2000 mA & 10 nA a 100 $\mu$A & 1 \% + 15 d \\
+R & 2 k$\Omega$ & 100 m$\Omega$ & 0,15 \% + 1 d \\
+R & 20 k$\Omega$ a 2000 k$\Omega$ & 1 $\Omega$ a 100 $\Omega$ & 0,04 \% + 1 d \\
+R & 20 M$\Omega$ & 1 k$\Omega$ & 0,10 \% + 1 d \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Impedancia de entrada en alterna, 1 M$\Omega$ en serie con un capacitor menor de 75 pF.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Propagación de incertidumbres}}
+
+Toda magnitud indirecta se calcula a partir de otras medidas, y su incertidumbre se propaga con las derivadas parciales. Cuando las variables son independientes se suman en cuadratura; cuando están correlacionadas, como ocurre al medir con el mismo instrumento en dos puntos, hay que tratarlo explícitamente en el informe.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Reglas de propagación usadas en el curso}\par\smallskip
+\begin{tabular}{@{}cc@{}}
+\toprule
+Relación & Incertidumbre \\
+\midrule
+$z = x + y$ & $u_z = \sqrt{u_x^2 + u_y^2}$ \\
+$z = x\,y$ & $u_z/z = \sqrt{(u_x/x)^2 + (u_y/y)^2}$ \\
+$z = x/y$ & $u_z/z = \sqrt{(u_x/x)^2 + (u_y/y)^2}$ \\
+$z = x^n$ & $u_z/z = |n|\,u_x/x$ \\
+Ajuste lineal & Pendiente y ordenada con su error estándar del ajuste \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize u designa la incertidumbre combinada de la magnitud.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Formulario del curso}}
+
+Formulario mínimo de las nueve semanas experimentales. Se permite una hoja como esta, manuscrita, en los controles y en la evaluación final.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Expresiones de referencia}\par\smallskip
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Concepto & Expresión & Práctica \\
+\midrule
+Ley de Ohm & $V = R\,I$ & 1 \\
+Puente de Wheatstone & $R_x = R_1 R_3 / R_2$ & 2 \\
+Fuente real & $V = \varepsilon - r\,I$ & 3 \\
+Máxima transferencia & $R_L = r$ & 3 \\
+Thévenin & $R_{th} = \varepsilon_{th}/I_{cc}$ & 4 \\
+Diodo & $I_D = I_S\left(e^{V_D/(nV_T)} - 1\right)$ & 5 \\
+Reactancias & $X_L = \omega L$; $X_C = 1/(\omega C)$ & 6 \\
+Impedancia serie & $Z = \sqrt{R^2 + (X_L - X_C)^2}$ & 6 \\
+Resonancia & $f_0 = 1/(2\pi\sqrt{LC})$ & 7 \\
+Factor de calidad & $Q = \omega_0 L/R = f_0/\Delta f$ & 7 y 9 \\
+Transitorio RC & $\tau = RC$; $t_{1/2} = \tau\ln 2$ & 8 \\
+Energía del capacitor & $W = C V^2/2$ & 8 \\
+Amortiguamiento & $\zeta = (R/2)\sqrt{C/L}$; $Q = 1/(2\zeta)$ & 9 \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Las condiciones de validez se discuten en la práctica correspondiente.}
+\end{minipage}
+\end{center}
+\end{document}

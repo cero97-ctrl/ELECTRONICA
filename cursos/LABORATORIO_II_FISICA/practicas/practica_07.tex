@@ -1,0 +1,512 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 07}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Práctica 07 --- Resonancia serie y paralelo con L y C del inventario}{Semana 7 --- Fase 2: Elementos no lineales y régimen senoidal}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
+\textbf{Modalidad} & 4 grupos con roles rotativos \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_07, antes del corte semanal \\
+\textbf{Instrumento} & Práctica formativa con informe \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{bullseye}{Objetivo}}
+
+Determinar la frecuencia de resonancia de circuitos con L y C en serie y en paralelo, y obtener la inductancia de una bobina a partir de un circuito resonante con una capacitancia conocida.
+
+\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Resonancia serie, con impedancia mínima y corriente máxima.
+  \item Resonancia paralelo, con impedancia máxima.
+  \item Frecuencia de resonancia y su dependencia de L y C.
+  \item Factor de calidad y su significado físico.
+  \item Ancho de banda y puntos de media potencia o de menos 3 dB.
+  \item Selectividad y aplicaciones en sintonía.
+  \item Efecto de la resistencia sobre la nitidez de la resonancia.
+\end{itemize}
+
+\section{\iconotexto{book-open}{Fundamento teórico}}
+
+En un circuito serie la impedancia es mínima cuando las reactancias se
+cancelan, $X_L = X_C$, y entonces la frecuencia de resonancia vale
+\[
+  f_0 = \frac{1}{2\pi\sqrt{LC}}
+\]
+En resonancia la corriente es máxima y las tensiones sobre L y sobre C
+pueden superar a la del generador en un factor igual al factor de calidad:
+\[
+  Q = \frac{\omega_0 L}{R} = \frac{1}{R}\sqrt{\frac{L}{C}}
+  \qquad\qquad
+  V_L = V_C = Q\,V_g
+\]
+El ancho de banda entre los puntos de media potencia, donde la corriente
+cae a $1/\sqrt{2}$ de su valor máximo y la tensión sobre el resistor a
+menos 3 dB, es
+\[
+  \Delta f = \frac{f_0}{Q}
+\]
+Un valor alto de $Q$ significa un pico estrecho y selectivo; uno bajo, una
+respuesta ancha y amortiguada. En configuración paralelo la resonancia
+produce impedancia máxima y la tensión sobre el conjunto alcanza su pico.
+
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$v_g$] (0,3) to[R, l=$R$] (2.6,3)
+        to[L, l=$L$] (5.2,3) to[C, l=$C$] (7.8,3) -- (7.8,0) -- (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuito RLC serie; la tensión sobre R permite seguir la corriente en todo el barrido}
+\end{center}
+
+\section{\iconotexto{box-open}{Materiales y equipos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Un generador de funciones senoidal
+  \item Un resistor variable del tipo décadas
+  \item El capacitor del inventario usado en la práctica 6
+  \item La bobina del inventario usada en la práctica 6
+  \item Un multimedidor digital Keithley 175-A
+  \item Un voltímetro analógico
+\end{itemize}
+
+\section{\iconotexto{flask}{Escenario}}
+
+Con la misma bobina y el mismo capacitor de la semana anterior, el grupo localiza la frecuencia de resonancia del circuito serie y del paralelo barriendo la frecuencia a ambos lados del pico, y usa el valor conocido de C para obtener L de la condición de resonancia.
+
+\section{\iconotexto{list-ol}{Procedimiento}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Calcular la frecuencia de resonancia $f_0$ esperada con los valores de L y C del apéndice y anotarla como referencia.
+  \item Armar el circuito serie de la figura y hacerlo revisar por el profesor.
+  \item Elegir $f_1$ y $f_2$ tales que $f_1 	extless{} f_0 	extless{} f_2$ y barrer la frecuencia entre ambas.
+  \item Para cada valor de frecuencia anotar la corriente $i$, manteniendo constante la amplitud con el control del generador.
+  \item Repetir el mismo barrido con el circuito paralelo y anotar la corriente en cada punto.
+  \item Sin desmontar los equipos, añadir puntos en la región del pico para definir bien el máximo o el mínimo.
+  \item Medir la tensión sobre la bobina y sobre el capacitor en resonancia y comparar con la del generador.
+\end{enumerate}
+
+\section{\iconotexto{table}{Tabla de datos}}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Barrido fino alrededor de la resonancia}\par\smallskip
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$f$ (Hz) & $V_R$ (V) & $I$ (mA) & $Z$ ($\Omega$) & Ganancia (dB) \\
+\midrule
+$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+$f_0$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Anotar la resistencia empleada en cada barrido; se necesitan tres tablas como esta.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Graficar $i$ frente a $f$ para el circuito serie y para el paralelo, con ejes rotulados y unidades.
+  \item Determinar de la gráfica el valor extremo de la corriente y, con él, la frecuencia de resonancia $f_0$ experimental.
+  \item Conocidos C y $f_0$, despejar L de la condición de resonancia y compararla con el valor del apéndice de inductancias.
+  \item Repetir la determinación de $f_0$ para el circuito paralelo y comparar serie contra paralelo.
+  \item Identificar el ancho de banda como el intervalo entre $f_1$ y $f_2$ donde la corriente cae a $1/\sqrt{2}$ del extremo.
+  \item Discutir por qué los instrumentos imponen un límite de frecuencia a la medición y cómo afecta al barrido.
+\end{enumerate}
+
+\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Repetir el barrido con tres valores de resistencia y determinar el factor de calidad por el ancho de banda y por la relación de tensiones.
+  \item Graficar el factor de calidad frente a la resistencia y verificar la dependencia inversa prevista.
+  \item Estimar la resistencia serie del inductor a partir del factor de calidad medido con la resistencia mínima.
+\end{itemize}
+
+\section{\iconotexto{box-open}{Entregable}}
+
+Curvas $i$--$f$ de los circuitos serie y paralelo, frecuencia de resonancia determinada gráficamente e inductancia obtenida de ella, comparada con el apéndice.
+
+\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Fundamento teórico y modelo aplicado & 1,0 \\
+Montaje, seguridad y manejo del instrumental & 1,5 \\
+Toma de datos completa y trazable & 2,0 \\
+Presupuesto de incertidumbres & 2,0 \\
+Análisis, ajuste y gráficas & 2,0 \\
+Conclusiones contrastadas con el modelo & 1,0 \\
+Presentación y estructura del informe & 0,5 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{code}{Contrato del script}}
+
+\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
+\begin{lstlisting}[language=Python,style=estiloPython]
+{
+  "status": "ok",
+  "practica": 1,
+  "magnitud": "resistencia",
+  "valor": 99.4,
+  "unidad": "ohm",
+  "incertidumbre": 0.6,
+  "metodo": "ajuste_lineal_minimos_cuadrados",
+  "n_puntos": 8,
+  "residual_max": 0.012,
+  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
+  "errores": []
+}
+
+\end{lstlisting}
+\end{cajaConcepto}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\end{tcolorbox}
+\end{document}

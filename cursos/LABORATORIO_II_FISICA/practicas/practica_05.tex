@@ -1,0 +1,523 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 05}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Práctica 05 --- Característica estática del diodo y extracción de parámetros}{Semana 5 --- Fase 2: Elementos no lineales y régimen senoidal}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
+\textbf{Modalidad} & 4 grupos con roles rotativos \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_05, antes del corte semanal \\
+\textbf{Instrumento} & Práctica formativa con informe \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{bullseye}{Objetivo}}
+
+Obtener la característica corriente-tensión de un diodo en directa y en inversa, y extraer la corriente de saturación y el factor de idealidad por linealización del modelo exponencial.
+
+\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Elemento óhmico frente a elemento no lineal.
+  \item Unión p-n, tensión umbral y conducción en directa.
+  \item Ecuación de Shockley y linealización logarítmica.
+  \item Resistencia dinámica o incremental del diodo.
+  \item Ruptura Zener y polarización inversa.
+  \item Diodo emisor de luz y su tensión característica.
+  \item Resistencia limitadora y protección del dispositivo.
+\end{itemize}
+
+\section{\iconotexto{book-open}{Fundamento teórico}}
+
+La corriente de un diodo en directa sigue la ecuación de Shockley:
+\[
+  I_D = I_S\left(e^{V_D/(n V_T)} - 1\right)
+  \qquad\text{con}\qquad
+  V_T = \frac{k_B T}{q} \approx 25{,}9\ \mathrm{mV}
+  \ \text{a}\ 300\ \mathrm{K}
+\]
+donde $I_S$ es la corriente de saturación y $n$ el factor de idealidad,
+entre 1 y 2. Tomando logaritmos se linealiza:
+\[
+  \ln I_D = \ln I_S + \frac{1}{n V_T}\,V_D
+\]
+de modo que la pendiente de $\ln I_D$ frente a $V_D$ es $1/(n V_T)$ y la
+ordenada al origen es $\ln I_S$. La resistencia dinámica en un punto de
+operación es la derivada:
+\[
+  r_d = \left.\frac{dV_D}{dI_D}\right|_{I_D} = \frac{n V_T}{I_D}
+\]
+En inversa la corriente es del orden de $I_S$ hasta alcanzar la tensión de
+ruptura, donde crece con muy poca variación de tensión; ese es el régimen
+que aprovecha el diodo Zener como regulador.
+El amperímetro no mide la corriente del diodo sino la suma de la del diodo
+y la que deriva el voltímetro que mide $V_D$:
+\[
+  i_m = i + i_v
+  \qquad\text{con}\qquad
+  i_v = \frac{V}{R_V}
+\]
+con $R_V$ del orden de 10 M$\Omega$, la corrección es despreciable en directa pero
+no en inversa, donde la corriente del diodo es del orden de los
+microamperios.
+
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$] (0,3) to[ammeter, l=$I_D$] (3,3)
+        to[R, l=$R$] (5.4,3) to[D, l=$D$] (5.4,0) -- (0,0);
+  \draw (5.4,3) -- (6.8,3) to[voltmeter, l=$V_D$] (6.8,0) -- (5.4,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Caracterización del diodo; la resistencia R limita la corriente y protege el dispositivo}
+\end{center}
+
+\section{\iconotexto{box-open}{Materiales y equipos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Una fuente de poder de 0 a 30 V y 6 A
+  \item Dos multimedidores Keithley (179, 175 o 175-A)
+  \item Un diodo semiconductor rectificador
+  \item Una resistencia limitadora de 220 $\Omega$
+\end{itemize}
+
+\section{\iconotexto{flask}{Escenario}}
+
+El grupo mide la curva completa de un diodo rectificador en directa y en inversa, la de un Zener en ruptura y la de un LED, y debe demostrar que la corriente sigue una exponencial obteniendo sus dos parámetros por un ajuste lineal sobre la variable transformada.
+
+\section{\iconotexto{list-ol}{Procedimiento}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Calcular la resistencia limitadora que mantiene la corriente por debajo de 20 mA con la tensión máxima disponible.
+  \item Montar el circuito en directa y recorrer la tensión de 0 a 0,8 V en pasos de 50 mV hasta el umbral.
+  \item A partir del umbral, tomar puntos en pasos de 10 mV controlando que la corriente no supere el límite, hasta completar un mínimo de veinte pares $V$, $I$.
+  \item Medir con el mismo voltímetro la tensión sobre la resistencia limitadora, para estimar la corriente que deriva el voltímetro $i_v = V/R_V$.
+  \item Invertir el diodo y medir la corriente inversa en 2, 5 y 10 V, cambiando a la escala de microamperios.
+  \item Anotar la temperatura ambiente, porque los parámetros del diodo dependen de ella.
+\end{enumerate}
+
+\section{\iconotexto{table}{Tabla de datos}}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Característica en directa del diodo de silicio}\par\smallskip
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$V_D$ (V) & $i_m$ (mA) & $i_v$ ($\mu$A) & $\ln I_D$ & $r_d$ ($\Omega$) \\
+\midrule
+0,100 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,300 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,450 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,550 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,600 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,650 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,700 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+0,750 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize Mínimo veinte filas; la columna del logaritmo se completa en el script, no a mano.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Corregir la corriente medida como $i = i_m - i_v$ y discutir cuándo la corrección es despreciable frente a la incertidumbre.
+  \item Graficar $\ln I$ frente a $V_D$ y ajustar la recta por mínimos cuadrados.
+  \item Obtener el factor de idealidad $n$ a partir de la pendiente y la corriente de saturación $I_0$ del corte, ambos con su error.
+  \item Calcular la resistencia dinámica en tres puntos de operación y compararla con la pendiente local de la curva.
+  \item Comparar el valor de $n$ con el intervalo esperado entre 1 y 2 y discutir las causas de la desviación.
+  \item Estimar el efecto de la temperatura sobre la tensión umbral y discutir su signo.
+\end{enumerate}
+
+\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Repetir la caracterización con un diodo Zener de 5,1 V, en directa y en su ruptura inversa, limitando la corriente con el resistor adecuado.
+  \item Medir la curva de un diodo emisor de luz y registrar la tensión a la que comienza a emitir luz visible.
+  \item Comparar las tensiones umbral de los tres dispositivos y relacionarlas con el material semiconductor.
+\end{itemize}
+
+\section{\iconotexto{box-open}{Entregable}}
+
+Curva en directa e inversa del diodo con la corrección por corriente derivada, parámetros del modelo exponencial con su incertidumbre y, si se realiza la ampliación, la comparación con Zener y LED.
+
+\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Fundamento teórico y modelo aplicado & 1,0 \\
+Montaje, seguridad y manejo del instrumental & 1,5 \\
+Toma de datos completa y trazable & 2,0 \\
+Presupuesto de incertidumbres & 2,0 \\
+Análisis, ajuste y gráficas & 2,0 \\
+Conclusiones contrastadas con el modelo & 1,0 \\
+Presentación y estructura del informe & 0,5 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{code}{Contrato del script}}
+
+\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
+\begin{lstlisting}[language=Python,style=estiloPython]
+{
+  "status": "ok",
+  "practica": 1,
+  "magnitud": "resistencia",
+  "valor": 99.4,
+  "unidad": "ohm",
+  "incertidumbre": 0.6,
+  "metodo": "ajuste_lineal_minimos_cuadrados",
+  "n_puntos": 8,
+  "residual_max": 0.012,
+  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
+  "errores": []
+}
+
+\end{lstlisting}
+\end{cajaConcepto}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\end{tcolorbox}
+\end{document}

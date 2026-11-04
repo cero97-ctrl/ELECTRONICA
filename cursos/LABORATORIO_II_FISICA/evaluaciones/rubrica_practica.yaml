@@ -1,0 +1,26 @@
+# Rúbrica genérica de prácticas — generada desde curso.yaml.
+# Compatible con execution/evaluar_examen.py (los pesos deben sumar 10).
+nombre: Rúbrica de prácticas de Laboratorio II de Física
+escala: 10
+criterios:
+  fundamento_teorico:
+    peso: 1.0
+    descripcion: "Presenta el modelo físico con sus supuestos y sus límites, y escribe las ecuaciones que va a contrastar."
+  montaje_y_seguridad:
+    peso: 1.5
+    descripcion: "Montaje correcto contra la figura, rangos y polaridad verificados antes de energizar, y respeto de las normas de seguridad eléctrica."
+  toma_de_datos:
+    peso: 2.0
+    descripcion: "Tabla completa con unidades y resolución de cada instrumento, datos crudos sin alterar y condiciones de la medición registradas."
+  incertidumbres:
+    peso: 2.0
+    descripcion: "Presupuesto de incertidumbres explícito: tipo A y tipo B, propagación hasta el resultado final y cifras significativas coherentes."
+  analisis_y_graficas:
+    peso: 2.0
+    descripcion: "Ajuste por mínimos cuadrados con parámetro, incertidumbre y residuales; gráficas con ejes rotulados, unidades y banda de incertidumbre."
+  conclusiones:
+    peso: 1.0
+    descripcion: "Conclusiones individuales que contrastan el dato con el modelo, explican los desvíos y declaran lo que no se pudo verificar."
+  presentacion:
+    peso: 0.5
+    descripcion: "Estructura del informe, legibilidad de tablas y figuras, y repositorio ordenado según la estructura acordada."

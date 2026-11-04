@@ -1,0 +1,510 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 04}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Práctica 04 --- Circuitos serie, paralelo y red de dos mallas}{Semana 4 --- Fase 1: Instrumentación y leyes básicas de los circuitos}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
+\textbf{Modalidad} & 4 grupos con roles rotativos \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_04, antes del corte semanal \\
+\textbf{Instrumento} & Práctica formativa con informe y control de fase \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{bullseye}{Objetivo}}
+
+Medir corrientes y tensiones en circuitos de serie, paralelo y mixto sobre el tablero, y aplicar las leyes de Kirchhoff a una red de dos mallas con tres baterías.
+
+\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Ley de corrientes y ley de tensiones de Kirchhoff.
+  \item Análisis por mallas y por nudos.
+  \item Divisor de tensión y divisor de corriente.
+  \item Principio de superposición y sus límites.
+  \item Equivalente de Thévenin y de Norton; resistencia equivalente.
+  \item Cierre de balance de potencias en un circuito.
+\end{itemize}
+
+\section{\iconotexto{book-open}{Fundamento teórico}}
+
+La ley de corrientes exige que la suma algebraica de corrientes en un nudo
+sea nula, y la ley de tensiones que la suma algebraica alrededor de una
+malla cerrada también lo sea:
+\[
+  \sum_{k} I_k = 0 \qquad\qquad \sum_{k} V_k = 0
+\]
+El equivalente de Thévenin de una red lineal de dos terminales es una
+fuente $\varepsilon_{th}$ en serie con $R_{th}$, donde $\varepsilon_{th}$
+es la tensión en circuito abierto y $R_{th}$ la resistencia vista desde los
+terminales con las fuentes independientes anuladas:
+\[
+  R_{th} = \frac{\varepsilon_{th}}{I_{cc}}
+\]
+siendo $I_{cc}$ la corriente de cortocircuito entre esos terminales, que es
+además la fuente del equivalente de Norton. La superposición permite
+calcular la respuesta con cada fuente por separado, anulando las demás,
+pero no se aplica a la potencia porque esta depende del cuadrado de la
+corriente.
+
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$\varepsilon_1$, invert] (0,4) to[R, l=$R_1$] (4,4);
+  \draw (4,4) to[V, l=$\varepsilon_2$] (4,1) to[R, l=$R_2$] (4,-2);
+  \draw (4,4) to[R, l=$R_3$] (8,4) to[V, l=$\varepsilon_3$] (8,-2);
+  \draw (8,-2) -- (4,-2) -- (0,-2) -- (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Red de dos mallas con tres baterías y tres resistencias, montada sobre el tablero}
+\end{center}
+
+\section{\iconotexto{box-open}{Materiales y equipos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Tablero de redes con borneras y cables de conexión
+  \item Tres baterías o pilas, una de ellas de 10 V
+  \item Resistencias de carbón de 100, 220 y 330 $\Omega$
+  \item Caja de resistencias décadas como carga variable
+  \item Dos multimedidores Keithley (179, 175 o 175-A)
+\end{itemize}
+
+\section{\iconotexto{flask}{Escenario}}
+
+Se dispone una red de dos mallas sobre el tablero, con tres baterías y tres resistencias. El grupo debe medir las fuerzas electromotrices y las resistencias, predecir por Kirchhoff las tres corrientes de rama, medirlas rompiendo cada rama para intercalar el amperímetro, y comparar lo calculado con lo medido antes de pasar a los montajes de serie y paralelo.
+
+\section{\iconotexto{list-ol}{Procedimiento}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Medir con el voltímetro las fuerzas electromotrices y con el óhmetro las tres resistencias, con su error, y ordenarlas en una tabla.
+  \item Resolver por Kirchhoff el sistema de las tres corrientes de rama en el cuaderno y traerlo hecho antes de entrar al laboratorio.
+  \item Disponer las resistencias y las pilas en el tablero, armar el circuito y hacerlo revisar por el profesor.
+  \item Romper la primera rama e intercalar el amperímetro en serie para medir $I_1$; repetir para $I_2$ e $I_3$.
+  \item Medir, para cada malla, la diferencia de potencial entre los extremos de cada resistencia.
+  \item Montar las resistencias en serie con una sola batería y medir $I$, $I_1$, $I_2$ y la tensión en cada una.
+  \item Montar las resistencias en paralelo, medir la corriente total, la de cada rama y la tensión común.
+\end{enumerate}
+
+\section{\iconotexto{table}{Tabla de datos}}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Comparación entre lo calculado por Kirchhoff y lo medido}\par\smallskip
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Magnitud & Calculada & Medida & Desvío (\%) & Unidad \\
+\midrule
+$I_1$ & $\ldots$ & $\ldots$ & $\ldots$ & mA \\
+$I_2$ & $\ldots$ & $\ldots$ & $\ldots$ & mA \\
+$I_3$ & $\ldots$ & $\ldots$ & $\ldots$ & mA \\
+$V_{R1}$ & $\ldots$ & $\ldots$ & $\ldots$ & V \\
+$V_{R2}$ & $\ldots$ & $\ldots$ & $\ldots$ & V \\
+$V_{R3}$ & $\ldots$ & $\ldots$ & $\ldots$ & V \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize El desvío relativo debe compararse con la incertidumbre de las dos lecturas, no juzgarse a ojo; un desvío dentro de la incertidumbre no es un error de montaje.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Resolver el sistema de mallas en Python y comparar punto a punto con lo medido.
+  \item Calcular el porcentaje de error entre las corrientes experimentales y las calculadas por Kirchhoff.
+  \item Verificar la ley de corrientes en cada nudo y la de tensiones en cada malla, con los valores medidos.
+  \item Comprobar la resistencia equivalente medida en serie y en paralelo contra la calculada.
+  \item Calcular el balance de potencias y verificar que la suma de potencias entregadas iguale a la consumida.
+  \item Identificar qué desvíos superan la incertidumbre y atribuirlos a una causa concreta.
+\end{enumerate}
+
+\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Medir la tensión en circuito abierto entre los bornes de la carga y la corriente de cortocircuito, y construir el equivalente de Thévenin con la caja de décadas.
+  \item Conectar la misma carga al circuito original y al equivalente y comprobar que la tensión coincide.
+  \item Aplicar superposición anulando una fuente por vez, medir y comparar con la suma calculada.
+\end{itemize}
+
+\section{\iconotexto{box-open}{Entregable}}
+
+Tabla de calculado contra medido, verificación explícita de las dos leyes de Kirchhoff, comparación de los montajes serie y paralelo, y, si se realiza la ampliación, el equivalente de Thévenin comprobado con la carga.
+
+\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Fundamento teórico y modelo aplicado & 1,0 \\
+Montaje, seguridad y manejo del instrumental & 1,5 \\
+Toma de datos completa y trazable & 2,0 \\
+Presupuesto de incertidumbres & 2,0 \\
+Análisis, ajuste y gráficas & 2,0 \\
+Conclusiones contrastadas con el modelo & 1,0 \\
+Presentación y estructura del informe & 0,5 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{code}{Contrato del script}}
+
+\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
+\begin{lstlisting}[language=Python,style=estiloPython]
+{
+  "status": "ok",
+  "practica": 1,
+  "magnitud": "resistencia",
+  "valor": 99.4,
+  "unidad": "ohm",
+  "incertidumbre": 0.6,
+  "metodo": "ajuste_lineal_minimos_cuadrados",
+  "n_puntos": 8,
+  "residual_max": 0.012,
+  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
+  "errores": []
+}
+
+\end{lstlisting}
+\end{cajaConcepto}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\end{tcolorbox}
+\end{document}
