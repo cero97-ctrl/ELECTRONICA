@@ -905,3 +905,197 @@ res = compile_latex_code(contenido, job_name="mi_doc", output_dir=..., clean=Fal
 > - `docs/COMPUTO_PARALELO/diseno_cluster.tex` (líneas 548-550: `\begin{cajaContenido}` → `\begin{tcolorbox}[cajaContenido]`)
 > - `execution/compile_latex.py` (`clean_latex_aux_files`, línea 16; `compile_latex_code`, línea 29)
 > - `execution/estilo_infografia.py` (referencia: qué es `.style` y qué es `\newtcolorbox`)
+
+---
+
+## 18. `%` Sin Escapar en una Celda de Tabla: el Síntoma Aparece Dos Filas Más Abajo (`Misplaced \noalign`)
+
+### Síntoma / Mensaje de Error
+
+Al compilar, la tabla falla con una cascada que **no señala la celda culpable**:
+
+```text
+! Misplaced \noalign.
+\midrule ->\noalign
+l.430 \midrule
+! Missing } inserted.
+l.431 $
+       I_1$ & $\ldots$ & $\ldots$ & $\ldots$ & mA \\
+! Missing \cr inserted.
+! Misplaced \cr.
+```
+
+y en casos peores `==> Fatal error occurred, no output PDF file produced!`.
+
+### Causa
+
+En una cabecera o celda se escribió un `%` literal:
+
+```latex
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Magnitud & Calculada & Medida & Desvío (%) & Unidad \\   % ← ese % comenta el resto
+\midrule
+```
+
+`%` es el carácter de comentario de TeX: todo lo que sigue hasta el fin de línea
+**desaparece**, incluido el `\\` que cerraba la fila. LaTeX llega entonces a
+`\midrule` sin haber terminado la fila anterior y `\noalign` queda fuera de sitio.
+El error se reporta en la línea del `\midrule` o del `\bottomrule`, no en la del
+`%`, que es lo que hace caro el diagnóstico.
+
+### Solución
+
+Escapar siempre: `\%`.
+
+```latex
+Magnitud & Calculada & Medida & Desvío (\%) & Unidad \\
+```
+
+> **Regla general:** cualquier string que se inyecte en LaTeX **crudo** (celdas de
+> tabla, `fundamento_tex`, `figura_tex`) debe llevar `%`, `&`, `#`, `_` y `$`
+> deliberados y correctos; nadie los escapa por ti. En los campos que sí pasan por
+> un escapador (`_t()`) el `%` se convierte solo.
+>
+> **Detección temprana:** `execution/generar_material_curso.py::_unicode_crudo`
+> recorre las celdas y los campos `*_tex` durante la validación y rechaza con
+> código 3 tanto un `%` sin escapar como un carácter Unicode que pdflatex no
+> compone, así que este fallo ya no cuesta un ciclo de compilación.
+
+> **Archivos afectados:**
+> - `cursos/LABORATORIO_II_FISICA/curso.yaml` (`practica.tabla_datos.columnas`, `apendices[].tabla.filas`)
+> - `execution/generar_material_curso.py` (`_tabla_columnas`: celdas crudas a propósito)
+
+---
+
+## 19. `\,` Seguido de `\%` en Modo Matemático con `babel` `spanish`: `! Incompatible glue units`
+
+### Síntoma / Mensaje de Error
+
+```text
+! Incompatible glue units.
+\es@sppercent ...\ifnum \gluestretchorder \lastskip =\z@ \unskip \fi \textorma...
+l.384   u(V) = a\,\%
+                    \cdot V + b\cdot \mathrm{d\acute{i}g}
+I'm going to assume that 1mu=1pt when they're mixed.
+```
+
+### Causa
+
+`babel` con `spanish` redefine `\%` (`\es@sppercent`) para añadir espaciado fino
+antes del signo, e inspecciona `\lastskip` para decidir. Dentro de modo matemático,
+`\,` pega **glue de tipo `mu`** (math unit), y el código de babel intenta operarlo
+contra glue `pt`: unidades incompatibles.
+
+### Solución
+
+No mezclar `\,` con `\%` en modo matemático. Tres salidas, en orden de preferencia:
+
+```latex
+% A) Sacar el signo de porcentaje de la fórmula y explicarlo en prosa
+u(V) = a \cdot V + b \cdot \mathrm{d\acute{i}g}   % con a en tanto por uno
+
+% B) Usar espacio de texto en vez de \,
+a\ \% \cdot V
+
+% C) Poner el \% fuera del modo matemático
+$a$~\% de la lectura
+```
+
+En **modo texto** `\%` no da este problema (el `\lastskip` es `pt`), de modo que
+`0,5 \% más 2 dígitos` dentro de una celda es correcto.
+
+> **Archivos afectados:**
+> - `cursos/LABORATORIO_II_FISICA/curso.yaml` (`practica.fundamento_tex` de la semana 1)
+
+---
+
+## 20. `galvanometer` No Existe como Bipolo de circuitikz 1.6.x
+
+### Síntoma / Mensaje de Error
+
+```text
+! Package pgfkeys Error: I do not know the key '/tikz/galvanometer' and I am going
+to ignore it. Perhaps you misspelled it.
+! Package pgfkeys Error: I do not know the key '/tikz/l', to which you passed '$G$'
+```
+
+El segundo error es en cascada: al ignorarse la clave desconocida, el resto de
+opciones del `to[...]` se reinterpreta como claves sueltas.
+
+### Causa
+
+circuitikz tiene `ammeter`, `voltmeter`, `ohmmeter`, `sQmeter`… pero **no**
+`galvanometer`. Es un nombre plausible que no existe en el paquete.
+
+### Solución
+
+Usar un instrumento existente y nombrar el papel en la etiqueta o en el pie de
+figura:
+
+```latex
+% Antes (inexistente):
+\draw (2,3) to[galvanometer, l=$G$] (2,0);
+% Después:
+\draw (2,3) to[ammeter, l=$G$] (2,0);
+```
+
+> **Punto clave:** ante `I do not know the key '/tikz/<algo>'`, el arreglo no es
+> añadir paquetes: es comprobar el nombre del bipolo en el manual de circuitikz.
+> Los nombres inventados por un LLM son la causa más frecuente de este error.
+
+> **Archivos afectados:**
+> - `cursos/LABORATORIO_II_FISICA/curso.yaml` (`practica.figura_tex` de la semana 2, puente de Wheatstone)
+
+---
+
+## 21. Unicode Literal en LaTeX **Crudo**: `Unicode character Ω (U+03A9) not set up for use with LaTeX`
+
+### Síntoma / Mensaje de Error
+
+```text
+! LaTeX Error: Unicode character μ (U+03BC) not set up for use with LaTeX.
+! LaTeX Error: Unicode character Ω (U+03A9) not set up for use with LaTeX.
+```
+
+Solo en algunos documentos del mismo lote: los que llevan esos caracteres en una
+región cruda.
+
+### Causa
+
+`pdflatex` con `inputenc utf8` cubre latin-1 (acentos, eñe) pero **no** griegas ni
+símbolos como `·` (U+00B7). En este repo hay dos caminos para el texto:
+
+| Camino | Qué ocurre con `Ω` |
+|---|---|
+| Campo escapado (`_t()` en `generar_material_curso.py`) | El mapa `_UNICODE` lo traduce a `$\Omega$` y compila |
+| LaTeX crudo (celdas de `tabla_datos`, `fundamento_tex`, `figura_tex`) | Pasa intacto a pdflatex y **revienta** |
+
+La asimetría es la trampa: el mismo carácter funciona en una lista de `contenidos`
+y falla en una celda de tabla.
+
+### Solución
+
+En regiones crudas, escribir la macro:
+
+```latex
+% Antes (crudo, falla):
+- ['Caja de décadas', '0 a 9999 Ω', 'Pasos de 1 Ω']
+- ['Electrolítico', '1 μF · 10 μF', 'Polarizado']
+% Después:
+- ['Caja de décadas', '0 a 9999 $\Omega$', 'Pasos de 1 $\Omega$']
+- ['Electrolítico', '1 $\mu$F, 10 $\mu$F', 'Polarizado']
+```
+
+Para el punto medio, o se usa `$\cdot$` o se sustituye por coma (en una tabla de
+valores la coma es tipográficamente mejor y evita doce cambios de modo matemático).
+
+**Detección temprana:** `execution/generar_material_curso.py::_unicode_crudo`
+recorre celdas y campos `*_tex` en la validación y devuelve código 3 con la macro
+sugerida, en vez de descubrirlo tras una compilación completa. Cubre todo carácter
+`ord(ch) > 127` salvo `_ASCII_SEGURO = "áéíóúüñÁÉÍÓÚÜÑ"`.
+
+> **Archivos afectados:**
+> - `cursos/LABORATORIO_II_FISICA/curso.yaml` (tablas de los apéndices 1, 2 y 3)
+> - `execution/generar_material_curso.py` (`_unicode_crudo`, `_validar_tabla`, `validar`)
+> - `execution/test_generar_material_curso.py` (`test_unicode_en_latex_crudo_falla`)

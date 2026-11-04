@@ -1,0 +1,317 @@
+name: disenar_curso
+description: >-
+  Genera el material completo de un curso (sílabo, plan semanal, guía del estudiante,
+  una práctica por semana, controles de fase, evaluación final, rúbrica, laboratorio
+  Docker y README) a partir de un descriptor YAML que es la fuente única de verdad.
+  El material es determinista: mismo descriptor -> mismo LaTeX -> mismo PDF byte a byte.
+version: 1.1  # 1.1 añade los campos opcionales de dominio (textos, apéndices,
+              # tabla de datos, fundamento/figura de práctica, rúbrica propia).
+              # Todo es aditivo: un descriptor de la v1.0 genera exactamente lo mismo.
+
+goal: >-
+  Entregar el paquete docente de un curso coherente de principio a fin, donde la
+  numeración de semanas, los pesos de evaluación, los entregables de cada práctica y
+  el laboratorio cuentan la misma historia porque salen del mismo fichero. El
+  orquestador no redacta el curso: enruta a la capa 3, valida la entrega en disco y
+  detiene el flujo ante cualquier incoherencia.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml` del curso. Bloques obligatorios: meta (codigo,
+      titulo, subtitulo, autor, fecha, fecha_iso, semanas), objetivo_general,
+      resultados_aprendizaje, grupos, evaluacion (pesos que suman 100 en porcentaje),
+      laboratorio (imágenes con puerto de host y de contenedor, sin puertos repetidos),
+      fases (que cubren las semanas exactamente una vez), semanas (numero, fase, titulo,
+      objetivo, contenidos, herramientas, practica con pasos, entregable y criterios que
+      suman 10), controles y evaluacion_final (puntajes que cierran en la escala),
+      bibliografia y politicas.
+      `fecha_iso` es obligatoria: fija el /CreationDate del PDF y es lo que hace
+      reproducible compilar hoy y compilar en un mes.
+      `resultados_aprendizaje` es una lista de mapas `{id, texto}`, no de strings:
+      el sílabo los numera por `id` y un string suelto falla la validación.
+      Los valores por defecto de los textos están escritos para un curso de
+      ciberseguridad; un curso de otro dominio DEBE sobrescribirlos con `textos:`
+      (ver `campos_opcionales`), o el material saldrá con vocabulario ajeno.
+
+  - name: salida
+    description: >-
+      Directorio raíz del curso. Por defecto, el directorio donde vive el descriptor.
+      El generador crea plan_estudios/, docs/, practicas/, evaluaciones/ y laboratorio/
+      y no toca ficheros fuera de esa raíz.
+
+  - name: solo
+    description: >-
+      Subconjunto opcional de artefactos, separados por coma: silabo, plan_semanal,
+      guia, practicas, controles, final, rubrica, laboratorio, readme. Vacío = todos.
+      Sirve para iterar un documento sin recompilar veinte.
+
+# Campos opcionales del descriptor (v1.1). Ninguno es obligatorio y su ausencia
+# reproduce el comportamiento de la v1.0. "crudo" = se inyecta en LaTeX SIN pasar
+# por el escapador _t(), porque lleva matemática ($V$, \si{\ohm}) o entornos.
+campos_opcionales:
+  meta.icono: >-
+    Nombre del icono FontAwesome de la banda de título y de la cabecera (default
+    `shield-alt`). Se sanitiza a `[a-z0-9-]`. Un icono inexistente rompe la
+    compilación, no la validación.
+  meta.duracion_sesion: >-
+    Duración de una sesión de laboratorio; se imprime en cada práctica (default
+    "3 horas de laboratorio").
+  textos.como_funciona: >-
+    Párrafo "Cómo funciona el curso" de la guía.
+  textos.titulo_entregas: >-
+    Título de la sección de entregas en la guía y en el README (default
+    "Repositorio GitHub y entregas").
+  textos.titulo_estructura: >-
+    Título de la estructura del repositorio en la guía y en el README (default
+    "Estructura del repositorio").
+  textos.aviso_entrega: >-
+    Aviso de entrega al final de la guía.
+  textos.aviso_practica: >-
+    Aviso al pie de cada práctica.
+  textos.nota_correccion: >-
+    Nota sobre cómo se corrige, en la guía.
+  textos.titulo_politicas: >-
+    Título de la sección de políticas (default "Ética y legalidad").
+  textos.plan_entrega: >-
+    Texto de entrega del plan semanal. Si se omite, se compone desde
+    `entregas.plataforma` más `entregas.carpeta`.
+  textos.contrato_datos: >-
+    Con `false` suprime la sección "Contrato de datos" de la guía y de las
+    prácticas (default `true`).
+  textos.contrato_ejemplo: >-
+    Bloque JSON de ejemplo del contrato de datos.
+  textos.reglas_codigo: >-
+    Lista de reglas de código que acompaña al contrato de datos.
+  entregas.carpeta: >-
+    Plantilla del nombre de la carpeta de entrega (default `semana_{n:02d}`).
+    `{n}` es el número de semana y acepta formato Python, de modo que
+    `semana_{n:02d}` produce `semana_03`. Una plantilla inválida cae al default
+    en vez de fallar.
+  evaluacion.rubrica: >-
+    Lista de entradas `{criterio, peso, descripcion}` cuyos pesos suman 10 y cuya
+    clave cumple `[a-z][a-z0-9_]*`. Alimenta `rubrica_practica.yaml`. Si se omite
+    se usan los 5 criterios históricos (3.0/2.5/2.0/1.5/1.0). Las descripciones se
+    serializan con `json.dumps`, así que pueden llevar dos puntos y comillas.
+  practica.fundamento_tex: >-
+    LaTeX crudo del fundamento teórico (ecuaciones, unidades). Dentro de cada
+    entrada de `semanas`.
+  practica.figura_tex: >-
+    LaTeX crudo del montaje (circuitikz o tikz); se centra en la página.
+  practica.figura_caption: >-
+    Pie de la figura (default "Montaje de la práctica").
+  practica.materiales: >-
+    Lista de equipos y consumibles de la práctica.
+  practica.tabla_datos: >-
+    Mapa `{caption, nota, columnas, filas}` con las celdas en LaTeX crudo. Cada
+    fila debe tener la misma longitud que `columnas`.
+  practica.analisis: >-
+    Lista de pasos de análisis (incertidumbres, gráficas, ajustes). Igual que
+    `pasos`, `materiales`, `escenario`, `entregable` y `objetivo`, admite
+    matemática en línea con `$...$`: esos campos pasan por `_tm()`, que conserva
+    `$`, `\`, `_`, `^` y las llaves, y escapa solo `& # % ~ < >`. Un subíndice
+    fuera de `$...$` (por ejemplo `V_C` suelto) no compila, así que `validar()`
+    lo rechaza antes con código 3.
+  practica.ampliacion: >-
+    Lista opcional de textos con contenidos que el docente añade por su cuenta y
+    que el original de laboratorio no trae (por ejemplo un diodo Zener cuando la
+    práctica solo pide el diodo de silicio). Se emite como sección propia
+    "Ampliación (opcional)" después del análisis, para que el alumno distinga lo
+    obligatorio de lo complementario. Debe ser una lista de textos no vacíos.
+  practica.requiere_codigo: >-
+    Si es verdadero, la práctica incluye además el contrato de datos.
+  apendices: >-
+    Lista de `{titulo, texto?, tabla?}` que se renderiza al final de la guía
+    (tablas de valores, series normalizadas, datos técnicos de instrumentos).
+    Exige `texto` o `tabla`; un apéndice sin contenido falla la validación.
+  evaluacion_final.semana: >-
+    Semana del instrumento (default `meta.semanas`).
+  evaluacion_final.caracter: >-
+    Individual o grupal (default "Individual, con alcance definido por el docente").
+  evaluacion_final.condiciones: >-
+    Lista de condiciones del examen.
+  evaluacion_final.entregables: >-
+    Lista de lo que se entrega.
+  evaluacion_final.criterios_aprobacion: >-
+    Lista de criterios para aprobar.
+  controles[].caracter: >-
+    Individual o grupal, igual que en la evaluación final.
+  laboratorio.recursos: >-
+    Texto de recursos que acompaña a la tabla de imágenes.
+  laboratorio.caracter: >-
+    Carácter del laboratorio (opcional, presencial, solo de análisis).
+  laboratorio.reglas: >-
+    Lista de reglas de uso del laboratorio.
+  laboratorio.red: >-
+    Nombre de la red Docker (default `cyberlab`).
+  laboratorio.subred: >-
+    Subred de la red Docker (default `172.28.0.0/24`).
+  laboratorio.imagenes: >-
+    Si está vacío o ausente, el sílabo no emite la sección Laboratorio, la guía
+    omite el bloque Docker y `laboratorio/README.md` degrada a "este curso no usa
+    contenedores".
+
+steps:
+  - action: describir_curso
+    script: orquestador (Layer 2)
+    description: >-
+      El orquestador NO inventa contenidos: recibe o edita el descriptor `curso.yaml`
+      del curso, que es un dato, no lógica. Aquí viven las decisiones humanas
+      (temario, semanas, pesos, políticas). Cualquier cambio de contenido se hace en
+      el YAML y se regenera; nunca editando a mano un `.tex` generado, porque la
+      siguiente ejecución lo sobrescribe.
+
+  - action: generar_material
+    script: execution/generar_material_curso.py --curso <yaml> [--solo ...] [--sin-compilar]
+    description: >-
+      Valida el descriptor (semanas contiguas, fases sin huecos ni solapes, pesos de
+      curso que suman 100, criterios de práctica que suman 10, puertos de laboratorio
+      únicos) y solo entonces escribe. Genera el LaTeX con PREAMBULO_INFOGRAFIA de
+      execution/estilo_infografia.py, compila 2 pasadas en .tmp/latex_build/curso_<codigo>/
+      con clean=False, y copia el PDF junto al .tex únicamente si el .log no contiene
+      ninguna línea que empiece por "!". Fija SOURCE_DATE_EPOCH desde meta.fecha_iso.
+      Emite un JSON con artefactos, rutas y errores.
+
+  - action: verificar_entrega
+    script: flujo_disenar_curso.py (paso interno)
+    description: >-
+      Independiente del generador: comprueba que cada `.tex` prometido existe, que cada
+      documento tiene su `.pdf` cuando se pidió compilar, que ningún PDF es
+      sospechosamente pequeño y que no hay artefactos con errores. Si falta algo, el
+      flujo falla con código 4 y no se declara éxito.
+
+  - action: notificar
+    script: execution/alert_user.py success|error
+    description: >-
+      Alerta audible al terminar (suprimible con --no-alert). El flujo registra la
+      corrida en .tmp/run_state_<run_id>.json vía execution/run_state.py.
+
+expected_outputs:
+  - <curso>/plan_estudios/silabo.{tex,pdf}
+  - <curso>/plan_estudios/plan_semanal.{tex,pdf}
+  - <curso>/docs/guia_estudiante.{tex,pdf}
+  - <curso>/practicas/practica_01..NN.{tex,pdf} (una por semana)
+  - <curso>/evaluaciones/control_fase_<n>.{tex,pdf} y evaluacion_final.{tex,pdf}
+  - <curso>/evaluaciones/rubrica_practica.yaml (compatible con execution/evaluar_examen.py)
+  - <curso>/laboratorio/docker-compose.yml y laboratorio/README.md
+  - <curso>/README.md
+  - .tmp/latex_build/curso_<codigo>/ (intermedios y .log, regenerables)
+
+edge_cases:
+  - caso: El descriptor declara 13 semanas y la lista tiene 12 (o los números no son contiguos)
+    protocolo: El generador falla con código 3 y enumera cada incoherencia antes de
+      escribir un solo fichero. Corregir el YAML; no se publica material a medias.
+
+  - caso: Los pesos de evaluación no suman 100, o los criterios de una práctica no suman 10
+    protocolo: Código 3 con la suma observada en el mensaje. La rúbrica se valida al
+      generarse porque `execution/evaluar_examen.py` la rechaza después; fallar aquí es
+      más barato que fallar corrigiendo alumnos.
+
+  - caso: Un documento no compila
+    protocolo: El generador devuelve código 4 con las líneas de error del `.log`, y el
+      orquestador no copia el PDF. Reintentar tras corregir la plantilla (máx 3). Un PDF
+      que existe en modo nonstopmode no significa que el documento esté bien; hay que
+      mirar las líneas que empiezan por "!".
+
+  - caso: "`cajaMejora` es un estilo y se usa como entorno"
+    protocolo: Error "Environment cajaMejora undefined" (ver .agent/latex.md, entrada 17).
+      Los estilos de \\tcbset (cajaContenido, cajaFortaleza, cajaMejora, tarjetaDato) se
+      usan como opción, por ejemplo \\begin{tcolorbox}[cajaMejora]. Los entornos de \\newtcolorbox
+      (cajaRecuerda, cajaConcepto, cajaEjemplo, cajaEjercicio, cajaReto) se usan como
+      \\begin{cajaRecuerda}.
+
+  - caso: El nombre del instrumento empieza por "examen"
+    protocolo: El ".gitignore" del repo ignora `examen*` en cualquier nivel. Los instrumentos
+      se nombran control_fase_<n> y evaluacion_final; si se renombran a examen_*, el
+      material queda fuera del control de versiones sin aviso de git.
+
+  - caso: El curso incluye PDFs grandes (libros, anexos)
+    protocolo: El script `flujo_auditar_repo.py` los cuenta en peso_git (aviso 50 MB, bloqueo
+      100 MB) y los revisa en pdf_stale. Mantener los anexos fuera del árbol generado o
+      enlazarlos, no copiarlos.
+
+  - caso: El repositorio vive en MEGA (MEGAsync)
+    protocolo: Todo lo generado se sincroniza a la nube. No generar material con datos
+      personales reales de estudiantes ni evidencia sin anonimizar; el laboratorio trabaja
+      con contenedores y datos ficticios.
+
+  - caso: pdflatex no está instalado o falta un paquete
+    protocolo: Código 4. Verificar con `execution/compile_latex.py --test` antes de culpar
+      a la plantilla; el material no depende de paquetes fuera de TeX Live completo.
+
+  - caso: El descriptor es válido pero el resultado no convence al docente
+    protocolo: Es un cambio de contenido, no de programa; editar el YAML y regenerar.
+      Nunca parchear el `.tex` generado; la próxima corrida lo pisa y la divergencia
+      aparece sin que nadie recuerde por qué.
+
+  - caso: Un curso que no es de ciberseguridad hereda vocabulario de ciberseguridad
+    protocolo: >-
+      Los defaults de `textos.*`, `meta.icono` y los avisos de entrega están
+      escritos para ese dominio. Un curso de física, por ejemplo, debe
+      sobrescribirlos; si no lo hace, el material sale correcto y compilado pero
+      hablando de contenedores y autorización escrita, que es el fallo más
+      silencioso posible. La aserción `test_dominio_no_se_cuela` de
+      `execution/test_generar_material_curso.py` lo vigila: un descriptor sin esos
+      textos no debe emitir "contenedor del laboratorio" ni "autorización escrita".
+
+  - caso: Una `practica.tabla_datos` o `apendices[].tabla` con filas desalineadas
+    protocolo: >-
+      Código 3 antes de escribir un solo fichero; el mensaje indica la fila y
+      cuántas celdas tiene contra la cabecera. Una tabla rota no falla en LaTeX
+      (compila y sale torcida), así que se valida aquí.
+
+  - caso: Una `evaluacion.rubrica` que no suma 10 o con clave no ASCII
+    protocolo: >-
+      Código 3. La clave debe cumplir `[a-z][a-z0-9_]*` porque se convierte en
+      clave YAML de `rubrica_practica.yaml`, y `execution/evaluar_examen.py`
+      (`cargar_rubrica`) rechaza después pesos que no cierran en 10. Fallar al
+      generar es más barato que fallar corrigiendo alumnos. Las descripciones se
+      serializan con `json.dumps`, así que pueden llevar dos puntos y comillas.
+
+  - caso: Un apéndice sin `texto` ni `tabla`
+    protocolo: >-
+      Código 3. Un apéndice vacío emitiría una sección con título y nada dentro,
+      que en el PDF parece un error de maquetación y no de datos.
+
+  - caso: Curso sin laboratorio Docker (`laboratorio.imagenes` vacío)
+    protocolo: >-
+      Es válido y degrada. El sílabo no emite la sección Laboratorio, la guía
+      omite el bloque Docker y `laboratorio/README.md` dice que el curso no usa
+      contenedores. Pero `laboratorio/docker-compose.yml` se escribe igual y queda
+      con `services` vacío, que `docker compose up` rechaza. O se declara al menos
+      una imagen, o se acepta ese fichero como decorativo.
+
+  - caso: LaTeX crudo mal formado en `fundamento_tex`, `figura_tex` o celdas de tabla
+    protocolo: >-
+      Esos campos NO pasan por el escapador `_t()` (llevan `$V$`, `\si{\ohm}`,
+      entornos), así que un error de sintaxis llega a pdflatex y devuelve código 4
+      con las líneas del `.log`. Repasar `.agent/latex.md` antes de escribirlos.
+      `siunitx` no acepta `10^3` (usar `1e3` o el número), las etiquetas de
+      circuitikz con `=` van entre llaves (`l={$t=0$}`), no poner macros
+      matemáticas dentro de `\text{}`, y los estilos de `\tcbset` se usan como
+      opción (`\begin{tcolorbox}[cajaContenido]`), no como entorno. La prosa
+      normal sí se escapa y admite griegas (Ω μ τ θ Δ ≈ ≠ ∞).
+
+  - caso: Unicode literal o `%` sin escapar dentro de LaTeX crudo
+    protocolo: >-
+      Las celdas de `tabla_datos`, `fundamento_tex` y `figura_tex` no pasan por el
+      escapador `_t()`, así que ni traducen griegas ni protegen `%`. Un `Ω` suelto
+      da "Unicode character Ω (U+03A9) not set up for use with LaTeX" y un `%`
+      convierte el resto de la fila en comentario (`Misplaced \noalign`).
+      `validar()` recorre esas regiones y devuelve código 3: para el Unicode
+      sugiere la macro, y para el `%` sin escapar pide `\%`. Si el error llega
+      igual, ver `.agent/latex.md` entradas 18 y 21.
+
+  - caso: La lista `resultados_aprendizaje` escrita como lista de strings
+    protocolo: >-
+      Cada entrada debe ser `{id, texto}` porque el sílabo las numera por `id`.
+      Con strings, `tex_silabo` muere con `TypeError: string indices must be
+      integers` ya dentro de la corrida; `validar()` lo rechaza antes con código 3.
+
+  - caso: Un nombre de bipolo de circuitikz que no existe
+    protocolo: >-
+      `pgfkeys Error: I do not know the key '/tikz/<nombre>'` seguido de un error
+      en cascada sobre la clave `/tikz/l`. No falta ningún paquete: el nombre está
+      inventado (`galvanometer` no existe; usar `ammeter`). Comprobar el manual de
+      circuitikz, ver `.agent/latex.md` entrada 20.
+

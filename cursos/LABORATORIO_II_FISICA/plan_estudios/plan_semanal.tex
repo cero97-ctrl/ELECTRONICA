@@ -1,0 +1,596 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Plan semanal}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Plan semanal}{Laboratorio II de Física --- 10 semanas}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+
+La práctica se entrega en el repositorio GitHub del grupo, en la carpeta de la semana, antes del domingo a las 23:59. El docente revisa esa entrega al finalizar la semana y devuelve observaciones escritas en el repositorio.
+
+\begin{tcolorbox}[cajaContenido,title={Semana 1 --- Manejo del instrumental eléctrico y característica corriente-tensión}]
+\textbf{Fase 1} --- Instrumentación y leyes básicas de los circuitos
+
+\textbf{Objetivo.} Aprender a usar la fuente de poder, los multimedidores y el tablero de montaje, estimar la incertidumbre de cada lectura y decidir, a partir de la característica $I$--$V$, si un elemento es óhmico o no lineal.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Magnitudes eléctricas y unidades del SI; prefijos y notación científica.
+  \item Resolución, exactitud y clase de un instrumento; dígitos de un multímetro.
+  \item Incertidumbre tipo A y tipo B; expresión del resultado con cifras significativas.
+  \item Conexión del voltímetro en paralelo y del amperímetro en serie; efecto de carga.
+  \item Ley de Ohm y criterio experimental de ohmicidad.
+  \item Ajuste por mínimos cuadrados, con pendiente, ordenada y sus incertidumbres.
+  \item Normas de seguridad eléctrica en la mesa de laboratorio.
+\end{itemize}
+
+\textbf{Herramientas:} Fuente de tensión regulable, Multímetro digital, Protoboard y cables, Python con NumPy, SciPy y Matplotlib, Contenedor Jupyter opcional.
+
+\textbf{Práctica.} \emph{Característica corriente-tensión de un resistor}. Cada grupo recibe un resistor de carbón, un diodo semiconductor y dos multimedidores Keithley. Debe obtener la característica $I$--$V$ de los dos dispositivos sobre el tablero, decidir cuál cumple la ley de Ohm y reportar la resistencia del resistor con la incertidumbre del ajuste, no con el promedio de los cocientes.
+
+\textbf{Entregable:} Tabla de datos crudos en CSV, gráfica de la característica con ajuste y banda de incertidumbre, script que reproduce la figura, y valor de la resistencia con su incertidumbre comparado contra el nominal.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 2 --- Determinación de una resistencia eléctrica por tres métodos}]
+\textbf{Fase 1} --- Instrumentación y leyes básicas de los circuitos
+
+\textbf{Objetivo.} Determinar una resistencia desconocida por método voltamperimétrico, por óhmmetro y por puente de Wheatstone, y comparar la incertidumbre que aporta cada método.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Montajes de corta y larga derivación y su error sistemático.
+  \item Corrección por resistencia interna del amperímetro y del voltímetro.
+  \item Puente de Wheatstone y condición de equilibrio.
+  \item Sensibilidad del detector y su efecto sobre la incertidumbre.
+  \item Código de colores y tolerancia comercial.
+  \item Comparación de métodos, qué mide cada uno y con qué límite.
+\end{itemize}
+
+\textbf{Herramientas:} Fuente de tensión regulable, Multímetros digitales, Caja de resistencias décadas, Galvanómetro o detector de cero, Python para el análisis.
+
+\textbf{Práctica.} \emph{Comparación de tres métodos para medir una resistencia}. Se entrega a cada grupo una resistencia desconocida. Debe medirla con el montaje voltamperimétrico en sus dos variantes, con el óhmmetro y con un puente de Wheatstone, y decidir cuál de los cuatro resultados es más confiable justificándolo con la incertidumbre y no con la apariencia del número.
+
+\textbf{Entregable:} Tabla comparativa de los cuatro métodos con incertidumbres, discusión de cuál es más confiable y por qué, y scripts de corrección de los montajes.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 3 --- Resistencia interna de instrumentos y de una fuente real}]
+\textbf{Fase 1} --- Instrumentación y leyes básicas de los circuitos
+
+\textbf{Objetivo.} Determinar la resistencia interna del amperímetro, del voltímetro y de la fuente, y modelar la fuente real como fuerza electromotriz con resistencia en serie.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Modelo de fuente real; fuerza electromotriz y tensión en bornes.
+  \item Recta de carga y punto de operación.
+  \item Método de sustitución y método de media deflexión.
+  \item Máxima transferencia de potencia y su condición.
+  \item Efecto de carga sobre la medición de tensión.
+\end{itemize}
+
+\textbf{Herramientas:} Fuente de tensión continua, Caja de resistencias décadas, Dos multímetros digitales, Python para el ajuste de la recta.
+
+\textbf{Práctica.} \emph{Caracterización de la fuente y de los instrumentos}. Ningún instrumento es ideal: el amperímetro tiene resistencia serie y el voltímetro resistencia paralelo, y la fuente se cae cuando se le exige corriente. El grupo debe medir las tres resistencias internas y construir el modelo de la fuente con sus parámetros y sus incertidumbres.
+
+\textbf{Entregable:} Recta de carga con ajuste, curva de potencia, valores de las tres resistencias internas con incertidumbre y discusión del efecto de carga.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 4 --- Circuitos eléctricos y teoremas fundamentales}]
+\textbf{Fase 1} --- Instrumentación y leyes básicas de los circuitos
+
+\textbf{Objetivo.} Medir corrientes y tensiones en circuitos de serie, paralelo y mixto sobre el tablero, y aplicar las leyes de Kirchhoff a una red de dos mallas con tres baterías.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Ley de corrientes y ley de tensiones de Kirchhoff.
+  \item Análisis por mallas y por nudos.
+  \item Divisor de tensión y divisor de corriente.
+  \item Principio de superposición y sus límites.
+  \item Equivalente de Thévenin y de Norton; resistencia equivalente.
+  \item Cierre de balance de potencias en un circuito.
+\end{itemize}
+
+\textbf{Herramientas:} Fuente de tensión continua doble, Multímetros digitales, Protoboard y resistores, Python para resolver el sistema de mallas.
+
+\textbf{Práctica.} \emph{Circuitos serie, paralelo y red de dos mallas}. Se dispone una red de dos mallas sobre el tablero, con tres baterías y tres resistencias. El grupo debe medir las fuerzas electromotrices y las resistencias, predecir por Kirchhoff las tres corrientes de rama, medirlas rompiendo cada rama para intercalar el amperímetro, y comparar lo calculado con lo medido antes de pasar a los montajes de serie y paralelo.
+
+\textbf{Entregable:} Tabla de calculado contra medido, verificación explícita de las dos leyes de Kirchhoff, comparación de los montajes serie y paralelo, y, si se realiza la ampliación, el equivalente de Thévenin comprobado con la carga.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe y control de fase.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 5 --- Elementos no lineales y el diodo semiconductor}]
+\textbf{Fase 2} --- Elementos no lineales y régimen senoidal
+
+\textbf{Objetivo.} Obtener la característica corriente-tensión de un diodo en directa y en inversa, y extraer la corriente de saturación y el factor de idealidad por linealización del modelo exponencial.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Elemento óhmico frente a elemento no lineal.
+  \item Unión p-n, tensión umbral y conducción en directa.
+  \item Ecuación de Shockley y linealización logarítmica.
+  \item Resistencia dinámica o incremental del diodo.
+  \item Ruptura Zener y polarización inversa.
+  \item Diodo emisor de luz y su tensión característica.
+  \item Resistencia limitadora y protección del dispositivo.
+\end{itemize}
+
+\textbf{Herramientas:} Fuente de tensión regulable, Multímetros digitales, Diodos rectificador, Zener y LED, Python para el ajuste exponencial.
+
+\textbf{Práctica.} \emph{Característica estática del diodo y extracción de parámetros}. El grupo mide la curva completa de un diodo rectificador en directa y en inversa, la de un Zener en ruptura y la de un LED, y debe demostrar que la corriente sigue una exponencial obteniendo sus dos parámetros por un ajuste lineal sobre la variable transformada.
+
+\textbf{Entregable:} Curva en directa e inversa del diodo con la corrección por corriente derivada, parámetros del modelo exponencial con su incertidumbre y, si se realiza la ampliación, la comparación con Zener y LED.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 6 --- Respuesta de R, L y C a la tensión senoidal}]
+\textbf{Fase 2} --- Elementos no lineales y régimen senoidal
+
+\textbf{Objetivo.} Estudiar el comportamiento de los circuitos RC y RL en régimen senoidal y usar esos circuitos para determinar la capacitancia de un capacitor y la inductancia de una bobina.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Señal senoidal, amplitud, frecuencia angular, fase y valor eficaz.
+  \item Concepto de fasor e impedancia compleja.
+  \item Reactancia inductiva y capacitiva; resistencia como caso particular.
+  \item Definición de reactancia como cociente entre tensión y corriente.
+  \item Dependencia de la reactancia con la frecuencia angular.
+  \item Impedancia equivalente serie y paralelo.
+  \item Resistencia serie de un inductor real y capacitancia distribuida de una bobina.
+\end{itemize}
+
+\textbf{Herramientas:} Generador de funciones senoidal, Dos multimedidores Keithley, Caja de resistencias décadas, Capacitor y bobina del inventario, Python para el cálculo fasorial.
+
+\textbf{Práctica.} \emph{Determinación de reactancias, de C y de L en régimen senoidal}. Con un generador de funciones senoidal, una resistencia de décadas y dos Keithley, el grupo mide la reactancia de un capacitor y de una bobina del inventario del laboratorio, y después determina su capacitancia y su inductancia variando la frecuencia entre 200 y 1200 Hz. Los valores obtenidos se contrastan con los del apéndice del inventario.
+
+\textbf{Entregable:} Gráficas de $V_C$ y $V_L$ frente a $I$ con sus ajustes, valores de $X_C$ y $X_L$, y de C y L con su incertidumbre, comparados con el inventario del laboratorio.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 7 --- Circuitos resonantes serie y paralelo}]
+\textbf{Fase 2} --- Elementos no lineales y régimen senoidal
+
+\textbf{Objetivo.} Determinar la frecuencia de resonancia de circuitos con L y C en serie y en paralelo, y obtener la inductancia de una bobina a partir de un circuito resonante con una capacitancia conocida.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Resonancia serie, con impedancia mínima y corriente máxima.
+  \item Resonancia paralelo, con impedancia máxima.
+  \item Frecuencia de resonancia y su dependencia de L y C.
+  \item Factor de calidad y su significado físico.
+  \item Ancho de banda y puntos de media potencia o de menos 3 dB.
+  \item Selectividad y aplicaciones en sintonía.
+  \item Efecto de la resistencia sobre la nitidez de la resonancia.
+\end{itemize}
+
+\textbf{Herramientas:} Generador de funciones, Osciloscopio de dos canales, Inductor y capacitor, Caja de resistencias décadas, Python para el barrido y el ajuste.
+
+\textbf{Práctica.} \emph{Resonancia serie y paralelo con L y C del inventario}. Con la misma bobina y el mismo capacitor de la semana anterior, el grupo localiza la frecuencia de resonancia del circuito serie y del paralelo barriendo la frecuencia a ambos lados del pico, y usa el valor conocido de C para obtener L de la condición de resonancia.
+
+\textbf{Entregable:} Curvas $i$--$f$ de los circuitos serie y paralelo, frecuencia de resonancia determinada gráficamente e inductancia obtenida de ella, comparada con el apéndice.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 8 --- Carga y descarga de un capacitor}]
+\textbf{Fase 2} --- Elementos no lineales y régimen senoidal
+
+\textbf{Objetivo.} Familiarizarse con el uso del osciloscopio, visualizar las curvas de carga y descarga de un capacitor y determinar su capacitancia a partir de las medidas tomadas sobre esas curvas.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Régimen transitorio y estado estacionario.
+  \item Ecuación diferencial del circuito RC y su solución exponencial.
+  \item Constante de tiempo y semiperiodo.
+  \item Linealización logarítmica de una exponencial.
+  \item Energía almacenada en un capacitor y disipada en el resistor.
+  \item Uso del osciloscopio en disparo único para capturar el transitorio.
+  \item Resistencia serie equivalente incluyendo la del generador.
+\end{itemize}
+
+\textbf{Herramientas:} Generador de onda cuadrada o conmutador, Osciloscopio, Capacitor y resistor, Cronómetro o medida temporal por osciloscopio, Python para el ajuste exponencial.
+
+\textbf{Práctica.} \emph{Carga y descarga de un capacitor con osciloscopio}. Un generador de onda cuadrada sustituye a la fuente y al interruptor, de modo que el capacitor se carga durante el tiempo de encendido y se descarga durante el de apagado. El grupo captura la curva en el osciloscopio y determina la capacitancia a partir de la pendiente de la recta que resulta de linealizar la exponencial.
+
+\textbf{Entregable:} Curvas de carga y descarga capturadas, recta linealizada con su ajuste, capacitancia con su incertidumbre y desviación porcentual frente al valor del fabricante.
+
+\textbf{Instrumento de evaluación:} Práctica formativa con informe y control de fase.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 9 --- Práctica integradora, caracterización completa de un circuito RLC}]
+\textbf{Fase 3} --- Integración y cierre
+
+\textbf{Objetivo.} Caracterizar un mismo circuito RLC en régimen senoidal y en régimen transitorio, y demostrar la coherencia de los parámetros obtenidos por dos vías independientes.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Integración de reactancias, resonancia y transitorios en un solo circuito.
+  \item Factor de calidad medido en frecuencia y en tiempo.
+  \item Régimen subamortiguado, críticamente amortiguado y sobreamortiguado.
+  \item Frecuencia natural amortiguada frente a frecuencia de resonancia.
+  \item Validación del modelo con simulación numérica.
+  \item Presupuesto de incertidumbres de un sistema completo.
+\end{itemize}
+
+\textbf{Herramientas:} Generador de funciones y onda cuadrada, Osciloscopio de dos canales, Inductor, capacitor y resistencias, Python con SciPy para simular y ajustar.
+
+\textbf{Práctica.} \emph{El mismo circuito por dos vías independientes}. Es la práctica integradora. Con el montaje RLC de las semanas anteriores el grupo obtiene el factor de calidad desde el ancho de banda en frecuencia y desde el decaimiento del transitorio, y debe cerrar el informe mostrando que ambos caminos conducen al mismo valor dentro de la incertidumbre.
+
+\textbf{Entregable:} Informe integrador con los dos métodos, la simulación superpuesta a la medición, el presupuesto de incertidumbres del sistema y una conclusión que cierre el semestre experimental.
+
+\textbf{Instrumento de evaluación:} Práctica sumativa con informe completo.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 10 --- Evaluación final práctica y defensa del portafolio}]
+\textbf{Fase 3} --- Integración y cierre
+
+\textbf{Objetivo.} Demostrar de forma individual la capacidad de montar, medir, estimar incertidumbres y defender los resultados de un circuito desconocido, y cerrar el portafolio del semestre.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Autonomía en el montaje y en la selección de instrumento y rango.
+  \item Tratamiento completo de incertidumbres bajo presión de tiempo.
+  \item Defensa oral de decisiones metodológicas.
+  \item Trazabilidad y reproducibilidad del portafolio entregado.
+  \item Corrección de observaciones pendientes de semanas anteriores.
+\end{itemize}
+
+\textbf{Herramientas:} Instrumental completo de la mesa, Repositorio del grupo, Python para el análisis en vivo.
+
+\textbf{Práctica.} \emph{Examen práctico individual y cierre del portafolio}. Cada integrante recibe un circuito sellado con parámetros desconocidos y debe caracterizarlo de forma individual en tres horas, con el instrumental de la mesa y sin notas de montaje. Al final defiende sus decisiones ante el docente y entrega el portafolio del grupo con todas las correcciones aplicadas.
+
+\textbf{Entregable:} Informe individual de la evaluación, defensa oral y portafolio del grupo completo con las correcciones aplicadas y el README actualizado.
+
+\textbf{Instrumento de evaluación:} Evaluación final práctica individual y portafolio.
+\end{tcolorbox}
+\end{document}

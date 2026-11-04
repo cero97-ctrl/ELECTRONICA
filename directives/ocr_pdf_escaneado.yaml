@@ -1,0 +1,92 @@
+# Estado HONESTO: capacidad IMPLEMENTADA. La capa 3 es
+# execution/ocr_pdf_escaneado.py (escrito y usado el 2026-11-04 para transcribir
+# cursos/LABORATORIO_II_FISICA/docs/practicas.pdf, 56 páginas sin capa de texto)
+# y el orquestador es flujo_ocr_pdf.py. Nació porque extraer_libro_pdf.py
+# devuelve código 2 ante un escaneo: un PDF de imágenes no tiene texto que
+# extraer, hay que leerlo con un modelo de visión.
+Status: activo
+
+Goal: "Transcribir a markdown un PDF escaneado (sin capa de texto selectable), de forma reanudable: si la cuota del modelo se agota a mitad, lo ya transcrito queda en caché y la siguiente corrida continúa donde quedó."
+
+Real scripts:
+  - "execution/ocr_pdf_escaneado.py"
+orchestrator: "flujo_ocr_pdf.py"
+
+Required inputs:
+  - pdf: "Ruta al PDF escaneado. Debe existir y ser legible por poppler (pdfimages) y PyMuPDF."
+  - paginas: "Opcional. '1-56', '1,3,5-7' o 'todas'. Si falta, todas."
+
+Opciones CLI (del orquestador; la fuente de verdad es `flujo_ocr_pdf.py --help`):
+  - name: "--pdf"
+    description: "PDF escaneado de entrada (obligatorio)."
+  - name: "--salida"
+    description: "Directorio del entregable y de la caché (default .tmp/ocr). La caché vive en <salida>/.cache/<sha12 del PDF>/."
+  - name: "--paginas"
+    description: "Subconjunto de páginas a transcribir."
+  - name: "--lote"
+    description: "Páginas por petición al modelo (default 4). Más páginas por lote = menos peticiones pero respuestas más largas y más riesgo de marcas omitidas."
+  - name: "--ancho"
+    description: "Ancho en px al que se reduce cada imagen antes de enviarla (default 1400). Es el compromiso calidad/cuota: el JPEG nativo de un escaneo a 300 DPI no cabe razonado en una petición."
+  - name: "--modelo"
+    description: "Modelo de visión (default gemini-2.5-flash, cuota free de Gemini)."
+  - name: "--forzar"
+    description: "OCR aunque el PDF tenga capa de texto (por defecto eso es código 2: usar execution/extraer_libro_pdf.py)."
+  - name: "--sin-reanudar"
+    description: "Ignora la caché y retranscribe todo."
+  - name: "--check"
+    description: "Sin API: reporta páginas pedidas, cuántas hay en caché y cuáles faltan. Es el paso previo a reanudar."
+  - name: "--dry-run"
+    description: "Imprime el plan (comando, peticiones estimadas, consumo) y sale."
+  - name: "--no-alert"
+    description: "No emitir alerta audible al terminar."
+
+Steps:
+  - step: 1
+    action: "Comprobar cobertura antes de gastar cuota"
+    script: "flujo_ocr_pdf.py --check"
+    inputs:
+      pdf: "--pdf {{pdf}}"
+      paginas: "--paginas {{paginas}}"
+    step_notes:
+      - "No llama a la API. Dice cuántas páginas pide el trabajo, cuántas ya están en caché y cuáles faltan."
+      - "Si faltan cero, no hay nada que hacer: el markdown ya existe en <salida>/<nombre>_ocr.md."
+  - step: 2
+    action: "Transcribir los lotes pendientes"
+    script: "execution/ocr_pdf_escaneado.py"
+    inputs:
+      pdf: "--pdf {{pdf}}"
+      salida: "--salida {{salida}}"
+      paginas: "--paginas {{paginas}}"
+    step_notes:
+      - "El orquestador lo lanza como subproceso; NUNCA reimplementar aquí el loteo ni el retry."
+      - "Cada página transcrita se escribe al instante en la caché (<sha12>/textos/pagina_NNN.txt): una interrupción no pierde trabajo."
+      - "Por lote, máx 3 intentos con backoff (MAX_INTENTOS); un 429/RESOURCE_EXHAUSTED no se reintenta: es código 5 y se conserva la caché."
+  - step: 3
+    action: "Validar el entregable"
+    script: "flujo_ocr_pdf.py (validar_entrega)"
+    inputs:
+      archivo: "ruta 'archivo' del informe JSON"
+    step_notes:
+      - "El markdown debe tener una sección '## Página N' por cada página pedida y ninguna marcada [SIN TRANSCRIBIR]."
+      - "Si falta alguna, el orquestador devuelve código 4 con la lista: se reanuda con otra corrida, no se entrega a medias."
+
+Expected outputs:
+  - "<salida>/<nombre_del_pdf>_ocr.md: una sección por página con la transcripción literal (tablas en markdown, ecuaciones en $...$, [FIGURA: ...] y [ILEGIBLE] donde corresponda)."
+  - "Informe JSON por stdout: status, paginas_ok, paginas_vacias, paginas_ilegibles, paginas_faltantes, peticiones y tokens."
+  - "Vista por corrida en .tmp/run_state_<run_id>.json con los pasos 1_ocr y 2_validar."
+
+Edge cases:
+  - error: "El PDF tiene capa de texto (código 2)."
+    recovery: "No es un escaneo: usar execution/extraer_libro_pdf.py, que es más barato y exacto. Solo con --forzar se OCR-iza igualmente."
+  - error: "Cuota del modelo agotada a mitad (código 5, 429/RESOURCE_EXHAUSTED)."
+    recovery: "No es un fallo del flujo: la caché conserva lo hecho. Esperar a que renueve la cuota (Gemini free: ~20 peticiones/día por modelo) y relanzar la misma orden: --check primero para ver cuánto falta."
+  - error: "Páginas incompletas tras el retry budget (código 4)."
+    recovery: "El informe lista paginas_faltantes e paginas_ilegibles. Relanzar solo esas (--paginas con la lista); si una página es ilegible de verdad, queda marcada [ILEGIBLE] en el markdown y se reporta al usuario, no se inventa."
+  - error: "Una página no tiene imagen extraíble (pdfimages no saca nada)."
+    recovery: "Se avisa por stderr y la página entra en paginas_faltantes. Comprobar a mano esa página del PDF: puede ser un folio en blanco escaneado como vector o una página corrupta."
+  - error: "Falta GOOGLE_API_KEY o el SDK google-genai."
+    recovery: "Código 3 con el motivo. La clave vive en .env (nunca en el repo); el SDK va en el entorno conda elect_env."
+  - error: "El modelo omite las marcas @@@PAGINA: n@@@ en un lote de varias páginas."
+    recovery: "dividir_respuesta devuelve vacío para ese lote y el orquestador lo ve como páginas faltantes; la capa 3 reduce el lote a una página por petición en el reintento siguiente dentro del mismo budget."
+  - error: "Consumo de cuota de Gemini (no de créditos OpenRouter)."
+    recovery: "Este flujo NO toca OPENROUTER_API_KEY: usa la cuota free de Gemini con GOOGLE_API_KEY. Aun así es un recurso limitado: --check antes de cada corrida y lotes de 4 para no desperdiciar peticiones en páginas ya hechas."

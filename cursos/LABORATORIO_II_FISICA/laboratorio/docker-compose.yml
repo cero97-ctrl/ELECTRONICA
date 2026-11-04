@@ -1,0 +1,18 @@
+# Laboratorio generado desde curso.yaml — no editar a mano.
+# Solo accesible en localhost; nunca exponer estos servicios a Internet.
+name: labfisica
+services:
+  analisis:
+    image: jupyter/scipy-notebook:latest
+    container_name: labfisica-analisis
+    restart: unless-stopped
+    ports:
+    - 8888:8888
+    networks:
+    - labfisica
+networks:
+  labfisica:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.29.0.0/24

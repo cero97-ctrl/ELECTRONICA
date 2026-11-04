@@ -1,0 +1,1737 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Descriptor del curso Laboratorio II de Física — fuente única de verdad.
+# Genera con:  python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_II_FISICA/curso.yaml
+# No editar los .tex generados: se sobrescriben en cada corrida.
+# SOP: directives/disenar_curso.yaml (v1.1)
+#
+# Origen del temario: cursos/LABORATORIO_II_FISICA/docs/contenido.pdf (índice
+# escaneado). El desarrollo de cada práctica es redacción propia a partir de
+# física estándar; no se reutilizó material de terceros.
+# ─────────────────────────────────────────────────────────────────────────────
+
+meta:
+  codigo: LABORATORIO_II_FISICA
+  titulo: Laboratorio II de Física
+  subtitulo: >-
+    Electricidad y magnetismo aplicados: instrumentación, circuitos y
+    tratamiento de datos experimentales
+  autor: Prof. César Rodríguez
+  institucion: Universidad de Oriente, Núcleo de Sucre, Departamento de Física
+  idioma: es
+  anio: 2026
+  fecha: 2 de noviembre de 2026
+  fecha_iso: 2026-11-02
+  semanas: 10
+  grupos: 4
+  icono: atom
+  duracion_sesion: 3 horas de laboratorio presencial más 2 horas de análisis
+  modalidad: >-
+    Laboratorio presencial en mesas de cuatro grupos con roles rotativos, más
+    análisis de datos en Python y entrega semanal por repositorio privado.
+  dedicacion_semanal: 3 horas de laboratorio + 2 horas de análisis e informe
+  version: 1
+
+objetivo_general: >-
+  Formar en la medición eléctrica rigurosa: montar circuitos con seguridad,
+  usar el instrumental sin exceder sus rangos, estimar la incertidumbre de cada
+  magnitud, contrastar el dato con el modelo teórico y comunicar el resultado en
+  un informe trazable y reproducible.
+
+resultados_aprendizaje:
+  - id: RA1
+    texto: >-
+      Seleccionar el instrumento y el rango adecuados, justificando la elección por
+      resolución, clase y efecto de carga.
+  - id: RA2
+    texto: >-
+      Calcular la incertidumbre de una magnitud directa e indirecta y propagarla
+      hasta el resultado final con cifras significativas coherentes.
+  - id: RA3
+    texto: >-
+      Verificar experimentalmente la ley de Ohm, las leyes de Kirchhoff y los
+      teoremas de Thévenin y Norton.
+  - id: RA4
+    texto: >-
+      Determinar resistencias internas de instrumentos y de fuentes reales por
+      pendiente y por sustitución.
+  - id: RA5
+    texto: >-
+      Caracterizar elementos no lineales y extraer sus parámetros por linealización
+      de un modelo exponencial.
+  - id: RA6
+    texto: >-
+      Medir reactancias, desfases, resonancia, factor de calidad y ancho de banda
+      en régimen senoidal.
+  - id: RA7
+    texto: >-
+      Determinar la constante de tiempo de un circuito RC y contrastarla con el
+      valor nominal.
+  - id: RA8
+    texto: >-
+      Procesar datos en Python, ajustar por mínimos cuadrados, graficar con
+      unidades y documentar el script.
+  - id: RA9
+    texto: >-
+      Redactar un informe con datos crudos inalterados, análisis reproducible y
+      conclusiones contrastadas con el modelo.
+
+grupos:
+  cantidad: 4
+  asignacion: >-
+    Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada
+    uno. Los roles rotan al inicio de cada fase para que todos los integrantes
+    pasen por la medición, el análisis, la documentación y la verificación.
+  repositorio: >-
+    Cada grupo crea un repositorio GitHub privado con el docente como
+    colaborador de lectura. El repositorio es la entrega: se revisa al cierre de
+    cada semana y es la evidencia del trabajo del semestre.
+  roles:
+    - nombre: Medición
+      descripcion: >-
+        Monta el circuito, comprueba rangos y polaridad antes de energizar, toma
+        las lecturas y anota la resolución de cada instrumento.
+      aporta: >-
+        La tabla de datos crudos de la semana y el registro de condiciones
+        ambientales y de instrumento.
+      en_la_practica:
+        - Revisar el montaje contra la figura antes de conectar la fuente.
+        - Empezar por el rango más alto y bajar hasta resolver la lectura.
+        - Anotar cada lectura con su unidad y su resolución, nunca de memoria.
+    - nombre: Análisis
+      descripcion: >-
+        Propaga incertidumbres, ajusta por mínimos cuadrados, grafica y extrae
+        los parámetros físicos del modelo.
+      aporta: >-
+        El script de análisis, las figuras con unidades y el presupuesto de
+        incertidumbres del resultado final.
+      en_la_practica:
+        - Escribir el script que carga los datos crudos sin modificarlos.
+        - Ajustar el modelo y reportar parámetro, incertidumbre y residuales.
+        - Graficar con ejes rotulados, unidades y banda de incertidumbre.
+    - nombre: Documentación
+      descripcion: >-
+        Redacta el informe, integra tablas y figuras, cita fuentes y mantiene el
+        repositorio ordenado según la estructura acordada.
+      aporta: >-
+        El informe de la semana y el README de la carpeta semanal.
+      en_la_practica:
+        - Redactar el informe con las secciones obligatorias y en el orden fijado.
+        - Verificar que cada cifra del texto salga de una tabla o de un script.
+        - Dejar el repositorio limpio y la entrega fechada antes del corte.
+    - nombre: Verificación
+      descripcion: >-
+        Contrasta el resultado con el modelo y con una medición independiente,
+        busca errores sistemáticos y firma la trazabilidad de los datos.
+      aporta: >-
+        La comparación con el valor nominal o simulado y la lista de desvíos con
+        su causa probable.
+      en_la_practica:
+        - Repetir al menos una medida por un método independiente.
+        - Explicar cada desvío mayor que la incertidumbre combinada.
+        - Confirmar que los datos crudos entregados coinciden con los del cuaderno.
+  asignacion_inicial:
+    - Medición
+    - Análisis
+    - Documentación
+    - Verificación
+  fase_con_roles:
+    - 1
+    - 2
+    - 3
+  rotacion: >-
+    Al inicio de cada fase los roles giran una posición en sentido horario, de
+    modo que en la fase 3 cada integrante haya ocupado los cuatro roles.
+
+evaluacion:
+  escala: 10
+  nota_minima: 5
+  pesos:
+    - concepto: Prácticas de laboratorio (semanas 1 a 9)
+      peso: 60
+    - concepto: Controles de fase (semanas 4 y 8)
+      peso: 20
+    - concepto: Evaluación final práctica y portafolio (semana 10)
+      peso: 20
+  rubrica:
+    - criterio: fundamento_teorico
+      peso: 1.0
+      descripcion: >-
+        Presenta el modelo físico con sus supuestos y sus límites, y escribe las
+        ecuaciones que va a contrastar.
+    - criterio: montaje_y_seguridad
+      peso: 1.5
+      descripcion: >-
+        Montaje correcto contra la figura, rangos y polaridad verificados antes
+        de energizar, y respeto de las normas de seguridad eléctrica.
+    - criterio: toma_de_datos
+      peso: 2.0
+      descripcion: >-
+        Tabla completa con unidades y resolución de cada instrumento, datos
+        crudos sin alterar y condiciones de la medición registradas.
+    - criterio: incertidumbres
+      peso: 2.0
+      descripcion: >-
+        Presupuesto de incertidumbres explícito: tipo A y tipo B, propagación
+        hasta el resultado final y cifras significativas coherentes.
+    - criterio: analisis_y_graficas
+      peso: 2.0
+      descripcion: >-
+        Ajuste por mínimos cuadrados con parámetro, incertidumbre y residuales;
+        gráficas con ejes rotulados, unidades y banda de incertidumbre.
+    - criterio: conclusiones
+      peso: 1.0
+      descripcion: >-
+        Conclusiones individuales que contrastan el dato con el modelo, explican
+        los desvíos y declaran lo que no se pudo verificar.
+    - criterio: presentacion
+      peso: 0.5
+      descripcion: >-
+        Estructura del informe, legibilidad de tablas y figuras, y repositorio
+        ordenado según la estructura acordada.
+
+entregas:
+  plataforma: GitHub
+  modalidad: >-
+    Un repositorio privado por grupo, con el docente como colaborador de lectura.
+    El repositorio es la entrega; no se reciben informes por correo ni impresos,
+    salvo indicación expresa del docente.
+  cadencia: >-
+    El docente revisa el repositorio al finalizar cada semana de práctica y
+    devuelve observaciones antes de la semana siguiente.
+  corte: >-
+    Domingo a las 23:59 de la semana correspondiente. Lo entregado después del
+    corte se corrige con la penalización prevista en las políticas.
+  carpeta: "semana_{n:02d}"
+  estructura:
+    - README.md con integrantes, roles de la fase y tabla de semanas entregadas.
+    - semana_NN/informe.pdf con el informe de la práctica.
+    - semana_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.
+    - semana_NN/analisis/ con los scripts de Python que reproducen cada figura.
+    - semana_NN/figuras/ con las gráficas en PDF o PNG generadas por los scripts.
+    - semana_NN/README.md con lo que se hizo, lo que no se pudo verificar y por qué.
+  reglas:
+    - Los datos crudos no se editan nunca; toda corrección vive en el script de análisis.
+    - Cada cifra del informe debe salir de una tabla de datos o de un script entregado.
+    - Los scripts se ejecutan de punta a punta sin pasos manuales intermedios.
+    - Nada de credenciales ni tokens en el repositorio; las claves van en .env ignorado.
+    - El informe es grupal, pero las conclusiones se firman individualmente.
+    - Un resultado sin incertidumbre no se acepta como resultado.
+
+laboratorio:
+  motor: Docker
+  caracter: >-
+    El laboratorio físico es presencial y obligatorio: los montajes se hacen en
+    la mesa con instrumentos reales. El contenedor es opcional y sirve solo para
+    el análisis de datos cuando el equipo del grupo no tiene Python instalado.
+  red: labfisica
+  subred: 172.29.0.0/24
+  recursos: >-
+    Requiere alrededor de 2 GB de RAM libre y 3 GB de disco. La imagen incluye
+    NumPy, SciPy, Matplotlib y Pandas, suficientes para todos los ajustes del curso.
+  imagenes:
+    - nombre: analisis
+      imagen: jupyter/scipy-notebook:latest
+      puerto: 8888
+      puerto_contenedor: 8888
+      proposito: >-
+        Entorno Jupyter con NumPy, SciPy y Matplotlib para ajustar datos,
+        propagar incertidumbres y generar las figuras del informe.
+  reglas:
+    - El contenedor procesa datos; nunca sustituye una medición real en la mesa.
+    - Se accede en localhost y no se expone a Internet.
+    - Los CSV crudos se montan de solo lectura para impedir edición accidental.
+    - Cada grupo usa su propio equipo; no hay red ni servidores compartidos del curso.
+    - Lo que no se midió no se simula como si se hubiera medido.
+
+textos:
+  como_funciona: >-
+    Cada semana tiene una práctica de laboratorio presencial de tres horas y una
+    entrega digital el domingo. En la mesa se trabaja por grupos con cuatro roles
+    que rotan por fase; fuera de la mesa se procesan los datos en Python y se
+    redacta el informe. El docente revisa el repositorio del grupo al cierre de la
+    semana y devuelve observaciones antes de la práctica siguiente.
+  titulo_entregas: Repositorio del grupo y entregas semanales
+  titulo_estructura: Estructura del repositorio
+  aviso_entrega: >-
+    La entrega es el repositorio del grupo, no un archivo suelto. Un informe sin
+    sus datos crudos y sin el script que genera sus figuras no es trazable y se
+    corrige como incompleto.
+  aviso_practica: >-
+    Antes de energizar, contrasta el montaje con la figura y verifica rangos y
+    polaridad de cada instrumento. Si un instrumento se calienta, huele o marca
+    fuera de escala, corta la alimentación y avisa al docente: el montaje se
+    revisa antes de continuar.
+  nota_correccion: >-
+    Cada práctica se corrige con la misma rúbrica de siete criterios que suma 10
+    puntos y que se publica en evaluaciones/rubrica_practica.yaml. La nota del
+    curso sale de los pesos del sílabo, nunca de un promedio de impresiones.
+  titulo_politicas: Seguridad, integridad académica y manejo de datos
+  plan_entrega: >-
+    La práctica se entrega en el repositorio GitHub del grupo, en la carpeta de
+    la semana, antes del domingo a las 23:59. El docente revisa esa entrega al
+    finalizar la semana y devuelve observaciones escritas en el repositorio.
+  contrato_datos: true
+  contrato_ejemplo: |
+    {
+      "status": "ok",
+      "practica": 1,
+      "magnitud": "resistencia",
+      "valor": 99.4,
+      "unidad": "ohm",
+      "incertidumbre": 0.6,
+      "metodo": "ajuste_lineal_minimos_cuadrados",
+      "n_puntos": 8,
+      "residual_max": 0.012,
+      "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
+      "errores": []
+    }
+  reglas_codigo:
+    - Un script por análisis, con type hints, docstrings y sin rutas absolutas.
+    - Los datos crudos se leen del CSV y no se modifican en memoria ni en disco.
+    - El resultado se imprime como un único objeto JSON por la salida estándar.
+    - status vale ok o error; si es error, errores explica el motivo y el programa sale con código distinto de cero.
+    - Toda magnitud se reporta con su unidad explícita y su incertidumbre.
+    - Las figuras se generan desde el script, nunca a mano sobre una captura.
+
+fases:
+  - id: 1
+    nombre: Instrumentación y leyes básicas de los circuitos
+    semanas: [1, 2, 3, 4]
+    enfoque: >-
+      Medir bien antes de medir cosas difíciles: instrumentos, incertidumbres,
+      efecto de carga y verificación de las leyes fundamentales.
+    icono: ruler-combined
+  - id: 2
+    nombre: Elementos no lineales y régimen senoidal
+    semanas: [5, 6, 7, 8]
+    enfoque: >-
+      Salir del resistor óhmico: diodos, reactancias, resonancia y transitorios,
+      con linealización de modelos y medición de fase.
+    icono: wave-square
+  - id: 3
+    nombre: Integración y cierre
+    semanas: [9, 10]
+    enfoque: >-
+      Caracterizar un circuito completo por dos vías independientes y defender el
+      portafolio del semestre.
+    icono: project-diagram
+
+semanas:
+  - numero: 1
+    fase: 1
+    titulo: Manejo del instrumental eléctrico y característica corriente-tensión
+    objetivo: >-
+      Aprender a usar la fuente de poder, los multimedidores y el tablero de
+      montaje, estimar la incertidumbre de cada lectura y decidir, a partir de la
+      característica $I$--$V$, si un elemento es óhmico o no lineal.
+    contenidos:
+      - Magnitudes eléctricas y unidades del SI; prefijos y notación científica.
+      - Resolución, exactitud y clase de un instrumento; dígitos de un multímetro.
+      - Incertidumbre tipo A y tipo B; expresión del resultado con cifras significativas.
+      - Conexión del voltímetro en paralelo y del amperímetro en serie; efecto de carga.
+      - Ley de Ohm y criterio experimental de ohmicidad.
+      - Ajuste por mínimos cuadrados, con pendiente, ordenada y sus incertidumbres.
+      - Normas de seguridad eléctrica en la mesa de laboratorio.
+    herramientas:
+      - Fuente de tensión regulable
+      - Multímetro digital
+      - Protoboard y cables
+      - Python con NumPy, SciPy y Matplotlib
+      - Contenedor Jupyter opcional
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Característica corriente-tensión de un resistor
+      escenario: >-
+        Cada grupo recibe un resistor de carbón, un diodo semiconductor y dos
+        multimedidores Keithley. Debe obtener la característica $I$--$V$ de los dos
+        dispositivos sobre el tablero, decidir cuál cumple la ley de Ohm y reportar
+        la resistencia del resistor con la incertidumbre del ajuste, no con el
+        promedio de los cocientes.
+      fundamento_tex: |
+        Un resistor es óhmico cuando la corriente que lo atraviesa es proporcional
+        a la tensión entre sus bornes:
+        \[
+          V = R\,I \qquad\Longrightarrow\qquad R = \frac{V}{I}
+        \]
+        La resistencia no se estima como el promedio de los cocientes $V_k/I_k$,
+        sino como la pendiente del ajuste lineal de $V$ frente a $I$, que pondera
+        todos los puntos y reduce el ruido de lectura:
+        \[
+          R = \frac{n\sum_k V_k I_k - \sum_k V_k \sum_k I_k}
+                   {n\sum_k I_k^2 - \left(\sum_k I_k\right)^2}
+        \]
+        La incertidumbre de la lectura de un multímetro digital combina un
+        porcentaje de la lectura con un número de dígitos del último lugar:
+        \[
+          u(V) = a \cdot V + b \cdot \mathrm{d\acute{i}g}
+        \]
+        con $a$ expresada en tanto por uno y $b$ en dígitos del último lugar.
+        y, al propagar a una magnitud indirecta $R = V/I$,
+        \[
+          \frac{u_R}{R} = \sqrt{\left(\frac{u_V}{V}\right)^2
+                              + \left(\frac{u_I}{I}\right)^2}
+        \]
+        La dispersión de los puntos alrededor del ajuste se mide con los
+        residuales $e_k = V_k - R I_k$; si los residuales tienen signo
+        sistemático en función de la corriente, el elemento no es óhmico o hay un
+        error sistemático, como calentamiento del resistor o efecto de carga del
+        amperímetro.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$E$] (0,3);
+          \draw (0,3) to[ammeter, l=$I$] (3,3);
+          \draw (3,3) to[R, l=$R$] (3,0);
+          \draw (3,0) -- (0,0);
+          \draw (3,3) -- (4.6,3) to[voltmeter, l=$V_R$] (4.6,0) -- (3,0);
+        \end{circuitikz}
+      figura_caption: Montaje de la práctica 1, con amperímetro en serie y voltímetro en paralelo con el resistor
+      materiales:
+        - Una fuente de poder de 0 a 30 V y 6 A
+        - Dos multimedidores Keithley (179, 175 o 175-A)
+        - Un diodo semiconductor rectificador
+        - Una resistencia variable o de carbón
+        - Tablero de montaje y cables de conexión
+        - Manual de instrucciones de los Keithley 179 y 175
+      pasos:
+        - Leer, en el manual de los Keithley, cómo se selecciona cada función, cada rango y la resolución en voltímetro, amperímetro y óhmetro.
+        - Identificar el valor nominal del resistor por código de colores y anotarlo con su tolerancia.
+        - Montar el circuito del resistor, sin energizar, y hacerlo revisar por el profesor.
+        - Conectar el voltímetro en paralelo con el resistor y el amperímetro en serie, ambos en el rango más alto, y bajar el rango hasta resolver la lectura.
+        - Para un valor fijo de R, variar la salida de la fuente y obtener al menos ocho pares $V$, $I$, anotando rango y resolución en cada punto.
+        - Sustituir el resistor por el diodo, en polarización directa, y obtener un mínimo de veinte pares $V$, $I$ variando la fuente o la resistencia.
+        - Invertir la polarización del diodo y comprobar que la corriente es prácticamente nula dentro del rango del amperímetro.
+        - Cortar la alimentación, medir el resistor con el óhmetro y comparar con el valor nominal y con el del ajuste.
+        - Verificar el efecto de carga repitiendo tres puntos con el voltímetro antes del amperímetro y anotando la diferencia.
+      tabla_datos:
+        caption: Registro de la característica corriente-tensión de los dos elementos
+        nota: Mínimo veinte filas para el diodo; anotar la resolución de cada instrumento y entregar los datos crudos en CSV.
+        columnas:
+          - 'Elemento'
+          - 'Ensayo'
+          - '$V$ (V)'
+          - '$I$ (mA)'
+          - '$u_V$ (V)'
+          - '$u_I$ (mA)'
+        filas:
+          - ['Resistor', '1', '1,00', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Resistor', '2', '2,00', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Resistor', '3', '4,00', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Resistor', '4', '10,00', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Diodo', '1', '0,20', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Diodo', '2', '0,40', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Diodo', '3', '0,55', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Diodo', '4', '0,65', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Graficar $I$ frente a $V$ para cada elemento, con barras de incertidumbre y ejes rotulados con unidades.
+        - Ajustar por mínimos cuadrados la rama lineal del resistor y reportar la pendiente, su incertidumbre y el coeficiente de determinación.
+        - Calcular los residuales del resistor y decidir si son aleatorios o sistemáticos; justificar con la gráfica.
+        - Comparar la resistencia del ajuste con el valor nominal, con el óhmetro y con el código de colores.
+        - Describir la forma de la curva del diodo en directa y en inversa, y concluir si cumple o no la ley de Ohm.
+        - Estimar la potencia máxima disipada por el resistor y comprobar que no excede su potencia nominal.
+        - Cuantificar el efecto de carga observado en el último paso y atribuirlo a la resistencia interna del instrumento.
+      entregable: >-
+        Tabla de datos crudos en CSV, gráfica de la característica con ajuste y
+        banda de incertidumbre, script que reproduce la figura, y valor de la
+        resistencia con su incertidumbre comparado contra el nominal.
+      requiere_codigo: true
+      criterios: &criterios_practica
+        - criterio: Fundamento teórico y modelo aplicado
+          peso: 1.0
+        - criterio: Montaje, seguridad y manejo del instrumental
+          peso: 1.5
+        - criterio: Toma de datos completa y trazable
+          peso: 2.0
+        - criterio: Presupuesto de incertidumbres
+          peso: 2.0
+        - criterio: Análisis, ajuste y gráficas
+          peso: 2.0
+        - criterio: Conclusiones contrastadas con el modelo
+          peso: 1.0
+        - criterio: Presentación y estructura del informe
+          peso: 0.5
+
+  - numero: 2
+    fase: 1
+    titulo: Determinación de una resistencia eléctrica por tres métodos
+    objetivo: >-
+      Determinar una resistencia desconocida por método voltamperimétrico, por
+      óhmmetro y por puente de Wheatstone, y comparar la incertidumbre que aporta
+      cada método.
+    contenidos:
+      - Montajes de corta y larga derivación y su error sistemático.
+      - Corrección por resistencia interna del amperímetro y del voltímetro.
+      - Puente de Wheatstone y condición de equilibrio.
+      - Sensibilidad del detector y su efecto sobre la incertidumbre.
+      - Código de colores y tolerancia comercial.
+      - Comparación de métodos, qué mide cada uno y con qué límite.
+    herramientas:
+      - Fuente de tensión regulable
+      - Multímetros digitales
+      - Caja de resistencias décadas
+      - Galvanómetro o detector de cero
+      - Python para el análisis
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Comparación de tres métodos para medir una resistencia
+      escenario: >-
+        Se entrega a cada grupo una resistencia desconocida. Debe medirla con el
+        montaje voltamperimétrico en sus dos variantes, con el óhmmetro y con un
+        puente de Wheatstone, y decidir cuál de los cuatro resultados es más
+        confiable justificándolo con la incertidumbre y no con la apariencia del
+        número.
+      fundamento_tex: |
+        En el montaje de larga derivación el amperímetro mide la corriente del
+        resistor más la del voltímetro, y en el de corta derivación el voltímetro
+        mide la caída del resistor más la del amperímetro. Corrigiendo:
+        \[
+          R_{\text{larga}} = \frac{V}{I - V/R_V}
+          \qquad\qquad
+          R_{\text{corta}} = \frac{V}{I} - R_A
+        \]
+        El puente de Wheatstone está en equilibrio cuando el detector marca cero.
+        Si $I_1$ recorre el brazo superior ($R_1$ y $R_2$) e $I_2$ el inferior
+        ($R_x$ y $R_3$), la igualdad de potencial entre los puntos medios exige
+        \[
+          I_2 R_x = I_1 R_1
+          \qquad\text{y}\qquad
+          I_2 R_3 = I_1 R_2
+        \]
+        y dividiendo miembro a miembro queda la condición de equilibrio
+        \[
+          \frac{R_x}{R_3} = \frac{R_1}{R_2}
+          \qquad\Longrightarrow\qquad
+          R_x = R_1\,\frac{R_3}{R_2}
+        \]
+        La ventaja del puente es que el equilibrio no depende de la tensión de
+        alimentación ni de la calibración absoluta del detector: solo de la
+        exactitud de las resistencias patrón. Su límite es la sensibilidad, es
+        decir cuánto desequilibrio hace falta para que el detector lo revele.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$E$] (0,3);
+          \draw (0,3) to[R, l=$R_1$] (2,3) to[R, l=$R_2$] (4,3);
+          \draw (0,0) to[R, l=$R_x$] (2,0) to[R, l=$R_3$] (4,0);
+          \draw (4,3) -- (4,0);
+          \draw (2,3) to[ammeter, l=$G$] (2,0);
+        \end{circuitikz}
+      figura_caption: Puente de Wheatstone; el equilibrio se alcanza con corriente nula por el detector G
+      materiales:
+        - Resistencia desconocida suministrada por el profesor, de entre 100 Ω y 10 kΩ
+        - Caja de resistencias décadas de cuatro órdenes, con error del 1 % del valor ajustado
+        - Galvanómetro o detector de cero
+        - Dos multimedidores Keithley (179, 175 o 175-A)
+        - Pila tipo D como fuerza electromotriz del puente
+      pasos:
+        - Medir la resistencia con el óhmmetro Keithley, desconectada del circuito, y anotar rango, resolución y error de especificación.
+        - Montar la larga derivación, tomar cinco puntos de tensión y corriente y corregir por la resistencia del voltímetro.
+        - Montar la corta derivación, repetir las cinco mediciones y corregir por la resistencia del amperímetro.
+        - Armar el puente con R1 y R2 en relación 1 a 1 y ajustar R3 hasta anular el detector.
+        - Repetir el equilibrio con relaciones 1 a 10, 10 a 1 y 100 a 1, eligiendo siempre potencias de diez, y comparar los valores de Rx.
+        - Estimar la sensibilidad desviando R3 hasta que el detector apenas se mueva, y tomar ese intervalo como incertidumbre.
+        - Leer el código de colores del resistor y contrastarlo con el resultado de cada método.
+      tabla_datos:
+        caption: Resistencia obtenida por cada método
+        nota: La columna de incertidumbre debe justificar su origen en cada caso.
+        columnas:
+          - 'Método'
+          - '$R_x$ ($\Omega$)'
+          - '$u(R_x)$ ($\Omega$)'
+          - 'Fuente del error dominante'
+        filas:
+          - ['Óhmmetro', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Larga derivación', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Corta derivación', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Puente, relación 1 a 1', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Puente, relación 1 a 10', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Código de colores', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Calcular la resistencia corregida de cada montaje y su incertidumbre propagada.
+        - Comparar los valores del puente y decidir si la relación de brazos influye en la precisión alcanzada.
+        - Expresar cada resultado como intervalo y comprobar cuáles se solapan entre sí.
+        - Atribuir al puente la incertidumbre del 1 % del valor ajustado en las décadas y justificar por qué no depende de la fuente.
+        - Identificar el error sistemático dominante de cada método con una frase justificada.
+        - Discutir en términos de precisión los tres métodos y concluir cuál introduce menos error en el rango medido.
+      entregable: >-
+        Tabla comparativa de los cuatro métodos con incertidumbres, discusión de
+        cuál es más confiable y por qué, y scripts de corrección de los montajes.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 3
+    fase: 1
+    titulo: Resistencia interna de instrumentos y de una fuente real
+    objetivo: >-
+      Determinar la resistencia interna del amperímetro, del voltímetro y de la
+      fuente, y modelar la fuente real como fuerza electromotriz con resistencia
+      en serie.
+    contenidos:
+      - Modelo de fuente real; fuerza electromotriz y tensión en bornes.
+      - Recta de carga y punto de operación.
+      - Método de sustitución y método de media deflexión.
+      - Máxima transferencia de potencia y su condición.
+      - Efecto de carga sobre la medición de tensión.
+    herramientas:
+      - Fuente de tensión continua
+      - Caja de resistencias décadas
+      - Dos multímetros digitales
+      - Python para el ajuste de la recta
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Caracterización de la fuente y de los instrumentos
+      escenario: >-
+        Ningún instrumento es ideal: el amperímetro tiene resistencia serie y el
+        voltímetro resistencia paralelo, y la fuente se cae cuando se le exige
+        corriente. El grupo debe medir las tres resistencias internas y construir
+        el modelo de la fuente con sus parámetros y sus incertidumbres.
+      fundamento_tex: |
+        Una fuente real se modela como una fuerza electromotriz ideal en serie con
+        una resistencia interna $r$. La tensión en bornes disminuye linealmente con
+        la corriente entregada:
+        \[
+          V = \varepsilon - r\,I
+        \]
+        de modo que $\varepsilon$ es la ordenada al origen y $r$ el valor absoluto
+        de la pendiente de la recta $V$ frente a $I$. La potencia transferida a la
+        carga es
+        \[
+          P = V I = \frac{\varepsilon^2 R_L}{\left(R_L + r\right)^2}
+        \]
+        que alcanza su máximo cuando $R_L = r$; en ese punto la tensión en bornes
+        vale la mitad de la fuerza electromotriz y el rendimiento es del 50 por
+        ciento. Para el amperímetro, la resistencia interna se obtiene por
+        sustitución: se ajusta una resistencia en paralelo hasta que la lectura
+        caiga a la mitad, y entonces esa resistencia iguala a la interna.
+        Para el voltímetro, con una resistencia $R$ en serie y la fuente de salida
+        $E$ medida con $R=0$,
+        \[
+          V_m = \frac{R_V E}{R + R_V}
+          \qquad\Longrightarrow\qquad
+          R_V = \frac{R\,V_m}{E - V_m}
+        \]
+        y para la fuente, con $R_e$ la resistencia equivalente de $R$ en paralelo
+        con $R_V$,
+        \[
+          V_m = \frac{E R_e}{r + R_e}
+          \qquad\Longrightarrow\qquad
+          \frac{R_e}{V_m} = \frac{1}{E} R_e + \frac{r}{E}
+        \]
+        de modo que el corte de la recta $R_e/V_m$ frente a $R_e$ da $r/E$ y de
+        allí la resistencia interna. La desviación del valor medido respecto al del
+        fabricante se expresa como
+        \[
+          E_{\%} = \frac{\left|R_F - R\right|}{R_F} \times 100
+        \]
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$\varepsilon$] (0,3) to[R, l=$r$] (3,3)
+                to[R, l=$R_L$] (3,0) -- (0,0);
+          \draw (3,3) -- (4.6,3) to[voltmeter, l=$V$] (4.6,0) -- (3,0);
+        \end{circuitikz}
+      figura_caption: Fuente real con su resistencia interna r alimentando una carga variable
+      materiales:
+        - Fuente de tensión continua regulable de 0 a 30 V y 6 A
+        - Caja de resistencias décadas, con ajuste en el orden de los MΩ
+        - Dos multimedidores Keithley (179, 175 o 175-A)
+        - Resistores de carbón de 10 Ω y 47 Ω
+      pasos:
+        - Medir la salida de la fuente $E$ con el voltímetro, con la carga desconectada, y anotarla como valor de referencia.
+        - Seleccionar el rango de 2 V en el Keithley y montar una resistencia $R$ del orden de los MΩ en serie con el voltímetro.
+        - Registrar en una tabla $E$, $V_m$ y $R$ para al menos cinco valores de $R$, ajustando $R$ de modo que no se exceda el rango.
+        - Cambiar el modelo de multimedidor (175 por 179, o al revés) y repetir los pasos anteriores con el mismo rango.
+        - Determinar la resistencia interna del amperímetro por el método de sustitución en los rangos de 200 µA y 2 mA.
+        - Montar la fuente con la resistencia $R$ en paralelo con el voltímetro y obtener veinte valores de $V_m$ y $R$.
+        - Verificar el punto de máxima transferencia de potencia y compararlo con la resistencia interna obtenida por el ajuste.
+        - Estimar el error de carga que introduce el voltímetro al medir sobre un divisor de alta impedancia.
+      tabla_datos:
+        caption: Recta de carga de la fuente
+        nota: Mínimo veinte filas para la fuente; la corriente se toma con el amperímetro en serie, no con la lectura de la fuente.
+        columnas:
+          - '$R_L$ ($\Omega$)'
+          - '$V$ (V)'
+          - '$I$ (mA)'
+          - '$P$ (mW)'
+        filas:
+          - ['10', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['22', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['47', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['100', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['220', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['470', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['1000', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Ajustar la recta V frente a I y reportar fuerza electromotriz, resistencia interna y sus incertidumbres.
+        - Deducir las expresiones de $R_V$, $R_a$ y $r$ antes de usarlas y contrastarlas con las del fundamento.
+        - Determinar $R_V$ con su error y calcular $E_{\%}$ respecto a 11 MΩ para el Keithley 175 y 10 MΩ para el 179.
+        - Determinar $R_a$ con su error en 200 µA y en 2 mA y compararla con 1 kΩ y 100 Ω del fabricante.
+        - Graficar $R_e/V_m$ frente a $R_e$, ajustar la recta y obtener la resistencia interna de la fuente a partir del corte.
+        - Graficar la potencia frente a la carga y verificar que el máximo ocurre cuando la carga iguala a la interna.
+        - Discutir por qué la resistencia del voltímetro depende de la escala y qué implica para las prácticas anteriores.
+      entregable: >-
+        Recta de carga con ajuste, curva de potencia, valores de las tres
+        resistencias internas con incertidumbre y discusión del efecto de carga.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 4
+    fase: 1
+    titulo: Circuitos eléctricos y teoremas fundamentales
+    objetivo: >-
+      Medir corrientes y tensiones en circuitos de serie, paralelo y mixto sobre el
+      tablero, y aplicar las leyes de Kirchhoff a una red de dos mallas con tres
+      baterías.
+    contenidos:
+      - Ley de corrientes y ley de tensiones de Kirchhoff.
+      - Análisis por mallas y por nudos.
+      - Divisor de tensión y divisor de corriente.
+      - Principio de superposición y sus límites.
+      - Equivalente de Thévenin y de Norton; resistencia equivalente.
+      - Cierre de balance de potencias en un circuito.
+    herramientas:
+      - Fuente de tensión continua doble
+      - Multímetros digitales
+      - Protoboard y resistores
+      - Python para resolver el sistema de mallas
+    evaluacion: Práctica formativa con informe y control de fase
+    practica:
+      titulo: Circuitos serie, paralelo y red de dos mallas
+      escenario: >-
+        Se dispone una red de dos mallas sobre el tablero, con tres baterías y tres
+        resistencias. El grupo debe medir las fuerzas electromotrices y las
+        resistencias, predecir por Kirchhoff las tres corrientes de rama, medirlas
+        rompiendo cada rama para intercalar el amperímetro, y comparar lo calculado
+        con lo medido antes de pasar a los montajes de serie y paralelo.
+      fundamento_tex: |
+        La ley de corrientes exige que la suma algebraica de corrientes en un nudo
+        sea nula, y la ley de tensiones que la suma algebraica alrededor de una
+        malla cerrada también lo sea:
+        \[
+          \sum_{k} I_k = 0 \qquad\qquad \sum_{k} V_k = 0
+        \]
+        El equivalente de Thévenin de una red lineal de dos terminales es una
+        fuente $\varepsilon_{th}$ en serie con $R_{th}$, donde $\varepsilon_{th}$
+        es la tensión en circuito abierto y $R_{th}$ la resistencia vista desde los
+        terminales con las fuentes independientes anuladas:
+        \[
+          R_{th} = \frac{\varepsilon_{th}}{I_{cc}}
+        \]
+        siendo $I_{cc}$ la corriente de cortocircuito entre esos terminales, que es
+        además la fuente del equivalente de Norton. La superposición permite
+        calcular la respuesta con cada fuente por separado, anulando las demás,
+        pero no se aplica a la potencia porque esta depende del cuadrado de la
+        corriente.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$\varepsilon_1$, invert] (0,4) to[R, l=$R_1$] (4,4);
+          \draw (4,4) to[V, l=$\varepsilon_2$] (4,1) to[R, l=$R_2$] (4,-2);
+          \draw (4,4) to[R, l=$R_3$] (8,4) to[V, l=$\varepsilon_3$] (8,-2);
+          \draw (8,-2) -- (4,-2) -- (0,-2) -- (0,0);
+        \end{circuitikz}
+      figura_caption: Red de dos mallas con tres baterías y tres resistencias, montada sobre el tablero
+      materiales:
+        - Tablero de redes con borneras y cables de conexión
+        - Tres baterías o pilas, una de ellas de 10 V
+        - Resistencias de carbón de 100, 220 y 330 Ω
+        - Caja de resistencias décadas como carga variable
+        - Dos multimedidores Keithley (179, 175 o 175-A)
+      pasos:
+        - Medir con el voltímetro las fuerzas electromotrices y con el óhmetro las tres resistencias, con su error, y ordenarlas en una tabla.
+        - Resolver por Kirchhoff el sistema de las tres corrientes de rama en el cuaderno y traerlo hecho antes de entrar al laboratorio.
+        - Disponer las resistencias y las pilas en el tablero, armar el circuito y hacerlo revisar por el profesor.
+        - Romper la primera rama e intercalar el amperímetro en serie para medir $I_1$; repetir para $I_2$ e $I_3$.
+        - Medir, para cada malla, la diferencia de potencial entre los extremos de cada resistencia.
+        - Montar las resistencias en serie con una sola batería y medir $I$, $I_1$, $I_2$ y la tensión en cada una.
+        - Montar las resistencias en paralelo, medir la corriente total, la de cada rama y la tensión común.
+      tabla_datos:
+        caption: Comparación entre lo calculado por Kirchhoff y lo medido
+        nota: El desvío relativo debe compararse con la incertidumbre de las dos lecturas, no juzgarse a ojo; un desvío dentro de la incertidumbre no es un error de montaje.
+        columnas:
+          - 'Magnitud'
+          - 'Calculada'
+          - 'Medida'
+          - 'Desvío (\%)'
+          - 'Unidad'
+        filas:
+          - ['$I_1$', '$\ldots$', '$\ldots$', '$\ldots$', 'mA']
+          - ['$I_2$', '$\ldots$', '$\ldots$', '$\ldots$', 'mA']
+          - ['$I_3$', '$\ldots$', '$\ldots$', '$\ldots$', 'mA']
+          - ['$V_{R1}$', '$\ldots$', '$\ldots$', '$\ldots$', 'V']
+          - ['$V_{R2}$', '$\ldots$', '$\ldots$', '$\ldots$', 'V']
+          - ['$V_{R3}$', '$\ldots$', '$\ldots$', '$\ldots$', 'V']
+      analisis:
+        - Resolver el sistema de mallas en Python y comparar punto a punto con lo medido.
+        - Calcular el porcentaje de error entre las corrientes experimentales y las calculadas por Kirchhoff.
+        - Verificar la ley de corrientes en cada nudo y la de tensiones en cada malla, con los valores medidos.
+        - Comprobar la resistencia equivalente medida en serie y en paralelo contra la calculada.
+        - Calcular el balance de potencias y verificar que la suma de potencias entregadas iguale a la consumida.
+        - Identificar qué desvíos superan la incertidumbre y atribuirlos a una causa concreta.
+      ampliacion:
+        - Medir la tensión en circuito abierto entre los bornes de la carga y la corriente de cortocircuito, y construir el equivalente de Thévenin con la caja de décadas.
+        - Conectar la misma carga al circuito original y al equivalente y comprobar que la tensión coincide.
+        - Aplicar superposición anulando una fuente por vez, medir y comparar con la suma calculada.
+      entregable: >-
+        Tabla de calculado contra medido, verificación explícita de las dos leyes
+        de Kirchhoff, comparación de los montajes serie y paralelo, y, si se
+        realiza la ampliación, el equivalente de Thévenin comprobado con la carga.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 5
+    fase: 2
+    titulo: Elementos no lineales y el diodo semiconductor
+    objetivo: >-
+      Obtener la característica corriente-tensión de un diodo en directa y en
+      inversa, y extraer la corriente de saturación y el factor de idealidad por
+      linealización del modelo exponencial.
+    contenidos:
+      - Elemento óhmico frente a elemento no lineal.
+      - Unión p-n, tensión umbral y conducción en directa.
+      - Ecuación de Shockley y linealización logarítmica.
+      - Resistencia dinámica o incremental del diodo.
+      - Ruptura Zener y polarización inversa.
+      - Diodo emisor de luz y su tensión característica.
+      - Resistencia limitadora y protección del dispositivo.
+    herramientas:
+      - Fuente de tensión regulable
+      - Multímetros digitales
+      - Diodos rectificador, Zener y LED
+      - Python para el ajuste exponencial
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Característica estática del diodo y extracción de parámetros
+      escenario: >-
+        El grupo mide la curva completa de un diodo rectificador en directa y en
+        inversa, la de un Zener en ruptura y la de un LED, y debe demostrar que la
+        corriente sigue una exponencial obteniendo sus dos parámetros por un ajuste
+        lineal sobre la variable transformada.
+      fundamento_tex: |
+        La corriente de un diodo en directa sigue la ecuación de Shockley:
+        \[
+          I_D = I_S\left(e^{V_D/(n V_T)} - 1\right)
+          \qquad\text{con}\qquad
+          V_T = \frac{k_B T}{q} \approx 25{,}9\ \mathrm{mV}
+          \ \text{a}\ 300\ \mathrm{K}
+        \]
+        donde $I_S$ es la corriente de saturación y $n$ el factor de idealidad,
+        entre 1 y 2. Tomando logaritmos se linealiza:
+        \[
+          \ln I_D = \ln I_S + \frac{1}{n V_T}\,V_D
+        \]
+        de modo que la pendiente de $\ln I_D$ frente a $V_D$ es $1/(n V_T)$ y la
+        ordenada al origen es $\ln I_S$. La resistencia dinámica en un punto de
+        operación es la derivada:
+        \[
+          r_d = \left.\frac{dV_D}{dI_D}\right|_{I_D} = \frac{n V_T}{I_D}
+        \]
+        En inversa la corriente es del orden de $I_S$ hasta alcanzar la tensión de
+        ruptura, donde crece con muy poca variación de tensión; ese es el régimen
+        que aprovecha el diodo Zener como regulador.
+        El amperímetro no mide la corriente del diodo sino la suma de la del diodo
+        y la que deriva el voltímetro que mide $V_D$:
+        \[
+          i_m = i + i_v
+          \qquad\text{con}\qquad
+          i_v = \frac{V}{R_V}
+        \]
+        con $R_V$ del orden de 10 M$\Omega$, la corrección es despreciable en directa pero
+        no en inversa, donde la corriente del diodo es del orden de los
+        microamperios.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$E$] (0,3) to[ammeter, l=$I_D$] (3,3)
+                to[R, l=$R$] (5.4,3) to[D, l=$D$] (5.4,0) -- (0,0);
+          \draw (5.4,3) -- (6.8,3) to[voltmeter, l=$V_D$] (6.8,0) -- (5.4,0);
+        \end{circuitikz}
+      figura_caption: Caracterización del diodo; la resistencia R limita la corriente y protege el dispositivo
+      materiales:
+        - Una fuente de poder de 0 a 30 V y 6 A
+        - Dos multimedidores Keithley (179, 175 o 175-A)
+        - Un diodo semiconductor rectificador
+        - Una resistencia limitadora de 220 Ω
+      pasos:
+        - Calcular la resistencia limitadora que mantiene la corriente por debajo de 20 mA con la tensión máxima disponible.
+        - Montar el circuito en directa y recorrer la tensión de 0 a 0,8 V en pasos de 50 mV hasta el umbral.
+        - A partir del umbral, tomar puntos en pasos de 10 mV controlando que la corriente no supere el límite, hasta completar un mínimo de veinte pares $V$, $I$.
+        - Medir con el mismo voltímetro la tensión sobre la resistencia limitadora, para estimar la corriente que deriva el voltímetro $i_v = V/R_V$.
+        - Invertir el diodo y medir la corriente inversa en 2, 5 y 10 V, cambiando a la escala de microamperios.
+        - Anotar la temperatura ambiente, porque los parámetros del diodo dependen de ella.
+      tabla_datos:
+        caption: Característica en directa del diodo de silicio
+        nota: Mínimo veinte filas; la columna del logaritmo se completa en el script, no a mano.
+        columnas:
+          - '$V_D$ (V)'
+          - '$i_m$ (mA)'
+          - '$i_v$ ($\mu$A)'
+          - '$\ln I_D$'
+          - '$r_d$ ($\Omega$)'
+        filas:
+          - ['0,100', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,300', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,450', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,550', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,600', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,650', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,700', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['0,750', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Corregir la corriente medida como $i = i_m - i_v$ y discutir cuándo la corrección es despreciable frente a la incertidumbre.
+        - Graficar $\ln I$ frente a $V_D$ y ajustar la recta por mínimos cuadrados.
+        - Obtener el factor de idealidad $n$ a partir de la pendiente y la corriente de saturación $I_0$ del corte, ambos con su error.
+        - Calcular la resistencia dinámica en tres puntos de operación y compararla con la pendiente local de la curva.
+        - Comparar el valor de $n$ con el intervalo esperado entre 1 y 2 y discutir las causas de la desviación.
+        - Estimar el efecto de la temperatura sobre la tensión umbral y discutir su signo.
+      ampliacion:
+        - Repetir la caracterización con un diodo Zener de 5,1 V, en directa y en su ruptura inversa, limitando la corriente con el resistor adecuado.
+        - Medir la curva de un diodo emisor de luz y registrar la tensión a la que comienza a emitir luz visible.
+        - Comparar las tensiones umbral de los tres dispositivos y relacionarlas con el material semiconductor.
+      entregable: >-
+        Curva en directa e inversa del diodo con la corrección por corriente
+        derivada, parámetros del modelo exponencial con su incertidumbre y, si se
+        realiza la ampliación, la comparación con Zener y LED.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 6
+    fase: 2
+    titulo: Respuesta de R, L y C a la tensión senoidal
+    objetivo: >-
+      Estudiar el comportamiento de los circuitos RC y RL en régimen senoidal y
+      usar esos circuitos para determinar la capacitancia de un capacitor y la
+      inductancia de una bobina.
+    contenidos:
+      - Señal senoidal, amplitud, frecuencia angular, fase y valor eficaz.
+      - Concepto de fasor e impedancia compleja.
+      - Reactancia inductiva y capacitiva; resistencia como caso particular.
+      - Definición de reactancia como cociente entre tensión y corriente.
+      - Dependencia de la reactancia con la frecuencia angular.
+      - Impedancia equivalente serie y paralelo.
+      - Resistencia serie de un inductor real y capacitancia distribuida de una bobina.
+    herramientas:
+      - Generador de funciones senoidal
+      - Dos multimedidores Keithley
+      - Caja de resistencias décadas
+      - Capacitor y bobina del inventario
+      - Python para el cálculo fasorial
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Determinación de reactancias, de C y de L en régimen senoidal
+      escenario: >-
+        Con un generador de funciones senoidal, una resistencia de décadas y dos
+        Keithley, el grupo mide la reactancia de un capacitor y de una bobina del
+        inventario del laboratorio, y después determina su capacitancia y su
+        inductancia variando la frecuencia entre 200 y 1200 Hz. Los valores
+        obtenidos se contrastan con los del apéndice del inventario.
+      fundamento_tex: |
+        En régimen senoidal permanente cada elemento se describe por su impedancia
+        compleja:
+        \[
+          Z_R = R \qquad
+          Z_L = j\omega L \qquad
+          Z_C = \frac{1}{j\omega C} = -\frac{j}{\omega C}
+        \]
+        con $\omega = 2\pi f$. Los módulos de las reactancias son
+        \[
+          X_L = \omega L \qquad\qquad X_C = \frac{1}{\omega C}
+        \]
+        La corriente se adelanta 90 grados a la tensión en el inductor y se atrasa
+        90 grados en el capacitor; en el resistor están en fase. Para un circuito
+        serie la impedancia total y el ángulo de fase son
+        \[
+          Z = \sqrt{R^2 + \left(X_L - X_C\right)^2}
+          \qquad\qquad
+          \varphi = \arctan\!\frac{X_L - X_C}{R}
+        \]
+        Un inductor real incluye la resistencia de su devanado, por lo que su
+        impedancia medida no es puramente imaginaria:
+        $Z_L = \sqrt{R_s^2 + X_L^2}$. Con osciloscopio de dos canales, la diferencia
+        de fase entre las señales se obtiene del desplazamiento temporal
+        $\Delta t$ respecto del periodo $T$ mediante $\varphi = 360^\circ\,\Delta t/T$.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$v_g$] (0,3) to[R, l=$R$] (2.4,3)
+                to[L, l=$L$] (4.8,3) to[C, l=$C$] (7.2,3) -- (7.2,0) -- (0,0);
+          \draw (2.4,3) -- (2.4,4.2) to[voltmeter, l=$v_R$] (0.6,4.2);
+        \end{circuitikz}
+      figura_caption: Circuito serie alimentado por el generador; la tensión sobre R es proporcional a la corriente
+      materiales:
+        - Un generador de funciones senoidal
+        - Un resistor variable del tipo décadas
+        - Un capacitor del inventario del laboratorio
+        - Una bobina del inventario del laboratorio
+        - Dos multimedidores Keithley (175 o 175-A)
+      pasos:
+        - Armar el circuito RC serie y hacerlo revisar por el profesor antes de energizar.
+        - Fijar la frecuencia del generador alrededor de 200 Hz y un valor de resistencia.
+        - Tomar veinte pares de corriente $I$ y tensión $V_C$ moviendo el control de amplitud del generador.
+        - Armar el circuito RL serie y repetir los pasos anteriores tomando veinte pares de $I$ y $V_L$ a la misma frecuencia.
+        - Para determinar C, fijar un valor de R y variar la frecuencia veinte veces entre 200 y 1200 Hz, midiendo $V_C$ y $V_R$ en cada punto.
+        - Para determinar L, repetir el barrido de frecuencia midiendo $V_L$ y $V_R$ en cada punto.
+        - Calcular la corriente en cada punto como $I = V_R/R$ y anotar la incertidumbre de las dos lecturas.
+      tabla_datos:
+        caption: Barrido de frecuencia para determinar C y L
+        nota: Los experimentos 1 y 2 usan frecuencia fija y amplitud variable, con su propia tabla de veinte filas.
+        columnas:
+          - '$f$ (Hz)'
+          - '$V_R$ (V)'
+          - '$V_C$ (V)'
+          - '$I$ (mA)'
+          - '$X_C$ ($\Omega$)'
+        filas:
+          - ['200', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['300', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['400', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['500', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['600', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['800', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['1000', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['1200', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Demostrar a partir de la definición de reactancia que $|X_C| = 1/(C\omega)$ y que $|X_L| = L\omega$.
+        - Graficar $V_C$ frente a $I$ con los veinte puntos de frecuencia fija y ajustar la recta por mínimos cuadrados.
+        - Obtener $X_C$ de la pendiente con su error y compararlo con el valor teórico calculado a partir de C.
+        - Repetir el mismo tratamiento con $V_L$ frente a $I$ para obtener $X_L$.
+        - Graficar $X_C$ frente a $1/\omega$ y $X_L$ frente a $\omega$, ajustar y obtener C y L de las pendientes, con sus errores.
+        - Calcular la desviación porcentual de C frente al valor de la tabla de capacitores del apéndice y de L frente a las tablas de inductancias.
+      ampliacion:
+        - Medir el desfase entre tensión y corriente con osciloscopio de dos canales y compararlo con el previsto por el modelo fasorial.
+        - Verificar el desfase con una figura de Lissajous y cuantificar la discrepancia entre ambos procedimientos.
+      entregable: >-
+        Gráficas de $V_C$ y $V_L$ frente a $I$ con sus ajustes, valores de $X_C$ y
+        $X_L$, y de C y L con su incertidumbre, comparados con el inventario del
+        laboratorio.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 7
+    fase: 2
+    titulo: Circuitos resonantes serie y paralelo
+    objetivo: >-
+      Determinar la frecuencia de resonancia de circuitos con L y C en serie y en
+      paralelo, y obtener la inductancia de una bobina a partir de un circuito
+      resonante con una capacitancia conocida.
+    contenidos:
+      - Resonancia serie, con impedancia mínima y corriente máxima.
+      - Resonancia paralelo, con impedancia máxima.
+      - Frecuencia de resonancia y su dependencia de L y C.
+      - Factor de calidad y su significado físico.
+      - Ancho de banda y puntos de media potencia o de menos 3 dB.
+      - Selectividad y aplicaciones en sintonía.
+      - Efecto de la resistencia sobre la nitidez de la resonancia.
+    herramientas:
+      - Generador de funciones
+      - Osciloscopio de dos canales
+      - Inductor y capacitor
+      - Caja de resistencias décadas
+      - Python para el barrido y el ajuste
+    evaluacion: Práctica formativa con informe
+    practica:
+      titulo: Resonancia serie y paralelo con L y C del inventario
+      escenario: >-
+        Con la misma bobina y el mismo capacitor de la semana anterior, el grupo
+        localiza la frecuencia de resonancia del circuito serie y del paralelo
+        barriendo la frecuencia a ambos lados del pico, y usa el valor conocido de C
+        para obtener L de la condición de resonancia.
+      fundamento_tex: |
+        En un circuito serie la impedancia es mínima cuando las reactancias se
+        cancelan, $X_L = X_C$, y entonces la frecuencia de resonancia vale
+        \[
+          f_0 = \frac{1}{2\pi\sqrt{LC}}
+        \]
+        En resonancia la corriente es máxima y las tensiones sobre L y sobre C
+        pueden superar a la del generador en un factor igual al factor de calidad:
+        \[
+          Q = \frac{\omega_0 L}{R} = \frac{1}{R}\sqrt{\frac{L}{C}}
+          \qquad\qquad
+          V_L = V_C = Q\,V_g
+        \]
+        El ancho de banda entre los puntos de media potencia, donde la corriente
+        cae a $1/\sqrt{2}$ de su valor máximo y la tensión sobre el resistor a
+        menos 3 dB, es
+        \[
+          \Delta f = \frac{f_0}{Q}
+        \]
+        Un valor alto de $Q$ significa un pico estrecho y selectivo; uno bajo, una
+        respuesta ancha y amortiguada. En configuración paralelo la resonancia
+        produce impedancia máxima y la tensión sobre el conjunto alcanza su pico.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$v_g$] (0,3) to[R, l=$R$] (2.6,3)
+                to[L, l=$L$] (5.2,3) to[C, l=$C$] (7.8,3) -- (7.8,0) -- (0,0);
+        \end{circuitikz}
+      figura_caption: Circuito RLC serie; la tensión sobre R permite seguir la corriente en todo el barrido
+      materiales:
+        - Un generador de funciones senoidal
+        - Un resistor variable del tipo décadas
+        - El capacitor del inventario usado en la práctica 6
+        - La bobina del inventario usada en la práctica 6
+        - Un multimedidor digital Keithley 175-A
+        - Un voltímetro analógico
+      pasos:
+        - Calcular la frecuencia de resonancia $f_0$ esperada con los valores de L y C del apéndice y anotarla como referencia.
+        - Armar el circuito serie de la figura y hacerlo revisar por el profesor.
+        - Elegir $f_1$ y $f_2$ tales que $f_1 < f_0 < f_2$ y barrer la frecuencia entre ambas.
+        - Para cada valor de frecuencia anotar la corriente $i$, manteniendo constante la amplitud con el control del generador.
+        - Repetir el mismo barrido con el circuito paralelo y anotar la corriente en cada punto.
+        - Sin desmontar los equipos, añadir puntos en la región del pico para definir bien el máximo o el mínimo.
+        - Medir la tensión sobre la bobina y sobre el capacitor en resonancia y comparar con la del generador.
+      tabla_datos:
+        caption: Barrido fino alrededor de la resonancia
+        nota: Anotar la resistencia empleada en cada barrido; se necesitan tres tablas como esta.
+        columnas:
+          - '$f$ (Hz)'
+          - '$V_R$ (V)'
+          - '$I$ (mA)'
+          - '$Z$ ($\Omega$)'
+          - 'Ganancia (dB)'
+        filas:
+          - ['$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$f_0$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Graficar $i$ frente a $f$ para el circuito serie y para el paralelo, con ejes rotulados y unidades.
+        - Determinar de la gráfica el valor extremo de la corriente y, con él, la frecuencia de resonancia $f_0$ experimental.
+        - Conocidos C y $f_0$, despejar L de la condición de resonancia y compararla con el valor del apéndice de inductancias.
+        - Repetir la determinación de $f_0$ para el circuito paralelo y comparar serie contra paralelo.
+        - Identificar el ancho de banda como el intervalo entre $f_1$ y $f_2$ donde la corriente cae a $1/\sqrt{2}$ del extremo.
+        - Discutir por qué los instrumentos imponen un límite de frecuencia a la medición y cómo afecta al barrido.
+      ampliacion:
+        - Repetir el barrido con tres valores de resistencia y determinar el factor de calidad por el ancho de banda y por la relación de tensiones.
+        - Graficar el factor de calidad frente a la resistencia y verificar la dependencia inversa prevista.
+        - Estimar la resistencia serie del inductor a partir del factor de calidad medido con la resistencia mínima.
+      entregable: >-
+        Curvas $i$--$f$ de los circuitos serie y paralelo, frecuencia de resonancia
+        determinada gráficamente e inductancia obtenida de ella, comparada con el
+        apéndice.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 8
+    fase: 2
+    titulo: Carga y descarga de un capacitor
+    objetivo: >-
+      Familiarizarse con el uso del osciloscopio, visualizar las curvas de carga y
+      descarga de un capacitor y determinar su capacitancia a partir de las medidas
+      tomadas sobre esas curvas.
+    contenidos:
+      - Régimen transitorio y estado estacionario.
+      - Ecuación diferencial del circuito RC y su solución exponencial.
+      - Constante de tiempo y semiperiodo.
+      - Linealización logarítmica de una exponencial.
+      - Energía almacenada en un capacitor y disipada en el resistor.
+      - Uso del osciloscopio en disparo único para capturar el transitorio.
+      - Resistencia serie equivalente incluyendo la del generador.
+    herramientas:
+      - Generador de onda cuadrada o conmutador
+      - Osciloscopio
+      - Capacitor y resistor
+      - Cronómetro o medida temporal por osciloscopio
+      - Python para el ajuste exponencial
+    evaluacion: Práctica formativa con informe y control de fase
+    practica:
+      titulo: Carga y descarga de un capacitor con osciloscopio
+      escenario: >-
+        Un generador de onda cuadrada sustituye a la fuente y al interruptor, de
+        modo que el capacitor se carga durante el tiempo de encendido y se descarga
+        durante el de apagado. El grupo captura la curva en el osciloscopio y
+        determina la capacitancia a partir de la pendiente de la recta que resulta
+        de linealizar la exponencial.
+      fundamento_tex: |
+        Aplicando la ley de tensiones al lazo de carga se obtiene la ecuación
+        diferencial cuya solución es exponencial:
+        \[
+          v_C(t) = \varepsilon\left(1 - e^{-t/\tau}\right)
+          \qquad\text{con}\qquad
+          \tau = R C
+        \]
+        Durante la descarga, partiendo de $V_0$:
+        \[
+          v_C(t) = V_0\,e^{-t/\tau}
+        \]
+        En un tiempo igual a $\tau$ el capacitor alcanza el 63,2 por ciento de la
+        tensión final, y el semiperiodo de la descarga vale
+        \[
+          t_{1/2} = \tau \ln 2 \approx 0{,}693\,\tau
+        \]
+        Linealizando la descarga se obtiene una recta cuya pendiente es $-1/\tau$:
+        \[
+          \ln v_C(t) = \ln V_0 - \frac{t}{\tau}
+        \]
+        Si los datos se toman en la carga conviene linealizar
+        $\ln\left[(V_0 - v_C)/V_0\right]$, que da la misma pendiente $-1/\tau$.
+        La energía almacenada al final de la carga es $W_C = \tfrac12 C \varepsilon^2$,
+        mientras que la fuente entrega $C\varepsilon^2$; la mitad se disipa en el
+        resistor independientemente del valor de $R$.
+        La resistencia que gobierna el transitorio no es solo la de la caja de
+        décadas: incluye la resistencia de salida del generador, de $50\ \Omega$ o
+        $600\ \Omega$ según el equipo, de modo que $R = R_{\text{década}} + R_{\text{generador}}$.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$\varepsilon$] (0,3) to[closing switch, l=$S$] (2.4,3)
+                to[R, l=$R$] (4.8,3) to[C, l=$C$] (4.8,0) -- (0,0);
+          \draw (4.8,3) -- (6.4,3) to[voltmeter, l=$v_C$] (6.4,0) -- (4.8,0);
+        \end{circuitikz}
+      figura_caption: Circuito de carga y descarga; el conmutador permite alternar entre ambos transitorios
+      materiales:
+        - Un osciloscopio
+        - Un generador de funciones con onda cuadrada
+        - Un resistor de décadas
+        - Un capacitor del inventario del laboratorio
+        - Un óhmetro para verificar la resistencia conectada
+      pasos:
+        - Armar el circuito RC con el generador de onda cuadrada y hacerlo revisar por el profesor.
+        - Ajustar las escalas de tiempo y de tensión del osciloscopio hasta tener en pantalla una sola curva de carga y descarga bien estable.
+        - Tomar un número suficiente de valores de $v_C$ para distintos tiempos, con la imagen estable.
+        - Medir con el óhmetro la resistencia conectada en serie con el capacitor y anotar la resistencia de entrada del generador.
+        - Medir $V_0$ conectando el generador en paralelo con el osciloscopio.
+        - Cambiar el capacitor por otro de valor unas diez veces mayor o menor, sin cambiar la frecuencia de la señal.
+        - Describir lo que se observa con el nuevo capacitor y explicar por qué cambia la curva.
+      tabla_datos:
+        caption: Transitorio de carga y de descarga
+        nota: El tiempo se toma desde el inicio del flanco; anotar $V_0$ y la resistencia total usada en el ajuste.
+        columnas:
+          - '$t$ (s)'
+          - '$v_C$ carga (V)'
+          - '$v_C$ descarga (V)'
+          - '$\ln\left[(V_0-v_C)/V_0\right]$'
+        filas:
+          - ['0,0', '0,00', '$\ldots$', '$\ldots$']
+          - ['0,5', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['1,0', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['1,5', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2,0', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3,0', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['5,0', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Graficar $\ln\left[(V_0-v_C)/V_0\right]$ frente a $t$ para la carga, y $\ln(v_C/V_0)$ si los datos son de la descarga.
+        - Ajustar la recta por mínimos cuadrados y determinar la pendiente con su error.
+        - Obtener la capacitancia a partir de la pendiente, tomando como $R$ la suma de la resistencia de décadas y la del generador (50 o 600 $\Omega$).
+        - Calcular la desviación porcentual del valor de C obtenido frente al valor del fabricante del apéndice de capacitores.
+        - Superponer la curva medida con el modelo exponencial y discutir los desvíos en el inicio del transitorio.
+      ampliacion:
+        - Calcular la energía almacenada y la entregada por la fuente y verificar el balance del 50 por ciento.
+        - Repetir el ajuste por mínimos cuadrados no lineales y comparar la constante de tiempo con la obtenida de la recta linealizada.
+      entregable: >-
+        Curvas de carga y descarga capturadas, recta linealizada con su ajuste,
+        capacitancia con su incertidumbre y desviación porcentual frente al valor
+        del fabricante.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 9
+    fase: 3
+    titulo: Práctica integradora, caracterización completa de un circuito RLC
+    objetivo: >-
+      Caracterizar un mismo circuito RLC en régimen senoidal y en régimen
+      transitorio, y demostrar la coherencia de los parámetros obtenidos por dos
+      vías independientes.
+    contenidos:
+      - Integración de reactancias, resonancia y transitorios en un solo circuito.
+      - Factor de calidad medido en frecuencia y en tiempo.
+      - Régimen subamortiguado, críticamente amortiguado y sobreamortiguado.
+      - Frecuencia natural amortiguada frente a frecuencia de resonancia.
+      - Validación del modelo con simulación numérica.
+      - Presupuesto de incertidumbres de un sistema completo.
+    herramientas:
+      - Generador de funciones y onda cuadrada
+      - Osciloscopio de dos canales
+      - Inductor, capacitor y resistencias
+      - Python con SciPy para simular y ajustar
+    evaluacion: Práctica sumativa con informe completo
+    practica:
+      titulo: El mismo circuito por dos vías independientes
+      escenario: >-
+        Es la práctica integradora. Con el montaje RLC de las semanas anteriores el
+        grupo obtiene el factor de calidad desde el ancho de banda en frecuencia y
+        desde el decaimiento del transitorio, y debe cerrar el informe mostrando que
+        ambos caminos conducen al mismo valor dentro de la incertidumbre.
+      fundamento_tex: |
+        En el dominio de la frecuencia la resonancia fija
+        $f_0 = 1/(2\pi\sqrt{LC})$ y el factor de calidad $Q = \omega_0 L/R$.
+        En el dominio del tiempo la respuesta libre del mismo circuito es la
+        solución de
+        \[
+          L\frac{d^2 q}{dt^2} + R\frac{dq}{dt} + \frac{q}{C} = 0
+        \]
+        que en régimen subamortiguado oscila con una frecuencia propia amortiguada
+        y una envolvente exponencial:
+        \[
+          q(t) = A\,e^{-\zeta \omega_0 t}\cos\!\left(\omega_d t + \phi\right)
+          \qquad
+          \omega_d = \omega_0\sqrt{1-\zeta^2}
+        \]
+        donde el coeficiente de amortiguamiento y el factor de calidad son dos
+        formas de escribir lo mismo:
+        \[
+          \zeta = \frac{R}{2}\sqrt{\frac{C}{L}}
+          \qquad\qquad
+          Q = \frac{1}{2\zeta}
+        \]
+        La envolvente permite medir $Q$ en el tiempo: si la amplitud cae a la mitad
+        en $n$ ciclos, entonces $Q \approx 0{,}73\,n$. Que este valor coincida con
+        el obtenido del ancho de banda en frecuencia es la comprobación de que el
+        modelo describe el circuito real.
+      figura_tex: |
+        \begin{circuitikz}
+          \draw (0,0) to[V, l=$v_g$] (0,3) to[closing switch, l=$S$] (2.2,3)
+                to[R, l=$R$] (4.4,3) to[L, l=$L$] (6.6,3)
+                to[C, l=$C$] (6.6,0) -- (0,0);
+          \draw (6.6,3) -- (8.2,3) to[voltmeter, l=$v_C$] (8.2,0) -- (6.6,0);
+        \end{circuitikz}
+      figura_caption: Circuito RLC único; el conmutador permite pasar del régimen senoidal al transitorio
+      materiales:
+        - Generador de funciones con salida senoidal y cuadrada
+        - Osciloscopio de dos canales con captura de traza
+        - Inductor de 10 mH, capacitor de 100 nF
+        - Resistores de 47, 220 y 1000 Ω
+      pasos:
+        - Reutilizar el montaje de resonancia y repetir el barrido fino con la resistencia intermedia.
+        - Obtener la frecuencia de resonancia, el ancho de banda y el factor de calidad en frecuencia.
+        - Cambiar el generador a onda cuadrada de baja frecuencia y capturar el transitorio de la tensión en el capacitor.
+        - Medir la frecuencia de oscilación amortiguada y el número de ciclos hasta que la amplitud caiga a la mitad.
+        - Calcular el factor de calidad temporal y compararlo con el obtenido en frecuencia.
+        - Simular el circuito en Python con los valores medidos de L, C y R, y superponer la simulación a la traza.
+        - Repetir todo con la resistencia mayor y comprobar el cambio de régimen de amortiguamiento.
+      tabla_datos:
+        caption: Parámetros obtenidos por las dos vías
+        nota: La última columna debe indicar si los valores son compatibles dentro de la incertidumbre.
+        columnas:
+          - 'Parámetro'
+          - 'Vía frecuencia'
+          - 'Vía tiempo'
+          - 'Nominal'
+          - 'Compatibles'
+        filas:
+          - ['$f_0$ (Hz)', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$Q$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$\Delta f$ (Hz)', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$\zeta$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['$R$ total ($\Omega$)', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Ajustar la envolvente exponencial del transitorio y extraer el coeficiente de amortiguamiento.
+        - Comparar la frecuencia amortiguada con la de resonancia y cuantificar la diferencia esperada por el amortiguamiento.
+        - Contrastar los dos factores de calidad con sus incertidumbres y decidir si son compatibles.
+        - Superponer la simulación numérica a la traza medida y discutir las desviaciones restantes.
+        - Construir el presupuesto de incertidumbres completo del circuito y señalar la fuente dominante.
+        - Redactar una conclusión que integre las prácticas de las semanas 6, 7 y 8.
+      entregable: >-
+        Informe integrador con los dos métodos, la simulación superpuesta a la
+        medición, el presupuesto de incertidumbres del sistema y una conclusión
+        que cierre el semestre experimental.
+      requiere_codigo: true
+      criterios: *criterios_practica
+
+  - numero: 10
+    fase: 3
+    titulo: Evaluación final práctica y defensa del portafolio
+    objetivo: >-
+      Demostrar de forma individual la capacidad de montar, medir, estimar
+      incertidumbres y defender los resultados de un circuito desconocido, y
+      cerrar el portafolio del semestre.
+    contenidos:
+      - Autonomía en el montaje y en la selección de instrumento y rango.
+      - Tratamiento completo de incertidumbres bajo presión de tiempo.
+      - Defensa oral de decisiones metodológicas.
+      - Trazabilidad y reproducibilidad del portafolio entregado.
+      - Corrección de observaciones pendientes de semanas anteriores.
+    herramientas:
+      - Instrumental completo de la mesa
+      - Repositorio del grupo
+      - Python para el análisis en vivo
+    evaluacion: Evaluación final práctica individual y portafolio
+    practica:
+      titulo: Examen práctico individual y cierre del portafolio
+      escenario: >-
+        Cada integrante recibe un circuito sellado con parámetros desconocidos y
+        debe caracterizarlo de forma individual en tres horas, con el instrumental
+        de la mesa y sin notas de montaje. Al final defiende sus decisiones ante el
+        docente y entrega el portafolio del grupo con todas las correcciones
+        aplicadas.
+      fundamento_tex: |
+        La evaluación reproduce el ciclo completo del curso: identificar el
+        circuito, elegir el método de medición, acotar la incertidumbre de cada
+        lectura, ajustar el modelo y defender el resultado. No hay un modelo nuevo;
+        se exige aplicar con autonomía los de las nueve semanas previas y declarar
+        explícitamente lo que no se pudo verificar.
+      materiales:
+        - Caja sellada con un circuito de parámetros desconocidos
+        - Multímetro digital, osciloscopio y generador de funciones
+        - Caja de resistencias décadas
+        - Protoboard, cables y cuaderno de laboratorio
+      pasos:
+        - Inspeccionar la caja, identificar los bornes accesibles y formular una hipótesis del circuito interno.
+        - Medir en continua y en alterna para discriminar entre elementos resistivos y reactivos.
+        - Diseñar el ensayo que permita obtener cada parámetro con la menor incertidumbre posible.
+        - Ejecutar las mediciones registrando rango, resolución y condiciones en cada punto.
+        - Procesar los datos y obtener los parámetros con su incertidumbre.
+        - Redactar el informe individual y defenderlo oralmente ante el docente.
+        - Consolidar el portafolio del grupo aplicando las correcciones pendientes.
+      tabla_datos:
+        caption: Hoja de registro de la evaluación final
+        nota: Se entrega junto con el informe; los datos crudos no se modifican después de la medición.
+        columnas:
+          - 'Ensayo'
+          - 'Instrumento y rango'
+          - 'Lectura'
+          - 'Unidad'
+          - 'Incertidumbre'
+        filas:
+          - ['1', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['4', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['5', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - Obtener cada parámetro del circuito con su incertidumbre combinada.
+        - Verificar la coherencia interna de los resultados entre ensayos independientes.
+        - Declarar qué hipótesis quedaron confirmadas y cuáles no se pudieron verificar.
+      entregable: >-
+        Informe individual de la evaluación, defensa oral y portafolio del grupo
+        completo con las correcciones aplicadas y el README actualizado.
+      requiere_codigo: false
+      criterios: *criterios_practica
+
+controles:
+  - fase: 1
+    titulo: Control de fase uno, instrumentación y circuitos de continua
+    duracion_min: 45
+    instrumento: Prueba escrita individual
+    caracter: Individual, sin apuntes, con calculadora y una hoja de fórmulas
+    preguntas:
+      - enunciado: >-
+          Un multímetro de clase 0,5 por ciento más dos dígitos mide 8,20 V.
+          Exprese el resultado con su incertidumbre y explique qué parte es del
+          instrumento y qué parte de la lectura.
+        puntaje: 2.5
+      - enunciado: >-
+          Explique por qué la resistencia se obtiene de la pendiente de un ajuste
+          y no del promedio de los cocientes punto a punto. Ilústrelo con un caso
+          de ruido en la corriente.
+        puntaje: 2.5
+      - enunciado: >-
+          Dibuje los dos montajes voltamperimétricos y escriba la corrección que
+          corresponde a cada uno. Indique en qué rango de resistencia conviene usar
+          cada montaje.
+        puntaje: 2.5
+      - enunciado: >-
+          Una fuente de 12 V con resistencia interna de 2 Ω alimenta una carga.
+          Calcule la carga de máxima transferencia, la potencia entregada y el
+          rendimiento en ese punto.
+        puntaje: 2.5
+  - fase: 2
+    titulo: Control de fase dos, no linealidad y régimen senoidal
+    duracion_min: 45
+    instrumento: Prueba escrita individual
+    caracter: Individual, sin apuntes, con calculadora y una hoja de fórmulas
+    preguntas:
+      - enunciado: >-
+          A partir de la ecuación de Shockley, derive la expresión que permite
+          obtener el factor de idealidad de una gráfica del logaritmo de la
+          corriente frente a la tensión, e indique qué representa la ordenada.
+        puntaje: 2.5
+      - enunciado: >-
+          Explique por qué la corriente en un capacitor se adelanta a la tensión y
+          por qué la reactancia capacitiva disminuye al aumentar la frecuencia.
+        puntaje: 2.5
+      - enunciado: >-
+          Un circuito RLC serie tiene L de 10 mH, C de 100 nF y R de 220 Ω.
+          Calcule la frecuencia de resonancia, el factor de calidad y el ancho de
+          banda.
+        puntaje: 2.5
+      - enunciado: >-
+          Para un circuito RC con tau de 2 segundos, calcule el tiempo hasta el
+          63,2 por ciento de la carga final, el semiperiodo de la descarga y el
+          tiempo para considerarla completa.
+        puntaje: 2.5
+
+evaluacion_final:
+  titulo: Evaluación final práctica de laboratorio y defensa del portafolio
+  duracion_min: 180
+  instrumento: Evaluación individual práctica en la mesa de laboratorio con defensa oral
+  semana: 10
+  caracter: >-
+    Individual en la ejecución y en la defensa; el portafolio se consolida por
+    grupo con las conclusiones firmadas de forma individual.
+  secciones:
+    - nombre: Montaje y medición autónoma
+      puntaje: 3
+      detalle: >-
+        Identifica el circuito desconocido, elige instrumento y rango, y obtiene
+        las lecturas sin exceder los límites del equipo.
+    - nombre: Tratamiento de datos e incertidumbres
+      puntaje: 3
+      detalle: >-
+        Propaga incertidumbres, ajusta el modelo y reporta cada resultado con su
+        unidad y su intervalo.
+    - nombre: Defensa oral
+      puntaje: 2
+      detalle: >-
+        Justifica las decisiones metodológicas, reconoce los errores sistemáticos
+        y responde a las preguntas del docente.
+    - nombre: Informe y portafolio
+      puntaje: 2
+      detalle: >-
+        Informe individual trazable y portafolio del grupo completo, ordenado y con
+        las correcciones aplicadas.
+  condiciones:
+    - Duración de tres horas en la mesa de laboratorio asignada.
+    - Sin apuntes de montaje; se permite una hoja de fórmulas y calculadora.
+    - Instrumental completo de la mesa y contenedor de análisis disponible.
+    - Un circuito sellado por estudiante, distinto para cada uno.
+    - La defensa oral es individual y dura entre diez y quince minutos.
+  entregables:
+    - Informe individual en PDF dentro de la carpeta semana_10 del repositorio.
+    - Datos crudos en CSV y script de análisis que reproduce cada figura.
+    - Hoja de registro firmada con rangos, resoluciones e incertidumbres.
+    - Portafolio del grupo con las diez semanas y el README actualizado.
+  criterios_aprobacion:
+    - Nota mínima de 5 puntos sobre 10 en la evaluación final.
+    - Al menos ocho de las nueve prácticas entregadas dentro del corte semanal.
+    - Todos los resultados reportados con su incertidumbre y su unidad.
+    - Ausencia de datos fabricados o alterados en el portafolio.
+
+apendices:
+  - titulo: Series normalizadas de resistores
+    texto: >-
+      Los resistores comerciales no se fabrican en valores arbitrarios sino en
+      series normalizadas. La serie E12 tiene doce valores por década con
+      tolerancia del 10 por ciento y la E24 tiene veinticuatro valores con
+      tolerancia del 5 por ciento. Al pedir un valor en el laboratorio, elegir el
+      más cercano de la serie y calcular con el valor real, no con el nominal.
+    tabla:
+      caption: Valores base por década de las series E12 y E24
+      nota: Multiplicar por la década correspondiente, de 1 Ω a 10 MΩ.
+      columnas:
+        - 'Serie'
+        - 'Tolerancia'
+        - 'Valores base'
+      filas:
+        - ['E12', '$\pm$10 \%', '10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82']
+        - ['E24', '$\pm$5 \%', 'E12 más 11, 13, 16, 20, 24, 30, 36, 43, 51, 62, 75, 91']
+  - titulo: Capacitores del laboratorio
+    texto: >-
+      Valores medidos de los capacitores que se usan en las prácticas 6, 7 y 8.
+      La numeración identifica la posición en la lista del laboratorio, no un
+      código patrimonial: sirve para que cada grupo anote qué unidad usó y pueda
+      comparar en el informe contra el mismo valor que otro grupo.
+    tabla:
+      caption: Capacitancia medida de cada unidad disponible
+      nota: Verificar la tensión máxima antes de energizar y descargar el capacitor entre ensayos.
+      columnas:
+        - 'Unidad'
+        - 'Tipo o forma'
+        - 'Capacitancia medida'
+      filas:
+        - ['1', '---', '2,152 $\mu$F']
+        - ['2', '---', '103,0 nF']
+        - ['3', '---', '10,09 nF']
+        - ['4', '---', '5,106 $\mu$F']
+        - ['5', '---', '3,495 $\mu$F']
+        - ['6', '---', '45,52 nF']
+        - ['7', '---', '5,081 nF']
+        - ['8', 'Arcilla', '4,368 nF']
+        - ['9', 'Rectangular', '1,014 $\mu$F']
+        - ['10', 'Negro', '229,2 nF']
+        - ['11', 'Arcilla', '7,577 nF']
+        - ['12', 'Arcilla', '100,7 nF']
+        - ['13', 'Mostaza', '489,2 nF']
+        - ['14', 'Arcilla', '6,860 nF']
+        - ['15', 'Gris', '198,6 nF']
+        - ['16', '---', '1,004 $\mu$F']
+        - ['17', 'Arcilla', '8,810 nF']
+        - ['18', 'Negro', '228,7 nF']
+        - ['19', 'Arcilla', '3,942 nF']
+        - ['20', 'Amarillo', '1,013 $\mu$F']
+  - titulo: Inductancias del laboratorio
+    texto: >-
+      Las bobinas del laboratorio tienen tomas intermedias, de modo que el mismo
+      devanado ofrece tres inductancias según se conecte entre extremo y medio
+      (A-M), entre medio y extremo (M-E) o entre extremos (A-E). En la práctica 6
+      hay que anotar qué conexión se usó: comparar la L medida contra otra toma es
+      un error de referencia, no un error experimental.
+    tabla:
+      caption: Inductancia medida según el tipo de conexión
+      nota: La numeración identifica la posición en la lista del laboratorio.
+      columnas:
+        - 'Unidad'
+        - 'A-M'
+        - 'M-E'
+        - 'A-E'
+      filas:
+        - ['1', '1,962 mH', '2,706 mH', '8,54 mH']
+        - ['2', '1,942 mH', '2,748 mH', '8,55 mH']
+        - ['3', '0,975 H', '1,468 H', '4,421 H']
+        - ['4', '0,966 H', '1,411 H', '4,324 H']
+        - ['5', '7,845 mH', '11,32 mH', '34,62 mH']
+        - ['6', '7,902 mH', '11,70 mH', '35,34 mH']
+        - ['7', '502,1 $\mu$H', '703,8 $\mu$H', '2,188 mH']
+  - titulo: Inductancias de cinco terminales
+    texto: >-
+      Dos bobinas del laboratorio tienen cinco terminales y permiten elegir la
+      toma por saltos, desde el extremo inferior hasta el superior. Se usan cuando
+      se necesita una inductancia intermedia que no está en la tabla anterior.
+    tabla:
+      caption: Inductancia medida entre terminales
+      nota: Cada columna es la conexión entre el terminal inferior y el indicado.
+      columnas:
+        - 'Unidad'
+        - 'Inferior'
+        - 'Diagonal 1'
+        - 'Medio'
+        - 'Diagonal 2'
+        - 'Superior'
+      filas:
+        - ['1', '8,6 $\mu$H', '8,5 $\mu$H', '17,8 $\mu$H', '8,6 $\mu$H', '2,9 $\mu$H']
+        - ['2', '7,7 $\mu$H', '7,6 $\mu$H', '17,2 $\mu$H', '7,4 $\mu$H', '2,9 $\mu$H']
+  - titulo: Multimedidor Keithley 175 y 175-A
+    texto: >-
+      Especificaciones de fábrica del instrumento que se usa en la mayoría de las
+      prácticas. La precisión se expresa como porcentaje de la lectura más un
+      número de dígitos del último lugar, y es esa la que entra en el presupuesto
+      de incertidumbres de cada informe.
+    tabla:
+      caption: Especificaciones del Keithley 175 y 175-A (hoja del laboratorio)
+      nota: Resistencia de entrada en continua, 11 M$\Omega$ en 200 mV, 2 V y 20 V, y 10 M$\Omega$ en 200 V y 1000 V.
+      columnas:
+        - 'Función'
+        - 'Rango'
+        - 'Resolución'
+        - 'Precisión'
+      filas:
+        - ['V DC', '200 mV', '10 $\mu$V', '0,03 \% + 2 d']
+        - ['V DC', '2 V', '100 $\mu$V', '0,03 \% + 2 d']
+        - ['V DC', '20 V', '1 mV', '0,03 \% + 2 d']
+        - ['V DC', '200 V', '10 mV', '0,03 \% + 2 d']
+        - ['V DC', '1000 V', '100 mV', '0,03 \% + 2 d']
+        - ['I DC', '200 $\mu$A', '10 nA', '0,15 \% + 2 d']
+        - ['I DC', '2 mA', '100 nA', '0,15 \% + 2 d']
+        - ['I DC', '20 mA', '1 $\mu$A', '0,15 \% + 2 d']
+        - ['I DC', '200 mA', '10 $\mu$A', '0,2 \% + 2 d']
+        - ['I DC', '2000 mA', '100 $\mu$A', '0,2 \% + 2 d']
+        - ['I DC', '10 A', '1 mA', '0,75 \% + 2 d']
+        - ['R', '200 $\Omega$', '10 m$\Omega$', '0,05 \% + 2 d']
+        - ['R', '2 k$\Omega$', '100 m$\Omega$', '0,05 \% + 2 d']
+        - ['R', '20 k$\Omega$', '1 $\Omega$', '0,05 \% + 2 d']
+        - ['R', '200 k$\Omega$', '10 $\Omega$', '0,05 \% + 2 d']
+        - ['R', '2 M$\Omega$', '100 $\Omega$', '0,05 \% + 2 d']
+        - ['R', '20 M$\Omega$', '1 k$\Omega$', '0,2 \% + 2 d']
+        - ['R', '200 M$\Omega$', '10 k$\Omega$', '2,0 \% + 1 d']
+  - titulo: Multimedidor Keithley 179 y 179-A
+    texto: >-
+      El 179 es el instrumento de mayor resolución del laboratorio y el que se usa
+      cuando se necesita comparar dos modelos en la práctica 3. Su resistencia de
+      entrada en continua es de 10 M$\Omega$, distinta de la del 175, y esa
+      diferencia es precisamente la que se mide y se discute en el informe.
+    tabla:
+      caption: Especificaciones del Keithley 179 y 179-A (hoja del laboratorio)
+      nota: Impedancia de entrada en alterna, 1 M$\Omega$ en serie con un capacitor menor de 75 pF.
+      columnas:
+        - 'Función'
+        - 'Rango'
+        - 'Resolución'
+        - 'Precisión'
+      filas:
+        - ['V DC', '200 mV', '10 $\mu$V', '0,04 \% + 3 d']
+        - ['V DC', '2 V', '100 $\mu$V', '0,04 \% + 1 d']
+        - ['V DC', '20 V', '1 mV', '0,04 \% + 1 d']
+        - ['V DC', '200 V', '10 mV', '0,04 \% + 1 d']
+        - ['V DC', '1200 V', '100 mV', '0,04 \% + 1 d']
+        - ['V AC', '200 mV', '10 $\mu$V', '0,7 \% + 15 d']
+        - ['V AC', '2 V a 1200 V', '100 $\mu$V a 100 mV', '0,6 \% + 15 d']
+        - ['I DC', '200 $\mu$A a 2000 mA', '10 nA a 100 $\mu$A', '0,2 \% + 2 d']
+        - ['I AC', '200 $\mu$A a 2000 mA', '10 nA a 100 $\mu$A', '1 \% + 15 d']
+        - ['R', '2 k$\Omega$', '100 m$\Omega$', '0,15 \% + 1 d']
+        - ['R', '20 k$\Omega$ a 2000 k$\Omega$', '1 $\Omega$ a 100 $\Omega$', '0,04 \% + 1 d']
+        - ['R', '20 M$\Omega$', '1 k$\Omega$', '0,10 \% + 1 d']
+  - titulo: Propagación de incertidumbres
+    texto: >-
+      Toda magnitud indirecta se calcula a partir de otras medidas, y su
+      incertidumbre se propaga con las derivadas parciales. Cuando las variables
+      son independientes se suman en cuadratura; cuando están correlacionadas,
+      como ocurre al medir con el mismo instrumento en dos puntos, hay que tratarlo
+      explícitamente en el informe.
+    tabla:
+      caption: Reglas de propagación usadas en el curso
+      nota: u designa la incertidumbre combinada de la magnitud.
+      columnas:
+        - 'Relación'
+        - 'Incertidumbre'
+      filas:
+        - ['$z = x + y$', '$u_z = \sqrt{u_x^2 + u_y^2}$']
+        - ['$z = x\,y$', '$u_z/z = \sqrt{(u_x/x)^2 + (u_y/y)^2}$']
+        - ['$z = x/y$', '$u_z/z = \sqrt{(u_x/x)^2 + (u_y/y)^2}$']
+        - ['$z = x^n$', '$u_z/z = |n|\,u_x/x$']
+        - ['Ajuste lineal', 'Pendiente y ordenada con su error estándar del ajuste']
+  - titulo: Formulario del curso
+    texto: >-
+      Formulario mínimo de las nueve semanas experimentales. Se permite una hoja
+      como esta, manuscrita, en los controles y en la evaluación final.
+    tabla:
+      caption: Expresiones de referencia
+      nota: Las condiciones de validez se discuten en la práctica correspondiente.
+      columnas:
+        - 'Concepto'
+        - 'Expresión'
+        - 'Práctica'
+      filas:
+        - ['Ley de Ohm', '$V = R\,I$', '1']
+        - ['Puente de Wheatstone', '$R_x = R_1 R_3 / R_2$', '2']
+        - ['Fuente real', '$V = \varepsilon - r\,I$', '3']
+        - ['Máxima transferencia', '$R_L = r$', '3']
+        - ['Thévenin', '$R_{th} = \varepsilon_{th}/I_{cc}$', '4']
+        - ['Diodo', '$I_D = I_S\left(e^{V_D/(nV_T)} - 1\right)$', '5']
+        - ['Reactancias', '$X_L = \omega L$; $X_C = 1/(\omega C)$', '6']
+        - ['Impedancia serie', '$Z = \sqrt{R^2 + (X_L - X_C)^2}$', '6']
+        - ['Resonancia', '$f_0 = 1/(2\pi\sqrt{LC})$', '7']
+        - ['Factor de calidad', '$Q = \omega_0 L/R = f_0/\Delta f$', '7 y 9']
+        - ['Transitorio RC', '$\tau = RC$; $t_{1/2} = \tau\ln 2$', '8']
+        - ['Energía del capacitor', '$W = C V^2/2$', '8']
+        - ['Amortiguamiento', '$\zeta = (R/2)\sqrt{C/L}$; $Q = 1/(2\zeta)$', '9']
+
+bibliografia:
+  - autor: Serway, R. A. y Jewett, J. W.
+    titulo: Física para ciencias e ingeniería
+    detalle: >-
+      Volúmen 2, capítulos de campos eléctricos, corriente continua y circuitos de
+      corriente alterna. Referencia principal para el modelo teórico.
+  - autor: Halliday, D., Resnick, R. y Walker, J.
+    titulo: Fundamentos de física
+    detalle: >-
+      Volúmen 2. Tratamiento de circuitos, inducción y corriente alterna con
+      énfasis en la interpretación física.
+  - autor: Tipler, P. A. y Mosca, G.
+    titulo: Física para la ciencia y la tecnología
+    detalle: >-
+      Volúmen 2. Útil para transitorios RC y RLC y para el análisis de potencia.
+  - autor: Boylestad, R. L.
+    titulo: Introducción al análisis de circuitos
+    detalle: >-
+      Thévenin, Norton, superposición, respuesta en frecuencia y resonancia con
+      el formalismo fasorial completo.
+  - autor: Sedra, A. S. y Smith, K. C.
+    titulo: Microelectrónica
+    detalle: >-
+      Modelo del diodo, ecuación de Shockley y diodos Zener y emisores de luz.
+  - autor: Taylor, J. R.
+    titulo: Introducción al análisis de errores
+    detalle: >-
+      Base del tratamiento de incertidumbres del curso, de la propagación y de los
+      ajustes por mínimos cuadrados.
+  - autor: JCGM
+    titulo: Guía para la expresión de la incertidumbre de medida (GUM, JCGM 100:2008)
+    detalle: >-
+      Norma de referencia para la clasificación de incertidumbres tipo A y tipo B y
+      para el cálculo de la incertidumbre combinada.
+
+politicas:
+  - La seguridad eléctrica es previa a cualquier medición; se corta la alimentación antes de modificar un montaje.
+  - Ningún instrumento se conecta sin verificar rango y polaridad, y ningún capacitor electrolítico se conecta invertido.
+  - Los datos crudos son inalterables; toda corrección se documenta en el script de análisis y se explica en el informe.
+  - Todo resultado se expresa en unidades del Sistema Internacional con cifras significativas coherentes con su incertidumbre.
+  - Un resultado sin incertidumbre no se acepta, y una conclusión sin contraste con el modelo tampoco.
+  - El informe es grupal, pero cada integrante firma sus propias conclusiones y debe poder defenderlas en la oral.
+  - La entrega fuera de corte pierde el 20 por ciento de la nota de la práctica por cada día de retraso, hasta tres días.
+  - Se considera falta grave fabricar, alterar o copiar datos, o entregar el informe de otro grupo; se aplica el reglamento disciplinario.
+  - El instrumental prestado se devuelve completo y revisado; un daño por mal uso se reporta de inmediato al docente.
+  - La asistencia al laboratorio es obligatoria; dos inasistencias injustificadas a prácticas invalidan la evaluación de esa fase.
+  - Los repositorios son privados y no contienen datos personales de terceros ni credenciales.
