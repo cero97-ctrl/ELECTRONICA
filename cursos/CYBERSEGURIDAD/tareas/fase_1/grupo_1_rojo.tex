@@ -1,0 +1,479 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{shield-alt}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{shield-alt}~CYBERSEGURIDAD}
+\fancyhead[R]{\footnotesize\color{grisTexto}Tarea fase 1 --- Grupo 1}
+\hypersetup{pdftitle={Ciberseguridad Aplicada},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={CYBERSEGURIDAD}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Tarea de la fase 1 --- Grupo 1: Rojo}{Fundamentos, criptografía y marco legal --- semanas 1 a 3 --- Ciberseguridad Aplicada}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} ELECTRONICA \textbar{} 1 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Curso} & CYBERSEGURIDAD --- Ciberseguridad Aplicada \\
+\textbf{Fase} & 1 --- Fundamentos, criptografía y marco legal \\
+\textbf{Semanas} & 1, 2, 3 \\
+\textbf{Grupo} & Grupo 1 \\
+\textbf{Rol asignado} & \textbf{Rojo} \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_01/semana\_02/semana\_03 \\
+\textbf{Corte} & Domingo 23:59 de la semana correspondiente; lo posterior no se corrige. \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{user-shield}{Tu rol en esta fase}}
+
+Ejecuta la técnica ofensiva sobre el objetivo autorizado: prepara el entorno, lanza el ataque, registra comandos y payloads, y guarda cada salida con su hash.
+
+\textbf{En cada práctica te corresponde:}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Confirmar el objetivo autorizado y preparar el entorno antes de la primera captura.
+  \item Ejecutar la técnica de la semana en el orden de los pasos y guardar cada salida cruda con su hash.
+  \item \{'Redactar la reproducción': 'comando, salida esperada y salida obtenida, sin retocar la evidencia.'\}
+\end{itemize}
+
+\begin{cajaConcepto}\textbf{Qué aporta este rol al entregable:} Evidencia cruda en semana\_NN/evidencia y el apartado de reproducción del informe.
+\end{cajaConcepto}
+
+\section{\iconotexto{calendar-alt}{Trabajo de las semanas 1 a 3}}
+
+Cada semana tiene su propia práctica y su propia entrega. El rol cambia el énfasis del trabajo, no el objetivo: todos los grupos resuelven la misma práctica y comparan resultados en clase.
+
+\begin{tcolorbox}[cajaContenido,title={Semana 1 --- Inventario de superficie de ataque del laboratorio}]
+\textbf{Objetivo:} Distinguir activos, amenazas y vulnerabilidades, y describir el ciclo de vida de un ataque con marcos reconocidos.
+
+\textbf{Escenario:} El laboratorio tiene tres contenedores. Cada grupo inventaría puertos, servicios y versiones de su objetivo asignado, y propone tres vectores plausibles por servicio expuesto.
+
+
+\textbf{Pasos:}
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Levantar el laboratorio con docker compose up -d y verificar los tres servicios.
+  \item Enumerar puertos y servicios del objetivo asignado solo desde localhost.
+  \item Identificar versiones y anotar la evidencia exacta de cada hallazgo.
+  \item Aplicar STRIDE a cada servicio y priorizar los tres vectores más plausibles.
+  \item Anonimizar la evidencia y entregar la tabla con la conclusión del grupo.
+\end{enumerate}
+\textbf{Entregable de la semana:} Tabla de activos y servicios, modelo STRIDE y conclusión priorizada de tres vectores.
+
+\textbf{Tu aporte como Rojo al entregable de la semana:} Evidencia cruda en semana\_NN/evidencia y el apartado de reproducción del informe.
+
+\textbf{Ruta en el repositorio:} \texttt{semana\_01/} (informe, scripts y evidencia).
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 2 --- Caja de herramientas criptográficas}]
+\textbf{Objetivo:} Aplicar cifrado simétrico y asimétrico, funciones hash y derivación de claves, y diagnosticar una configuración TLS insegura.
+
+\textbf{Escenario:} Cada grupo cifra y descifra un archivo, firma y verifica un mensaje, inspecciona un certificado real y mide el coste de derivar una clave con distinto número de iteraciones.
+
+
+\textbf{Pasos:}
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Cifrar y descifrar un archivo con AES-256-GCM y verificar que un byte alterado rompe la integridad.
+  \item Generar un par de claves, firmar un mensaje y verificar la firma; después alterar el mensaje y comprobar el fallo.
+  \item Extraer e inspeccionar el certificado de un sitio real, identificando emisor, validez y algoritmo.
+  \item Medir el tiempo de PBKDF2 con 10000, 100000 y 600000 iteraciones y tabular el resultado.
+  \item Documentar qué primitiva resuelve confidencialidad, integridad y autenticidad en cada caso.
+\end{enumerate}
+\textbf{Entregable de la semana:} Registro de comandos, salidas y una tabla que asigne cada primitiva a la propiedad que garantiza.
+
+\textbf{Tu aporte como Rojo al entregable de la semana:} Evidencia cruda en semana\_NN/evidencia y el apartado de reproducción del informe.
+
+\textbf{Ruta en el repositorio:} \texttt{semana\_02/} (informe, scripts y evidencia).
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 3 --- Carta de autorización y análisis de caso}]
+\textbf{Objetivo:} Identificar las obligaciones legales y normativas antes de auditar, y redactar un alcance autorizado con reglas de enfrentamiento.
+
+\textbf{Escenario:} Cada grupo redacta la autorización de la auditoría de su objetivo del laboratorio y analiza un incidente ficticio, identificando qué normas se violaron y qué evidencia sería admisible.
+
+
+\textbf{Pasos:}
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Redactar el alcance con activos incluidos, activos excluidos y ventana de pruebas.
+  \item Añadir reglas de enfrentamiento para hallazgos críticos y para datos personales.
+  \item Analizar el caso ficticio y tipificar las conductas descritas.
+  \item Determinar qué evidencia es admisible y cuál se contaminó en el relato.
+  \item Firmar el código de ética del curso de forma individual.
+\end{enumerate}
+\textbf{Entregable de la semana:} Autorización firmada, análisis del caso y código de ética firmado por cada estudiante.
+
+\textbf{Tu aporte como Rojo al entregable de la semana:} Evidencia cruda en semana\_NN/evidencia y el apartado de reproducción del informe.
+
+\textbf{Ruta en el repositorio:} \texttt{semana\_03/} (informe, scripts y evidencia).
+\end{tcolorbox}
+
+\section{\iconotexto{code-branch}{Entrega y revisión}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Repositorio: Un repositorio privado por grupo, con el docente como colaborador de lectura.
+  \item Cadencia de revisión: El docente revisa el repositorio al finalizar cada semana de práctica.
+  \item Corte: Domingo 23:59 de la semana correspondiente; lo posterior no se corrige.
+\end{itemize}
+
+\textbf{Estructura mínima del repositorio:}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item README.md con integrantes, roles y tabla de semanas entregadas.
+  \item semana\_NN/informe.md o informe.pdf con el entregable de esa práctica.
+  \item semana\_NN/scripts/ con el código, con type hints y docstrings.
+  \item semana\_NN/evidencia/ con salidas, capturas y hashes anonimizados.
+  \item semana\_NN/README.md con el resumen de lo hecho y lo que no se pudo verificar.
+\end{itemize}
+
+\textbf{Reglas de la entrega:}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Nada de secretos, tokens ni contraseñas en el repositorio; las claves van en .env ignorado.
+  \item \{'Nada de imágenes de disco, muestras de malware ni binarios': 'solo hashes y enlaces.'\}
+  \item \{'Evidencia anonimizada': 'sin datos personales de terceros ni credenciales reales.'\}
+  \item \{'Un commit por entrega con mensaje "semana NN': '\textless{}entregable\textgreater{}".'\}
+  \item La práctica cuenta como entregada solo si está en el repositorio antes del corte.
+\end{itemize}
+
+\section{\iconotexto{clipboard-check}{Lista de verificación}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Tu documento está en la carpeta de la semana correspondiente, no en la raíz.
+  \item La evidencia está anonimizada y sin secretos, datos personales ni imágenes de disco.
+  \item El informe explica qué se hizo, cómo se verificó y qué quedó fuera de alcance.
+  \item El commit de la semana está hecho antes del corte y describe el entregable.
+  \item El trabajo corresponde al rol Rojo y se nota en el énfasis del informe.
+\end{itemize}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} confirma que el objetivo es un contenedor del laboratorio o un sistema con autorización escrita del docente. Si no lo es, detente y consúltalo: la práctica no se corrige sin ese requisito.
+\end{tcolorbox}
+
+\begin{cajaRecuerda}La práctica se corrige con la rúbrica de CYBERSEGURIDAD (criterios y pesos publicados en el curso). Una entrega fuera de plazo no se evalúa; el repositorio es la única prueba de que el trabajo existió.
+\end{cajaRecuerda}
+\end{document}

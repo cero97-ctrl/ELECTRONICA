@@ -1,0 +1,684 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# curso.yaml — Fuente única de verdad del curso (Layer 1b: dato)
+#
+# Este fichero es el DESCRIPTOR. No se escribe lógica aquí: toda la generación
+# del material (sílabo, plan semanal, guía, prácticas, evaluaciones, laboratorio)
+# la hace `execution/generar_material_curso.py` de forma determinista.
+# Editar este YAML y volver a ejecutar el flujo basta para regenerar el curso.
+#
+# Reglas que valida el generador antes de escribir una sola línea de LaTeX:
+#   - números de semana contiguos 1..meta.semanas
+#   - las fases cubren todas las semanas exactamente una vez
+#   - los pesos de evaluación suman 100
+#   - los criterios de cada práctica suman 10.0 (escala compatible con
+#     execution/evaluar_examen.py -> directives/rubricas/)
+#   - puertos del laboratorio únicos
+# Cualquier violación aborta ruidosamente: no se publica material inválido.
+# ─────────────────────────────────────────────────────────────────────────────
+meta:
+  codigo: CYBERSEGURIDAD
+  titulo: Ciberseguridad Aplicada
+  subtitulo: Ofensiva controlada, defensa, forense y marco legal sobre un laboratorio propio
+  autor: Prof. César Rodríguez
+  institucion: ELECTRONICA
+  idioma: es
+  anio: 2026
+  fecha: 1 de noviembre de 2026
+  fecha_iso: 2026-11-01
+  semanas: 10
+  grupos: 4
+  modalidad: Trabajo por grupos desde sus propios equipos y conexión, con laboratorio Docker local y repositorio GitHub por grupo revisado semanalmente; sin proyecto integrador
+  dedicacion_semanal: 4 horas de laboratorio + 2 horas de estudio independiente
+  version: 1
+objetivo_general: 'Formar criterio técnico y legal para auditar, defender, investigar y documentar incidentes de seguridad sobre sistemas propios o expresamente autorizados, cubriendo el ciclo completo: reconocimiento, explotación controlada, hardening, forense y respuesta, con evidencia reproducible y respeto estricto del alcance.'
+resultados_aprendizaje:
+- id: RA1
+  texto: Explicar activos, amenazas y vulnerabilidades con marcos reconocidos (CIA, STRIDE, MITRE ATT&CK) y priorizar riesgos con evidencia.
+- id: RA2
+  texto: Aplicar criptografía simétrica, asimétrica, funciones hash y KDF, y diagnosticar una configuración TLS insegura.
+- id: RA3
+  texto: Interpretar el marco legal y normativo aplicable antes de tocar un sistema, y redactar un alcance de auditoría autorizado.
+- id: RA4
+  texto: Ejecutar reconocimiento, escaneo y explotación controlada contra objetivos del laboratorio, documentando cada paso.
+- id: RA5
+  texto: Endurecer sistemas y redes, y demostrar la mitigación repitiendo el ataque original.
+- id: RA6
+  texto: Adquirir y preservar evidencia digital con cadena de custodia e integridad verificable.
+- id: RA7
+  texto: Reconstruir un incidente a partir de artefactos y producir un informe técnico y otro ejecutivo.
+grupos:
+  cantidad: 4
+  asignacion: Fija durante el semestre; cada grupo entrega sus propias prácticas.
+  repositorio: Cada grupo crea un repositorio GitHub propio (privado, con el docente como colaborador) y lo mantiene actualizado. El docente revisa ese repositorio al finalizar cada semana de práctica.
+  roles:
+  - nombre: Rojo
+    descripcion: 'Ejecuta la técnica ofensiva sobre el objetivo autorizado: prepara el entorno,
+      lanza el ataque, registra comandos y payloads, y guarda cada salida con su hash.'
+    aporta: Evidencia cruda en semana_NN/evidencia y el apartado de reproducción del informe.
+    en_la_practica:
+    - Confirmar el objetivo autorizado y preparar el entorno antes de la primera captura.
+    - Ejecutar la técnica de la semana en el orden de los pasos y guardar cada salida cruda con su hash.
+    - Redactar la reproducción: comando, salida esperada y salida obtenida, sin retocar la evidencia.
+  - nombre: Azul
+    descripcion: 'Parte de la evidencia del Rojo y aplica el control equivalente: configuración,
+      parche o regla de red. Repite el ataque para demostrar que falla y documenta el antes y el después.'
+    aporta: La mitigación aplicada, el comando de verificación y la comparación de resultados.
+    en_la_practica:
+    - Leer la evidencia del Rojo y elegir el control que corta el ataque en el punto más barato.
+    - Aplicar el control y repetir el ataque para demostrar que ya no funciona.
+    - Documentar el antes y el después con los mismos comandos y la diferencia medida.
+  - nombre: Púrpura
+    descripcion: 'Instrumenta la detección del mismo evento: activa el registro, define la alerta
+      y mide lo que se habría visto, incluidos los falsos positivos y negativos.'
+    aporta: La regla o consulta de detección y la tabla de lo detectado frente a lo ejecutado.
+    en_la_practica:
+    - Instrumentar el evento, activando el registro que lo vería y definiendo la alerta con su umbral.
+    - Comparar lo que se registró con lo que se ejecutó, ítem por ítem del paso a paso.
+    - Reportar falsos positivos y negativos y proponer el ajuste concreto de la regla.
+  - nombre: Legal y reporte
+    descripcion: 'Verifica que el alcance y la autorización cubran lo ejecutado, anonimiza la
+      evidencia, revisa la cadena de custodia e integra el informe técnico y el resumen ejecutivo.'
+    aporta: La versión final del informe y la declaración explícita de lo que no se pudo verificar.
+    en_la_practica:
+    - Revisar que el alcance y la autorización cubran exactamente lo ejecutado, ni más ni menos.
+    - Anonimizar la evidencia y verificar la cadena de custodia de cada archivo entregado.
+    - Integrar informe técnico y resumen ejecutivo, y declarar los límites del trabajo.
+  asignacion_inicial:
+  - Rojo
+  - Azul
+  - Púrpura
+  - Legal y reporte
+  fase_con_roles:
+  - 1
+  - 2
+  - 3
+  - 4
+  rotacion: Los roles rotan una posición al inicio de cada fase (de la 1 a la 4), de modo que
+    cada grupo pasa por las cuatro perspectivas. En la fase 5 no hay roles de grupo; la
+    evaluación final es individual.
+evaluacion:
+  escala: 10
+  nota_minima: 5
+  pesos:
+  - concepto: Prácticas de laboratorio (semanas 1-9)
+    peso: 35
+  - concepto: Controles de fase (semanas 3, 5 y 7)
+    peso: 15
+  - concepto: Informes técnicos (semanas 5, 7 y 9)
+    peso: 15
+  - concepto: Evaluación final práctica (semana 10)
+    peso: 25
+  - concepto: Ética, autorizaciones y uso responsable
+    peso: 10
+entregas:
+  plataforma: GitHub
+  modalidad: Un repositorio privado por grupo, con el docente como colaborador de lectura.
+  cadencia: El docente revisa el repositorio al finalizar cada semana de práctica.
+  corte: Domingo 23:59 de la semana correspondiente; lo posterior no se corrige.
+  estructura:
+  - README.md con integrantes, roles y tabla de semanas entregadas.
+  - semana_NN/informe.md o informe.pdf con el entregable de esa práctica.
+  - semana_NN/scripts/ con el código, con type hints y docstrings.
+  - semana_NN/evidencia/ con salidas, capturas y hashes anonimizados.
+  - semana_NN/README.md con el resumen de lo hecho y lo que no se pudo verificar.
+  reglas:
+  - Nada de secretos, tokens ni contraseñas en el repositorio; las claves van en .env ignorado.
+  - Nada de imágenes de disco, muestras de malware ni binarios: solo hashes y enlaces.
+  - Evidencia anonimizada: sin datos personales de terceros ni credenciales reales.
+  - Un commit por entrega con mensaje "semana NN: <entregable>".
+  - La práctica cuenta como entregada solo si está en el repositorio antes del corte.
+laboratorio:
+  motor: Docker
+  caracter: El docker-compose de esta carpeta es opcional. Cada grupo puede usar su propio entorno en su PC siempre que respete el alcance autorizado.
+  red: cyberlab
+  subred: 172.28.0.0/24
+  recursos: Requiere ~2 GB de RAM libre y ~5 GB de disco; DVWA y Juice Shop juntos consumen menos de 700 MB.
+  imagenes:
+  - nombre: objetivo-web
+    imagen: vulnerables/web-dvwa:latest
+    puerto: 8081
+    puerto_contenedor: 80
+    proposito: Inyección SQL, XSS, LFI y control de acceso (semanas 5 y 7)
+  - nombre: objetivo-juice
+    imagen: bkimminich/juice-shop:latest
+    puerto: 3000
+    puerto_contenedor: 3000
+    proposito: Retos guiados de OWASP Top 10 (semanas 5 y 7)
+  - nombre: objetivo-linux
+    imagen: ubuntu:24.04
+    puerto: 2222
+    puerto_contenedor: 22
+    proposito: Hardening, SSH y artefactos forenses (semanas 6, 8 y 9)
+  reglas:
+  - Cada grupo trabaja desde su propio equipo y red: no hay red compartida del curso.
+  - El laboratorio corre en localhost y nunca se expone a Internet.
+  - Solo se atacan contenedores del laboratorio o sistemas con autorización escrita y firmada.
+  - Las muestras de malware no se ejecutan: el análisis es estático y sobre copias inertes.
+  - La evidencia se anonimiza antes de entregarse; los datos personales no salen del laboratorio.
+  - Se prohíbe el uso de estas técnicas contra la infraestructura de la universidad o de terceros.
+fases:
+- id: 1
+  nombre: Fundamentos, criptografía y marco legal
+  semanas:
+  - 1
+  - 2
+  - 3
+  enfoque: Vocabulario común, criptografía aplicada y límites legales antes de tocar un sistema.
+  icono: shield-alt
+- id: 2
+  nombre: Ofensiva controlada
+  semanas:
+  - 4
+  - 5
+  enfoque: Reconocimiento, escaneo y explotación documentada contra objetivos propios.
+  icono: crosshairs
+- id: 3
+  nombre: Defensa y hardening
+  semanas:
+  - 6
+  - 7
+  enfoque: Endurecer sistemas, redes y aplicaciones, y demostrar la mitigación.
+  icono: lock
+- id: 4
+  nombre: Forense y respuesta a incidentes
+  semanas:
+  - 8
+  - 9
+  enfoque: Adquirir evidencia, reconstruir lo ocurrido y responder con método.
+  icono: fingerprint
+- id: 5
+  nombre: Cierre
+  semanas:
+  - 10
+  enfoque: Evaluación final práctica de alcance cerrado, con informe y defensa.
+  icono: flag-checkered
+semanas:
+- numero: 1
+  fase: 1
+  titulo: Panorama de la ciberseguridad y superficie de ataque
+  objetivo: Distinguir activos, amenazas y vulnerabilidades, y describir el ciclo de vida de un ataque con marcos reconocidos.
+  contenidos:
+  - Tríada CIA más autenticidad, integridad y no repudio.
+  - '{''Actores'': ''oportunista, crimen organizado, insider y APT.''}'
+  - Superficie de ataque, vector y cadena de explotación.
+  - Cyber Kill Chain y MITRE ATT&CK como vocabulario común.
+  - Roles rojo, azul y púrpura; modelos de amenaza STRIDE.
+  - Riesgo como función de probabilidad e impacto.
+  herramientas:
+  - Docker
+  - nmap sobre localhost
+  - Navegador
+  practica:
+    titulo: Inventario de superficie de ataque del laboratorio
+    escenario: 'El laboratorio tiene tres contenedores. Cada grupo inventaría puertos, servicios y versiones de su objetivo asignado, y propone tres vectores plausibles por servicio expuesto.
+
+      '
+    pasos:
+    - Levantar el laboratorio con docker compose up -d y verificar los tres servicios.
+    - Enumerar puertos y servicios del objetivo asignado solo desde localhost.
+    - Identificar versiones y anotar la evidencia exacta de cada hallazgo.
+    - Aplicar STRIDE a cada servicio y priorizar los tres vectores más plausibles.
+    - Anonimizar la evidencia y entregar la tabla con la conclusión del grupo.
+    entregable: Tabla de activos y servicios, modelo STRIDE y conclusión priorizada de tres vectores.
+    criterios:
+    - criterio: Cobertura completa de puertos y servicios del objetivo
+      peso: 3.0
+    - criterio: Evidencia reproducible de cada hallazgo
+      peso: 2.5
+    - criterio: Uso correcto del vocabulario de amenazas
+      peso: 2.0
+    - criterio: Priorización justificada por impacto y probabilidad
+      peso: 1.5
+    - criterio: Redacción clara y evidencia anonimizada
+      peso: 1.0
+  evaluacion: formativa
+- numero: 2
+  fase: 1
+  titulo: Criptografía aplicada y gestión de secretos
+  objetivo: Aplicar cifrado simétrico y asimétrico, funciones hash y derivación de claves, y diagnosticar una configuración TLS insegura.
+  contenidos:
+  - Cifrado simétrico AES en modos GCM y CBC, y por qué GCM aporta integridad.
+  - Cifrado asimétrico RSA y curvas elípticas; intercambio de claves.
+  - Hash criptográfico, HMAC y funciones de derivación PBKDF2 y Argon2.
+  - TLS 1.2 y 1.3, cadena de certificados y errores de validación.
+  - Gestión de secretos y detección de claves en repositorios.
+  herramientas:
+  - openssl
+  - sha256sum
+  - Python hashlib
+  practica:
+    titulo: Caja de herramientas criptográficas
+    escenario: 'Cada grupo cifra y descifra un archivo, firma y verifica un mensaje, inspecciona un certificado real y mide el coste de derivar una clave con distinto número de iteraciones.
+
+      '
+    pasos:
+    - Cifrar y descifrar un archivo con AES-256-GCM y verificar que un byte alterado rompe la integridad.
+    - Generar un par de claves, firmar un mensaje y verificar la firma; después alterar el mensaje y comprobar el fallo.
+    - Extraer e inspeccionar el certificado de un sitio real, identificando emisor, validez y algoritmo.
+    - Medir el tiempo de PBKDF2 con 10000, 100000 y 600000 iteraciones y tabular el resultado.
+    - Documentar qué primitiva resuelve confidencialidad, integridad y autenticidad en cada caso.
+    entregable: Registro de comandos, salidas y una tabla que asigne cada primitiva a la propiedad que garantiza.
+    criterios:
+    - criterio: Cifrado y descifrado correctos con verificación de integridad
+      peso: 3.0
+    - criterio: Firma y verificación demostradas, incluido el caso alterado
+      peso: 2.5
+    - criterio: Lectura correcta del certificado y de la cadena
+      peso: 2.0
+    - criterio: Medición de KDF con conclusión sobre coste y seguridad
+      peso: 1.5
+    - criterio: Explicación de qué propiedad cubre cada primitiva
+      peso: 1.0
+  evaluacion: formativa
+- numero: 3
+  fase: 1
+  titulo: Marco legal, ético y normativo
+  objetivo: Identificar las obligaciones legales y normativas antes de auditar, y redactar un alcance autorizado con reglas de enfrentamiento.
+  contenidos:
+  - Ley Especial contra los Delitos Informáticos y tipos penales aplicables.
+  - Autorización escrita, alcance, ventana de pruebas y reglas de enfrentamiento.
+  - ISO IEC 27001, NIST CSF 2.0, ENS y GDPR como marcos de referencia.
+  - OWASP ASVS y WSTG como estándares de verificación técnica.
+  - Cadena de custodia, integridad de la evidencia y confidencialidad.
+  - Código de ética del curso y consecuencias del uso indebido.
+  herramientas:
+  - Plantilla de autorización
+  - Normativa en PDF
+  practica:
+    titulo: Carta de autorización y análisis de caso
+    escenario: 'Cada grupo redacta la autorización de la auditoría de su objetivo del laboratorio y analiza un incidente ficticio, identificando qué normas se violaron y qué evidencia sería admisible.
+
+      '
+    pasos:
+    - Redactar el alcance con activos incluidos, activos excluidos y ventana de pruebas.
+    - Añadir reglas de enfrentamiento para hallazgos críticos y para datos personales.
+    - Analizar el caso ficticio y tipificar las conductas descritas.
+    - Determinar qué evidencia es admisible y cuál se contaminó en el relato.
+    - Firmar el código de ética del curso de forma individual.
+    entregable: Autorización firmada, análisis del caso y código de ética firmado por cada estudiante.
+    criterios:
+    - criterio: Alcance explícito con inclusiones y exclusiones
+      peso: 3.0
+    - criterio: Reglas de enfrentamiento operativas
+      peso: 2.5
+    - criterio: Tipificación correcta de las conductas del caso
+      peso: 2.0
+    - criterio: Juicio fundamentado sobre admisibilidad de la evidencia
+      peso: 1.5
+    - criterio: Código de ética firmado individualmente
+      peso: 1.0
+  evaluacion: control_fase_1
+- numero: 4
+  fase: 2
+  titulo: Reconocimiento, OSINT y escaneo de puertos
+  objetivo: '> Obtener información de un dominio autorizado sin generar tráfico intrusivo, descubrir hosts y escanear puertos, distinguiendo técnicas y su ruido.'
+  contenidos:
+  - Registros DNS A, AAAA, MX, NS, TXT y SOA.
+  - WHOIS y RDAP; datos del registrante y fechas de vigencia.
+  - Enumeración de subdominios y motores de búsqueda especializados.
+  - Google dorks y su uso legítimo en un alcance autorizado.
+  - OPSEC del auditor y protección de la identidad durante la recolección.
+  - Descubrimiento con ARP, ICMP y sondeo TCP a puertos comunes.
+  - Escaneo connect, SYN semiabierto y UDP con ICMP port unreachable.
+  - Estados de puerto, banner grabbing y fingerprinting.
+  - Sigilo, ruido y detección; límites éticos del escaneo.
+  herramientas:
+  - nmap como referencia
+  - Scapy
+  - Python dnspython
+  - python-whois
+  - dig
+  - socket
+  practica:
+    titulo: Huella digital + escáner propio contra el laboratorio
+    requiere_codigo: true
+    escenario: '> Cada grupo construye un script que genere la huella digital (DNS/WHOIS) y un escáner propio, ejecutándolo contra los contenedores del laboratorio y comparando con nmap.'
+    pasos:
+    - Definir el dominio objetivo y confirmar por escrito que es propio o autorizado.
+    - Implementar la huella DNS y WHOIS con manejo de errores y salida JSON normalizada.
+    - Implementar sondeos TCP connect, TCP SYN y UDP con tiempo de espera configurable.
+    - Ejecutar el escáner y nmap sobre el mismo objetivo, y tabular coincidencias y diferencias.
+    - Medir el tiempo por técnica, explicar los falsos positivos y concluir sobre el compromiso entre velocidad y sigilo.
+    entregable: Script integrado (huella digital + escáner), salida JSON, huella digital razonada, tabla comparativa con nmap y análisis de falsos positivos.
+    criterios:
+    - criterio: Huella digital completa (DNS/WHOIS)
+      peso: 2.0
+    - criterio: Escáner funcional con técnicas solicitadas
+      peso: 3.0
+    - criterio: Comparación rigurosa contra nmap
+      peso: 2.5
+    - criterio: Explicación técnica de falsos positivos y sigilo
+      peso: 1.5
+    - criterio: Código con type hints, docstrings y manejo de errores
+      peso: 1.0
+  evaluacion: formativa
+  pasos_fix: true
+- numero: 5
+  fase: 2
+  titulo: Vulnerabilidades web según OWASP Top 10
+  objetivo: Explotar de forma controlada inyección SQL, XSS y LFI, y explicar la causa raíz y el control que lo evita.
+  contenidos:
+  - OWASP Top 10 2021 y categorías con mayor impacto.
+  - Control de acceso roto y exposición de datos sensibles.
+  - Inyección SQL, XSS reflejado y almacenado, LFI y RFI.
+  - Configuración insegura y componentes desactualizados.
+  - Evidencia reproducible, capturas y causa raíz en el código.
+  herramientas:
+  - DVWA
+  - Juice Shop
+  - Navegador con herramientas de desarrollo
+  practica:
+    titulo: Explotación guiada y evidencia
+    escenario: 'Cada grupo explota tres vulnerabilidades en DVWA y resuelve tres retos de Juice Shop, documentando payload, evidencia, causa raíz y mitigación.
+
+      '
+    pasos:
+    - Ejecutar un XSS reflejado en DVWA y capturar la evidencia del reflejo.
+    - Ejecutar una inyección SQL que devuelva datos no previstos y documentar el payload.
+    - Explotar un LFI para leer un archivo del sistema del contenedor.
+    - Resolver tres retos de Juice Shop y anotar la pista y el razonamiento.
+    - Para cada caso, identificar la línea de código o configuración responsable y el control que lo evita.
+    entregable: Informe técnico con payloads, evidencia anonimizada, causa raíz y mitigación por hallazgo.
+    criterios:
+    - criterio: Explotación reproducible de los tres tipos de vulnerabilidad
+      peso: 3.0
+    - criterio: Causa raíz correctamente identificada
+      peso: 2.5
+    - criterio: Mitigación concreta y verificable por hallazgo
+      peso: 2.0
+    - criterio: Evidencia clara y anonimizada
+      peso: 1.5
+    - criterio: Retos de Juice Shop justificados
+      peso: 1.0
+  evaluacion: control_fase_2
+- numero: 6
+  fase: 3
+  titulo: Hardening, firewall y detección
+  objetivo: '> Aplicar endurecimiento de sistemas, configurar filtrado por defecto y comprobar la detección con Suricata.'
+  contenidos:
+  - Mínimo privilegio, usuarios del sistema y política de sudo.
+  - Permisos SUID, SGID y archivos con escritura global.
+  - SSH con claves, desactivación de contraseña y fail2ban.
+  - Parcheo, servicios innecesarios y CIS Benchmarks.
+  - Endurecimiento de systemd y perfiles de AppArmor.
+  - Línea base medible y verificación posterior.
+  - Política por defecto, nftables/ufw y segmentación.
+  - IDS/IPS con Suricata, firmas y lectura de alertas.
+  - TLS en tránsito y verificación de certificados.
+  - Comprobar que la detección ve el ataque frenado por la política.
+  herramientas:
+  - systemd-analyze security
+  - fail2ban
+  - openssh
+  - Suricata
+  - ubuntu 24.04
+  - nftables
+  - ufw
+  practica:
+    titulo: Línea base, hardening, firewall y detección
+    requiere_codigo: true
+    escenario: '> Cada grupo endurece el contenedor, aplica política de filtrado, repite el escaneo y analiza las alertas de Suricata.'
+    pasos:
+    - Documentar el estado inicial de doce controles antes de cambiar nada.
+    - Aplicar los cambios de endurecimiento y reiniciar los servicios afectados.
+    - Aplicar la política de filtrado en deny por defecto y permitir solo lo necesario.
+    - Repetir el escaneo, verificar qué puertos dejaron de responder y clasificar las alertas de Suricata.
+    - Justificar las excepciones de hardening y proponer una regla de detección específica.
+    entregable: Auditor propio, hardening antes/después, reglas de firewall, comparativa de alcance y alertas de Suricata clasificadas.
+    criterios:
+    - criterio: Doce controles documentados y verificables
+      peso: 2.0
+    - criterio: Auditor funcional con veredicto por control
+      peso: 2.0
+    - criterio: Política de filtrado correcta y sistema operativo
+      peso: 2.5
+    - criterio: Alertas de Suricata clasificadas y regla propuesta
+      peso: 2.5
+    - criterio: Antes/después comparables y justificación de excepciones
+      peso: 1.0
+  evaluacion: formativa
+- numero: 7
+  fase: 3
+  titulo: Desarrollo seguro y cadena de suministro
+  objetivo: Corregir vulnerabilidades en código y demostrar la mitigación repitiendo el mismo payload, con controles automatizados en la cadena de suministro.
+  contenidos:
+  - Validación de entrada y salida, parametrización de consultas.
+  - Codificación de salida, CSP y cabeceras de seguridad.
+  - Gestión de dependencias, SBOM y pip-audit.
+  - Análisis estático con bandit y escaneo de secretos.
+  - Revisión de código y criterios de aceptación de seguridad.
+  herramientas:
+  - bandit
+  - pip-audit
+  - DVWA editado
+  practica:
+    titulo: Parchear y demostrar la mitigación
+    escenario: 'Cada grupo corrige tres vulnerabilidades de la semana 5 en su copia del laboratorio y demuestra que el payload original ya no funciona.
+
+      '
+    pasos:
+    - Reproducir los tres hallazgos sobre la copia sin parchear y guardar la evidencia.
+    - Aplicar la corrección con parametrización, codificación de salida y validación.
+    - Repetir exactamente el mismo payload y documentar el nuevo resultado.
+    - Ejecutar bandit, pip-audit y escaneo de secretos, y adjuntar la salida.
+    - Escribir el criterio de aceptación de seguridad que impediría la regresión.
+    entregable: Parches, evidencia antes y después con el mismo payload, y salida de los tres controles.
+    criterios:
+    - criterio: Correcciones que eliminan la causa raíz, no el síntoma
+      peso: 3.0
+    - criterio: Demostración antes y después con el mismo payload
+      peso: 2.5
+    - criterio: Controles automatizados ejecutados e interpretados
+      peso: 2.0
+    - criterio: Criterio de aceptación que previene la regresión
+      peso: 1.5
+    - criterio: Sin regresiones funcionales en la aplicación
+      peso: 1.0
+  evaluacion: control_fase_3
+- numero: 8
+  fase: 4
+  titulo: 'Forense digital: adquisición, artefactos y línea de tiempo'
+  objetivo: '> Adquirir evidencia forense con cadena de custodia, reconstruir el incidente a partir de artefactos y extraer IoCs.'
+  contenidos:
+  - Principio de intercambio de Locard y orden de volatilidad.
+  - Adquisición lógica y física; diferencia y cuándo usar cada una.
+  - Herramientas dd y dcfldd, y montaje en solo lectura.
+  - Hash antes y después, y verificación de integridad.
+  - Formulario de cadena de custodia y registro de transferencias.
+  - Registros de autenticación, journald y syslog.
+  - Historial de shell, cron, timers y servicios añadidos.
+  - Usuarios, grupos, SUID y paquetes instalados fuera de política.
+  - Persistencia típica en Linux y su rastro.
+  - Construcción de línea de tiempo e indicadores de compromiso.
+  herramientas:
+  - dcfldd
+  - grep y awk
+  - mount en solo lectura
+  - sha256sum
+  - journalctl
+  practica:
+    titulo: Imagen forense, reconstrucción y línea de tiempo
+    escenario: '> Cada grupo adquiere imagen forense, reconstruye la secuencia del compromiso simulado y construye línea de tiempo con IoCs.'
+    pasos:
+    - Documentar el estado del sistema y el orden de volatilidad elegido antes de tocar nada.
+    - Adquirir la imagen con dcfldd calculando el hash en el mismo paso, y verificar ambos hashes.
+    - Montar la imagen en solo lectura y comprobar que el contenido es accesible.
+    - Extraer eventos y persistencia, y construir la línea de tiempo con al menos diez eventos.
+    - Listar los indicadores de compromiso y completar el formulario de cadena de custodia.
+    entregable: Imagen forense con hashes, formulario de custodia, línea de tiempo, relato del incidente y tabla de IoCs.
+    criterios:
+    - criterio: Adquisición reproducible con integridad verificada
+      peso: 2.0
+    - criterio: Cadena de custodia completa
+      peso: 2.0
+    - criterio: Artefactos correctamente interpretados
+      peso: 2.5
+    - criterio: Línea de tiempo coherente con persistencia identificada
+      peso: 2.5
+    - criterio: IoCs reutilizables y separación hecho/hipótesis
+      peso: 1.0
+  evaluacion: formativa
+- numero: 9
+  fase: 4
+  titulo: Respuesta a incidentes y triage estático de malware
+  objetivo: Aplicar un playbook de respuesta y realizar triage estático de una muestra inerte sin ejecutarla.
+  contenidos:
+  - '{''NIST SP 800-61'': ''preparación, detección, contención, erradicación y recuperación.''}'
+  - Playbooks, roles, comunicación y registro de decisiones.
+  - Triage estático con hashes, strings, cabeceras y reglas YARA.
+  - Límites legales y técnicos del análisis dinámico.
+  - Informe post mortem y acciones de mejora.
+  herramientas:
+  - file y strings
+  - YARA
+  - sha256sum
+  practica:
+    titulo: Playbook y triage estático
+    escenario: 'Cada grupo escribe el playbook del incidente reconstruido en la semana 8 y realiza triage estático de una muestra inerte entregada por el docente.
+
+      '
+    pasos:
+    - Redactar el playbook en una página con fases, responsables y criterios de escalado.
+    - Calcular el hash de la muestra y buscar su reputación sin subir datos sensibles.
+    - Extraer cadenas relevantes e identificar indicios de funcionalidad.
+    - Escribir una regla YARA que detecte la muestra y probarla contra ella.
+    - Redactar el post mortem con acciones de mejora priorizadas.
+    entregable: Playbook de una página, informe de triage y regla YARA probada, más post mortem.
+    criterios:
+    - criterio: Playbook operativo con fases y responsables
+      peso: 3.0
+    - criterio: Triage estático completo y sin ejecutar la muestra
+      peso: 2.5
+    - criterio: Regla YARA que detecta la muestra
+      peso: 2.0
+    - criterio: Post mortem con mejoras priorizadas
+      peso: 1.5
+    - criterio: Cumplimiento de las reglas de manejo de muestras
+      peso: 1.0
+  evaluacion: formativa
+- numero: 10
+  fase: 5
+  titulo: Evaluación final práctica de alcance cerrado
+  objetivo: Ejecutar una auditoría completa de alcance cerrado sobre el laboratorio y comunicar los resultados en dos registros, técnico y ejecutivo.
+  contenidos:
+  - Repaso integrado de las cuatro fases.
+  - Diferencia entre informe técnico y resumen ejecutivo.
+  - Priorización de hallazgos por riesgo y esfuerzo de remediación.
+  - Defensa oral de decisiones y limitaciones del alcance.
+  herramientas:
+  - Todo el laboratorio
+  practica:
+    titulo: Auditoría de alcance cerrado
+    escenario: 'Evaluación individual de cuatro horas sobre un alcance definido por el docente. Se entregan informe técnico, resumen ejecutivo y una defensa oral de diez minutos.
+
+      '
+    pasos:
+    - Leer el alcance entregado y firmar la aceptación antes de empezar.
+    - Ejecutar reconocimiento, al menos una explotación controlada y su mitigación.
+    - Recolectar y preservar la evidencia con hashes.
+    - Redactar el informe técnico con hallazgos, evidencia y recomendaciones.
+    - Redactar el resumen ejecutivo sin jerga y preparar la defensa oral.
+    entregable: Informe técnico, resumen ejecutivo, evidencia preservada y defensa oral.
+    criterios:
+    - criterio: Cobertura completa del alcance declarado
+      peso: 3.0
+    - criterio: Evidencia preservada y verificable
+      peso: 2.5
+    - criterio: Informe técnico preciso y trazable
+      peso: 2.0
+    - criterio: Resumen ejecutivo comprensible sin jerga
+      peso: 1.5
+    - criterio: Defensa oral que reconoce limitaciones
+      peso: 1.0
+  evaluacion: final
+controles:
+- fase: 1
+  titulo: Control de fase uno, fundamentos y marco legal
+  duracion_min: 45
+  instrumento: Prueba escrita individual
+  preguntas:
+  - enunciado: Explique la diferencia entre vulnerabilidad, amenaza y riesgo con un ejemplo del laboratorio.
+    puntaje: 2.5
+  - enunciado: Un compañero propone escanear el portal de la universidad para practicar. Indique qué norma se incumple y qué alternativa propone.
+    puntaje: 2.5
+  - enunciado: Explique por qué AES-GCM verifica integridad y AES-CBC no, y qué implica al cifrar un archivo.
+    puntaje: 2.5
+  - enunciado: Enumere cuatro elementos que debe contener una autorización de auditoría y justifique cada uno.
+    puntaje: 2.5
+- fase: 2
+  titulo: Control de fase dos, ofensiva controlada
+  duracion_min: 45
+  instrumento: Prueba escrita individual con ejercicios
+  preguntas:
+  - enunciado: Explique la diferencia entre un escaneo connect y uno SYN, y qué revela cada respuesta del objetivo.
+    puntaje: 2.5
+  - enunciado: Dado un formulario vulnerable a inyección SQL, escriba el payload de prueba y explique la corrección parametrizada.
+    puntaje: 2.5
+  - enunciado: Indique tres datos que aporta el reconocimiento pasivo y dos que solo se obtienen con tráfico activo.
+    puntaje: 2.5
+  - enunciado: Clasifique tres hallazgos del laboratorio según OWASP Top 10 y justifique la categoría asignada.
+    puntaje: 2.5
+- fase: 3
+  titulo: Control de fase tres, defensa y desarrollo seguro
+  duracion_min: 45
+  instrumento: Prueba escrita individual con ejercicios
+  preguntas:
+  - enunciado: Proponga cinco controles de endurecimiento para un servidor SSH y explique el riesgo que reduce cada uno.
+    puntaje: 2.5
+  - enunciado: Escriba una regla de firewall que permita solo el puerto de la aplicación y explique la política por defecto.
+    puntaje: 2.5
+  - enunciado: Explique por qué parametrizar la consulta elimina la inyección SQL y por qué escapar comillas no basta.
+    puntaje: 2.5
+  - enunciado: Describa cómo comprobaría que una mitigación funciona repitiendo el ataque original.
+    puntaje: 2.5
+evaluacion_final:
+  titulo: Evaluación final práctica de alcance cerrado
+  duracion_min: 240
+  instrumento: Evaluación individual práctica con entregables
+  secciones:
+  - nombre: Ejecución técnica sobre el alcance
+    puntaje: 4
+    detalle: Reconocimiento, explotación controlada y evidencia preservada con hash.
+  - nombre: Informe técnico
+    puntaje: 3
+    detalle: Hallazgos con causa raíz, evidencia trazable y recomendaciones verificables.
+  - nombre: Resumen ejecutivo
+    puntaje: 2
+    detalle: Comprensible sin jerga, con riesgo y prioridad de remediación.
+  - nombre: Defensa oral
+    puntaje: 1
+    detalle: Justificación de decisiones y reconocimiento de limitaciones del alcance.
+bibliografia:
+- autor: Stuttard, D. y Pinto, M.
+  titulo: The Web Application Hacker's Handbook
+  detalle: Referencia para reconocimiento y explotación de aplicaciones web.
+- autor: OWASP Foundation
+  titulo: OWASP Top 10 2021
+  detalle: Categorías de riesgo en aplicaciones web.
+- autor: OWASP Foundation
+  titulo: Web Security Testing Guide y ASVS
+  detalle: Metodología de pruebas y estándar de verificación.
+- autor: NIST
+  titulo: CSF 2.0 y SP 800-61r2
+  detalle: Marco de ciberseguridad y guía de respuesta a incidentes.
+- autor: ISO IEC
+  titulo: ISO IEC 27001 2022
+  detalle: Sistema de gestión de seguridad de la información.
+- autor: MITRE
+  titulo: ATT&CK Enterprise Matrix
+  detalle: Tácticas y técnicas de adversario para nombrar lo observado.
+- autor: Asamblea Nacional de Venezuela
+  titulo: Ley Especial contra los Delitos Informáticos
+  detalle: Tipificación de delitos informáticos aplicable al curso.
+- autor: Sikorski, M. y Honig, A.
+  titulo: Practical Malware Analysis
+  detalle: Referencia opcional para el triage estático de la semana 9.
+politicas:
+- Cada grupo mantiene su propio repositorio GitHub y lo entrega actualizado antes del corte semanal; el docente revisa ese repositorio.
+- El trabajo se hace desde el equipo y la conexión de cada grupo: solo objetivos propios, el laboratorio provisto o sistemas con autorización escrita; nunca infraestructura de la universidad ni de terceros.
+- Solo se atacan objetivos propios o con autorización escrita y firmada.
+- El laboratorio es local y nunca se expone a Internet.
+- Las muestras de malware no se ejecutan y se manejan como copias inertes.
+- La evidencia se anonimiza antes de entregarse.
+- El uso indebido de las técnicas del curso tiene consecuencias académicas y legales.
+- El código entregado usa type hints, docstrings estilo Google y manejo explícito de errores.

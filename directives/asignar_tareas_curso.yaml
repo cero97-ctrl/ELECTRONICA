@@ -1,0 +1,113 @@
+name: asignar_tareas_curso
+description: >-
+  Emite un documento de tarea por grupo para una fase del curso: el rol que le toca
+  según la rotación declarada, lo que ese rol hace en cada práctica de la fase y el
+  trabajo semana a semana con su ruta de entrega en el repositorio GitHub. El reparto
+  de roles es determinista (función de fase y grupo); no se sortea ni se decide en el
+  chat.
+version: 1.0
+
+goal: >-
+  Que cada grupo reciba un documento propio que responda tres preguntas sin
+  ambigüedad: qué rol le toca en esta fase, qué hace concretamente en cada práctica y
+  dónde deja el trabajo. La rotación vive en `curso.yaml` (dato) y la asignación es una
+  función pura `(fase, grupo)` en la capa 3, de modo que regenerar la tarea el mes
+  siguiente produce exactamente el mismo rol y el mismo PDF.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml`. Bloques que este flujo consume: `meta` (codigo,
+      titulo, autor, fecha, fecha_iso), `fases` (id, nombre, semanas), `semanas`
+      (numero, objetivo, practica con titulo, escenario, pasos y entregable),
+      `grupos` (cantidad, roles con nombre, descripcion, aporta y en_la_practica,
+      asignacion_inicial, fase_con_roles) y `entregas` (corte, estructura, reglas,
+      modalidad, cadencia). Si falta `en_la_practica` en un rol, el flujo se detiene:
+      una tarea que no dice qué hacer no es una tarea.
+
+  - name: fase
+    description: >-
+      Número de fase a emitir (1-based). Debe existir en `fases` y estar en
+      `grupos.fase_con_roles`. La fase 5 del curso de ciberseguridad no tiene roles de
+      grupo (evaluación individual) y el flujo la rechaza con código 3.
+
+  - name: salida
+    description: >-
+      Directorio de salida. Por defecto `<curso>/tareas`, y dentro de él
+      `fase_<N>/grupo_<n>_<rol>.tex` con su PDF al lado.
+
+steps:
+  - action: validar_descriptor
+    script: execution/generar_tareas_curso.py
+    description: >-
+      Comprueba meta, fase existente, fase con roles, roles con descripción y
+      `en_la_practica`, semanas de la fase con práctica completa y el bloque
+      `entregas`. Un problema de cualquiera de estos es un fallo ruidoso (código 3),
+      no una omisión silenciosa.
+
+  - action: asignar_roles
+    script: execution/generar_tareas_curso.py
+    description: >-
+      Calcula el rol de cada grupo como `(i + fase - 1) mod n` sobre
+      `grupos.asignacion_inicial`. Es una rotación, no un sorteo: cada grupo pasa por
+      los cuatro roles en las fases 1 a 4 y cualquiera puede reproducir la asignación
+      a mano.
+
+  - action: generar_documentos
+    script: execution/generar_tareas_curso.py
+    description: >-
+      Redacta un `.tex` por grupo con: ficha (fase, semanas, grupo, rol, carpeta de
+      entrega, corte), el rol y sus tres acciones por práctica, un bloque por semana
+      (objetivo, escenario, pasos, entregable, aporte del rol, ruta en el repositorio),
+      las reglas de entrega y una lista de verificación.
+
+  - action: compilar_y_verificar
+    script: flujo_asignar_tareas.py
+    description: >-
+      Compila cada documento con `SOURCE_DATE_EPOCH` fijado por `meta.fecha_iso` y
+      comprueba en el `.log` que no haya líneas `!` ni `Overfull \hbox`. Después
+      verifica en disco que cada `.tex` y su PDF existen y superan el tamaño mínimo.
+
+  - action: alertar
+    script: execution/alert_user.py
+    description: >-
+      Alerta audible al terminar, salvo `--no-alert`. Si el flujo se detiene, alerta
+      de error con el motivo.
+
+expected_outputs:
+  - "`<curso>/tareas/fase_<N>/grupo_<n>_<rol>.tex` y `.pdf`, uno por grupo."
+  - "Asignación de roles idéntica a la tabla de la guía del estudiante (misma fuente: curso.yaml)."
+  - "Código de salida 0 solo cuando los cuatro documentos compilaron sin errores."
+
+edge_cases:
+  - case: La fase no tiene roles (fase de evaluación individual)
+    protocol: >-
+      Se detiene con código 3 y explica que `fase_con_roles` no incluye esa fase. No
+      se inventan roles para una prueba individual.
+
+  - case: Un rol no tiene `en_la_practica`
+    protocol: >-
+      Se detiene con código 3 nombrando el rol. El texto de las acciones es contenido
+      del curso y vive en `curso.yaml`; el generador no lo improvisa.
+
+  - case: Se pide una fase sin semanas
+    protocol: >-
+      Se detiene con código 3: sin práctica no hay tarea que repartir.
+
+  - case: Error de LaTeX
+    protocol: >-
+      Código 4, se conserva el `.log` en `.tmp/latex_build/tareas_<codigo>_fase_<N>/`
+      y se informa la primera línea `!`. Se corrige el generador o el dato, nunca el
+      `.tex` de salida.
+
+  - case: Se regenera una fase ya emitida
+    protocol: >-
+      Se sobrescriben los `.tex` y `.pdf` de esa fase. El generador es determinista:
+      mismo descriptor -> mismos bytes. Si el PDF cambia sin cambiar el YAML, hay un
+      fallo de reproducibilidad que se investiga antes de entregar.
+
+  - case: El docente cambia la rotación
+    protocol: >-
+      La rotación no se edita en el código: se cambia `grupos.asignacion_inicial` o el
+      orden de `grupos.roles` en `curso.yaml`, y se regeneran también la guía y las
+      tareas para que no se contradigan.
