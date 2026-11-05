@@ -1,0 +1,34 @@
+# Laboratorio generado desde curso.yaml — no editar a mano.
+# Solo accesible en localhost; nunca exponer estos servicios a Internet.
+name: cyberlab
+services:
+  objetivo-web:
+    image: vulnerables/web-dvwa:latest
+    container_name: cyberlab-objetivo-web
+    restart: unless-stopped
+    ports:
+    - 8081:80
+    networks:
+    - cyberlab
+  objetivo-juice:
+    image: bkimminich/juice-shop:latest
+    container_name: cyberlab-objetivo-juice
+    restart: unless-stopped
+    ports:
+    - 3000:3000
+    networks:
+    - cyberlab
+  objetivo-linux:
+    image: ubuntu:24.04
+    container_name: cyberlab-objetivo-linux
+    restart: unless-stopped
+    ports:
+    - '2222:22'
+    networks:
+    - cyberlab
+networks:
+  cyberlab:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.28.0.0/24

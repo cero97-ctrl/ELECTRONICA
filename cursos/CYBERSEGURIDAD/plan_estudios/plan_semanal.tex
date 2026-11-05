@@ -1,0 +1,605 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{shield-alt}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{shield-alt}~CYBERSEGURIDAD}
+\fancyhead[R]{\footnotesize\color{grisTexto}Plan semanal}
+\hypersetup{pdftitle={Ciberseguridad Aplicada},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={CYBERSEGURIDAD}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Plan semanal}{Ciberseguridad Aplicada --- 10 semanas}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} ELECTRONICA \textbar{} 1 de noviembre de 2026\end{center}
+
+Cada práctica se entrega en el repositorio GitHub del grupo, dentro de la carpeta semana\_NN, antes del corte: Domingo 23:59 de la semana correspondiente; lo posterior no se corrige. El docente revisa ese repositorio al finalizar la semana.
+
+\begin{tcolorbox}[cajaContenido,title={Semana 1 --- Panorama de la ciberseguridad y superficie de ataque}]
+\textbf{Fase 1} --- Fundamentos, criptografía y marco legal
+
+\textbf{Objetivo.} Distinguir activos, amenazas y vulnerabilidades, y describir el ciclo de vida de un ataque con marcos reconocidos.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Tríada CIA más autenticidad, integridad y no repudio.
+  \item \{'Actores': 'oportunista, crimen organizado, insider y APT.'\}
+  \item Superficie de ataque, vector y cadena de explotación.
+  \item Cyber Kill Chain y MITRE ATT\&CK como vocabulario común.
+  \item Roles rojo, azul y púrpura; modelos de amenaza STRIDE.
+  \item Riesgo como función de probabilidad e impacto.
+\end{itemize}
+
+\textbf{Herramientas:} Docker, nmap sobre localhost, Navegador.
+
+\textbf{Práctica.} \emph{Inventario de superficie de ataque del laboratorio}. El laboratorio tiene tres contenedores. Cada grupo inventaría puertos, servicios y versiones de su objetivo asignado, y propone tres vectores plausibles por servicio expuesto.
+
+
+\textbf{Entregable:} Tabla de activos y servicios, modelo STRIDE y conclusión priorizada de tres vectores.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 2 --- Criptografía aplicada y gestión de secretos}]
+\textbf{Fase 1} --- Fundamentos, criptografía y marco legal
+
+\textbf{Objetivo.} Aplicar cifrado simétrico y asimétrico, funciones hash y derivación de claves, y diagnosticar una configuración TLS insegura.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Cifrado simétrico AES en modos GCM y CBC, y por qué GCM aporta integridad.
+  \item Cifrado asimétrico RSA y curvas elípticas; intercambio de claves.
+  \item Hash criptográfico, HMAC y funciones de derivación PBKDF2 y Argon2.
+  \item TLS 1.2 y 1.3, cadena de certificados y errores de validación.
+  \item Gestión de secretos y detección de claves en repositorios.
+\end{itemize}
+
+\textbf{Herramientas:} openssl, sha256sum, Python hashlib.
+
+\textbf{Práctica.} \emph{Caja de herramientas criptográficas}. Cada grupo cifra y descifra un archivo, firma y verifica un mensaje, inspecciona un certificado real y mide el coste de derivar una clave con distinto número de iteraciones.
+
+
+\textbf{Entregable:} Registro de comandos, salidas y una tabla que asigne cada primitiva a la propiedad que garantiza.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 3 --- Marco legal, ético y normativo}]
+\textbf{Fase 1} --- Fundamentos, criptografía y marco legal
+
+\textbf{Objetivo.} Identificar las obligaciones legales y normativas antes de auditar, y redactar un alcance autorizado con reglas de enfrentamiento.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Ley Especial contra los Delitos Informáticos y tipos penales aplicables.
+  \item Autorización escrita, alcance, ventana de pruebas y reglas de enfrentamiento.
+  \item ISO IEC 27001, NIST CSF 2.0, ENS y GDPR como marcos de referencia.
+  \item OWASP ASVS y WSTG como estándares de verificación técnica.
+  \item Cadena de custodia, integridad de la evidencia y confidencialidad.
+  \item Código de ética del curso y consecuencias del uso indebido.
+\end{itemize}
+
+\textbf{Herramientas:} Plantilla de autorización, Normativa en PDF.
+
+\textbf{Práctica.} \emph{Carta de autorización y análisis de caso}. Cada grupo redacta la autorización de la auditoría de su objetivo del laboratorio y analiza un incidente ficticio, identificando qué normas se violaron y qué evidencia sería admisible.
+
+
+\textbf{Entregable:} Autorización firmada, análisis del caso y código de ética firmado por cada estudiante.
+
+\textbf{Instrumento de evaluación:} control fase 1.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 4 --- Reconocimiento, OSINT y escaneo de puertos}]
+\textbf{Fase 2} --- Ofensiva controlada
+
+\textbf{Objetivo.} \textgreater{} Obtener información de un dominio autorizado sin generar tráfico intrusivo, descubrir hosts y escanear puertos, distinguiendo técnicas y su ruido.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Registros DNS A, AAAA, MX, NS, TXT y SOA.
+  \item WHOIS y RDAP; datos del registrante y fechas de vigencia.
+  \item Enumeración de subdominios y motores de búsqueda especializados.
+  \item Google dorks y su uso legítimo en un alcance autorizado.
+  \item OPSEC del auditor y protección de la identidad durante la recolección.
+  \item Descubrimiento con ARP, ICMP y sondeo TCP a puertos comunes.
+  \item Escaneo connect, SYN semiabierto y UDP con ICMP port unreachable.
+  \item Estados de puerto, banner grabbing y fingerprinting.
+  \item Sigilo, ruido y detección; límites éticos del escaneo.
+\end{itemize}
+
+\textbf{Herramientas:} nmap como referencia, Scapy, Python dnspython, python-whois, dig, socket.
+
+\textbf{Práctica.} \emph{Huella digital + escáner propio contra el laboratorio}. \textgreater{} Cada grupo construye un script que genere la huella digital (DNS/WHOIS) y un escáner propio, ejecutándolo contra los contenedores del laboratorio y comparando con nmap.
+
+\textbf{Entregable:} Script integrado (huella digital + escáner), salida JSON, huella digital razonada, tabla comparativa con nmap y análisis de falsos positivos.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 5 --- Vulnerabilidades web según OWASP Top 10}]
+\textbf{Fase 2} --- Ofensiva controlada
+
+\textbf{Objetivo.} Explotar de forma controlada inyección SQL, XSS y LFI, y explicar la causa raíz y el control que lo evita.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item OWASP Top 10 2021 y categorías con mayor impacto.
+  \item Control de acceso roto y exposición de datos sensibles.
+  \item Inyección SQL, XSS reflejado y almacenado, LFI y RFI.
+  \item Configuración insegura y componentes desactualizados.
+  \item Evidencia reproducible, capturas y causa raíz en el código.
+\end{itemize}
+
+\textbf{Herramientas:} DVWA, Juice Shop, Navegador con herramientas de desarrollo.
+
+\textbf{Práctica.} \emph{Explotación guiada y evidencia}. Cada grupo explota tres vulnerabilidades en DVWA y resuelve tres retos de Juice Shop, documentando payload, evidencia, causa raíz y mitigación.
+
+
+\textbf{Entregable:} Informe técnico con payloads, evidencia anonimizada, causa raíz y mitigación por hallazgo.
+
+\textbf{Instrumento de evaluación:} control fase 2.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 6 --- Hardening, firewall y detección}]
+\textbf{Fase 3} --- Defensa y hardening
+
+\textbf{Objetivo.} \textgreater{} Aplicar endurecimiento de sistemas, configurar filtrado por defecto y comprobar la detección con Suricata.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Mínimo privilegio, usuarios del sistema y política de sudo.
+  \item Permisos SUID, SGID y archivos con escritura global.
+  \item SSH con claves, desactivación de contraseña y fail2ban.
+  \item Parcheo, servicios innecesarios y CIS Benchmarks.
+  \item Endurecimiento de systemd y perfiles de AppArmor.
+  \item Línea base medible y verificación posterior.
+  \item Política por defecto, nftables/ufw y segmentación.
+  \item IDS/IPS con Suricata, firmas y lectura de alertas.
+  \item TLS en tránsito y verificación de certificados.
+  \item Comprobar que la detección ve el ataque frenado por la política.
+\end{itemize}
+
+\textbf{Herramientas:} systemd-analyze security, fail2ban, openssh, Suricata, ubuntu 24.04, nftables, ufw.
+
+\textbf{Práctica.} \emph{Línea base, hardening, firewall y detección}. \textgreater{} Cada grupo endurece el contenedor, aplica política de filtrado, repite el escaneo y analiza las alertas de Suricata.
+
+\textbf{Entregable:} Auditor propio, hardening antes/después, reglas de firewall, comparativa de alcance y alertas de Suricata clasificadas.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 7 --- Desarrollo seguro y cadena de suministro}]
+\textbf{Fase 3} --- Defensa y hardening
+
+\textbf{Objetivo.} Corregir vulnerabilidades en código y demostrar la mitigación repitiendo el mismo payload, con controles automatizados en la cadena de suministro.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Validación de entrada y salida, parametrización de consultas.
+  \item Codificación de salida, CSP y cabeceras de seguridad.
+  \item Gestión de dependencias, SBOM y pip-audit.
+  \item Análisis estático con bandit y escaneo de secretos.
+  \item Revisión de código y criterios de aceptación de seguridad.
+\end{itemize}
+
+\textbf{Herramientas:} bandit, pip-audit, DVWA editado.
+
+\textbf{Práctica.} \emph{Parchear y demostrar la mitigación}. Cada grupo corrige tres vulnerabilidades de la semana 5 en su copia del laboratorio y demuestra que el payload original ya no funciona.
+
+
+\textbf{Entregable:} Parches, evidencia antes y después con el mismo payload, y salida de los tres controles.
+
+\textbf{Instrumento de evaluación:} control fase 3.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 8 --- Forense digital: adquisición, artefactos y línea de tiempo}]
+\textbf{Fase 4} --- Forense y respuesta a incidentes
+
+\textbf{Objetivo.} \textgreater{} Adquirir evidencia forense con cadena de custodia, reconstruir el incidente a partir de artefactos y extraer IoCs.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Principio de intercambio de Locard y orden de volatilidad.
+  \item Adquisición lógica y física; diferencia y cuándo usar cada una.
+  \item Herramientas dd y dcfldd, y montaje en solo lectura.
+  \item Hash antes y después, y verificación de integridad.
+  \item Formulario de cadena de custodia y registro de transferencias.
+  \item Registros de autenticación, journald y syslog.
+  \item Historial de shell, cron, timers y servicios añadidos.
+  \item Usuarios, grupos, SUID y paquetes instalados fuera de política.
+  \item Persistencia típica en Linux y su rastro.
+  \item Construcción de línea de tiempo e indicadores de compromiso.
+\end{itemize}
+
+\textbf{Herramientas:} dcfldd, grep y awk, mount en solo lectura, sha256sum, journalctl.
+
+\textbf{Práctica.} \emph{Imagen forense, reconstrucción y línea de tiempo}. \textgreater{} Cada grupo adquiere imagen forense, reconstruye la secuencia del compromiso simulado y construye línea de tiempo con IoCs.
+
+\textbf{Entregable:} Imagen forense con hashes, formulario de custodia, línea de tiempo, relato del incidente y tabla de IoCs.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 9 --- Respuesta a incidentes y triage estático de malware}]
+\textbf{Fase 4} --- Forense y respuesta a incidentes
+
+\textbf{Objetivo.} Aplicar un playbook de respuesta y realizar triage estático de una muestra inerte sin ejecutarla.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item \{'NIST SP 800-61': 'preparación, detección, contención, erradicación y recuperación.'\}
+  \item Playbooks, roles, comunicación y registro de decisiones.
+  \item Triage estático con hashes, strings, cabeceras y reglas YARA.
+  \item Límites legales y técnicos del análisis dinámico.
+  \item Informe post mortem y acciones de mejora.
+\end{itemize}
+
+\textbf{Herramientas:} file y strings, YARA, sha256sum.
+
+\textbf{Práctica.} \emph{Playbook y triage estático}. Cada grupo escribe el playbook del incidente reconstruido en la semana 8 y realiza triage estático de una muestra inerte entregada por el docente.
+
+
+\textbf{Entregable:} Playbook de una página, informe de triage y regla YARA probada, más post mortem.
+
+\textbf{Instrumento de evaluación:} formativa.
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaContenido,title={Semana 10 --- Evaluación final práctica de alcance cerrado}]
+\textbf{Fase 5} --- Cierre
+
+\textbf{Objetivo.} Ejecutar una auditoría completa de alcance cerrado sobre el laboratorio y comunicar los resultados en dos registros, técnico y ejecutivo.
+
+\textbf{Contenidos}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Repaso integrado de las cuatro fases.
+  \item Diferencia entre informe técnico y resumen ejecutivo.
+  \item Priorización de hallazgos por riesgo y esfuerzo de remediación.
+  \item Defensa oral de decisiones y limitaciones del alcance.
+\end{itemize}
+
+\textbf{Herramientas:} Todo el laboratorio.
+
+\textbf{Práctica.} \emph{Auditoría de alcance cerrado}. Evaluación individual de cuatro horas sobre un alcance definido por el docente. Se entregan informe técnico, resumen ejecutivo y una defensa oral de diez minutos.
+
+
+\textbf{Entregable:} Informe técnico, resumen ejecutivo, evidencia preservada y defensa oral.
+
+\textbf{Instrumento de evaluación:} final.
+\end{tcolorbox}
+\end{document}
