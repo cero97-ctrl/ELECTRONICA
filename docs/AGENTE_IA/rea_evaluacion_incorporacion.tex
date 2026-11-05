@@ -1,0 +1,725 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}     % Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}    % Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}       % Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}       % Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}        % Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}     % Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}     % Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}      % Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}       % Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}       % Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}       % Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}    % Notas / advertencias doradas
+
+% Colores específicos para bloques de código (dark-mode)
+\definecolor{codigoFondo}{HTML}{1E2D3D}      % Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6} % Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}     % Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}    % Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}     % Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+% Cabecera específica de este documento
+\usepackage{url}
+\usepackage{needspace}
+\hypersetup{
+    pdftitle={REA — Reverse Engineer Anything: evaluación de incorporación en ELECTRONICA},
+}
+\fancyhead[L]{\small\color{azulNoche}\textbf{Agente IA --- Evaluación de incorporación}}
+\fancyhead[R]{\small\color{grisTexto}\itshape REA (morluto/rea) --- v6.4.0}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\color{cyanNeon}\hrule width\headwidth height 0.6pt}
+
+\renewcommand{\iconoBanda}{search}
+
+\begin{document}
+
+% ══ PORTADA INFOGráfica ══════════════════════════════════════════════════════
+\bandaTitulo{REA: evaluación de incorporación}{Ingeniería inversa asistida por agentes para ELECTRONICA --- guía para el HP EliteDesk 805 G6}
+
+\begin{center}
+  \vspace{2pt}
+  {\large \textbf{Autor:} Prof. CERO \hfill \textbf{Fecha:} \today} \\[6pt]
+  \color{cyanNeon}\rule{\linewidth}{0.4pt}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% ══ 1. RESUMEN EJECUTIVO ═════════════════════════════════════════════════════
+\section[Resumen Ejecutivo]{\iconotexto{info-circle}{Resumen Ejecutivo}}
+
+Se evaluó \textbf{REA} (\emph{Reverse Engineer Anything}, \texttt{morluto/rea},
+versión \textbf{6.4.0}, publicada el 11 de octubre de 2026) como herramienta de
+\textbf{ingeniería inversa asistida por agentes} que combina un \textbf{servidor MCP} y
+una \textbf{CLI} para reconstruir el funcionamiento de binarios, aplicaciones y
+comportamiento en tiempo de ejecución. Está pensada para que un asistente (OpenCode,
+Claude Code, Codex, Gemini CLI, Cursor, etc.) investigue un objetivo local, reciba
+hallazgos \emph{con su evidencia} y los use para explicar, reproducir o reimplementar una
+funcionalidad.
+
+El veredicto es \textbf{adopción condicional, y solo en el clon de ELECTRONICA sobre la
+PC HP EliteDesk 805 G6}. REA es una \emph{capacidad nueva} —hoy el proyecto no
+analiza binarios, firmware ni ensamblados .NET— que encaja con el motor rotativo del
+asistente sin tocar \texttt{OPENROUTER\_API\_KEY}. Al mismo tiempo es una herramienta
+\emph{exploratoria y no determinista} por naturaleza (descompilación + interpretación del
+LLM), así que \textbf{no puede formar parte de ningún flujo determinista} ni decidir
+lógica de negocio. Se adopta como \emph{herramienta de consulta}, no como \emph{flujo}.
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{thumbs-up}~Veredicto rápido: SÍ, adoptable, con condiciones}]
+REA desbloquea análisis de \textbf{binarios nativos, firmware (binwalk/unblob), .NET, Go,
+WASM, bytecode EVM y aplicaciones JS/Electron} con evidencia auditable. Es local, MIT y
+complementa al RAG. \textbf{Condiciones:} (1)~usarla solo como herramienta, nunca en las
+3~capas como flujo; (2)~proveedor \textbf{Ghidra headless} (libre) primero, y \textbf{Hopper
+/ IDA diferidos} (comerciales); (3)~vigilar el \textbf{disco de 256\,GB} y el \emph{payload}
+de esquemas MCP del contexto.
+\end{tcolorbox}
+
+\begin{cajaRecuerda}
+\textbf{Vigilancia determinista.} Adoptar REA como herramienta externa no viola las 3
+capas: no introduce lógica de decisión en el chat ni un flujo nuevo. Sí lo violaría
+(a)~resolver su \emph{informe} en prosa de chat como si fuera una salida reproducible, o
+(b)~crear un \texttt{flujo\_*} que lo use sin su directiva y su script. Si la adopción deja
+de ser \emph{herramienta} y pasa a \emph{flujo} repetible, exige las tres capas:
+\texttt{directives/*.yaml} + orquestador + \texttt{execution/*.py}.
+\end{cajaRecuerda}
+
+% ══ 2. QUÉ ES REA ══
+\section[Qué es REA]{\iconotexto{sitemap}{Qué es REA (y qué corrige la nota)}}
+
+La nota de NotebookLM aportada por el usuario
+(\path{docs/AGENTE_IA/fuentes/rea-ingenieria-inversa-ia.md}) describe correctamente el
+espíritu de REA pero trae \textbf{imprecisiones de detalle} que conviene fijar antes de
+decidir nada. La tabla siguiente compara la nota con la fuente primaria verificada
+(repositorio y sitio oficial).
+
+\begin{tcolorbox}[tarjetaDato, title={\faIcon{tools}~Ficha de la herramienta (verificada)}]
+\begin{tabular}{ll}
+\toprule
+\textbf{Repositorio} & \texttt{morluto/rea} (MIT) \\
+\textbf{Sitio / Docs} & \texttt{rea.tools} \\
+\textbf{Versión evaluada} & \textbf{v6.4.0} (11 de octubre de 2026) \\
+\textbf{Paquete npm} & \texttt{rea-agents} (CLI: \texttt{rea}) \\
+\textbf{Instalación} & \texttt{npx rea-agents setup} \\
+\textbf{Runtime} & \textbf{Node.js 22.19+/24.11+/26+} y npm \\
+\textbf{Formato} & Servidor \textbf{MCP} + \textbf{CLI} (mismo motor) \\
+\textbf{Motores} & Ghidra (libre), Hopper/IDA/JEB (comerciales) \\
+\textbf{Análisis} & \textbf{Local}; cada resultado incluye evidencia y límites \\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{exclamation-triangle}~Correcciones a la nota de NotebookLM}]
+\begin{itemize}[leftmargin=1.2em]
+  \item El paquete/comando es \texttt{rea-agents} y \texttt{npx rea-agents setup};
+  la nota dice \texttt{rea-agent} (sin la ``s'').
+  \item No son solo ``Claude Code, Cursor, Codex y Gemini CLI'': REA registra
+  explícitamente \textbf{OpenCode} (\texttt{--client opencode}), Windsurf, Devin, Copilot
+  CLI, Qwen Code, VS~Code, Grok Build, OMP, Pi, Hermes y \textbf{DeepSeek Harness}
+  (\texttt{--client dsh}, aún solo en \texttt{main}).
+  \item El alcance es mayor: además de Ghidra/Hopper/.NET/Electron/Android, cubre
+  \textbf{ELF, Go, WASM, bytecode EVM, sitios web, capturas HAR, firmware
+  (binwalk/unblob)} y comportamiento de procesos.
+  \item La nota omite los requisitos: \textbf{Node 22.19+} y que \textbf{Hopper, IDA y
+  JEB son comerciales} (no vienen incluidos).
+\end{itemize}
+\end{tcolorbox}
+
+\begin{cajaConcepto}
+\textbf{La idea en una frase.} ``Mira una función de una app que te guste, entiende cómo
+funciona hasta el nivel del binario, y reconstruye una versión propia.'' REA no \emph{copia}
+el software: devuelve \emph{evidencia} (pseudocódigo, ensamblador, cadenas, referencias)
+para que el agente explique y reimplemente.
+\end{cajaConcepto}
+
+% ══ 3. ARQUITECTURA ══
+\section[Arquitectura]{\iconotexto{project-diagram}{Cómo funciona por dentro}}
+
+REA separa claramente \emph{instalar la CLI} de \emph{configurar los motores y el agente}.
+El agente llama a REA por \textbf{MCP}; la CLI ofrece los mismos flujos desde la terminal.
+Cada comando devuelve un registro de \textbf{Evidence}: el resultado junto con la
+evidencia que lo sustenta, sus supuestos y sus \textbf{límites} (lo que no pudo resolver).
+
+\begin{cajaConcepto}
+\textbf{Motores de análisis (nativo).} El análisis profundo de binarios usa uno de:
+\textbf{Ghidra} (libre, 12.1.x + JDK~21, Linux x64/arm64, macOS; Windows experimental),
+\textbf{Hopper} (comercial, demo; macOS y Linux con \emph{Xvfb}), \textbf{IDA} (comercial;
+solo Windows verificado) o \textbf{JEB}. El análisis \emph{estático} de JS/Electron, .NET,
+Go, WASM, ELF y paquetes \textbf{no necesita motor}: lee los ficheros sin ejecutarlos.
+\end{cajaConcepto}
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{shield-alt}~Límites declarados por el propio proyecto}]
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Análisis local.} REA no sube la app: el objetivo se analiza en la máquina.
+  El \emph{proveedor de modelo} del agente sí aplica su propia política de datos
+  (el informe que el agente redacte pasa por él).
+  \item \textbf{Recursos propios.} Ghidra corre en modo \texttt{-readOnly} con proyecto
+  efímero (\texttt{-deleteProject}); Hopper en Linux se ejecuta en un display privado.
+  \item \textbf{Sesión única por objetivo.} Una sesión MCP mantiene un binario importado a
+  la vez; cambiar de objetivo cierra el documento anterior.
+  \item \textbf{Uso responsable.} Solo para software propio o autorizado (ver
+  \texttt{DISCLAIMER.md}); las herramientas comerciales conservan sus licencias.
+\end{itemize}
+\end{tcolorbox}
+
+% ══ 4. COBERTURA ══
+\section[Cobertura]{\iconotexto{layer-group}{Qué objetivos puede analizar}}
+
+REA cubre mucho más que ``descompilar un ejecutable''. La tabla resume los objetivos, lo
+que devuelve y el motor que exige (o si basta el análisis estático).
+
+\needspace{8\baselineskip}
+\begin{longtable}{p{3.4cm} p{7.4cm} p{3.0cm}}
+\toprule
+\textbf{Objetivo} & \textbf{Qué devuelve} & \textbf{Requisito} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Binarios nativos & Pseudocódigo, ensamblador, cadenas, símbolos, llamadas y referencias &
+Hopper / Ghidra / IDA \\
+\addlinespace
+ELF (layout) & Secciones, segmentos, símbolos/relocalizaciones originales, mitigaciones &
+pwntools (Linux x64) \\
+\addlinespace
+Binarios Go & Versión del compilador, módulos, \emph{replacements} y \emph{build settings} &
+\textbf{Nativo, sin Go} \\
+\addlinespace
+WASM & Validación, secciones, \emph{import/export} exactos y WAT decodificado & WABT \\
+\addlinespace
+Bytecode EVM & Selectores de \emph{dispatch}, \emph{offsets}, argumentos y mutabilidad &
+Carrier local (Linux x64) \\
+\addlinespace
+Crashes Linux & Hilos, registros, señales y candidatos de mapeo & pwntools (+ GDB) \\
+\addlinespace
+JavaScript / Electron & Módulos, \emph{imports}, \emph{source maps}, rutas e IPC & \textbf{Solo Node} \\
+\addlinespace
+Sitios web & Estructura de página, scripts y observaciones de red & Navegador Chrome \\
+\addlinespace
+Capturas de red (HAR) & Peticiones, respuestas, \emph{payloads} y su origen & HAR \\
+\addlinespace
+Ensamblados .NET & Metadatos, instrucciones CIL y dependencias nativas & \textbf{Ninguno} \\
+\addlinespace
+APK / Android & Manifiesto, clases y métodos descompilados & JADX + JDK \\
+\addlinespace
+Firmware & Regiones, extracción y puenteo al análisis nativo & binwalk / unblob \\
+\addlinespace
+Paquetes / recursos & Inventarios, \emph{digests}, \emph{plists}, anatomía de \emph{bundles} &
+\textbf{Ninguno} \\
+\addlinespace
+Comportamiento de proceso & Salida de terminal, interacciones, E/S y comparación de corridas &
+PTY nativo (Linux) \\
+\end{longtable}
+
+% ══ 5. ENCAJE CON LA ARQUITECTURA ══
+\section[Encaje con ELECTRONICA]{\iconotexto{balance-scale}{Encaje con las 3 capas y el gate determinista}}
+
+\begin{tcolorbox}[tarjetaIcono, title={\faIcon{check-circle}~Principio rector}]
+El proyecto separa \textbf{orquestación probabilística} de \textbf{ejecución determinista}.
+REA es \textbf{puro análisis probabilístico}: la descompilación es reproducible, pero la
+\emph{interpretación} la hace el LLM y varía. Por eso REA es una capacidad de
+\textbf{Capa~2 (herramienta)}, nunca de \textbf{Capa~3 (script determinista)}.
+\end{tcolorbox}
+
+Aplicación del \emph{gate} de determinismo (protocolo de fuentes externas, 2026-10-10)
+punto por punto:
+
+\needspace{8\baselineskip}
+\begin{longtable}{p{6.2cm} p{8.0cm}}
+\toprule
+\textbf{Pregunta del gate} & \textbf{Evaluación para REA} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+¿Mete lógica de decisión en el prompt/chat? &
+\textbf{Condicionado.} El \emph{informe} de REA no debe decidir reglas de negocio. Se usa
+para \emph{entender}, no para \emph{decidir}. \\
+\addlinespace
+¿Rompe reproducibilidad (mismo input \(\neq\) output)? &
+\textbf{Sí, intrínsecamente.} Dos corridas pueden dar explicaciones distintas. Conclusión:
+\textbf{prohibido} dentro de flujos que exijan \emph{mismo input \(\rightarrow\) mismo
+output}. \\
+\addlinespace
+¿Se salta I/O validadas, retry (máx 3) o la barrera anti-borrado? &
+\textbf{Sí, si se abusa del tiempo de ejecución.} Su captura en \emph{runtime} ejecuta el
+objetivo con permisos del usuario. Solo sobre copias/objetivos de laboratorio; nunca sobre
+los entregables del repo. \\
+\addlinespace
+¿Introduce estado persistente escribible por el modelo / inyección? &
+\textbf{A vigilar.} \texttt{setup} escribe configuración del agente (con \emph{backups},
+escritura atómica y verificación). No crea estado que el modelo escriba en el repo. \\
+\addlinespace
+¿Duplica un mecanismo existente? &
+\textbf{Parcial.} El análisis de \emph{websites} solapa con
+\texttt{execution/scrape\_single\_site.py}. Se descarta esa parte; el resto (binarios,
+firmware, .NET, HAR) es \textbf{capacidad nueva}. \\
+\addlinespace
+¿Viola política de hardware/créditos? &
+\textbf{No por sí mismo.} Corre con Node local y no toca \texttt{OPENROUTER\_API\_KEY}.
+El gasto depende del motor del agente que interprete el resultado (rotativo, \$0). \\
+\end{longtable}
+
+% ══ 6. CAPACIDADES DE VALOR ══
+\section[Valor para ELECTRONICA]{\iconotexto{chart-line}{Capacidades de valor por dominio}}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{IoT / firmware (ESP32, PlatformIO).} Análisis de \textbf{firmware}
+  (binwalk/unblob) y de binarios nativos: inspeccionar imágenes, extraer regiones y
+  entender rutinas sin el código fuente. Encaja con la línea IoT del workspace.
+  \item \textbf{Binarios de terceros.} Entender por qué una herramienta vendorizada se
+  comporta de cierta forma, con evidencia (pseudocódigo + referencias) en vez de intuición.
+  \item \textbf{.NET y Go.} Inspección estática \textbf{sin motor}: metadatos y CIL de
+  ensamblados .NET; versión de compilador y módulos de binarios Go.
+  \item \textbf{JS/Electron.} Mapear módulos, rutas e IPC de aplicaciones Electron o
+  directorios JS (útil para el proyecto Node \texttt{Proyectos/cloudflare-agent}), con
+  \emph{source maps} y sin ejecutar la app.
+  \item \textbf{Bytecode EVM.} Recuperar selectores y \emph{mutabilidad} de contratos;
+  útil para la línea blockchain (nota: Solana es Rust/SBF, \textbf{no} EVM).
+  \item \textbf{Complementario al RAG.} El RAG responde ``¿qué dice el proyecto?'';
+  REA responde ``¿qué hace este artefacto que no tenemos en texto?''. No compiten.
+\end{itemize}
+
+\begin{cajaEjemplo}
+\textbf{Ejemplo de flujo correcto.} El agente pregunta ``¿cómo exporta datos esta app
+Electron?'' $\rightarrow$ REA devuelve módulos, IPC y origen de cada hallazgo
+$\rightarrow$ el agente redacta la explicación. El resultado es \emph{asesor}, y su
+artefacto (``cómo funciona'') no se convierte en una regla de negocio del repo.
+\end{cajaEjemplo}
+
+% ══ 7. RIESGOS Y TENSIONES ══
+\section[Riesgos y Tensiones]{\iconotexto{shield-alt}{Riesgos y tensiones}}
+
+\begin{tcolorbox}[cajaMejora, title={\faIcon{exclamation-triangle}~Tensiones a vigilar}]
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Contexto del motor (MCP).} En \texttt{main}, REA expone del orden de
+  \textbf{172 herramientas}; el perfil completo del catálogo ronda \textbf{496\,KB}
+  (\(\approx\)120k \emph{tokens} con el tokenizador o200k) y el perfil \emph{compact} unos
+  \textbf{290\,KB} (\(\approx\)68k \emph{tokens}). Un motor con ventana pequeña puede
+  ``ahogarse'' con los esquemas. Mitigación: fijar \texttt{REA\_MCP\_INPUT\_SCHEMA\_PROFILE}
+  a \texttt{compact} y considerar solo los objetivos que el proyecto realmente usará.
+  \item \textbf{Disco de 256\,GB.} Ghidra + JDK \textbf{y} las dependencias de REA suman
+  varios GB de instalación; el veredicto de hardware ya advierte que el 256\,GB es la
+  restricción real. Mitigación: instalar motores en el segundo slot de disco (M.2/2{,}5'').
+  \item \textbf{Motores comerciales.} Hopper, IDA y JEB \textbf{no se incluyen}; su demo
+  tiene límites definidos por el fabricante. No usar rutas de activación no autorizadas.
+  \item \textbf{Deriva \texttt{main} vs npm.} \texttt{dsh} y capacidades nuevas viven en
+  \texttt{main} y no en la 6.4.0 de npm. Fijar versión y \emph{no} seguir \texttt{latest}
+  sin revisar el plan de \texttt{setup}.
+  \item \textbf{\texttt{setup} edita configuración del agente.} Escribe entradas MCP en
+  la config de OpenCode (con \emph{backups} y escritura atómica). \texttt{AGENTS.md} de
+  este repo es la fuente de verdad: revisar el plan antes de aprobar cambios.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[cajaRecomendacion, title={\faIcon{clipboard-check}~Regla de oro para el repo}]
+Instalar y usar REA \textbf{solo con \texttt{--dry-run} revisado} primero. Ningún comando
+de REA debe apuntar al \textbf{propio repo como objetivo de escritura}: se analiza
+\emph{software de terceros} o \emph{firmware/binarios}, no los entregables versionados.
+\end{tcolorbox}
+
+% ══ 8. VEREDICTO ══
+\section[Veredicto]{\iconotexto{balance-scale}{Veredicto}}
+
+\begin{tcolorbox}[cajaFortaleza, title={\faIcon{check-double}~Adopción condicional (herramienta, no flujo)}]
+\textbf{Sí se adopta REA} como herramienta de ingeniería inversa del clon de ELECTRONICA,
+\textbf{con estas condiciones no negociables:}
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Capa 2, jamás Capa 3.} No entra en flujos deterministas ni decide reglas;
+  si un uso se vuelve repetible, se formaliza en las 3 capas.
+  \item \textbf{Ghidra primero.} Proveedor libre y \emph{headless}; Hopper e IDA quedan
+  \textbf{diferidos} hasta que haya caso de uso y presupuesto.
+  \item \textbf{Análisis estático primero.} JS/Electron, .NET, Go, WASM, ELF y paquetes no
+  requieren motor ni ejecutan el objetivo: menor riesgo.
+  \item \textbf{Objetivos de terceros, sobre copias.} Nunca el repo versionado ni
+  entregables; siempre software propio o autorizado.
+  \item \textbf{Perfil MCP compacto} y vigilancia del disco.
+\end{enumerate}
+\end{tcolorbox}
+
+Temporalmente queda como \textbf{herramienta disponible en la HP EliteDesk}; su uso será
+\emph{por demanda}. Reconvertirlo en flujo (p.\,ej.\ un \texttt{flujo\_analizar\_binario.py})
+solo se justificará cuando exista una tarea repetible con entrada y salida verificables;
+entonces, y no antes, se escriben las tres capas.
+
+% ══ 9. IMPLEMENTACIÓN EN LA HP ELITEDESK 805 G6 ══
+\section[Guía en la HP EliteDesk]{\iconotexto{microchip}{Guía de implementación en la HP EliteDesk 805 G6}}
+
+Este es el \textbf{equipo destino}: HP EliteDesk 805 G6 Mini (Ryzen 5 PRO 4650GE, Zen~2
+6C/12T, \textbf{AVX2}, 16\,GB RAM, SSD 256\,GB). Sustituye al Celeron N4020 actual, que no
+tenía AVX2 ni RAM para cargas de análisis. Requisitos previos:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Node.js} del rango soportado. El workspace ya usa Node~v22 vía \texttt{nvm}
+  (el \emph{plugin} \texttt{nvm-env.js} lo antepone al \texttt{PATH}); confirmar que sea
+  \(\ge 22.19\) con \texttt{node -v}.
+  \item \textbf{Ghidra 12.1.x + JDK 21} (libre) como motor nativo; o bien empezar solo con
+  el análisis estático (no requiere motor).
+  \item Espacio en disco: reservar GBs para Ghidra, JDK y el caché de REA (idealmente el
+  segundo disco).
+\end{itemize}
+
+\needspace{8\baselineskip}
+\begin{cajaEjemplo}
+\textbf{Secuencia prevista} (revisar el plan antes de aprobar; \emph{no} ejecutar aún):
+\begin{lstlisting}
+# 1) Verificar runtime (nvm ya activo en las shells del workspace)
+node -v                       # debe ser >= 22.19
+
+# 2) Conectar Ghidra existente
+export GHIDRA_INSTALL_DIR=/ruta/a/ghidra_12.1.4_PUBLIC
+export JAVA_HOME=/ruta/a/jdk-21
+
+# 3) Diagnostico del proveedor (solo lectura)
+npx -y rea-agents@latest doctor --provider ghidra --json
+
+# 4) Plan de setup para OpenCode SIN aplicar (revisar primero)
+npx -y rea-agents@latest setup --client opencode --dry-run
+
+# 5) Aplicar tras revisar el plan; reiniciar OpenCode despues
+npx -y rea-agents@latest setup --client opencode
+\end{lstlisting}
+\end{cajaEjemplo}
+
+\begin{cajaRecuerda}
+\textbf{Fijar versión.} Registrar con una versión concreta (\texttt{rea-agents@6.4.0}) en
+lugar de \texttt{@latest} para que la deriva de esquemas del proyecto no rompa la
+integración sin aviso. El perfil \emph{compact} del catálogo MCP reduce el \emph{payload}.
+\end{cajaRecuerda}
+
+% ══ 10. CRITERIOS DE ACEPTACIÓN Y REFERENCIAS ══
+\section[Criterios de aceptación]{\iconotexto{clipboard-check}{Criterios de aceptación y referencias}}
+
+\textbf{Criterios de aceptación del piloto (al llegar la HP):}
+\begin{enumerate}[leftmargin=1.4em]
+  \item \texttt{node -v} reporta dentro del rango soportado (22.19+/24.11+/26+).
+  \item \texttt{rea doctor --provider ghidra --json} devuelve el proveedor como listo
+  (o se decide conscientemente arrancar en modo estático sin motor).
+  \item \texttt{setup --client opencode --dry-run} muestra el plan \textbf{sin} tocar
+  \texttt{AGENTS.md} ni ficheros versionados; se aprueba a mano.
+  \item Un objetivo de laboratorio (p.\,ej.\ una app Electron o un binario propio) se
+  analiza con resultado \textbf{con evidencia} y sin escribir en el repo.
+  \item Se documenta que ningún flujo determinista llama a REA.
+\end{enumerate}
+
+\textbf{Referencias primarias.}
+\begin{itemize}[leftmargin=1.4em]
+  \item Repositorio: \url{https://github.com/morluto/rea}
+  \item Sitio y guías: \url{https://rea.tools/} y \url{https://rea.tools/get-started/}
+  \item Instalación y setup: \url{https://github.com/morluto/rea/blob/main/docs/installation.md}
+  \item Nota fuente (secundaria, no citable):
+  \texttt{docs/AGENTE\_IA/fuentes/rea-ingenieria-inversa-ia.md}
+  \item Análisis crítico (bitácora):
+  \texttt{Sessions/2026-10-12\_rea\_evaluacion\_incorporacion.md}
+\end{itemize}
+
+\end{document}
