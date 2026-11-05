@@ -82,8 +82,10 @@ practicas_reales_laboratorio_ii_fisica
   `execution/estado_sesion.py check` → ok.
 
 ## Pendientes
-- Commit de la sesión (no hecho: el usuario no lo pidió; quedó en pausa y se
-  reanudó el mismo día).
+- Commit hecho al cierre de la reanudación: `499086b` (61 ficheros: curso,
+  generador + tests, flujo OCR, bitácoras, `.agent/latex.md`), sin push. Quedó
+  fuera a propósito el backlog de otras sesiones (cursos/CYBERSEGURIDAD,
+  docs/CYBERSEGURIDAD, asignar_tareas, REA y sus Sessions), aún sin trackear.
 - Auditoría completa (`flujo_auditar_repo.py` sin `--solo`) no se re-corrió tras el
   último cambio; las pasadas parciales (`pdf_stale,directivas,capas,secretos` y
   `capas,directivas`) dieron 0 fallos y el aviso de `directivas` es el histórico de
