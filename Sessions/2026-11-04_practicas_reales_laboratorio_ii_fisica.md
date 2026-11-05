@@ -106,3 +106,9 @@ practicas_reales_laboratorio_ii_fisica
   reporta 33/33 páginas en caché y 0 faltantes; `--dry-run` estima 0 peticiones.
 - Auditoría `--solo capas,directivas`: 25/25 flujos con capa 3, 0 fallos; la
   directiva nueva cuenta como implementada.
+- Al reanudar: auditoría completa (`flujo_auditar_repo.py`, 14 dimensiones) con
+  0 fallos; commit A `fb72b83` (esta bitácora), commit B `2ed963b` (curso de
+  ciberseguridad 10 semanas/escala 10 + `flujo_asignar_tareas` + sus 3 capas +
+  diagrama + bitácoras 11-01/11-02 + 2 líneas de AGENTS.md), commit C `e4c0799`
+  (informe REA `.tex/.pdf` + fuente + bitácoras 10-12/10-19). Push de los 4
+  commits a `origin/master` (`7f114db..e4c0799`). Árbol de trabajo limpio.
