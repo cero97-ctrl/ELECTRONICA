@@ -1,0 +1,1648 @@
+# Descriptor del curso LABORATORIO I DE FISICA.
+# Fuente unica de verdad: todo el material (silabo, plan, guia, talleres,
+# practicas, controles, final y rubrica) se genera desde este fichero con
+#   python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_I_FISICA/curso.yaml
+# Nunca editar a mano los .tex generados: la proxima corrida los sobrescribe.
+
+meta:
+  codigo: LABORATORIO_I_FISICA
+  titulo: Laboratorio I de Física
+  subtitulo: 'Medición, análisis gráfico y propiedades de la materia: del error experimental al informe reproducible'
+  autor: Prof. César Rodríguez
+  institucion: Universidad de Oriente, Núcleo de Sucre, Departamento de Física
+  idioma: es
+  anio: 2026
+  fecha: 6 de noviembre de 2026
+  fecha_iso: '2026-11-06'
+  semanas: 10
+  grupos: 4
+  icono: flask
+  duracion_sesion: '3 horas de laboratorio presencial más 2 horas de análisis e informe'
+  modalidad: >-
+    Laboratorio presencial en mesas de cuatro grupos con roles rotativos. Las
+    cuatro primeras semanas son talleres de teoría de errores y análisis
+    gráfico; a partir de la semana 5 cada sesión es una práctica experimental
+    con entrega semanal por repositorio privado.
+  dedicacion_semanal: '3 horas de laboratorio + 2 horas de análisis e informe'
+  version: 1
+
+objetivo_general: >-
+  Formar al estudiante en el ciclo completo de una medición: elegir el
+  instrumento, tomar datos crudos trazables, expresar el resultado con su
+  incertidumbre, analizarlo gráficamente y comunicarlo en un informe que otro
+  pueda reproducir. El curso usa las propiedades de la materia, la elasticidad,
+  las oscilaciones y el enfriamiento como casos concretos para ejercitar ese
+  ciclo, no como una colección de recetas aisladas.
+
+resultados_aprendizaje:
+  - id: RA1
+    texto: 'Expresar una medición con su incertidumbre, su unidad y sus cifras significativas, distinguiendo apreciación, exactitud y precisión.'
+  - id: RA2
+    texto: 'Propagar incertidumbres en magnitudes directas e indirectas y decidir cuándo una discrepancia es significativa.'
+  - id: RA3
+    texto: 'Graficar, linealizar y ajustar por mínimos cuadrados, reportando pendiente, intercepto, sus incertidumbres y los residuales.'
+  - id: RA4
+    texto: 'Determinar experimentalmente propiedades de la materia (volumen, densidad y centro de masa) y contrastarlas con un método independiente.'
+  - id: RA5
+    texto: 'Verificar leyes físicas extrayendo sus parámetros de un ajuste lineal, no del promedio de cocientes punto a punto.'
+  - id: RA6
+    texto: 'Redactar un informe de laboratorio reproducible, con datos crudos, script de análisis y figuras trazables a una tabla.'
+  - id: RA7
+    texto: 'Trabajar en equipo con roles rotativos, cumpliendo las normas de seguridad y el cuidado del instrumental.'
+
+grupos:
+  cantidad: 4
+  asignacion: >-
+    Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada
+    uno. Los roles rotan al inicio de cada fase para que todos los integrantes
+    pasen por la medición, el análisis, la documentación y la verificación.
+  repositorio: >-
+    Cada grupo crea un repositorio privado con el docente como colaborador de
+    lectura. El repositorio es la entrega: se revisa al cierre de cada semana y
+    es la evidencia del trabajo del semestre.
+  roles:
+    - nombre: Medición
+      descripcion: 'Prepara el montaje, verifica el cero y el rango de cada instrumento, toma las lecturas y anota la resolución con que fueron leídas.'
+      aporta: 'La tabla de datos crudos de la semana y el registro de condiciones ambientales e instrumentales.'
+      en_la_practica:
+        - 'Revisar el montaje contra la figura antes de empezar a medir.'
+        - 'Anotar cada lectura con su unidad y su resolución, nunca de memoria.'
+        - 'Repetir una lectura sospechosa antes de darla por buena.'
+    - nombre: Análisis
+      descripcion: 'Propaga incertidumbres, linealiza el modelo, ajusta por mínimos cuadrados y extrae los parámetros físicos.'
+      aporta: 'El script de análisis, las figuras con unidades y el presupuesto de incertidumbres del resultado final.'
+      en_la_practica:
+        - 'Escribir el script que carga los datos crudos sin modificarlos.'
+        - 'Ajustar el modelo y reportar parámetro, incertidumbre y residuales.'
+        - 'Graficar con ejes rotulados, unidades y banda de incertidumbre.'
+    - nombre: Documentación
+      descripcion: 'Redacta el informe, integra tablas y figuras, cita las fuentes y mantiene el repositorio ordenado según la estructura acordada.'
+      aporta: 'El informe de la semana y el README de la carpeta semanal.'
+      en_la_practica:
+        - 'Redactar el informe con las secciones obligatorias y en el orden fijado.'
+        - 'Verificar que cada cifra del texto salga de una tabla o de un script.'
+        - 'Dejar el repositorio limpio y la entrega fechada antes del corte.'
+    - nombre: Verificación
+      descripcion: 'Contrasta el resultado con el modelo y con una medición independiente, busca errores sistemáticos y firma la trazabilidad de los datos.'
+      aporta: 'La comparación con el valor de referencia y la lista de desvíos con su causa probable.'
+      en_la_practica:
+        - 'Repetir al menos una medida por un método independiente.'
+        - 'Explicar cada desvío mayor que la incertidumbre combinada.'
+        - 'Confirmar que los datos crudos entregados coinciden con los del cuaderno.'
+  asignacion_inicial:
+    - Medición
+    - Análisis
+    - Documentación
+    - Verificación
+  fase_con_roles: [1, 2, 3]
+  rotacion: >-
+    Al inicio de cada fase los roles giran una posición en sentido horario, de
+    modo que en la fase 3 cada integrante haya ocupado los cuatro roles.
+
+evaluacion:
+  escala: 10
+  nota_minima: 5
+  pesos:
+    - concepto: 'Talleres y prácticas (semanas 1 a 10)'
+      peso: 60
+    - concepto: 'Controles de fase (semanas 4 y 7)'
+      peso: 20
+    - concepto: 'Evaluación final práctica y portafolio (semana 10)'
+      peso: 20
+  rubrica: &criterios_rubrica
+    - criterio: fundamento_teorico
+      peso: 1.0
+      descripcion: 'Presenta el modelo físico con sus supuestos y sus límites, y escribe las ecuaciones que va a contrastar.'
+    - criterio: montaje_y_seguridad
+      peso: 1.5
+      descripcion: 'Montaje correcto contra la figura, instrumentos verificados antes de medir y respeto de las normas de seguridad del laboratorio.'
+    - criterio: toma_de_datos
+      peso: 2.0
+      descripcion: 'Tabla completa con unidades y resolución de cada instrumento, datos crudos sin alterar y condiciones de la medición registradas.'
+    - criterio: incertidumbres
+      peso: 2.0
+      descripcion: 'Presupuesto de incertidumbres explícito: tipo A y tipo B, propagación hasta el resultado final y cifras significativas coherentes.'
+    - criterio: analisis_y_graficas
+      peso: 2.0
+      descripcion: 'Ajuste por mínimos cuadrados con parámetro, incertidumbre y residuales; gráficas con ejes rotulados, unidades y banda de incertidumbre.'
+    - criterio: conclusiones
+      peso: 1.0
+      descripcion: 'Conclusiones individuales que contrastan el dato con el modelo, explican los desvíos y declaran lo que no se pudo verificar.'
+    - criterio: presentacion
+      peso: 0.5
+      descripcion: 'Estructura del informe, legibilidad de tablas y figuras, y repositorio ordenado según la estructura acordada.'
+
+entregas:
+  plataforma: GitHub
+  modalidad: >-
+    Un repositorio privado por grupo, con el docente como colaborador de
+    lectura. El repositorio es la entrega; no se reciben informes por correo ni
+    impresos, salvo indicación expresa del docente.
+  cadencia: >-
+    El docente revisa el repositorio al finalizar cada semana y devuelve
+    observaciones antes de la semana siguiente.
+  corte: >-
+    Domingo a las 23:59 de la semana correspondiente. Lo entregado después del
+    corte se corrige con la penalización prevista en las políticas.
+  carpeta: 'semana_{n:02d}'
+  estructura:
+    - 'README.md con integrantes, roles de la fase y tabla de semanas entregadas.'
+    - 'semana_NN/informe.pdf con el informe de la práctica o el taller resuelto.'
+    - 'semana_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.'
+    - 'semana_NN/analisis/ con los scripts que reproducen cada figura.'
+    - 'semana_NN/figuras/ con las gráficas en PDF o PNG generadas por los scripts.'
+    - 'semana_NN/README.md con lo que se hizo, lo que no se pudo verificar y por qué.'
+  reglas:
+    - 'Los datos crudos no se editan nunca; toda corrección vive en el script de análisis.'
+    - 'Cada cifra del informe debe salir de una tabla de datos o de un script entregado.'
+    - 'Los scripts se ejecutan de punta a punta sin pasos manuales intermedios.'
+    - 'Ninguna tabla se entrega sin unidades ni sin la resolución del instrumento.'
+    - 'El informe es grupal, pero las conclusiones se firman individualmente.'
+    - 'Un resultado sin incertidumbre no se acepta como resultado.'
+
+laboratorio:
+  caracter: >-
+    Laboratorio físico de mesa. Cada grupo dispone de un juego de instrumentos
+    y de una estación de análisis con Python para procesar sus propios datos.
+  recursos: >-
+    Mesas con regla milimetrada, calibrador, tornillo micrométrico, balanza,
+    probeta, cronómetro, termómetro digital, soportes, resortes, masas
+    calibradas y cuerpos sólidos de distintos materiales y tamaños.
+  imagenes: []
+  red: laboratorio_fisica
+  subred: '172.29.0.0/24'
+  reglas:
+    - 'No se energiza ningún equipo sin revisión previa del docente.'
+    - 'Los líquidos se manipulan lejos de las balanzas y de las conexiones eléctricas.'
+    - 'Cada instrumento se devuelve limpio, seco y en su estuche al terminar la sesión.'
+    - 'El material roto se reporta de inmediato; ocultarlo agrava la sanción.'
+    - 'Ningún dato se inventa ni se completa de memoria después de la sesión.'
+
+textos:
+  como_funciona: >-
+    Las cuatro primeras semanas son talleres de teoría de errores y análisis
+    gráfico: se aprende a medir, a propagar incertidumbres y a ajustar antes de
+    enfrentarse a un montaje. A partir de la semana 5 cada sesión es una
+    práctica experimental completa, con montaje, tabla de datos, análisis y
+    entrega. Cada semana el grupo rota los roles y cierra con un informe que
+    otro equipo podría reproducir.
+  titulo_entregas: 'Portafolio del grupo y entregas'
+  titulo_estructura: 'Estructura del portafolio'
+  aviso_entrega: >-
+    trabaja solo con el material asignado a tu mesa y con los instrumentos cuyo
+    uso haya autorizado el docente. Si un montaje no coincide con la figura o
+    un instrumento no responde, detente y consulta; un resultado dudoso se
+    reporta, no se corrige a mano.
+  aviso_practica: >-
+    revisa el montaje contra la figura y verifica el cero y el rango de cada
+    instrumento antes de tomar la primera lectura. Si algo no coincide, detente
+    y consulta al docente: los datos tomados sobre un montaje dudoso no se
+    corrigen después.
+  nota_correccion: >-
+    Cada informe se corrige con la rúbrica del curso, que se entrega junto con
+    el enunciado. La nota es la suma de los criterios, no un promedio: un
+    criterio sin evidencia vale cero aunque el resultado numérico sea correcto.
+  titulo_politicas: 'Seguridad, honestidad académica y uso del laboratorio'
+  plan_entrega: >-
+    Cada semana se entrega en GitHub, dentro de la carpeta semana_NN, antes del
+    corte del domingo a las 23:59. El docente revisa esa entrega al finalizar la
+    semana y devuelve observaciones antes de la siguiente.
+  instrucciones_control: >-
+    Responda de forma individual y sin apuntes, con calculadora y una hoja de
+    fórmulas. Cada respuesta debe justificar el procedimiento, no solo dar el
+    número; se valoran la coherencia de las unidades, el manejo de las cifras
+    significativas y la interpretación física del resultado.
+  contrato_ejemplo: |
+    {
+      "status": "ok",
+      "documento": "semana_05",
+      "magnitud": "volumen",
+      "valor": 12.43,
+      "unidad": "cm^3",
+      "incertidumbre": 0.08,
+      "datos": "datos/volumen.csv",
+      "figuras": ["figuras/volumen_metodos.pdf"],
+      "modelo": "V = pi d^2 h / 4",
+      "parametros": {"d": 2.00, "h": 3.96}
+    }
+  reglas_codigo:
+    - 'El script parte de los CSV crudos y termina en las figuras del informe, sin pasos manuales.'
+    - 'Toda cifra del informe se calcula en el script; nada se teclea a mano.'
+    - 'Las unidades se declaran en el CSV y en los ejes de cada figura.'
+    - 'El ajuste reporta parámetro, incertidumbre, coeficiente de determinación y residuales.'
+    - 'Sin credenciales ni rutas absolutas: el script corre desde la carpeta de la semana.'
+
+fases:
+  - id: 1
+    nombre: 'Medición, error y análisis gráfico'
+    semanas: [1, 2, 3, 4]
+    enfoque: >-
+      Aprender a medir antes de medir cosas difíciles: apreciación, tipos de
+      error, propagación, gráficas, linealización y ajuste por mínimos
+      cuadrados, ejercitados con datos propios.
+    icono: ruler-combined
+  - id: 2
+    nombre: 'Propiedades de la materia y equilibrio'
+    semanas: [5, 6, 7]
+    enfoque: >-
+      Medir volumen, densidad y centro de masa con dos métodos independientes,
+      y usar la discrepancia entre ambos como criterio de control del montaje.
+    icono: cube
+  - id: 3
+    nombre: 'Elasticidad, oscilaciones y calor'
+    semanas: [8, 9, 10]
+    enfoque: >-
+      Extraer parámetros físicos de ajustes lineales: constante elástica,
+      aceleración de la gravedad y constante de enfriamiento, con sus
+      incertidumbres y sus modelos de linealización.
+    icono: thermometer-half
+
+# ── Semanas ───────────────────────────────────────────────────────────────────
+
+semanas:
+  - numero: 1
+    fase: 1
+    tipo: teoria
+    titulo: 'La medición, la apreciación y el error'
+    objetivo: >-
+      Distinguir apreciación, exactitud y precisión, expresar una lectura con su
+      incertidumbre y decidir cuántas cifras significativas tiene sentido
+      reportar.
+    contenidos:
+      - 'Magnitud, unidad y patrón; magnitudes directas e indirectas.'
+      - 'Apreciación de un instrumento de escala dividida y de un instrumento digital.'
+      - 'Exactitud frente a precisión; errores sistemáticos y aleatorios.'
+      - 'Error absoluto, relativo y porcentual.'
+      - 'Valor medio, desviación estándar y desviación estándar de la media.'
+      - 'Incertidumbre tipo A y tipo B; incertidumbre combinada.'
+      - 'Cifras significativas y reglas de redondeo.'
+    herramientas:
+      - 'Regla milimetrada'
+      - 'Calibrador o pie de rey'
+      - 'Tornillo micrométrico'
+      - 'Cronómetro digital'
+      - 'Calculadora'
+    evaluacion: 'Taller formativo con entrega'
+    practica:
+      titulo: 'Medición, apreciación y expresión de resultados'
+      escenario: >-
+        Cada grupo recibe tres instrumentos con distinta apreciación y un juego
+        de cuerpos. Debe medir la misma longitud con los tres, repetir diez
+        veces la lectura con el instrumento de menor apreciación y decidir cuál
+        de las tres expresiones del resultado es defendible.
+      fundamento_tex: |
+        Medir es comparar una magnitud con un patrón y expresar el resultado con
+        una incertidumbre. La \emph{apreciación} $A$ de un instrumento de escala
+        dividida es la menor división legible:
+        \[
+          A = \frac{L_s - L_i}{n},
+        \]
+        donde $L_s$ y $L_i$ son los extremos del intervalo que abarca $n$
+        divisiones. La \emph{exactitud} es la cercanía al valor verdadero; la
+        \emph{precisión} es la reproducibilidad de las lecturas. Un instrumento
+        puede ser preciso e inexacto a la vez.
+
+        Para $n$ lecturas $x_k$ de la misma magnitud, el valor central es la media
+        \[
+          \bar{x} = \frac{1}{n}\sum_{k=1}^{n} x_k,
+        \]
+        y la incertidumbre tipo A es la desviación estándar de la media
+        \[
+          u_A = \frac{s}{\sqrt{n}}, \qquad
+          s = \sqrt{\frac{1}{n-1}\sum_{k=1}^{n}\left(x_k-\bar{x}\right)^2}.
+        \]
+        La incertidumbre tipo B asociada a la escala se estima como
+        $u_B = A/\sqrt{12}$ si la lectura puede caer en cualquier punto de la
+        división, o como $u_B = A/2$ en el criterio conservador. La incertidumbre
+        combinada es
+        \[
+          u = \sqrt{u_A^2 + u_B^2}.
+        \]
+        El resultado se escribe $x = \bar{x} \pm u$, con su unidad y con la
+        incertidumbre redondeada a una cifra significativa (dos si la primera es
+        uno). El error relativo es $\epsilon_r = u/\bar{x}$ y el error porcentual
+        es $100\,\epsilon_r$ por ciento.
+      figura_tex: |
+        \begin{tikzpicture}[scale=1.0]
+          \draw[thick] (0,0) rectangle (10,0.6);
+          \foreach \x in {0,1,...,10} \draw (\x,0) -- (\x,0.35);
+          \draw (7.3,0.6) -- (7.3,1.2);
+          \node[above] at (7.3,1.2) {lectura};
+          \node[below] at (0,-0.05) {0};
+          \node[below] at (5,-0.05) {5};
+          \node[below] at (10,-0.05) {10 cm};
+        \end{tikzpicture}
+      figura_caption: 'Escala dividida: la apreciación es la menor división que se puede leer con certeza'
+      materiales:
+        - 'Regla milimetrada de 30 cm'
+        - 'Calibrador con apreciación de 0,05 mm'
+        - 'Tornillo micrométrico con apreciación de 0,01 mm'
+        - 'Bloque metálico, cilindro y esfera'
+        - 'Cronómetro digital'
+      pasos:
+        - 'Determinar la apreciación de los tres instrumentos a partir de su escala o de su manual, y anotarla en el cuaderno.'
+        - 'Medir la misma dimensión del bloque con la regla, el calibrador y el tornillo, una vez con cada uno, y registrar las tres lecturas.'
+        - 'Repetir diez veces la medición con el calibrador, variando ligeramente el punto de contacto, sin cambiar de objeto.'
+        - 'Calcular la media, la desviación estándar de la media y la incertidumbre tipo B de cada instrumento.'
+        - 'Escribir el resultado de cada instrumento con su incertidumbre combinada y decidir cuál es más confiable y por qué.'
+        - 'Medir con el cronómetro el tiempo de diez oscilaciones de un péndulo improvisado con el bloque y un hilo, y estimar la incertidumbre de reacción humana.'
+        - 'Comparar la incertidumbre de la regla con la del tornillo y explicar por qué la diferencia no es un error de quien mide.'
+      tabla_datos:
+        caption: 'Registro de lecturas repetidas con el calibrador'
+        nota: 'Anotar la apreciación de cada instrumento y mantener las diez lecturas aunque alguna parezca anómala; la anomalía también es dato.'
+        columnas:
+          - 'Ensayo'
+          - '$L$ (mm)'
+          - '$(L-\bar{L})$ (mm)'
+          - '$(L-\bar{L})^2$ (mm$^2$)'
+        filas:
+          - ['1', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['4', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['5', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['6', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['7', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['8', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['9', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['10', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular $\bar{L}$, $s$ y $u_A$ de las diez lecturas.'
+        - 'Calcular $u_B$ con la apreciación del calibrador y compararla con $u_A$; decidir cuál domina.'
+        - 'Expresar el resultado como $L = \bar{L} \pm u$, con la unidad y con las cifras significativas correctas.'
+        - 'Calcular el error relativo y el porcentual de la medición con el calibrador.'
+        - 'Comparar las tres expresiones del resultado y justificar cuál se reportaría en un informe.'
+        - 'Discutir si la diferencia entre instrumentos es un error sistemático o una diferencia de resolución.'
+      entregable: >-
+        Taller resuelto con la tabla de diez lecturas, el cálculo completo de la
+        media y las incertidumbres, la expresión final del resultado y un párrafo
+        que justifique el instrumento elegido.
+      criterios: &criterios_taller
+        - criterio: 'Fundamento y vocabulario metrológico'
+          peso: 2.0
+        - criterio: 'Procedimiento y registro de lecturas'
+          peso: 2.0
+        - criterio: 'Cálculo de medias e incertidumbres'
+          peso: 3.0
+        - criterio: 'Interpretación y elección del instrumento'
+          peso: 2.0
+        - criterio: 'Presentación y unidades'
+          peso: 1.0
+
+  - numero: 2
+    fase: 1
+    tipo: teoria
+    titulo: 'Propagación de incertidumbres y notación científica'
+    objetivo: >-
+      Propagar la incertidumbre desde las magnitudes medidas hasta una magnitud
+      calculada, y expresar el resultado en notación científica con las cifras
+      significativas que la incertidumbre permite.
+    contenidos:
+      - 'Regla de la suma y de la diferencia para incertidumbres absolutas.'
+      - 'Regla del producto y del cociente para incertidumbres relativas.'
+      - 'Propagación general por derivadas parciales.'
+      - 'Potencias, raíces y factores constantes.'
+      - 'Notación científica y prefijos del SI.'
+      - 'Cifras significativas en operaciones y redondeo final.'
+    herramientas:
+      - 'Calculadora científica'
+      - 'Calibrador'
+      - 'Probeta graduada'
+      - 'Hoja de cálculo o Python'
+    evaluacion: 'Taller formativo con entrega'
+    practica:
+      titulo: 'Del objeto al resultado: propagar sin inventar cifras'
+      escenario: >-
+        Cada grupo mide el diámetro y la altura de un cilindro con el calibrador
+        y calcula su volumen por la fórmula geométrica. Debe reportar el volumen
+        con su incertidumbre, no con todas las cifras que arroja la calculadora,
+        y comprobar el resultado por desplazamiento de agua.
+      fundamento_tex: |
+        Si $z = x \pm y$, las incertidumbres absolutas se combinan en cuadratura:
+        \[
+          u_z = \sqrt{u_x^2 + u_y^2}.
+        \]
+        Si $z = x\,y$ o $z = x/y$, se combinan las incertidumbres relativas:
+        \[
+          \frac{u_z}{|z|} = \sqrt{\left(\frac{u_x}{x}\right)^2
+                                + \left(\frac{u_y}{y}\right)^2}.
+        \]
+        En general, para $z = f(x_1,\ldots,x_n)$ con variables independientes,
+        \[
+          u_z = \sqrt{\sum_{i=1}^{n}
+                  \left(\frac{\partial f}{\partial x_i}\,u_{x_i}\right)^2}.
+        \]
+        Para el cilindro, $V = \pi d^2 h/4$, de modo que
+        \[
+          \frac{u_V}{V} = \sqrt{\left(2\,\frac{u_d}{d}\right)^2
+                                + \left(\frac{u_h}{h}\right)^2}.
+        \]
+        La notación científica escribe todo número como
+        $a \times 10^{n}$ con $1 \le |a| < 10$. Los prefijos del SI
+        (mili, micro, nano, kilo, mega) se aplican a la unidad, no al número, y
+        no sustituyen a las cifras significativas. Al multiplicar o dividir, el
+        resultado conserva tantas cifras significativas como el factor con menos
+        cifras; al sumar o restar, conserva tantos decimales como el sumando con
+        menos decimales. La incertidumbre se redondea siempre al final.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.9]
+          \draw[thick] (0,0) ellipse (1.2 and 0.35);
+          \draw[thick] (-1.2,0) -- (-1.2,4);
+          \draw[thick] (1.2,0) -- (1.2,4);
+          \draw[thick] (0,4) ellipse (1.2 and 0.35);
+          \draw[<->] (-1.6,0) -- (-1.6,4) node[midway,left] {$h$};
+          \draw[<->] (-1.2,4.5) -- (1.2,4.5) node[midway,above] {$d$};
+        \end{tikzpicture}
+      figura_caption: 'Cilindro de diámetro d y altura h: dos magnitudes medidas, una magnitud calculada'
+      materiales:
+        - 'Calibrador con apreciación de 0,05 mm'
+        - 'Cilindro metálico'
+        - 'Probeta graduada de 100 mL'
+        - 'Agua destilada y jeringa'
+        - 'Calculadora científica'
+      pasos:
+        - 'Medir el diámetro en tres posiciones distintas y la altura en tres posiciones, anotando cada lectura con su unidad.'
+        - 'Calcular la media y la incertidumbre de $d$ y de $h$ con el criterio de la semana anterior.'
+        - 'Calcular el volumen geométrico y su incertidumbre con la fórmula de propagación.'
+        - 'Llenar la probeta hasta un volumen inicial legible y anotar la resolución de la escala.'
+        - 'Sumergir el cilindro con un hilo fino y leer el volumen final; repetir cinco veces secando el cilindro entre ensayos.'
+        - 'Calcular el volumen desplazado medio y su incertidumbre a partir del volumen inicial y final.'
+        - 'Comparar ambos volúmenes y expresar la diferencia como porcentaje del valor medio.'
+      tabla_datos:
+        caption: 'Volumen del cilindro por dos métodos independientes'
+        nota: 'Reportar cada volumen con su incertidumbre y su unidad; la comparación se hace en la misma unidad y con la misma cantidad de cifras.'
+        columnas:
+          - 'Método'
+          - 'Ensayo'
+          - '$V$ (cm$^3$)'
+          - '$u_V$ (cm$^3$)'
+        filas:
+          - ['Geométrico', '1', '$\ldots$', '$\ldots$']
+          - ['Geométrico', '2', '$\ldots$', '$\ldots$']
+          - ['Geométrico', '3', '$\ldots$', '$\ldots$']
+          - ['Desplazamiento', '1', '$\ldots$', '$\ldots$']
+          - ['Desplazamiento', '2', '$\ldots$', '$\ldots$']
+          - ['Desplazamiento', '3', '$\ldots$', '$\ldots$']
+          - ['Desplazamiento', '4', '$\ldots$', '$\ldots$']
+          - ['Desplazamiento', '5', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular $u_d$ y $u_h$ y escribir $d$ y $h$ con su incertidumbre.'
+        - 'Aplicar la fórmula de propagación del cilindro y reportar $V \pm u_V$.'
+        - 'Calcular el volumen desplazado y su incertidumbre considerando la resolución de la probeta.'
+        - 'Expresar ambos resultados en notación científica con las cifras significativas correctas.'
+        - 'Comparar los dos volúmenes y decidir si la diferencia es mayor que la incertidumbre combinada.'
+        - 'Identificar qué magnitud aporta más incertidumbre al volumen y proponer cómo reducirla.'
+      entregable: >-
+        Taller resuelto con las mediciones, la propagación paso a paso, ambos
+        volúmenes expresados en notación científica y la conclusión sobre si los
+        métodos coinciden dentro de la incertidumbre.
+      criterios: *criterios_taller
+
+  - numero: 3
+    fase: 1
+    tipo: teoria
+    titulo: 'Graficación, linealización y lectura de una recta'
+    objetivo: >-
+      Construir una gráfica con ejes rotulados y unidades, linealizar un modelo
+      físico y extraer de la recta la pendiente y el intercepto con su
+      significado físico.
+    contenidos:
+      - 'Variables dependiente e independiente; elección de escalas y origen.'
+      - 'Rotulación de ejes, unidades y título de figura.'
+      - 'Barras de incertidumbre y su relación con el tamaño del punto.'
+      - 'Modelos linealizables: potencial, exponencial y proporcional.'
+      - 'Pendiente e intercepto con unidades y significado físico.'
+      - 'Criterio de bondad visual: dispersión de los puntos y tendencia.'
+    herramientas:
+      - 'Papel milimetrado'
+      - 'Regla'
+      - 'Datos de la práctica del péndulo'
+      - 'Python con Matplotlib'
+    evaluacion: 'Taller formativo con entrega'
+    practica:
+      titulo: 'De la curva a la recta: linealizar para entender'
+      escenario: >-
+        Cada grupo recibe una tabla de periodo y longitud de un péndulo. Debe
+        graficar los datos crudos, descubrir que la relación no es lineal,
+        linealizarla elevando al cuadrado el periodo y leer de la recta la
+        aceleración de la gravedad.
+      fundamento_tex: |
+        Una gráfica es un argumento, no un adorno: los ejes llevan nombre y
+        unidad, la escala es uniforme y el origen se elige para que la tendencia
+        se vea sin exagerarla ni ocultarla. La pendiente de una recta
+        \[
+          y = m\,x + b
+        \]
+        tiene las unidades de $y$ divididas entre las de $x$; el intercepto tiene
+        las unidades de $y$. Reportar una pendiente sin unidades es reportar un
+        número sin significado.
+
+        Muchos modelos físicos no son lineales, pero se linealizan con un cambio
+        de variable. Para el péndulo simple, $T = 2\pi\sqrt{L/g}$; elevando al
+        cuadrado,
+        \[
+          T^2 = \frac{4\pi^2}{g}\,L.
+        \]
+        Al graficar $T^2$ frente a $L$ se obtiene una recta que pasa por el
+        origen, cuya pendiente es $m = 4\pi^2/g$. Entonces
+        \[
+          g = \frac{4\pi^2}{m}.
+        \]
+        Si el modelo incluye una longitud no medida, $L = L_H + L_C$, la recta es
+        \[
+          T^2 = \frac{4\pi^2}{g}\,L_H + \frac{4\pi^2}{g}\,L_C,
+        \]
+        con pendiente $m = 4\pi^2/g$ e intercepto $b = m\,L_C$. El intercepto deja
+        de ser un estorbo y se convierte en una medida indirecta de $L_C$.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.8]
+          \draw[->] (0,0) -- (9,0) node[right] {$L$ (cm)};
+          \draw[->] (0,0) -- (0,6) node[above] {$T^2$ (s$^2$)};
+          \draw[thick] (0.5,0.83) -- (8.2,5.92);
+          \foreach \x/\y in {1/1.2,2/1.8,3/2.5,4/3.1,5/3.8,6/4.4,7/5.2} {
+            \fill (\x,\y) circle (2.5pt);
+            \draw (\x,\y) -- (\x,\y-0.25);
+            \draw (\x,\y) -- (\x,\y+0.25);
+          }
+        \end{tikzpicture}
+      figura_caption: 'Recta ajustada a puntos con barras de incertidumbre: la pendiente y el intercepto se leen con sus unidades'
+      materiales:
+        - 'Tabla de periodo y longitud del péndulo de la semana 9'
+        - 'Papel milimetrado o Python con Matplotlib'
+        - 'Regla y calculadora'
+      pasos:
+        - 'Tabular la longitud del hilo y el periodo al cuadrado, con sus unidades.'
+        - 'Graficar $T$ frente a $L$ y describir la forma de la curva.'
+        - 'Graficar $T^2$ frente a $L$ y comprobar si los puntos se alinean.'
+        - 'Trazar la recta que mejor represente la tendencia, sin forzarla a pasar por el primer ni por el último punto.'
+        - 'Calcular la pendiente a partir de dos puntos de la recta trazada, no de dos datos crudos.'
+        - 'Calcular $g$ a partir de la pendiente y compararla con el valor de referencia.'
+        - 'Interpretar el intercepto y decidir si es compatible con cero dentro de la incertidumbre.'
+      tabla_datos:
+        caption: 'Datos del péndulo para linealizar'
+        nota: 'La tabla ya está ordenada de mayor a menor longitud; al graficar, el eje horizontal es la longitud y el vertical el periodo al cuadrado.'
+        columnas:
+          - 'Ensayo'
+          - '$L$ (cm)'
+          - '$T$ (s)'
+          - '$T^2$ (s$^2$)'
+        filas:
+          - ['1', '67,0', '1,778', '3,161']
+          - ['2', '60,0', '1,532', '2,347']
+          - ['3', '52,0', '1,430', '2,045']
+          - ['4', '45,5', '1,354', '1,833']
+          - ['5', '39,0', '1,266', '1,603']
+          - ['6', '33,0', '1,186', '1,407']
+          - ['7', '28,0', '1,136', '1,291']
+          - ['8', '22,5', '1,060', '1,124']
+          - ['9', '17,5', '0,948', '0,899']
+          - ['10', '12,5', '0,856', '0,733']
+      analisis:
+        - 'Describir la forma de la gráfica $T$ frente a $L$ y explicar por qué no es una recta.'
+        - 'Calcular la pendiente de $T^2$ frente a $L$ con dos puntos de la recta trazada y reportarla con unidades.'
+        - 'Calcular $g = 4\pi^2/m$ y expresarla en m/s$^2$.'
+        - 'Comparar $g$ con el valor de referencia y calcular la diferencia porcentual.'
+        - 'Interpretar el intercepto: ¿es cero dentro de la incertidumbre? ¿Qué significaría que no lo fuera?'
+        - 'Explicar por qué se grafica $T^2$ y no $T$, y qué se gana con la linealización.'
+      entregable: >-
+        Taller resuelto con las dos gráficas, la recta trazada, el cálculo de la
+        pendiente con unidades, el valor de $g$ y la interpretación del
+        intercepto.
+      criterios: *criterios_taller
+
+  - numero: 4
+    fase: 1
+    tipo: teoria
+    titulo: 'Mínimos cuadrados y estructura del informe'
+    objetivo: >-
+      Ajustar una recta por mínimos cuadrados, reportar la pendiente, el
+      intercepto y su bondad, y estructurar un informe de laboratorio que otro
+      pueda reproducir.
+    contenidos:
+      - 'Criterio de mínimos cuadrados y diferencia con el trazo a ojo.'
+      - 'Fórmulas de pendiente e intercepto para datos con x sin incertidumbre.'
+      - 'Coeficiente de determinación y análisis de residuales.'
+      - 'Incertidumbre de la pendiente y del intercepto.'
+      - 'Estructura del informe: objetivo, fundamento, montaje, datos, análisis, conclusiones.'
+      - 'Trazabilidad: cada cifra del texto sale de una tabla o de un script.'
+    herramientas:
+      - 'Hoja de cálculo o Python con NumPy'
+      - 'Datos del resorte de la semana 8'
+      - 'Calculadora'
+    evaluacion: 'Taller integrador con entrega'
+    practica:
+      titulo: 'Ajustar, juzgar y escribir: el cierre de la fase uno'
+      escenario: >-
+        Cada grupo recibe una tabla de masa colgada y estiramiento de un resorte.
+        Debe ajustar la recta por mínimos cuadrados, decidir si el resorte es
+        lineal en el rango medido y redactar un informe corto con la estructura
+        completa del curso.
+      fundamento_tex: |
+        Para un conjunto de pares $(x_k,y_k)$ con la incertidumbre concentrada en
+        $y$, la recta de mínimos cuadrados $y = m\,x + b$ tiene
+        \[
+          m = \frac{n\sum x_k y_k - \sum x_k \sum y_k}
+                   {n\sum x_k^2 - \left(\sum x_k\right)^2},
+          \qquad
+          b = \frac{\sum y_k - m\sum x_k}{n}.
+        \]
+        La bondad del ajuste se mide con el coeficiente de determinación
+        \[
+          r^2 = 1 - \frac{\sum (y_k - m x_k - b)^2}
+                       {\sum (y_k - \bar{y})^2},
+        \]
+        que vale uno cuando todos los puntos caen sobre la recta y cero cuando el
+        ajuste no explica nada. El residual $e_k = y_k - m x_k - b$ es la parte
+        que el modelo no explica: si los residuales se ordenan en forma de curva,
+        el modelo lineal no es el adecuado aunque $r^2$ sea alto.
+
+        La incertidumbre de la pendiente se estima con
+        \[
+          u_m = \sqrt{\frac{\sum e_k^2}{(n-2)\sum (x_k-\bar{x})^2}}.
+        \]
+        Un informe reproducible declara el objetivo, el modelo con sus
+        supuestos, el montaje, la tabla de datos crudos con unidades y
+        resoluciones, el análisis con sus ajustes y las conclusiones. Cada cifra
+        del texto debe poder rastrearse hasta una tabla o un script; si no se
+        puede, no es un resultado, es una impresión.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.75]
+          \draw[->] (0,0) -- (9,0) node[right] {$m$ (g)};
+          \draw[->] (0,0) -- (0,6) node[above] {$\Delta y$ (cm)};
+          \draw[thick] (0.6,0.88) -- (8.3,5.93);
+          \foreach \x/\y in {1/1.0,2/2.0,3/2.2,4/3.5,5/3.5,6/4.7,7/4.8,8/5.8} {
+            \fill (\x,\y) circle (2.5pt);
+            \draw[dashed] (\x,\y) -- (\x,0.486+0.656*\x);
+          }
+          \node[below] at (4.5,-0.2) {masa colgada};
+        \end{tikzpicture}
+      figura_caption: 'Ajuste por mínimos cuadrados y residuales: la distancia vertical de cada punto a la recta es lo que el modelo no explica'
+      materiales:
+        - 'Tabla de masa y estiramiento del resorte'
+        - 'Hoja de cálculo o Python con NumPy'
+        - 'Calculadora y regla'
+      pasos:
+        - 'Copiar la tabla de masa y estiramiento en la hoja de cálculo, con unidades en la cabecera.'
+        - 'Calcular las sumatorias necesarias para la pendiente y el intercepto.'
+        - 'Ajustar la recta por mínimos cuadrados y escribir su ecuación con unidades.'
+        - 'Calcular $r^2$ y los residuales de cada punto.'
+        - 'Graficar los datos, la recta y los residuales; decidir si el modelo lineal es adecuado en todo el rango.'
+        - 'Redactar un informe corto con objetivo, fundamento, datos, análisis y conclusiones, siguiendo la estructura del curso.'
+      tabla_datos:
+        caption: 'Masa colgada y estiramiento de un resorte'
+        nota: 'La masa se convierte a peso multiplicando por la gravedad; el estiramiento se mide respecto de la posición sin carga.'
+        columnas:
+          - 'Ensayo'
+          - '$m$ (g)'
+          - '$\Delta y$ (cm)'
+          - '$P$ (N)'
+        filas:
+          - ['1', '50', '1,1', '$\ldots$']
+          - ['2', '100', '2,3', '$\ldots$']
+          - ['3', '150', '3,4', '$\ldots$']
+          - ['4', '200', '4,6', '$\ldots$']
+          - ['5', '250', '5,7', '$\ldots$']
+          - ['6', '300', '6,9', '$\ldots$']
+          - ['7', '350', '8,0', '$\ldots$']
+          - ['8', '400', '9,2', '$\ldots$']
+          - ['9', '450', '10,3', '$\ldots$']
+          - ['10', '500', '11,5', '$\ldots$']
+      analisis:
+        - 'Calcular la pendiente y el intercepto por mínimos cuadrados y reportarlos con sus unidades.'
+        - 'Calcular $r^2$ y decidir si el ajuste lineal es aceptable.'
+        - 'Graficar los residuales frente a la masa y describir su forma.'
+        - 'Interpretar la pendiente como una constante elástica y escribir su valor en N/m.'
+        - 'Identificar el rango en el que el resorte se comporta linealmente y el punto donde empieza a desviarse.'
+        - 'Redactar las conclusiones de modo que un lector pueda repetir el experimento y obtener un valor comparable.'
+      entregable: >-
+        Taller integrador con la tabla completa, el ajuste por mínimos cuadrados,
+        la gráfica con residuales, la constante elástica y un informe corto de
+        dos páginas con la estructura del curso.
+      criterios: *criterios_taller
+
+  - numero: 5
+    fase: 2
+    tipo: practica
+    titulo: 'Volumen de un sólido por dos métodos'
+    objetivo: >-
+      Determinar el volumen de un sólido regular por medición geométrica y por
+      desplazamiento de agua, propagar la incertidumbre de ambos métodos y
+      decidir si sus resultados coinciden dentro del error experimental.
+    contenidos:
+      - 'Volumen de cuerpos regulares: prisma, cilindro y esfera.'
+      - 'Medición de dimensiones con calibrador y tornillo micrométrico.'
+      - 'Desplazamiento de líquido y lectura del menisco.'
+      - 'Propagación de incertidumbres en productos y potencias.'
+      - 'Comparación de dos métodos independientes.'
+    herramientas:
+      - 'Calibrador y tornillo micrométrico'
+      - 'Probeta graduada de 100 mL'
+      - 'Agua destilada, jeringa y paño'
+      - 'Cuerpos regulares de distintos materiales'
+      - 'Hilo fino'
+    evaluacion: 'Práctica con informe'
+    practica:
+      titulo: 'Volumen de un sólido por dos métodos'
+      escenario: >-
+        Cada grupo recibe tres sólidos regulares. Debe medir sus dimensiones con
+        el instrumento adecuado, calcular el volumen geométrico, medirlo de nuevo
+        por desplazamiento de agua y explicar la discrepancia entre ambos
+        resultados con su presupuesto de incertidumbres.
+      fundamento_tex: |
+        El volumen de un cuerpo regular se calcula a partir de sus dimensiones:
+        para un prisma rectangular $V = a\,b\,c$; para un cilindro
+        $V = \pi d^2 h/4$; para una esfera $V = \pi d^3/6$.
+
+        La incertidumbre relativa de un producto se combina en cuadratura. Para
+        el cilindro,
+        \[
+          \frac{u_V}{V} = \sqrt{\left(2\,\frac{u_d}{d}\right)^2
+                                + \left(\frac{u_h}{h}\right)^2},
+        \]
+        y para la esfera,
+        \[
+          \frac{u_V}{V} = 3\,\frac{u_d}{d}.
+        \]
+
+        Por desplazamiento, el volumen del sólido es la diferencia entre el
+        volumen final y el inicial:
+        \[
+          V = V_f - V_i, \qquad u_V = \sqrt{u_{V_f}^2 + u_{V_i}^2}.
+        \]
+        La incertidumbre de cada lectura de la probeta combina la resolución de
+        la escala con la dificultad de leer el menisco. El sólido debe quedar
+        completamente sumergido y sin burbujas adheridas; un hilo fino evita
+        añadir volumen apreciable. Si los dos métodos no coinciden dentro de su
+        incertidumbre combinada, hay un error sistemático que debe buscarse
+        (burbujas, volumen del hilo, lectura del menisco o dimensiones mal
+        medidas), no un simple desacuerdo numérico.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.8]
+          \draw[thick] (0,0) -- (0,6);
+          \draw[thick] (2,0) -- (2,6);
+          \draw (0,0) .. controls (0,-0.35) .. (1,-0.35) .. controls (2,-0.35) .. (2,0);
+          \fill[cyan!25] (0.06,0.05) -- (0.06,2.1) -- (1.94,2.1) -- (1.94,0.05) -- cycle;
+          \fill[cyan!25] (0.06,2.1) -- (0.06,3.6) -- (1.94,3.6) -- (1.94,2.1) -- cycle;
+          \draw[dashed] (0,2.1) -- (2,2.1);
+          \draw[dashed] (0,3.6) -- (2,3.6);
+          \node[right] at (2,2.1) {$V_i$};
+          \node[right] at (2,3.6) {$V_f$};
+          \fill (1,1.4) circle (0.32);
+          \node[right] at (2.4,1.4) {sólido};
+        \end{tikzpicture}
+      figura_caption: 'Desplazamiento de agua: el volumen del sólido es la diferencia entre la lectura final y la inicial'
+      materiales:
+        - 'Calibrador con apreciación de 0,05 mm'
+        - 'Tornillo micrométrico con apreciación de 0,01 mm'
+        - 'Probeta graduada de 100 mL con resolución de 1 mL'
+        - 'Agua destilada'
+        - 'Jeringa de 20 mL y paño absorbente'
+        - 'Bloque, cilindro y esfera metálicos'
+        - 'Hilo fino de coser'
+      pasos:
+        - 'Identificar cada sólido y anotar su material y su forma geométrica.'
+        - 'Medir cada dimensión cinco veces con el instrumento adecuado, en posiciones distintas, y registrar las lecturas con su apreciación.'
+        - 'Calcular la media y la incertidumbre de cada dimensión.'
+        - 'Calcular el volumen geométrico y su incertidumbre con la fórmula que corresponda.'
+        - 'Llenar la probeta hasta un volumen inicial legible, secar el borde y anotar la resolución de la escala.'
+        - 'Atar el sólido con el hilo, sumergirlo completamente sin tocar las paredes y leer el volumen final; repetir cinco veces.'
+        - 'Secar el sólido entre ensayos y comprobar que no quedan burbujas adheridas.'
+        - 'Calcular el volumen desplazado medio y su incertidumbre a partir de las cinco diferencias.'
+      tabla_datos:
+        caption: 'Volumen de cada sólido por los dos métodos'
+        nota: 'Registrar la resolución de la probeta y del calibrador; comparar los métodos solo después de expresar ambos volúmenes en la misma unidad.'
+        columnas:
+          - 'Sólido'
+          - 'Método'
+          - '$V$ (cm$^3$)'
+          - '$u_V$ (cm$^3$)'
+          - 'Diferencia (\%)'
+        filas:
+          - ['Bloque', 'Geométrico', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Bloque', 'Desplazamiento', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Cilindro', 'Geométrico', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Cilindro', 'Desplazamiento', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Esfera', 'Geométrico', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['Esfera', 'Desplazamiento', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular el volumen geométrico y su incertidumbre para cada sólido.'
+        - 'Calcular el volumen desplazado medio y su incertidumbre para cada sólido.'
+        - 'Comparar ambos resultados mediante la diferencia porcentual respecto del valor medio.'
+        - 'Decidir si la diferencia es mayor que la incertidumbre combinada y, si lo es, proponer la causa sistemática más probable.'
+        - 'Identificar cuál de las magnitudes medidas aporta más incertidumbre al volumen geométrico.'
+        - 'Proponer una mejora concreta del montaje que reduzca la incertidumbre dominante.'
+      entregable: >-
+        Informe con la tabla de datos crudos, ambos volúmenes con su
+        incertidumbre, la comparación entre métodos y la explicación de la
+        discrepancia.
+      criterios: &criterios_practica
+        - criterio: 'Fundamento teórico y modelo aplicado'
+          peso: 1.0
+        - criterio: 'Montaje, seguridad y manejo del instrumental'
+          peso: 1.5
+        - criterio: 'Toma de datos completa y trazable'
+          peso: 2.0
+        - criterio: 'Presupuesto de incertidumbres'
+          peso: 2.0
+        - criterio: 'Análisis, ajuste y gráficas'
+          peso: 2.0
+        - criterio: 'Conclusiones contrastadas con el modelo'
+          peso: 1.0
+        - criterio: 'Presentación y estructura del informe'
+          peso: 0.5
+
+  - numero: 6
+    fase: 2
+    tipo: practica
+    titulo: 'Densidad de un cuerpo sólido'
+    objetivo: >-
+      Determinar la densidad de un sólido por la relación masa-volumen y por el
+      principio de Arquímedes, comparar ambos resultados y reconocer el material
+      a partir de la tabla de densidades.
+    contenidos:
+      - 'Densidad como propiedad intensiva de la materia.'
+      - 'Medición de masa con balanza y de volumen por desplazamiento.'
+      - 'Principio de Arquímedes y empuje.'
+      - 'Peso aparente y determinación de densidad sin medir el volumen.'
+      - 'Propagación de incertidumbres en un cociente.'
+      - 'Dependencia de la densidad del agua con la temperatura.'
+    herramientas:
+      - 'Balanza de precisión de 0,01 g'
+      - 'Calibrador y probeta graduada'
+      - 'Vaso de precipitados y agua destilada'
+      - 'Termómetro digital'
+      - 'Hilo fino y paño'
+      - 'Sólidos metálicos de distintos materiales'
+    evaluacion: 'Práctica con informe'
+    practica:
+      titulo: 'Densidad de un cuerpo sólido'
+      escenario: >-
+        Cada grupo recibe varios sólidos metálicos sin identificar. Debe obtener
+        la densidad de cada uno por la relación masa-volumen y por pesada
+        hidrostática, comparar los dos valores y proponer de qué material se
+        trata usando la tabla de densidades.
+      fundamento_tex: |
+        La densidad es la masa por unidad de volumen:
+        \[
+          \rho = \frac{m}{V}, \qquad
+          \frac{u_\rho}{\rho} = \sqrt{\left(\frac{u_m}{m}\right)^2
+                                    + \left(\frac{u_V}{V}\right)^2}.
+        \]
+        El principio de Arquímedes dice que todo cuerpo sumergido recibe un
+        empuje igual al peso del fluido desalojado:
+        \[
+          E = \rho_f\,V\,g.
+        \]
+        Si el cuerpo se cuelga de una balanza y se sumerge completamente en el
+        fluido, la lectura aparente $m_a$ es menor que la masa real $m$. La
+        diferencia de pesos es el empuje:
+        \[
+          (m - m_a)\,g = \rho_f\,V\,g
+          \qquad\Longrightarrow\qquad
+          V = \frac{m - m_a}{\rho_f}.
+        \]
+        Sustituyendo en la definición de densidad,
+        \[
+          \rho_s = \frac{m}{V} = \rho_f\,\frac{m}{m - m_a}.
+        \]
+        Así se obtiene la densidad del sólido sin medir su volumen, siempre que
+        el cuerpo esté completamente sumergido, no toque las paredes y no tenga
+        burbujas adheridas. Si $u_m$ y $u_{m_a}$ son comparables,
+        \[
+          \frac{u_\rho}{\rho}
+          = \sqrt{\left(\frac{u_m}{m}\right)^2
+                  + \frac{u_m^2 + u_{m_a}^2}{(m-m_a)^2}}.
+        \]
+        La densidad del agua cambia con la temperatura (aproximadamente
+        $1{,}000$ g/cm$^3$ a $4\,^\circ$C y $0{,}998$ g/cm$^3$ a $20\,^\circ$C);
+        usar el valor de la tabla del apéndice y anotar la temperatura del
+        ensayo.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.85]
+          \draw[thick] (2.0,5.5) rectangle (5.0,5.1);
+          \node[right] at (5.05,5.3) {balanza};
+          \draw[thick] (3.5,5.1) -- (3.5,4.7);
+          \draw[thick] (1,0) -- (1,3.2) -- (6,3.2) -- (6,0);
+          \fill[cyan!20] (1.08,0.08) rectangle (5.92,2.5);
+          \draw[thick] (3.5,4.7) -- (3.5,1.4);
+          \fill (3.5,1.4) circle (0.3);
+          \node[left] at (3.15,1.4) {sólido};
+          \node[right] at (6.05,2.5) {agua};
+        \end{tikzpicture}
+      figura_caption: 'Pesada hidrostática: la balanza mide el peso aparente del sólido sumergido y la diferencia con su peso real es el empuje'
+      materiales:
+        - 'Balanza digital con resolución de 0,01 g'
+        - 'Calibrador con apreciación de 0,05 mm'
+        - 'Probeta graduada de 100 mL'
+        - 'Vaso de precipitados de 500 mL'
+        - 'Agua destilada'
+        - 'Termómetro digital con resolución de 0,1 °C'
+        - 'Hilo fino de coser'
+        - 'Tres sólidos metálicos de materiales distintos'
+      pasos:
+        - 'Anotar la temperatura del agua y buscar su densidad en la tabla del apéndice.'
+        - 'Pesar cada sólido seco y registrar la masa con su incertidumbre.'
+        - 'Medir las dimensiones de cada sólido cinco veces y calcular su volumen geométrico con su incertidumbre.'
+        - 'Comprobar el volumen geométrico por desplazamiento de agua en la probeta.'
+        - 'Colgar un sólido del gancho de la balanza con el hilo y pesarlo en el aire; anotar la lectura.'
+        - 'Sumergir completamente el sólido en el vaso con agua sin que toque el fondo ni las paredes, y anotar la masa aparente.'
+        - 'Repetir la pesada hidrostática tres veces por sólido, secando el hilo entre ensayos.'
+        - 'Calcular la densidad por ambos métodos y proponer el material de cada sólido.'
+      tabla_datos:
+        caption: 'Masa, masa aparente y densidad de cada sólido'
+        nota: 'Anotar la temperatura del agua y la resolución de la balanza; la masa aparente debe ser menor que la masa real, de lo contrario el sólido no está completamente sumergido.'
+        columnas:
+          - 'Sólido'
+          - '$m$ (g)'
+          - '$m_a$ (g)'
+          - '$V$ (cm$^3$)'
+          - '$\rho$ (g/cm$^3$)'
+          - '$\rho_A$ (g/cm$^3$)'
+        filas:
+          - ['1', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular la densidad de cada sólido por la relación masa-volumen y su incertidumbre.'
+        - 'Calcular la densidad por el método de Arquímedes y su incertidumbre.'
+        - 'Comparar ambos valores mediante la diferencia porcentual y decidir si coinciden dentro de la incertidumbre combinada.'
+        - 'Identificar el material de cada sólido comparando con la tabla de densidades y discutir la ambigüedad cuando dos materiales tienen densidades cercanas.'
+        - 'Analizar el efecto de una burbuja de aire adherida al sólido sobre la masa aparente y sobre la densidad calculada.'
+        - 'Evaluar si la temperatura del agua introduce una corrección apreciable frente a la incertidumbre de la medición.'
+      entregable: >-
+        Informe con la tabla de datos, las densidades por ambos métodos con su
+        incertidumbre, la identificación propuesta del material y el análisis de
+        las fuentes de error.
+      criterios: *criterios_practica
+
+  - numero: 7
+    fase: 2
+    tipo: practica
+    titulo: 'Centro de masa de un sistema de dos cuerpos'
+    objetivo: >-
+      Localizar experimentalmente el centro de masa de un sistema formado por
+      una varilla y dos masas, compararlo con el valor calculado a partir de las
+      masas y las posiciones, y analizar el efecto de la masa de la varilla.
+    contenidos:
+      - 'Centro de masa de un sistema discreto.'
+      - 'Centro de masa de una varilla uniforme.'
+      - 'Equilibrio de un cuerpo extenso y momento de una fuerza.'
+      - 'Medición de posiciones respecto de un origen arbitrario.'
+      - 'Propagación de incertidumbres en un promedio ponderado.'
+    herramientas:
+      - 'Varilla metálica de longitud conocida'
+      - 'Dos masas con tornillo de fijación'
+      - 'Soporte de cuchilla o punto de apoyo'
+      - 'Balanza digital'
+      - 'Regla milimetrada y calibrador'
+      - 'Nivel de burbuja'
+    evaluacion: 'Práctica con informe'
+    practica:
+      titulo: 'Centro de masa de un sistema de dos cuerpos'
+      escenario: >-
+        Cada grupo monta dos masas sobre una varilla, localiza el punto de
+        equilibrio y lo compara con el centro de masa calculado. Debe repetir el
+        montaje con tres separaciones distintas y decidir si la masa de la
+        varilla puede despreciarse.
+      fundamento_tex: |
+        Para un sistema de partículas, el centro de masa se define por
+        \[
+          X_{\mathrm{cm}} = \frac{\sum_i m_i\,x_i}{\sum_i m_i}.
+        \]
+        Si la varilla también cuenta, con masa $m_v$ y centro en $x_v$,
+        \[
+          X_{\mathrm{cm}} = \frac{m_1 x_1 + m_2 x_2 + m_v x_v}
+                                 {m_1 + m_2 + m_v}.
+        \]
+        El centro de masa de una varilla uniforme está en su punto medio. Un
+        cuerpo extenso colgado de un punto queda en equilibrio cuando la
+        vertical que pasa por el punto de suspensión contiene al centro de masa;
+        apoyado sobre una cuchilla, el equilibrio se alcanza cuando la cuchilla
+        queda directamente debajo de él.
+
+        La incertidumbre del centro de masa calculado se propaga desde las masas
+        y las posiciones. Para el caso de dos masas sin varilla,
+        \[
+          u_{X}^2 = \left(\frac{\partial X}{\partial x_1}u_{x_1}\right)^2
+                  + \left(\frac{\partial X}{\partial x_2}u_{x_2}\right)^2
+                  + \left(\frac{\partial X}{\partial m_1}u_{m_1}\right)^2
+                  + \left(\frac{\partial X}{\partial m_2}u_{m_2}\right)^2.
+        \]
+        Comparar el centro de masa medido con el calculado es una prueba del
+        modelo, no un trámite: si la diferencia supera la incertidumbre, la
+        varilla no es despreciable o el punto de apoyo no está donde se cree.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.85]
+          \draw[thick] (0,0) -- (10,0);
+          \fill[gray] (1,0) rectangle (1.8,1.0);
+          \fill[gray] (8.2,0) rectangle (9,1.8);
+          \node[below] at (1.4,-0.05) {$m_1$};
+          \node[below] at (8.6,-0.05) {$m_2$};
+          \draw[thick] (6.2,0) -- (6.4,-1.5) -- (6.0,-1.5) -- cycle;
+          \draw[->] (0,-2.0) -- (10,-2.0) node[right] {$x$};
+          \draw (1.4,-2.0) -- (1.4,-1.7);
+          \draw (8.6,-2.0) -- (8.6,-1.7);
+          \draw (6.2,-2.0) -- (6.2,-1.7);
+          \node[below] at (1.4,-2.0) {$x_1$};
+          \node[below] at (6.2,-2.0) {$X$};
+          \node[below] at (8.6,-2.0) {$x_2$};
+        \end{tikzpicture}
+      figura_caption: 'Dos masas sobre una varilla y el punto de apoyo: el sistema está en equilibrio cuando la vertical pasa por su centro de masa'
+      materiales:
+        - 'Varilla metálica de 1 m con marcas milimetradas'
+        - 'Dos masas de 100 g y 200 g con tornillo de fijación'
+        - 'Cuchilla o soporte de equilibrio'
+        - 'Balanza digital de 0,1 g'
+        - 'Regla milimetrada'
+        - 'Nivel de burbuja'
+      pasos:
+        - 'Pesar la varilla y las dos masas, y anotar la incertidumbre de la balanza.'
+        - 'Localizar el centro de masa de la varilla sola equilibrándola sobre la cuchilla y anotar la posición.'
+        - 'Fijar las masas en dos posiciones conocidas respecto de un extremo de la varilla.'
+        - 'Localizar el punto de equilibrio del sistema sobre la cuchilla y anotar la posición.'
+        - 'Repetir el montaje con tres separaciones distintas, manteniendo las masas y cambiando sus posiciones.'
+        - 'Medir las posiciones de las masas y del punto de equilibrio con la regla, desde el mismo origen.'
+        - 'Calcular el centro de masa con y sin la masa de la varilla y comparar con el valor medido.'
+        - 'Verificar que la varilla está horizontal con el nivel de burbuja antes de anotar el equilibrio.'
+      tabla_datos:
+        caption: 'Posiciones y centro de masa del sistema'
+        nota: 'Usar un solo origen para todas las posiciones y anotar la masa de la varilla aunque se decida despreciarla después.'
+        columnas:
+          - 'Montaje'
+          - '$m_1$ (g)'
+          - '$x_1$ (cm)'
+          - '$m_2$ (g)'
+          - '$x_2$ (cm)'
+          - '$X$ medido (cm)'
+        filas:
+          - ['1', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular el centro de masa del sistema sin incluir la varilla y su incertidumbre.'
+        - 'Calcular el centro de masa incluyendo la masa y la posición del centro de la varilla.'
+        - 'Comparar ambos valores con el medido y decidir cuál modelo describe mejor el sistema.'
+        - 'Graficar el centro de masa medido frente al calculado para los tres montajes e interpretar la pendiente y el intercepto.'
+        - 'Analizar el efecto de un error en la posición del punto de apoyo sobre la comparación.'
+        - 'Explicar por qué el centro de masa puede quedar fuera del cuerpo en un sistema con masas muy desiguales.'
+      entregable: >-
+        Informe con la tabla de los tres montajes, los centros de masa calculados
+        con y sin varilla, la comparación con el medido y la conclusión sobre la
+        validez de despreciar la masa de la varilla.
+      criterios: *criterios_practica
+
+  - numero: 8
+    fase: 3
+    tipo: practica
+    titulo: 'Ley de Hooke y constante elástica'
+    objetivo: >-
+      Verificar la proporcionalidad entre la fuerza aplicada y el estiramiento
+      de un resorte, y determinar su constante elástica a partir de la pendiente
+      de un ajuste por mínimos cuadrados.
+    contenidos:
+      - 'Ley de Hooke y régimen elástico.'
+      - 'Fuerza aplicada como peso de masas calibradas.'
+      - 'Estiramiento respecto de la posición de equilibrio sin carga.'
+      - 'Ajuste lineal de fuerza frente a estiramiento.'
+      - 'Constante elástica, unidades y significado físico.'
+      - 'Límite elástico y desviación de la linealidad.'
+    herramientas:
+      - 'Soporte universal con pinza'
+      - 'Resorte helicoidal'
+      - 'Juego de masas calibradas'
+      - 'Regla milimetrada o cinta métrica'
+      - 'Balanza digital'
+      - 'Calculadora o Python'
+    evaluacion: 'Práctica con informe'
+    practica:
+      titulo: 'Ley de Hooke y constante elástica'
+      escenario: >-
+        Cada grupo cuelga masas crecientes de un resorte, mide el estiramiento y
+        ajusta la recta fuerza-estiramiento. Debe reportar la constante elástica
+        con su incertidumbre y señalar hasta qué masa el resorte sigue siendo
+        lineal.
+      fundamento_tex: |
+        Dentro de su régimen elástico, un resorte ejerce una fuerza recuperadora
+        proporcional a su deformación:
+        \[
+          F = -k\,\Delta y.
+        \]
+        Si se cuelga una masa $m$ y el sistema queda en equilibrio, la fuerza
+        aplicada es su peso y
+        \[
+          m\,g = k\,\Delta y
+          \qquad\Longrightarrow\qquad
+          k = \frac{m\,g}{\Delta y}.
+        \]
+        El estiramiento $\Delta y$ se mide respecto de la posición del resorte sin
+        carga, no respecto de su longitud natural si el propio porta-pesas ya lo
+        estira. Al graficar $P = m\,g$ frente a $\Delta y$ se obtiene una recta
+        cuya pendiente es $k$:
+        \[
+          P = k\,\Delta y.
+        \]
+        La constante se toma de la pendiente del ajuste, no del promedio de los
+        cocientes $P_i/\Delta y_i$, porque el ajuste pondera todos los puntos y
+        reduce el efecto del ruido de lectura. La incertidumbre de $k$ se obtiene
+        del ajuste. Si los residuales se curvan en los extremos, el resorte salió
+        del régimen elástico o las espiras se tocaron.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.9]
+          \draw[thick] (0.5,6.2) -- (4.5,6.2);
+          \draw[thick] (0.5,6.2) -- (0.5,5.9);
+          \draw[thick] (4.5,6.2) -- (4.5,5.9);
+          \draw[thick] (1.2,5.9) -- (3.8,5.9);
+          \draw[thick] (2.5,5.9) -- (2.5,5.5);
+          \draw[thick] (2.5,5.5)
+            -- (2.2,5.3) -- (2.8,5.1) -- (2.2,4.9) -- (2.8,4.7)
+            -- (2.2,4.5) -- (2.8,4.3) -- (2.2,4.1) -- (2.8,3.9)
+            -- (2.2,3.7) -- (2.8,3.5) -- (2.2,3.3) -- (2.8,3.1)
+            -- (2.5,2.9);
+          \draw[thick] (2.5,2.9) -- (2.5,2.6);
+          \fill[gray] (2.0,1.6) rectangle (3.0,2.6);
+          \draw[dashed] (0.9,5.7) -- (4.1,5.7);
+          \draw[dashed] (0.9,2.6) -- (4.1,2.6);
+          \draw[<->] (3.7,5.7) -- (3.7,2.6);
+          \node[right] at (3.75,4.15) {$\Delta y$};
+        \end{tikzpicture}
+      figura_caption: 'Resorte con masas colgadas: el estiramiento se mide desde la posición sin carga'
+      materiales:
+        - 'Soporte universal con pinza y nuez'
+        - 'Resorte helicoidal de constante desconocida'
+        - 'Juego de masas de 50 g a 500 g'
+        - 'Regla milimetrada de 50 cm'
+        - 'Balanza digital de 0,1 g'
+        - 'Cronómetro para el método dinámico opcional'
+      pasos:
+        - 'Montar el soporte con el resorte vertical y una regla fija junto a él, sin tocar el resorte.'
+        - 'Anotar la posición del extremo inferior del resorte sin carga; esa es la referencia para el estiramiento.'
+        - 'Colgar masas crecientes de 50 g en 50 g hasta 500 g, esperando a que el sistema se detenga antes de leer.'
+        - 'Anotar la posición del extremo inferior para cada masa y calcular el estiramiento respecto de la referencia.'
+        - 'Retirar las masas una a una y comprobar que el resorte recupera su longitud inicial; si no, se superó el límite elástico.'
+        - 'Convertir cada masa a peso y ajustar la recta por mínimos cuadrados.'
+        - 'Reportar la constante elástica con su incertidumbre y el coeficiente de determinación.'
+      tabla_datos:
+        caption: 'Masa colgada, peso y estiramiento del resorte'
+        nota: 'El estiramiento se mide desde la posición sin carga; si se usa el método dinámico, anotar aparte el periodo de diez oscilaciones para cada masa.'
+        columnas:
+          - 'Ensayo'
+          - '$m$ (g)'
+          - '$P$ (N)'
+          - '$y_i$ (cm)'
+          - '$\Delta y$ (cm)'
+        filas:
+          - ['1', '50', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['2', '100', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['3', '150', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['4', '200', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['5', '250', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['6', '300', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['7', '350', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['8', '400', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['9', '450', '$\ldots$', '$\ldots$', '$\ldots$']
+          - ['10', '500', '$\ldots$', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular el peso de cada masa y el estiramiento respecto de la posición sin carga.'
+        - 'Graficar el peso frente al estiramiento con barras de incertidumbre.'
+        - 'Ajustar la recta por mínimos cuadrados y reportar la pendiente con sus unidades.'
+        - 'Calcular la constante elástica en N/m y su incertidumbre a partir del ajuste.'
+        - 'Analizar los residuales y decidir en qué rango el resorte cumple la ley de Hooke.'
+        - 'Comparar el valor estático con el que se obtendría del método dinámico, si se realizó, y discutir la diferencia.'
+      entregable: >-
+        Informe con la tabla de datos, la gráfica con el ajuste y los residuales,
+        la constante elástica con su incertidumbre y el rango de validez de la
+        ley de Hooke.
+      ampliacion:
+        - 'Método dinámico: colgar cada masa, separarla ligeramente de la vertical y medir el periodo de diez oscilaciones. Al graficar $T^2$ frente a $m$ se obtiene una recta cuya pendiente es $4\pi^2/k$. Compare la constante dinámica con la estática y discuta las fuentes de diferencia.'
+      criterios: *criterios_practica
+
+  - numero: 9
+    fase: 3
+    tipo: practica
+    titulo: 'Péndulo simple y determinación de la gravedad'
+    objetivo: >-
+      Determinar la aceleración de la gravedad a partir de la linealización del
+      periodo del péndulo simple y estimar la corrección de longitud asociada al
+      centro de masa del cuerpo oscilante.
+    contenidos:
+      - 'Péndulo simple y aproximación de ángulo pequeño.'
+      - 'Periodo, longitud efectiva y centro de masa.'
+      - 'Linealización de periodo al cuadrado frente a longitud.'
+      - 'Ajuste por mínimos cuadrados y obtención de la gravedad.'
+      - 'Interpretación del intercepto como corrección de longitud.'
+      - 'Errores dominantes: ángulo, cronometraje y medición de longitud.'
+    herramientas:
+      - 'Soporte con hilo inextensible'
+      - 'Esfera metálica de masa conocida'
+      - 'Cinta métrica y calibrador'
+      - 'Cronómetro digital'
+      - 'Transportador'
+      - 'Calculadora o Python'
+    evaluacion: 'Práctica con informe y datos reales'
+    practica:
+      titulo: 'Péndulo simple y determinación de la gravedad'
+      escenario: >-
+        Cada grupo recibe una tabla de veintiuna longitudes de hilo con el
+        tiempo de cinco oscilaciones. Debe linealizar el modelo, ajustar la
+        recta, obtener la gravedad y explicar por qué el intercepto no es cero.
+        Los datos provienen de una medición real de laboratorio.
+      fundamento_tex: |
+        Para ángulos pequeños ($\theta \le 10^\circ$), el periodo del péndulo
+        simple es
+        \[
+          T = 2\pi\sqrt{\frac{L}{g}},
+        \]
+        donde $L = L_H + L_C$ es la longitud efectiva, $L_H$ la longitud del hilo
+        y $L_C$ la distancia entre el punto de sujeción y el centro de masa del
+        cuerpo. Elevando al cuadrado,
+        \[
+          T^2 = \frac{4\pi^2}{g}\,L_H + \frac{4\pi^2}{g}\,L_C.
+        \]
+        Al graficar $T^2$ frente a $L_H$ se obtiene una recta de pendiente
+        \[
+          m = \frac{4\pi^2}{g}
+          \qquad\Longrightarrow\qquad
+          g = \frac{4\pi^2}{m},
+        \]
+        e intercepto $b = m\,L_C$, de donde
+        \[
+          L_C = \frac{b}{m}.
+        \]
+        El periodo se mide como $T = t/N$ para $N$ oscilaciones completas; medir
+        varias oscilaciones reduce la incertidumbre de reacción humana. El
+        cronometraje debe empezar y terminar en la misma posición del péndulo. Un
+        ángulo mayor de $10^\circ$ alarga el periodo y hace que la gravedad
+        calculada salga mayor que la real. Los datos con errores gruesos se
+        reportan, no se borran: el análisis debe explicar por qué se apartan.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.95]
+          \draw[thick] (0.5,5.6) -- (5.5,5.6);
+          \draw[thick] (0.5,5.6) -- (0.5,5.3);
+          \draw[thick] (5.5,5.6) -- (5.5,5.3);
+          \draw[thick] (2.5,5.5) -- (2.5,5.2);
+          \draw[thick] (2.5,5.2) -- (3.7,3.0);
+          \fill (3.7,2.8) circle (0.3);
+          \draw[dashed] (2.5,5.2) -- (2.5,2.2);
+          \draw[dashed] (2.5,2.8) -- (3.7,2.8);
+          \draw (2.5,3.4) arc (90:62:0.9);
+          \node at (2.85,3.55) {$\theta$};
+          \draw[<->] (4.3,5.2) -- (4.3,2.8) node[midway,right] {$L$};
+        \end{tikzpicture}
+      figura_caption: 'Péndulo simple: la longitud efectiva se mide hasta el centro de masa del cuerpo, no hasta su extremo inferior'
+      materiales:
+        - 'Soporte universal con pinza'
+        - 'Hilo inextensible de masa despreciable'
+        - 'Esfera metálica de masa conocida'
+        - 'Cinta métrica de 1 m con resolución de 1 mm'
+        - 'Calibrador para medir el diámetro de la esfera'
+        - 'Cronómetro digital con resolución de 0,01 s'
+        - 'Transportador para controlar la amplitud'
+      pasos:
+        - 'Medir el diámetro de la esfera con el calibrador y estimar la distancia entre el punto de sujeción y su centro de masa.'
+        - 'Montar el péndulo con una longitud de hilo conocida y comprobar que el soporte no se mueve.'
+        - 'Separar el péndulo menos de $10^\circ$ de la vertical y soltarlo desde el reposo.'
+        - 'Cronometrar cinco oscilaciones completas, empezando y terminando en el mismo punto del recorrido.'
+        - 'Repetir la medición del tiempo y promediar; descartar solo si hay un error de procedimiento documentado.'
+        - 'Repetir para las veintiuna longitudes de hilo, de la mayor a la menor, anotando cada una con su unidad.'
+        - 'Calcular el periodo como $T = t/N$ y el periodo al cuadrado para cada longitud.'
+        - 'Graficar $T^2$ frente a $L_H$, ajustar la recta y obtener la pendiente con su incertidumbre.'
+      tabla_datos:
+        caption: 'Datos del péndulo simple para $N = 5$ oscilaciones'
+        nota: 'El tiempo corresponde a cinco oscilaciones completas; los ensayos 9 y 10 no siguen la tendencia decreciente y deben analizarse, no eliminarse sin justificación.'
+        columnas:
+          - 'Ensayo'
+          - '$L_H$ (cm)'
+          - '$t$ (s)'
+          - '$T = t/N$ (s)'
+          - '$T^2$ (s$^2$)'
+        filas:
+          - ['1', '67,0', '8,89', '1,778', '3,161']
+          - ['2', '65,0', '8,52', '1,704', '2,904']
+          - ['3', '62,5', '8,03', '1,606', '2,579']
+          - ['4', '60,0', '7,66', '1,532', '2,347']
+          - ['5', '57,5', '7,61', '1,522', '2,317']
+          - ['6', '54,5', '7,43', '1,486', '2,208']
+          - ['7', '52,0', '7,15', '1,430', '2,045']
+          - ['8', '49,0', '6,43', '1,286', '1,654']
+          - ['9', '45,5', '6,77', '1,354', '1,833']
+          - ['10', '42,0', '6,77', '1,354', '1,833']
+          - ['11', '39,0', '6,33', '1,266', '1,603']
+          - ['12', '36,0', '6,12', '1,224', '1,498']
+          - ['13', '33,0', '5,93', '1,186', '1,407']
+          - ['14', '30,5', '5,77', '1,154', '1,332']
+          - ['15', '28,0', '5,68', '1,136', '1,291']
+          - ['16', '25,0', '5,47', '1,094', '1,197']
+          - ['17', '22,5', '5,30', '1,060', '1,124']
+          - ['18', '20,0', '4,85', '0,970', '0,941']
+          - ['19', '17,5', '4,74', '0,948', '0,899']
+          - ['20', '15,5', '4,34', '0,868', '0,753']
+          - ['21', '12,5', '4,28', '0,856', '0,733']
+      analisis:
+        - 'Calcular el periodo y el periodo al cuadrado para cada longitud y verificar la tabla.'
+        - 'Graficar $T^2$ frente a $L_H$ con barras de incertidumbre y ajustar la recta por mínimos cuadrados.'
+        - 'Reportar la pendiente con sus unidades y calcular $g = 4\pi^2/m$ en m/s$^2$.'
+        - 'Calcular $L_C = b/m$ e interpretarlo como la distancia del punto de sujeción al centro de masa.'
+        - 'Comparar $g$ con el valor de referencia y calcular la diferencia porcentual.'
+        - 'Identificar los datos anómalos, explicar su efecto sobre el ajuste y repetir el ajuste sin ellos para comparar.'
+        - 'Discutir los errores dominantes: amplitud angular, reacción humana, paralaje y medición de la longitud.'
+      entregable: >-
+        Informe con la tabla completa, la gráfica linealizada, el ajuste, el valor
+        de $g$ con su incertidumbre, la corrección de longitud y el análisis de
+        los datos anómalos.
+      criterios: *criterios_practica
+
+  - numero: 10
+    fase: 3
+    tipo: practica
+    titulo: 'Enfriamiento de un cuerpo sólido'
+    objetivo: >-
+      Verificar la ley de enfriamiento de Newton en dos cuerpos de distinto
+      tamaño, determinar la constante de enfriamiento a partir de una
+      linealización y comparar el tiempo característico de ambos.
+    contenidos:
+      - 'Ley de enfriamiento de Newton y régimen newtoniano.'
+      - 'Diferencia de temperatura respecto del ambiente.'
+      - 'Linealización logarítmica y constante de enfriamiento.'
+      - 'Constante de tiempo y su relación con la geometría del cuerpo.'
+      - 'Pérdidas de calor, convección y radiación.'
+      - 'Registro temporal con termómetro digital y cronómetro.'
+    herramientas:
+      - 'Dos sólidos del mismo material y distinto tamaño'
+      - 'Termómetro digital con resolución de 0,1 °C'
+      - 'Cronómetro digital'
+      - 'Plancha o baño de agua caliente'
+      - 'Pinzas y guantes térmicos'
+      - 'Base aislante y recipiente con agua'
+    evaluacion: 'Práctica con informe y cierre del curso'
+    practica:
+      titulo: 'Enfriamiento de un cuerpo sólido'
+      escenario: >-
+        Cada grupo calienta dos cuerpos del mismo material y distinto tamaño en
+        agua, los retira y registra su temperatura cada 30 s durante 10 min. Debe
+        linealizar la ley de enfriamiento, obtener la constante de cada cuerpo y
+        explicar por qué el más pequeño se enfría más rápido.
+      fundamento_tex: |
+        La ley de enfriamiento de Newton supone que la rapidez de pérdida de calor
+        es proporcional a la diferencia de temperatura entre el cuerpo y el
+        ambiente:
+        \[
+          \frac{dT}{dt} = -k\,(T - T_a).
+        \]
+        Con $T(0) = T_0$, la solución es
+        \[
+          T(t) - T_a = (T_0 - T_a)\,e^{-k t}.
+        \]
+        Tomando logaritmo natural,
+        \[
+          \ln\left(T - T_a\right) = \ln\left(T_0 - T_a\right) - k\,t,
+        \]
+        de modo que al graficar $\ln(T-T_a)$ frente a $t$ se obtiene una recta de
+        pendiente $-k$. La constante de tiempo es
+        \[
+          \tau = \frac{1}{k},
+        \]
+        el tiempo en que la diferencia de temperatura se reduce a $1/e$ de su
+        valor inicial. El modelo supone temperatura uniforme dentro del cuerpo y
+        coeficiente de transferencia constante; se cumple mejor cuando la
+        diferencia con el ambiente es moderada y el cuerpo es buen conductor. Para
+        dos cuerpos del mismo material, la constante de enfriamiento es mayor en
+        el de mayor superficie por unidad de volumen, que suele ser el más
+        pequeño. La primera parte del registro puede apartarse de la recta
+        mientras el cuerpo se estabiliza térmicamente.
+      figura_tex: |
+        \begin{tikzpicture}[scale=0.85]
+          \fill[gray!20] (0.5,0) rectangle (8.5,0.35);
+          \draw[thick] (0.5,0.35) -- (8.5,0.35);
+          \fill[gray!55] (2.0,0.35) rectangle (3.2,2.3);
+          \fill[gray!55] (5.0,0.35) rectangle (7.4,2.3);
+          \node[below] at (2.6,0.0) {pequeño};
+          \node[below] at (6.2,0.0) {grande};
+          \draw[thick] (6.9,4.6) -- (6.9,1.1);
+          \fill[red] (6.9,1.1) circle (0.09);
+          \node[right] at (6.95,4.6) {termómetro};
+        \end{tikzpicture}
+      figura_caption: 'Enfriamiento de dos cuerpos del mismo material: se registra la temperatura del más pequeño y del más grande frente al tiempo'
+      materiales:
+        - 'Dos cilindros de aluminio del mismo material y distinto diámetro'
+        - 'Termómetro digital con resolución de 0,1 °C'
+        - 'Cronómetro digital con resolución de 0,01 s'
+        - 'Plancha de calentamiento o baño de agua caliente'
+        - 'Pinzas y guantes térmicos'
+        - 'Base aislante de corcho o madera'
+        - 'Recipiente con agua a temperatura ambiente'
+      pasos:
+        - 'Medir la temperatura ambiente y anotarla; debe permanecer estable durante todo el registro.'
+        - 'Calentar agua hasta unos 80 °C y sumergir ambos cuerpos hasta que alcancen la misma temperatura.'
+        - 'Retirar un cuerpo con las pinzas, secarlo rápidamente y colocarlo sobre la base aislante.'
+        - 'Registrar su temperatura cada 30 s durante 10 min con el cronómetro, sin tocar el cuerpo con la mano.'
+        - 'Repetir el registro con el segundo cuerpo, partiendo de la misma temperatura inicial.'
+        - 'Anotar la temperatura ambiente al inicio, a la mitad y al final del ensayo.'
+        - 'Calcular la diferencia de temperatura respecto del ambiente y su logaritmo natural.'
+        - 'Graficar y ajustar la recta para cada cuerpo, y comparar sus constantes de enfriamiento.'
+      tabla_datos:
+        caption: 'Registro temporal de temperatura para cada cuerpo'
+        nota: 'Anotar la temperatura ambiente y la resolución del termómetro; usar el mismo intervalo de tiempo para los dos cuerpos y no interrumpir el registro.'
+        columnas:
+          - 'Ensayo'
+          - '$t$ (min)'
+          - '$T$ ($^\circ$C)'
+          - '$T - T_a$ ($^\circ$C)'
+        filas:
+          - ['1', '0,0', '$\ldots$', '$\ldots$']
+          - ['2', '0,5', '$\ldots$', '$\ldots$']
+          - ['3', '1,0', '$\ldots$', '$\ldots$']
+          - ['4', '1,5', '$\ldots$', '$\ldots$']
+          - ['5', '2,0', '$\ldots$', '$\ldots$']
+          - ['6', '2,5', '$\ldots$', '$\ldots$']
+          - ['7', '3,0', '$\ldots$', '$\ldots$']
+          - ['8', '3,5', '$\ldots$', '$\ldots$']
+          - ['9', '4,0', '$\ldots$', '$\ldots$']
+          - ['10', '4,5', '$\ldots$', '$\ldots$']
+          - ['11', '5,0', '$\ldots$', '$\ldots$']
+          - ['12', '5,5', '$\ldots$', '$\ldots$']
+          - ['13', '6,0', '$\ldots$', '$\ldots$']
+          - ['14', '6,5', '$\ldots$', '$\ldots$']
+          - ['15', '7,0', '$\ldots$', '$\ldots$']
+          - ['16', '7,5', '$\ldots$', '$\ldots$']
+          - ['17', '8,0', '$\ldots$', '$\ldots$']
+          - ['18', '8,5', '$\ldots$', '$\ldots$']
+          - ['19', '9,0', '$\ldots$', '$\ldots$']
+          - ['20', '9,5', '$\ldots$', '$\ldots$']
+          - ['21', '10,0', '$\ldots$', '$\ldots$']
+      analisis:
+        - 'Calcular $T - T_a$ y su logaritmo natural para cada instante.'
+        - 'Graficar $\ln(T-T_a)$ frente al tiempo para cada cuerpo y ajustar la recta.'
+        - 'Reportar la pendiente con sus unidades y calcular la constante de enfriamiento $k$.'
+        - 'Calcular la constante de tiempo $\tau$ de cada cuerpo y compararlas.'
+        - 'Explicar por qué el cuerpo más pequeño se enfría más rápido en términos de superficie por unidad de volumen.'
+        - 'Identificar el tramo inicial que se aparta de la recta y discutir si corresponde a la estabilización térmica o a una pérdida de calor adicional.'
+        - 'Discutir las limitaciones del modelo de Newton en este montaje y proponer una mejora.'
+      entregable: >-
+        Informe final con las tablas de ambos cuerpos, las gráficas
+        linealizadas, las constantes de enfriamiento con su incertidumbre, la
+        comparación de los tiempos característicos y la discusión de las
+        limitaciones del modelo.
+      criterios: *criterios_practica
+
+# ── Instrumentos de evaluación ────────────────────────────────────────────────
+
+controles:
+  - fase: 1
+    titulo: 'Control de fase uno: medición, error y análisis gráfico'
+    duracion_min: 45
+    instrumento: 'Prueba escrita individual'
+    caracter: 'Individual, sin apuntes, con calculadora y una hoja de fórmulas'
+    preguntas:
+      - tema: 'Error relativo y porcentual'
+        enunciado: 'Se reporta una longitud como $L = 2{,}45 \pm 0{,}03$ cm. Calcule el error relativo y el error porcentual, y explique cuántas cifras significativas tiene sentido conservar en el resultado.'
+        puntaje: 2.5
+      - tema: 'Media e incertidumbres de la lectura'
+        enunciado: 'Con cinco lecturas de una misma magnitud, explique el procedimiento para calcular la media, la desviación estándar de la media y la incertidumbre combinada si la apreciación del instrumento es $A = 0{,}01$ cm. Indique cuál de las dos incertidumbres domina en su ejemplo.'
+        puntaje: 2.5
+      - tema: 'Exactitud, precisión y tipos de error'
+        enunciado: 'Distinga exactitud de precisión y error sistemático de error aleatorio. Proponga un ejemplo de laboratorio para cada combinación y explique cómo detectaría el error sistemático.'
+        puntaje: 2.5
+      - tema: 'Propagación de incertidumbre en el cilindro'
+        enunciado: 'El volumen de un cilindro es $V = \pi d^2 h/4$. Deduzca la fórmula de propagación de la incertidumbre relativa y evalúela para $d = 2{,}00 \pm 0{,}01$ cm y $h = 5{,}00 \pm 0{,}02$ cm.'
+        puntaje: 2.5
+
+  - fase: 2
+    titulo: 'Control de fase dos: propiedades de la materia y equilibrio'
+    duracion_min: 45
+    instrumento: 'Prueba escrita individual'
+    caracter: 'Individual, sin apuntes, con calculadora y una hoja de fórmulas'
+    preguntas:
+      - tema: 'Densidad con incertidumbre'
+        enunciado: 'Un sólido tiene masa $m = 54{,}32 \pm 0{,}01$ g y volumen $V = 6{,}90 \pm 0{,}08$ cm$^3$. Calcule su densidad con incertidumbre y escriba el resultado con las cifras significativas correctas.'
+        puntaje: 2.5
+      - tema: 'Densidad por el principio de Arquímedes'
+        enunciado: 'Un cuerpo pesa $120{,}0$ g en el aire y $105{,}3$ g sumergido en agua. Calcule su densidad por el principio de Arquímedes y explique qué suposiciones hace sobre el fluido y sobre el cuerpo.'
+        puntaje: 2.5
+      - tema: 'Centro de masa de dos masas'
+        enunciado: 'Dos masas de $100$ g y $200$ g se colocan en una varilla de masa despreciable en $x_1 = 10$ cm y $x_2 = 40$ cm. Calcule el centro de masa y explique dónde habría que apoyar la varilla para que quede en equilibrio.'
+        puntaje: 2.5
+      - tema: 'Ley de Hooke y bondad del ajuste'
+        enunciado: 'En un ensayo de la ley de Hooke se obtiene una recta de pendiente $k = 42{,}5 \pm 1{,}2$ N/m y un coeficiente de determinación $r^2 = 0{,}998$. Interprete ambos valores y discuta si el resorte puede considerarse lineal en el rango medido.'
+        puntaje: 2.5
+
+evaluacion_final:
+  titulo: 'Evaluación final práctica y defensa del portafolio'
+  duracion_min: 180
+  instrumento: 'Evaluación individual práctica en la mesa de laboratorio, con defensa oral'
+  semana: 10
+  caracter: >-
+    Individual en la ejecución y en la defensa; el portafolio se consolida por
+    grupo con las conclusiones firmadas de forma individual.
+  secciones:
+    - nombre: 'Medición y montaje autónomo'
+      puntaje: 2.5
+      detalle: 'Elige el instrumento y el rango adecuados, monta sin ayuda y obtiene lecturas válidas dentro de los límites del equipo.'
+    - nombre: 'Tratamiento de datos e incertidumbres'
+      puntaje: 2.5
+      detalle: 'Registra datos crudos trazables, propaga incertidumbres y reporta cada resultado con su unidad y su intervalo.'
+    - nombre: 'Análisis gráfico y ajuste'
+      puntaje: 2.5
+      detalle: 'Linealiza el modelo, ajusta por mínimos cuadrados y justifica la bondad del ajuste con los residuales.'
+    - nombre: 'Defensa oral y portafolio'
+      puntaje: 2.5
+      detalle: 'Explica las decisiones metodológicas, reconoce los errores y presenta el portafolio completo y corregido.'
+  condiciones:
+    - 'Duración de tres horas en la mesa de laboratorio asignada.'
+    - 'Sin apuntes de montaje; se permite una hoja de fórmulas y calculadora.'
+    - 'Instrumental completo de la mesa y estación de análisis con Python disponible.'
+    - 'Un conjunto de datos y un sólido distinto para cada estudiante.'
+    - 'La defensa oral es individual y dura entre diez y quince minutos.'
+  entregables:
+    - 'Informe individual en PDF dentro de la carpeta de la semana 10 del repositorio.'
+    - 'Datos crudos en CSV y script de análisis que reproduce cada figura.'
+    - 'Hoja de registro firmada con resoluciones, unidades e incertidumbres.'
+    - 'Portafolio del grupo con las diez semanas y el README actualizado.'
+  criterios_aprobacion:
+    - 'Nota mínima de 5 puntos sobre 10 en la evaluación final.'
+    - 'Al menos nueve de las diez entregas semanales dentro del corte.'
+    - 'Todos los resultados reportados con su incertidumbre y su unidad.'
+    - 'Ausencia de datos fabricados o alterados en el portafolio.'
+
+# ── Material de referencia ────────────────────────────────────────────────────
+
+apendices:
+  - titulo: 'Prefijos del Sistema Internacional'
+    texto: >-
+      Los prefijos se aplican a la unidad y no cambian el número de cifras
+      significativas. Al convertir, es preferible pasar primero a la unidad
+      base y después aplicar el prefijo, para no perder la cuenta de los
+      decimales.
+    tabla:
+      caption: 'Prefijos de uso frecuente en el laboratorio'
+      columnas:
+        - 'Prefijo'
+        - 'Símbolo'
+        - 'Factor'
+      filas:
+        - ['kilo', 'k', '$10^{3}$']
+        - ['mili', 'm', '$10^{-3}$']
+        - ['micro', '$\mu$', '$10^{-6}$']
+        - ['nano', 'n', '$10^{-9}$']
+        - ['mega', 'M', '$10^{6}$']
+        - ['centi', 'c', '$10^{-2}$']
+
+  - titulo: 'Densidades de materiales comunes'
+    texto: >-
+      Valores de referencia a temperatura ambiente. La identificación de un
+      material por su densidad es ambigua cuando dos materiales tienen valores
+      cercanos; en ese caso se necesita otra propiedad, como el color o la
+      respuesta a un imán.
+    tabla:
+      caption: 'Densidad de sólidos y líquidos de uso frecuente'
+      columnas:
+        - 'Material'
+        - '$\rho$ (g/cm$^3$)'
+      filas:
+        - ['Aluminio', '2,70']
+        - ['Vidrio', '2,50']
+        - ['Hierro', '7,87']
+        - ['Cobre', '8,96']
+        - ['Plomo', '11,34']
+        - ['Agua a 20 C', '0,998']
+        - ['Glicerina', '1,26']
+
+  - titulo: 'Constantes y valores de referencia'
+    texto: >-
+      Se usan para comparar los resultados experimentales, no para sustituir la
+      medición. Toda comparación debe expresarse como una diferencia porcentual
+      y discutirse frente a la incertidumbre del resultado.
+    tabla:
+      caption: 'Valores de referencia del curso'
+      columnas:
+        - 'Magnitud'
+        - 'Valor'
+        - 'Unidad'
+      filas:
+        - ['Aceleración de la gravedad', '9,80', 'm/s$^2$']
+        - ['Densidad del agua a 4 C', '1,000', 'g/cm$^3$']
+        - ['Densidad del agua a 20 C', '0,998', 'g/cm$^3$']
+        - ['Calor específico del aluminio', '0,900', 'J/(g K)']
+
+bibliografia:
+  - autor: 'Baird, D. C.'
+    titulo: 'Experimentación: una introducción a la teoría de mediciones y al diseño de experimentos'
+    detalle: 'Prentice Hall, 1991.'
+  - autor: 'Taylor, J. R.'
+    titulo: 'An Introduction to Error Analysis'
+    detalle: 'University Science Books, 1997.'
+  - autor: 'Sears, F. y Zemansky, M.'
+    titulo: 'Física Universitaria'
+    detalle: 'Pearson Educación, edición reciente.'
+  - autor: 'Serway, R. y Jewett, J.'
+    titulo: 'Física para ciencias e ingeniería'
+    detalle: 'Cengage Learning, edición reciente.'
+  - autor: 'Departamento de Física, Universidad de Oriente'
+    titulo: 'Guía de laboratorio de Física I'
+    detalle: 'Material del curso, 2026.'
+
+politicas:
+  - 'Seguridad: no se energiza ningún equipo ni se manipula vidrio caliente sin autorización y sin el equipo de protección indicado.'
+  - 'Honestidad académica: los datos se toman en la sesión y se declaran tal como se obtuvieron; fabricar o alterar datos anula la entrega y se reporta.'
+  - 'Puntualidad: la entrega cierra el domingo a las 23:59; lo entregado después se corrige con la penalización prevista.'
+  - 'Cuidado del material: cada instrumento se devuelve limpio y en su estuche; el material roto se reporta de inmediato.'
+  - 'Trabajo en equipo: todos los integrantes firman las conclusiones y deben poder explicar cualquier parte del informe.'

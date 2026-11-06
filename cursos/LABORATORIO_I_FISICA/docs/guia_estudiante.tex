@@ -1,0 +1,564 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~LABORATORIO\_I\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Guía del estudiante}
+\hypersetup{pdftitle={Laboratorio I de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_I\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Guía del estudiante}{Laboratorio I de Física --- cómo se trabaja y se entrega}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 6 de noviembre de 2026\end{center}
+
+\section{\iconotexto{info-circle}{Cómo funciona el curso}}
+
+Las cuatro primeras semanas son talleres de teoría de errores y análisis gráfico: se aprende a medir, a propagar incertidumbres y a ajustar antes de enfrentarse a un montaje. A partir de la semana 5 cada sesión es una práctica experimental completa, con montaje, tabla de datos, análisis y entrega. Cada semana el grupo rota los roles y cierra con un informe que otro equipo podría reproducir.
+
+\section{\iconotexto{users}{Grupos y roles}}
+
+El curso trabaja con 4 grupos. Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada uno. Los roles rotan al inicio de cada fase para que todos los integrantes pasen por la medición, el análisis, la documentación y la verificación.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Medición: Prepara el montaje, verifica el cero y el rango de cada instrumento, toma las lecturas y anota la resolución con que fueron leídas. Aporta: La tabla de datos crudos de la semana y el registro de condiciones ambientales e instrumentales.
+  \item Análisis: Propaga incertidumbres, linealiza el modelo, ajusta por mínimos cuadrados y extrae los parámetros físicos. Aporta: El script de análisis, las figuras con unidades y el presupuesto de incertidumbres del resultado final.
+  \item Documentación: Redacta el informe, integra tablas y figuras, cita las fuentes y mantiene el repositorio ordenado según la estructura acordada. Aporta: El informe de la semana y el README de la carpeta semanal.
+  \item Verificación: Contrasta el resultado con el modelo y con una medición independiente, busca errores sistemáticos y firma la trazabilidad de los datos. Aporta: La comparación con el valor de referencia y la lista de desvíos con su causa probable.
+\end{itemize}
+
+Al inicio de cada fase los roles giran una posición en sentido horario, de modo que en la fase 3 cada integrante haya ocupado los cuatro roles.
+
+\textbf{Asignación de roles por fase}
+
+\begin{tabularx}{\linewidth}{@{}l X X X X@{}}
+\toprule
+Fase & Grupo 1 & Grupo 2 & Grupo 3 & Grupo 4\\
+\midrule
+Fase 1 & Medición & Análisis & Documentación & Verificación \\
+Fase 2 & Análisis & Documentación & Verificación & Medición \\
+Fase 3 & Documentación & Verificación & Medición & Análisis \\
+\bottomrule
+\end{tabularx}
+
+Cada grupo crea un repositorio privado con el docente como colaborador de lectura. El repositorio es la entrega: se revisa al cierre de cada semana y es la evidencia del trabajo del semestre.
+
+\section{\iconotexto{code-branch}{Portafolio del grupo y entregas}}
+
+La entrega se hace en GitHub. Un repositorio privado por grupo, con el docente como colaborador de lectura. El repositorio es la entrega; no se reciben informes por correo ni impresos, salvo indicación expresa del docente.
+
+El docente revisa el repositorio al finalizar cada semana y devuelve observaciones antes de la semana siguiente.
+
+Corte de cada semana: Domingo a las 23:59 de la semana correspondiente. Lo entregado después del corte se corrige con la penalización prevista en las políticas.
+
+\textbf{Estructura del portafolio}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item README.md con integrantes, roles de la fase y tabla de semanas entregadas.
+  \item semana\_NN/informe.pdf con el informe de la práctica o el taller resuelto.
+  \item semana\_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.
+  \item semana\_NN/analisis/ con los scripts que reproducen cada figura.
+  \item semana\_NN/figuras/ con las gráficas en PDF o PNG generadas por los scripts.
+  \item semana\_NN/README.md con lo que se hizo, lo que no se pudo verificar y por qué.
+\end{itemize}
+
+\textbf{Reglas de entrega}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Los datos crudos no se editan nunca; toda corrección vive en el script de análisis.
+  \item Cada cifra del informe debe salir de una tabla de datos o de un script entregado.
+  \item Los scripts se ejecutan de punta a punta sin pasos manuales intermedios.
+  \item Ninguna tabla se entrega sin unidades ni sin la resolución del instrumento.
+  \item El informe es grupal, pero las conclusiones se firman individualmente.
+  \item Un resultado sin incertidumbre no se acepta como resultado.
+\end{itemize}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} trabaja solo con el material asignado a tu mesa y con los instrumentos cuyo uso haya autorizado el docente. Si un montaje no coincide con la figura o un instrumento no responde, detente y consulta; un resultado dudoso se reporta, no se corrige a mano.
+\end{tcolorbox}
+
+\section{\iconotexto{cube}{Puesta en marcha del laboratorio}}
+
+Laboratorio físico de mesa. Cada grupo dispone de un juego de instrumentos y de una estación de análisis con Python para procesar sus propios datos.
+
+Mesas con regla milimetrada, calibrador, tornillo micrométrico, balanza, probeta, cronómetro, termómetro digital, soportes, resortes, masas calibradas y cuerpos sólidos de distintos materiales y tamaños.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item No se energiza ningún equipo sin revisión previa del docente.
+  \item Los líquidos se manipulan lejos de las balanzas y de las conexiones eléctricas.
+  \item Cada instrumento se devuelve limpio, seco y en su estuche al terminar la sesión.
+  \item El material roto se reporta de inmediato; ocultarlo agrava la sanción.
+  \item Ningún dato se inventa ni se completa de memoria después de la sesión.
+\end{itemize}
+
+\section{\iconotexto{code}{Contrato de datos de los scripts}}
+
+\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
+\begin{lstlisting}[language=Python,style=estiloPython]
+{
+  "status": "ok",
+  "documento": "semana_05",
+  "magnitud": "volumen",
+  "valor": 12.43,
+  "unidad": "cm^3",
+  "incertidumbre": 0.08,
+  "datos": "datos/volumen.csv",
+  "figuras": ["figuras/volumen_metodos.pdf"],
+  "modelo": "V = pi d^2 h / 4",
+  "parametros": {"d": 2.00, "h": 3.96}
+}
+
+\end{lstlisting}
+\end{cajaConcepto}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item El script parte de los CSV crudos y termina en las figuras del informe, sin pasos manuales.
+  \item Toda cifra del informe se calcula en el script; nada se teclea a mano.
+  \item Las unidades se declaran en el CSV y en los ejes de cada figura.
+  \item El ajuste reporta parámetro, incertidumbre, coeficiente de determinación y residuales.
+  \item Sin credenciales ni rutas absolutas: el script corre desde la carpeta de la semana.
+\end{itemize}
+
+\section{\iconotexto{clipboard-check}{Evaluación}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Concepto & Peso (\%)\\
+\midrule
+Talleres y prácticas (semanas 1 a 10) & 60,0 \\
+Controles de fase (semanas 4 y 7) & 20,0 \\
+Evaluación final práctica y portafolio (semana 10) & 20,0 \\
+\bottomrule
+\end{tabularx}
+
+Cada informe se corrige con la rúbrica del curso, que se entrega junto con el enunciado. La nota es la suma de los criterios, no un promedio: un criterio sin evidencia vale cero aunque el resultado numérico sea correcto.
+
+\section{\iconotexto{balance-scale}{Seguridad, honestidad académica y uso del laboratorio}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Seguridad: no se energiza ningún equipo ni se manipula vidrio caliente sin autorización y sin el equipo de protección indicado.
+  \item Honestidad académica: los datos se toman en la sesión y se declaran tal como se obtuvieron; fabricar o alterar datos anula la entrega y se reporta.
+  \item Puntualidad: la entrega cierra el domingo a las 23:59; lo entregado después se corrige con la penalización prevista.
+  \item Cuidado del material: cada instrumento se devuelve limpio y en su estuche; el material roto se reporta de inmediato.
+  \item Trabajo en equipo: todos los integrantes firman las conclusiones y deben poder explicar cualquier parte del informe.
+\end{itemize}
+
+\section{\iconotexto{calendar-alt}{Calendario resumido}}
+
+\begin{tabularx}{\linewidth}{@{}r p{4.1cm} X@{}}
+\toprule
+Sem. & Tema & Entregable\\
+\midrule
+1 & La medición, la apreciación y el error & Taller resuelto con la tabla de diez lecturas, el cálculo completo de la media y las incertidumbres, la expresión final del resultado y un párrafo que justifique el instrumento elegido. \\
+2 & Propagación de incertidumbres y notación científica & Taller resuelto con las mediciones, la propagación paso a paso, ambos volúmenes expresados en notación científica y la conclusión sobre si los métodos coinciden dentro de la incertidumbre. \\
+3 & Graficación, linealización y lectura de una recta & Taller resuelto con las dos gráficas, la recta trazada, el cálculo de la pendiente con unidades, el valor de $g$ y la interpretación del intercepto. \\
+4 & Mínimos cuadrados y estructura del informe & Taller integrador con la tabla completa, el ajuste por mínimos cuadrados, la gráfica con residuales, la constante elástica y un informe corto de dos páginas con la estructura del curso. \\
+5 & Volumen de un sólido por dos métodos & Informe con la tabla de datos crudos, ambos volúmenes con su incertidumbre, la comparación entre métodos y la explicación de la discrepancia. \\
+6 & Densidad de un cuerpo sólido & Informe con la tabla de datos, las densidades por ambos métodos con su incertidumbre, la identificación propuesta del material y el análisis de las fuentes de error. \\
+7 & Centro de masa de un sistema de dos cuerpos & Informe con la tabla de los tres montajes, los centros de masa calculados con y sin varilla, la comparación con el medido y la conclusión sobre la validez de despreciar la masa de la varilla. \\
+8 & Ley de Hooke y constante elástica & Informe con la tabla de datos, la gráfica con el ajuste y los residuales, la constante elástica con su incertidumbre y el rango de validez de la ley de Hooke. \\
+9 & Péndulo simple y determinación de la gravedad & Informe con la tabla completa, la gráfica linealizada, el ajuste, el valor de $g$ con su incertidumbre, la corrección de longitud y el análisis de los datos anómalos. \\
+10 & Enfriamiento de un cuerpo sólido & Informe final con las tablas de ambos cuerpos, las gráficas linealizadas, las constantes de enfriamiento con su incertidumbre, la comparación de los tiempos característicos y la discusión de las limitaciones del modelo. \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{paperclip}{Prefijos del Sistema Internacional}}
+
+Los prefijos se aplican a la unidad y no cambian el número de cifras significativas. Al convertir, es preferible pasar primero a la unidad base y después aplicar el prefijo, para no perder la cuenta de los decimales.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Prefijos de uso frecuente en el laboratorio}\par\smallskip
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Prefijo & Símbolo & Factor \\
+\midrule
+kilo & k & $10^{3}$ \\
+mili & m & $10^{-3}$ \\
+micro & $\mu$ & $10^{-6}$ \\
+nano & n & $10^{-9}$ \\
+mega & M & $10^{6}$ \\
+centi & c & $10^{-2}$ \\
+\bottomrule
+\end{tabular}
+}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Densidades de materiales comunes}}
+
+Valores de referencia a temperatura ambiente. La identificación de un material por su densidad es ambigua cuando dos materiales tienen valores cercanos; en ese caso se necesita otra propiedad, como el color o la respuesta a un imán.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Densidad de sólidos y líquidos de uso frecuente}\par\smallskip
+\begin{tabular}{@{}cc@{}}
+\toprule
+Material & $\rho$ (g/cm$^3$) \\
+\midrule
+Aluminio & 2,70 \\
+Vidrio & 2,50 \\
+Hierro & 7,87 \\
+Cobre & 8,96 \\
+Plomo & 11,34 \\
+Agua a 20 C & 0,998 \\
+Glicerina & 1,26 \\
+\bottomrule
+\end{tabular}
+}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{paperclip}{Constantes y valores de referencia}}
+
+Se usan para comparar los resultados experimentales, no para sustituir la medición. Toda comparación debe expresarse como una diferencia porcentual y discutirse frente a la incertidumbre del resultado.
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Valores de referencia del curso}\par\smallskip
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Magnitud & Valor & Unidad \\
+\midrule
+Aceleración de la gravedad & 9,80 & m/s$^2$ \\
+Densidad del agua a 4 C & 1,000 & g/cm$^3$ \\
+Densidad del agua a 20 C & 0,998 & g/cm$^3$ \\
+Calor específico del aluminio & 0,900 & J/(g K) \\
+\bottomrule
+\end{tabular}
+}
+\end{minipage}
+\end{center}
+\end{document}

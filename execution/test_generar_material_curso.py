@@ -495,6 +495,99 @@ def test_matematica_en_prosa() -> None:
     )
 
 
+def test_evaluacion_final_lista_no_es_repr_de_python() -> None:
+    """Una lista de condiciones debe salir como lista, no como `str(lista)`.
+
+    El descriptor de referencia declara `condiciones` como lista. Pasarla por
+    `_t()` la convertía en `['Duración...', 'Sin apuntes...']`, que es Python
+    impreso en el PDF del alumno; el texto seguía compilando, así que el fallo
+    no se veía hasta leer la página.
+    """
+    datos = descriptor_minimo()
+    datos["evaluacion_final"] = {
+        "titulo": "Cierre del curso",
+        "semana": 2,
+        "secciones": [{"nombre": "Sección única", "puntaje": 10}],
+        "condiciones": ["Sin apuntes.", "Duración de dos horas."],
+    }
+    tex = gen.tex_evaluacion_final(datos)
+    comprobar(
+        "las condiciones se emiten como lista",
+        r"\begin{itemize}" in tex,
+        "no aparece itemize",
+    )
+    comprobar("no queda el repr de Python", "['" not in tex, "aparece [' en el LaTeX")
+    comprobar(
+        "cada condición aparece en el documento",
+        "Sin apuntes." in tex and "Duración de dos horas." in tex,
+    )
+
+
+def test_semana_de_teoria_se_rotula_taller() -> None:
+    """Una semana de teoría no debe emitirse como "Práctica".
+
+    Un curso de laboratorio puede dedicar las primeras semanas a teoría de
+    errores y análisis gráfico. Rotular ese documento como Práctica NN hace creer
+    al alumno que va a medir, y además nombra `practica_01.tex` a un taller. El
+    tipo es un dato del descriptor y su vocabulario es cerrado: `practica` o
+    `teoria`; cualquier otro valor se rechaza antes de escribir nada.
+    """
+    datos = descriptor_minimo()
+    datos["semanas"][0]["tipo"] = "teoria"
+    problemas = gen.validar(datos)
+    comprobar("tipo=teoria valida el descriptor", problemas == [], str(problemas))
+
+    tex = gen.tex_practica(copy.deepcopy(datos), datos["semanas"][0])
+    plan = gen.tex_plan_semanal(copy.deepcopy(datos))
+    comprobar("la banda del documento dice 'Taller 01'", "Taller 01" in tex)
+    comprobar("la banda no dice 'Práctica 01'", "Práctica 01" not in tex)
+    comprobar("el plan semanal rotula 'Taller.'", r"\textbf{Taller.}" in plan)
+
+    datos["semanas"][0]["tipo"] = "taller"
+    problemas = gen.validar(datos)
+    comprobar(
+        "un tipo fuera del vocabulario falla",
+        any("no válido" in p for p in problemas),
+        str(problemas),
+    )
+
+
+def test_tema_de_control_es_editorial() -> None:
+    """La tabla de puntaje usa el tema del descriptor; el automático es respaldo.
+
+    El respaldo tomaba las primeras palabras del enunciado y producía etiquetas
+    telegráficas del tipo «reporta longitud Calcule error», que no describen el
+    tema evaluado. El descriptor manda.
+    """
+    datos = descriptor_minimo()
+    control = {
+        "fase": 1,
+        "titulo": "Control de prueba",
+        "duracion_min": 45,
+        "preguntas": [
+            {
+                "enunciado": "Calcule el error relativo de una longitud medida.",
+                "puntaje": 5.0,
+                "tema": "Error relativo y porcentual",
+            },
+            {
+                "enunciado": "Explique la diferencia entre exactitud y precisión.",
+                "puntaje": 5.0,
+            },
+        ],
+    }
+    tex = gen.tex_control(copy.deepcopy(datos), control)
+    comprobar(
+        "el tema declarado en el control se imprime tal cual",
+        "Error relativo y porcentual" in tex,
+    )
+    comprobar(
+        "sin tema, se deriva una etiqueta del enunciado",
+        "Explique diferencia entre exactitud" in tex,
+        tex,
+    )
+
+
 def test_determinismo() -> None:
     datos = descriptor_minimo()
     practica = datos["semanas"][0]["practica"]
@@ -525,6 +618,9 @@ def main() -> int:
     test_laboratorio_sin_imagenes()
     test_carpeta_y_unicode()
     test_matematica_en_prosa()
+    test_evaluacion_final_lista_no_es_repr_de_python()
+    test_semana_de_teoria_se_rotula_taller()
+    test_tema_de_control_es_editorial()
     test_determinismo()
 
     print()

@@ -1,0 +1,494 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~LABORATORIO\_I\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Taller 03}
+\hypersetup{pdftitle={Laboratorio I de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_I\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Taller 03 --- De la curva a la recta: linealizar para entender}{Semana 3 --- Fase 1: Medición, error y análisis gráfico}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 6 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis e informe \\
+\textbf{Modalidad} & 4 grupos con roles rotativos \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_03, antes del corte semanal \\
+\textbf{Instrumento} & Taller formativo con entrega \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{bullseye}{Objetivo}}
+
+Construir una gráfica con ejes rotulados y unidades, linealizar un modelo físico y extraer de la recta la pendiente y el intercepto con su significado físico.
+
+\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Variables dependiente e independiente; elección de escalas y origen.
+  \item Rotulación de ejes, unidades y título de figura.
+  \item Barras de incertidumbre y su relación con el tamaño del punto.
+  \item Modelos linealizables: potencial, exponencial y proporcional.
+  \item Pendiente e intercepto con unidades y significado físico.
+  \item Criterio de bondad visual: dispersión de los puntos y tendencia.
+\end{itemize}
+
+\section{\iconotexto{book-open}{Fundamento teórico}}
+
+Una gráfica es un argumento, no un adorno: los ejes llevan nombre y
+unidad, la escala es uniforme y el origen se elige para que la tendencia
+se vea sin exagerarla ni ocultarla. La pendiente de una recta
+\[
+  y = m\,x + b
+\]
+tiene las unidades de $y$ divididas entre las de $x$; el intercepto tiene
+las unidades de $y$. Reportar una pendiente sin unidades es reportar un
+número sin significado.
+
+Muchos modelos físicos no son lineales, pero se linealizan con un cambio
+de variable. Para el péndulo simple, $T = 2\pi\sqrt{L/g}$; elevando al
+cuadrado,
+\[
+  T^2 = \frac{4\pi^2}{g}\,L.
+\]
+Al graficar $T^2$ frente a $L$ se obtiene una recta que pasa por el
+origen, cuya pendiente es $m = 4\pi^2/g$. Entonces
+\[
+  g = \frac{4\pi^2}{m}.
+\]
+Si el modelo incluye una longitud no medida, $L = L_H + L_C$, la recta es
+\[
+  T^2 = \frac{4\pi^2}{g}\,L_H + \frac{4\pi^2}{g}\,L_C,
+\]
+con pendiente $m = 4\pi^2/g$ e intercepto $b = m\,L_C$. El intercepto deja
+de ser un estorbo y se convierte en una medida indirecta de $L_C$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \draw[->] (0,0) -- (9,0) node[right] {$L$ (cm)};
+  \draw[->] (0,0) -- (0,6) node[above] {$T^2$ (s$^2$)};
+  \draw[thick] (0.5,0.83) -- (8.2,5.92);
+  \foreach \x/\y in {1/1.2,2/1.8,3/2.5,4/3.1,5/3.8,6/4.4,7/5.2} {
+    \fill (\x,\y) circle (2.5pt);
+    \draw (\x,\y) -- (\x,\y-0.25);
+    \draw (\x,\y) -- (\x,\y+0.25);
+  }
+\end{tikzpicture}
+\par\smallskip{\small\itshape Recta ajustada a puntos con barras de incertidumbre: la pendiente y el intercepto se leen con sus unidades}
+\end{center}
+
+\section{\iconotexto{box-open}{Materiales y equipos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Tabla de periodo y longitud del péndulo de la semana 9
+  \item Papel milimetrado o Python con Matplotlib
+  \item Regla y calculadora
+\end{itemize}
+
+\section{\iconotexto{flask}{Escenario}}
+
+Cada grupo recibe una tabla de periodo y longitud de un péndulo. Debe graficar los datos crudos, descubrir que la relación no es lineal, linealizarla elevando al cuadrado el periodo y leer de la recta la aceleración de la gravedad.
+
+\section{\iconotexto{list-ol}{Procedimiento}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Tabular la longitud del hilo y el periodo al cuadrado, con sus unidades.
+  \item Graficar $T$ frente a $L$ y describir la forma de la curva.
+  \item Graficar $T^2$ frente a $L$ y comprobar si los puntos se alinean.
+  \item Trazar la recta que mejor represente la tendencia, sin forzarla a pasar por el primer ni por el último punto.
+  \item Calcular la pendiente a partir de dos puntos de la recta trazada, no de dos datos crudos.
+  \item Calcular $g$ a partir de la pendiente y compararla con el valor de referencia.
+  \item Interpretar el intercepto y decidir si es compatible con cero dentro de la incertidumbre.
+\end{enumerate}
+
+\section{\iconotexto{table}{Tabla de datos}}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Datos del péndulo para linealizar}\par\smallskip
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Ensayo & $L$ (cm) & $T$ (s) & $T^2$ (s$^2$) \\
+\midrule
+1 & 67,0 & 1,778 & 3,161 \\
+2 & 60,0 & 1,532 & 2,347 \\
+3 & 52,0 & 1,430 & 2,045 \\
+4 & 45,5 & 1,354 & 1,833 \\
+5 & 39,0 & 1,266 & 1,603 \\
+6 & 33,0 & 1,186 & 1,407 \\
+7 & 28,0 & 1,136 & 1,291 \\
+8 & 22,5 & 1,060 & 1,124 \\
+9 & 17,5 & 0,948 & 0,899 \\
+10 & 12,5 & 0,856 & 0,733 \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize La tabla ya está ordenada de mayor a menor longitud; al graficar, el eje horizontal es la longitud y el vertical el periodo al cuadrado.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Describir la forma de la gráfica $T$ frente a $L$ y explicar por qué no es una recta.
+  \item Calcular la pendiente de $T^2$ frente a $L$ con dos puntos de la recta trazada y reportarla con unidades.
+  \item Calcular $g = 4\pi^2/m$ y expresarla en m/s$^2$.
+  \item Comparar $g$ con el valor de referencia y calcular la diferencia porcentual.
+  \item Interpretar el intercepto: ¿es cero dentro de la incertidumbre? ¿Qué significaría que no lo fuera?
+  \item Explicar por qué se grafica $T^2$ y no $T$, y qué se gana con la linealización.
+\end{enumerate}
+
+\section{\iconotexto{box-open}{Entregable}}
+
+Taller resuelto con las dos gráficas, la recta trazada, el cálculo de la pendiente con unidades, el valor de $g$ y la interpretación del intercepto.
+
+\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Fundamento y vocabulario metrológico & 2,0 \\
+Procedimiento y registro de lecturas & 2,0 \\
+Cálculo de medias e incertidumbres & 3,0 \\
+Interpretación y elección del instrumento & 2,0 \\
+Presentación y unidades & 1,0 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} revisa el montaje contra la figura y verifica el cero y el rango de cada instrumento antes de tomar la primera lectura. Si algo no coincide, detente y consulta al docente: los datos tomados sobre un montaje dudoso no se corrigen después.
+\end{tcolorbox}
+\end{document}
