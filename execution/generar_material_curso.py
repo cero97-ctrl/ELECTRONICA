@@ -546,10 +546,12 @@ def validar(datos: dict[str, Any]) -> list[str]:
     grupos = datos.get("grupos") or {}
     roles = [r.get("nombre") for r in grupos.get("roles") or []]
     if roles:
-        if len(roles) != int(grupos.get("cantidad", len(roles))):
-            problemas.append(
-                f"grupos: hay {len(roles)} roles y se declaran {grupos.get('cantidad')} grupos"
-            )
+        try:
+            cantidad = int(grupos.get("cantidad", 0))
+        except (TypeError, ValueError):
+            cantidad = 0
+        if cantidad < 1:
+            problemas.append("grupos.cantidad debe ser un entero mayor que cero")
         inicial = grupos.get("asignacion_inicial") or []
         if inicial and sorted(inicial) != sorted(roles):
             problemas.append(
@@ -966,10 +968,13 @@ def tex_guia(datos: dict[str, Any]) -> str:
             filas.append(
                 _t(f"Fase {fase}") + " & " + " & ".join(_t(a) for a in asignados) + r" \\"
             )
-        partes.append(r"\textbf{Asignación de roles por fase}")
+        partes.append(r"\textbf{Asignación de roles por fase (idéntica en cada grupo)}")
         partes.append(
-            "\\begin{tabularx}{\\linewidth}{@{}l X X X X@{}}\n\\toprule\n"
-            "Fase & Grupo 1 & Grupo 2 & Grupo 3 & Grupo 4\\\\\n\\midrule\n"
+            "\\begin{tabularx}{\\linewidth}{@{}l " + " ".join(["X"] * len(inicial)) + "@{}}\n\\toprule\n"
+            "Fase & "
+            + " & ".join(_t(f"Integrante {i}") for i in range(1, len(inicial) + 1))
+            + r" \\"
+            + "\n\\midrule\n"
             + "\n".join(filas)
             + "\n\\bottomrule\n\\end{tabularx}"
         )

@@ -15,11 +15,11 @@ meta:
   fecha: 6 de noviembre de 2026
   fecha_iso: '2026-11-06'
   semanas: 10
-  grupos: 4
+  grupos: 2
   icono: flask
   duracion_sesion: '3 horas de laboratorio presencial más 2 horas de análisis e informe'
   modalidad: >-
-    Laboratorio presencial en mesas de cuatro grupos con roles rotativos. Las
+    Laboratorio presencial en mesas de dos grupos con roles rotativos. Las
     cuatro primeras semanas son talleres de teoría de errores y análisis
     gráfico; a partir de la semana 5 cada sesión es una práctica experimental
     con entrega semanal por repositorio privado.
@@ -51,9 +51,9 @@ resultados_aprendizaje:
     texto: 'Trabajar en equipo con roles rotativos, cumpliendo las normas de seguridad y el cuidado del instrumental.'
 
 grupos:
-  cantidad: 4
+  cantidad: 2
   asignacion: >-
-    Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada
+    Dos grupos fijos durante el semestre, de tres a cuatro integrantes cada
     uno. Los roles rotan al inicio de cada fase para que todos los integrantes
     pasen por la medición, el análisis, la documentación y la verificación.
   repositorio: >-
