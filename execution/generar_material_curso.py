@@ -560,6 +560,17 @@ def validar(datos: dict[str, Any]) -> list[str]:
         for fase in grupos.get("fase_con_roles") or []:
             if fase not in fases:
                 problemas.append(f"grupos.fase_con_roles: la fase {fase!r} no existe")
+        rotaciones = grupos.get("rotaciones") or []
+        if rotaciones:
+            if not all(isinstance(r, str) and r.strip() for r in rotaciones):
+                problemas.append(
+                    "grupos.rotaciones debe ser una lista de etiquetas de texto no vacías"
+                )
+            elif len(rotaciones) < len(roles):
+                problemas.append(
+                    f"grupos.rotaciones: hay {len(rotaciones)} rotaciones y {len(roles)} roles; "
+                    "con menos rotaciones que roles algún integrante quedaría sin cubrir algún rol"
+                )
 
     entregas = datos.get("entregas") or {}
     for clave in ("plataforma", "modalidad", "cadencia", "corte"):
@@ -959,19 +970,24 @@ def tex_guia(datos: dict[str, Any]) -> str:
     )
     partes.append(_t(grupos.get("rotacion", "")))
     inicial = grupos.get("asignacion_inicial") or []
+    rotaciones = [str(r) for r in (grupos.get("rotaciones") or [])]
     fases_roles = grupos.get("fase_con_roles") or []
-    if inicial and fases_roles:
+    if rotaciones:
+        etiquetas, turnos = rotaciones, list(range(len(rotaciones)))
+    else:
+        etiquetas = [f"Fase {f}" for f in fases_roles]
+        turnos = [int(f) - 1 for f in fases_roles]
+    if inicial and etiquetas:
         filas = []
-        for fase in fases_roles:
-            turno = int(fase) - 1
+        for etiqueta, turno in zip(etiquetas, turnos):
             asignados = [inicial[(i + turno) % len(inicial)] for i in range(len(inicial))]
             filas.append(
-                _t(f"Fase {fase}") + " & " + " & ".join(_t(a) for a in asignados) + r" \\"
+                _t(etiqueta) + " & " + " & ".join(_t(a) for a in asignados) + r" \\"
             )
-        partes.append(r"\textbf{Asignación de roles por fase (idéntica en cada grupo)}")
+        partes.append(r"\textbf{Asignación de roles por rotación (idéntica en cada grupo)}")
         partes.append(
             "\\begin{tabularx}{\\linewidth}{@{}l " + " ".join(["X"] * len(inicial)) + "@{}}\n\\toprule\n"
-            "Fase & "
+            "Rotación & "
             + " & ".join(_t(f"Integrante {i}") for i in range(1, len(inicial) + 1))
             + r" \\"
             + "\n\\midrule\n"

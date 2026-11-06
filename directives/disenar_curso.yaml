@@ -157,6 +157,14 @@ campos_opcionales:
     Admite matemática en línea con `$...$` (se renderiza con `_tm`, igual que
     `pasos` o `escenario`). Un subíndice o exponente fuera de `$...$` falla la
     validación con el campo señalado, porque rompería la compilación.
+  grupos.rotaciones: >-
+    Lista opcional de etiquetas de rotación de roles (por ejemplo
+    «Semanas 1-2»): cada rotación gira los roles una posición y la tabla de la
+    guía dibuja una fila por rotación, con columnas por integrante. Si se
+    omite, se dibuja una fila por fase de `fase_con_roles`. Con menos
+    rotaciones que roles la validación falla, porque algún integrante quedaría
+    sin cubrir algún rol: las rotaciones son las que garantizan la cobertura,
+    no las fases.
   laboratorio.recursos: >-
     Texto de recursos que acompaña a la tabla de imágenes.
   laboratorio.caracter: >-

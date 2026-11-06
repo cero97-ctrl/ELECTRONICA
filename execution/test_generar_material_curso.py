@@ -655,6 +655,7 @@ def test_roles_por_integrante_independientes_del_numero_de_grupos() -> None:
         ],
         "asignacion_inicial": ["Medición", "Análisis", "Documentación", "Verificación"],
         "fase_con_roles": [1],
+        "rotaciones": ["Semanas 1-2", "Semanas 3-4", "Semanas 5-7", "Semanas 8-10"],
     }
     comprobar(
         "dos grupos con cuatro roles validan sin problemas",
@@ -671,6 +672,18 @@ def test_roles_por_integrante_independientes_del_numero_de_grupos() -> None:
         "las columnas de la tabla son integrantes, no grupos",
         "Integrante 1" in guia and "Grupo 4" not in guia,
         guia,
+    )
+    comprobar(
+        "las filas de la tabla son las rotaciones del descriptor",
+        "Semanas 1-2" in guia and "Semanas 8-10" in guia and guia.count("Semanas ") >= 4,
+        guia,
+    )
+    cortas = copy.deepcopy(datos)
+    cortas["grupos"]["rotaciones"] = ["Semanas 1-5", "Semanas 6-10"]
+    comprobar(
+        "menos rotaciones que roles falla la validación",
+        any("grupos.rotaciones" in p for p in gen.validar(cortas)),
+        str(gen.validar(cortas)),
     )
     mal = copy.deepcopy(datos)
     mal["grupos"]["cantidad"] = 0

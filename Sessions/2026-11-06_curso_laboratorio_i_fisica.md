@@ -116,6 +116,20 @@ generado con el flujo determinista de 3 capas.
   PDF). Es un documento redactado a mano, no un artefacto del flujo: se edita
   directamente el `.tex`. Se compactó el texto para evitar una página 3
   huérfana con solo la caja final. Commit `00d59db` y push.
+- El docente pidió añadir la cuarta rotación de roles (pendiente de la sesión):
+  nuevo campo opcional `grupos.rotaciones` (lista de etiquetas; una fila de la
+  tabla por rotación, columnas por integrante, giro de una posición por fila).
+  En LAB I: «Semanas 1-2, 3-4, 5-7 y 8-10» (la fase 1, de cuatro semanas, se
+  parte en dos rotaciones), y la prosa de `grupos.rotacion` ahora afirma lo que
+  la tabla cumple: al cierre de la última rotación cada integrante ocupó los
+  cuatro roles. El validador rechaza menos rotaciones que roles y etiquetas
+  vacías; sin `rotaciones`, la tabla degrada a una fila por fase como antes.
+  Documentado en la directiva y congelado en el test de roles
+  (72 aserciones OK). Regenerada la guía. El docente preguntó si
+  `docs/semana_1.tex` se había ajustado: no lo estaba (decía que los roles
+  rotan «al inicio de cada fase»); se alineó con las cuatro rotaciones y, con
+  él, `entregas.estructura` en `curso.yaml` («roles por rotación», que alimenta
+  guía y README). Semana 1 recompilada (2 páginas) y guía/README regenerados.
 - El docente informó que tiene **dos grupos, no cuatro**. Ajuste en
   `curso.yaml` (`meta.grupos`, `meta.modalidad`, `grupos.cantidad` y
   `grupos.asignacion`) y regeneración completa (16 PDF). El cambio destapó dos
@@ -131,9 +145,6 @@ generado con el flujo determinista de 3 capas.
   «Grupo 4» en el árbol generado.
 
 ## Pendientes
-- Commitear y pushear el arreglo de la matemática de los controles (quedó como
-  cambio de trabajo: generador, test, directiva, los dos PDF de control y esta
-  bitácora).
 - OCR de `cursos/LABORATORIO_I_FISICA/docs/teoria_medicion_error_grafica.pdf`
   cuando se recupere la cuota Gemini; su contenido se cubrió con
   `Teoria_de_Error_v3.0.md` y física estándar, pero conviene contrastarlo.
@@ -142,7 +153,3 @@ generado con el flujo determinista de 3 capas.
   tablas de los 16 documentos ya se revisaron y corrigieron).
 - Decidir si la práctica 6 y la evaluación final comparten la semana 10; hoy
   están así por mandato de las diez semanas, pero concentra dos instrumentos.
-- La prosa de rotación de roles promete que «en la fase 3 cada integrante haya
-  ocupado los cuatro roles», pero con tres fases con roles cada integrante solo
-  cubre tres; conviene corregir esa frase del descriptor (o añadir una cuarta
-  rotación) cuando el docente lo apruebe.
