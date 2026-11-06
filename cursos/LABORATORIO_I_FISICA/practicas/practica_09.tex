@@ -1,0 +1,516 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~LABORATORIO\_I\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 09}
+\hypersetup{pdftitle={Laboratorio I de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_I\_FISICA}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Práctica 09 --- Péndulo simple y determinación de la gravedad}{Semana 9 --- Fase 3: Elasticidad, oscilaciones y calor}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 6 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis e informe \\
+\textbf{Modalidad} & 4 grupos con roles rotativos \\
+\textbf{Entrega} & GitHub del grupo, carpeta semana\_09, antes del corte semanal \\
+\textbf{Instrumento} & Práctica con informe y datos reales \\
+\bottomrule
+\end{tabularx}
+
+\section{\iconotexto{bullseye}{Objetivo}}
+
+Determinar la aceleración de la gravedad a partir de la linealización del periodo del péndulo simple y estimar la corrección de longitud asociada al centro de masa del cuerpo oscilante.
+
+\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Péndulo simple y aproximación de ángulo pequeño.
+  \item Periodo, longitud efectiva y centro de masa.
+  \item Linealización de periodo al cuadrado frente a longitud.
+  \item Ajuste por mínimos cuadrados y obtención de la gravedad.
+  \item Interpretación del intercepto como corrección de longitud.
+  \item Errores dominantes: ángulo, cronometraje y medición de longitud.
+\end{itemize}
+
+\section{\iconotexto{book-open}{Fundamento teórico}}
+
+Para ángulos pequeños ($\theta \le 10^\circ$), el periodo del péndulo
+simple es
+\[
+  T = 2\pi\sqrt{\frac{L}{g}},
+\]
+donde $L = L_H + L_C$ es la longitud efectiva, $L_H$ la longitud del hilo
+y $L_C$ la distancia entre el punto de sujeción y el centro de masa del
+cuerpo. Elevando al cuadrado,
+\[
+  T^2 = \frac{4\pi^2}{g}\,L_H + \frac{4\pi^2}{g}\,L_C.
+\]
+Al graficar $T^2$ frente a $L_H$ se obtiene una recta de pendiente
+\[
+  m = \frac{4\pi^2}{g}
+  \qquad\Longrightarrow\qquad
+  g = \frac{4\pi^2}{m},
+\]
+e intercepto $b = m\,L_C$, de donde
+\[
+  L_C = \frac{b}{m}.
+\]
+El periodo se mide como $T = t/N$ para $N$ oscilaciones completas; medir
+varias oscilaciones reduce la incertidumbre de reacción humana. El
+cronometraje debe empezar y terminar en la misma posición del péndulo. Un
+ángulo mayor de $10^\circ$ alarga el periodo y hace que la gravedad
+calculada salga mayor que la real. Los datos con errores gruesos se
+reportan, no se borran: el análisis debe explicar por qué se apartan.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+  \draw[thick] (0.5,5.6) -- (5.5,5.6);
+  \draw[thick] (0.5,5.6) -- (0.5,5.3);
+  \draw[thick] (5.5,5.6) -- (5.5,5.3);
+  \draw[thick] (2.5,5.5) -- (2.5,5.2);
+  \draw[thick] (2.5,5.2) -- (3.7,3.0);
+  \fill (3.7,2.8) circle (0.3);
+  \draw[dashed] (2.5,5.2) -- (2.5,2.2);
+  \draw[dashed] (2.5,2.8) -- (3.7,2.8);
+  \draw (2.5,3.4) arc (90:62:0.9);
+  \node at (2.85,3.55) {$\theta$};
+  \draw[<->] (4.3,5.2) -- (4.3,2.8) node[midway,right] {$L$};
+\end{tikzpicture}
+\par\smallskip{\small\itshape Péndulo simple: la longitud efectiva se mide hasta el centro de masa del cuerpo, no hasta su extremo inferior}
+\end{center}
+
+\section{\iconotexto{box-open}{Materiales y equipos}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Soporte universal con pinza
+  \item Hilo inextensible de masa despreciable
+  \item Esfera metálica de masa conocida
+  \item Cinta métrica de 1 m con resolución de 1 mm
+  \item Calibrador para medir el diámetro de la esfera
+  \item Cronómetro digital con resolución de 0,01 s
+  \item Transportador para controlar la amplitud
+\end{itemize}
+
+\section{\iconotexto{flask}{Escenario}}
+
+Cada grupo recibe una tabla de veintiuna longitudes de hilo con el tiempo de cinco oscilaciones. Debe linealizar el modelo, ajustar la recta, obtener la gravedad y explicar por qué el intercepto no es cero. Los datos provienen de una medición real de laboratorio.
+
+\section{\iconotexto{list-ol}{Procedimiento}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Medir el diámetro de la esfera con el calibrador y estimar la distancia entre el punto de sujeción y su centro de masa.
+  \item Montar el péndulo con una longitud de hilo conocida y comprobar que el soporte no se mueve.
+  \item Separar el péndulo menos de $10^\circ$ de la vertical y soltarlo desde el reposo.
+  \item Cronometrar cinco oscilaciones completas, empezando y terminando en el mismo punto del recorrido.
+  \item Repetir la medición del tiempo y promediar; descartar solo si hay un error de procedimiento documentado.
+  \item Repetir para las veintiuna longitudes de hilo, de la mayor a la menor, anotando cada una con su unidad.
+  \item Calcular el periodo como $T = t/N$ y el periodo al cuadrado para cada longitud.
+  \item Graficar $T^2$ frente a $L_H$, ajustar la recta y obtener la pendiente con su incertidumbre.
+\end{enumerate}
+
+\section{\iconotexto{table}{Tabla de datos}}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\small
+\textbf{Datos del péndulo simple para \$N = 5\$ oscilaciones}\par\smallskip
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Ensayo & $L_H$ (cm) & $t$ (s) & $T = t/N$ (s) & $T^2$ (s$^2$) \\
+\midrule
+1 & 67,0 & 8,89 & 1,778 & 3,161 \\
+2 & 65,0 & 8,52 & 1,704 & 2,904 \\
+3 & 62,5 & 8,03 & 1,606 & 2,579 \\
+4 & 60,0 & 7,66 & 1,532 & 2,347 \\
+5 & 57,5 & 7,61 & 1,522 & 2,317 \\
+6 & 54,5 & 7,43 & 1,486 & 2,208 \\
+7 & 52,0 & 7,15 & 1,430 & 2,045 \\
+8 & 49,0 & 6,43 & 1,286 & 1,654 \\
+9 & 45,5 & 6,77 & 1,354 & 1,833 \\
+10 & 42,0 & 6,77 & 1,354 & 1,833 \\
+11 & 39,0 & 6,33 & 1,266 & 1,603 \\
+12 & 36,0 & 6,12 & 1,224 & 1,498 \\
+13 & 33,0 & 5,93 & 1,186 & 1,407 \\
+14 & 30,5 & 5,77 & 1,154 & 1,332 \\
+15 & 28,0 & 5,68 & 1,136 & 1,291 \\
+16 & 25,0 & 5,47 & 1,094 & 1,197 \\
+17 & 22,5 & 5,30 & 1,060 & 1,124 \\
+18 & 20,0 & 4,85 & 0,970 & 0,941 \\
+19 & 17,5 & 4,74 & 0,948 & 0,899 \\
+20 & 15,5 & 4,34 & 0,868 & 0,753 \\
+21 & 12,5 & 4,28 & 0,856 & 0,733 \\
+\bottomrule
+\end{tabular}
+}\par\smallskip{\footnotesize El tiempo corresponde a cinco oscilaciones completas; los ensayos 9 y 10 no siguen la tendencia decreciente y deben analizarse, no eliminarse sin justificación.}
+\end{minipage}
+\end{center}
+
+\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Calcular el periodo y el periodo al cuadrado para cada longitud y verificar la tabla.
+  \item Graficar $T^2$ frente a $L_H$ con barras de incertidumbre y ajustar la recta por mínimos cuadrados.
+  \item Reportar la pendiente con sus unidades y calcular $g = 4\pi^2/m$ en m/s$^2$.
+  \item Calcular $L_C = b/m$ e interpretarlo como la distancia del punto de sujeción al centro de masa.
+  \item Comparar $g$ con el valor de referencia y calcular la diferencia porcentual.
+  \item Identificar los datos anómalos, explicar su efecto sobre el ajuste y repetir el ajuste sin ellos para comparar.
+  \item Discutir los errores dominantes: amplitud angular, reacción humana, paralaje y medición de la longitud.
+\end{enumerate}
+
+\section{\iconotexto{box-open}{Entregable}}
+
+Informe con la tabla completa, la gráfica linealizada, el ajuste, el valor de $g$ con su incertidumbre, la corrección de longitud y el análisis de los datos anómalos.
+
+\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Fundamento teórico y modelo aplicado & 1,0 \\
+Montaje, seguridad y manejo del instrumental & 1,5 \\
+Toma de datos completa y trazable & 2,0 \\
+Presupuesto de incertidumbres & 2,0 \\
+Análisis, ajuste y gráficas & 2,0 \\
+Conclusiones contrastadas con el modelo & 1,0 \\
+Presentación y estructura del informe & 0,5 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} revisa el montaje contra la figura y verifica el cero y el rango de cada instrumento antes de tomar la primera lectura. Si algo no coincide, detente y consulta al docente: los datos tomados sobre un montaje dudoso no se corrigen después.
+\end{tcolorbox}
+\end{document}

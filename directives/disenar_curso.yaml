@@ -71,6 +71,11 @@ campos_opcionales:
     Aviso al pie de cada práctica.
   textos.nota_correccion: >-
     Nota sobre cómo se corrige, en la guía.
+  textos.instrucciones_control: >-
+    Instrucciones del bloque "Recuerda" de cada control de fase. El default habla
+    de "límites legales" porque nació para un curso de ciberseguridad; un curso
+    de física debe sobrescribirlo, o el control pedirá algo que el temario no
+    enseña.
   textos.titulo_politicas: >-
     Título de la sección de políticas (default "Ética y legalidad").
   textos.plan_entrega: >-
@@ -93,6 +98,13 @@ campos_opcionales:
     clave cumple `[a-z][a-z0-9_]*`. Alimenta `rubrica_practica.yaml`. Si se omite
     se usan los 5 criterios históricos (3.0/2.5/2.0/1.5/1.0). Las descripciones se
     serializan con `json.dumps`, así que pueden llevar dos puntos y comillas.
+  semana.tipo: >-
+    `practica` (default) o `teoria`. Con `teoria` el documento semanal se rotula
+    "Taller NN" en la banda, en el plan semanal y en el nombre del fichero
+    (`taller_NN.tex`), porque un curso puede dedicar las primeras semanas a
+    teoría de errores y análisis gráfico antes de entrar al laboratorio. Con
+    `practica` se conserva exactamente el comportamiento histórico
+    (`practica_NN`). Cualquier otro valor falla la validación con código 3.
   practica.fundamento_tex: >-
     LaTeX crudo del fundamento teórico (ecuaciones, unidades). Dentro de cada
     entrada de `semanas`.
@@ -136,6 +148,11 @@ campos_opcionales:
     Lista de criterios para aprobar.
   controles[].caracter: >-
     Individual o grupal, igual que en la evaluación final.
+  controles[].preguntas[].tema: >-
+    Etiqueta corta del tema evaluado que aparece en la tabla "Distribución del
+    puntaje". Es contenido editorial y por eso vive en el descriptor. Si se
+    omite, el generador deriva las primeras palabras del enunciado, una etiqueta
+    mecánica que suele quedar telegráfica; no es una decisión del programa.
   laboratorio.recursos: >-
     Texto de recursos que acompaña a la tabla de imágenes.
   laboratorio.caracter: >-
@@ -190,7 +207,7 @@ expected_outputs:
   - <curso>/plan_estudios/silabo.{tex,pdf}
   - <curso>/plan_estudios/plan_semanal.{tex,pdf}
   - <curso>/docs/guia_estudiante.{tex,pdf}
-  - <curso>/practicas/practica_01..NN.{tex,pdf} (una por semana)
+  - <curso>/practicas/practica_NN.{tex,pdf} y taller_NN.{tex,pdf} (uno por semana, según semana.tipo)
   - <curso>/evaluaciones/control_fase_<n>.{tex,pdf} y evaluacion_final.{tex,pdf}
   - <curso>/evaluaciones/rubrica_practica.yaml (compatible con execution/evaluar_examen.py)
   - <curso>/laboratorio/docker-compose.yml y laboratorio/README.md
@@ -272,6 +289,13 @@ edge_cases:
     protocolo: >-
       Código 3. Un apéndice vacío emitiría una sección con título y nada dentro,
       que en el PDF parece un error de maquetación y no de datos.
+
+  - caso: Una semana con `tipo` distinto de `practica` o `teoria`
+    protocolo: >-
+      Código 3 con el valor recibido. El campo solo admite esas dos palabras y su
+      ausencia equivale a `practica`; un `tipo: taller` o `tipo: Teoría` no se
+      adivina. Con `teoria`, el documento se rotula "Taller NN" y el fichero se
+      llama `taller_NN.tex`; con `practica`, `practica_NN.tex`.
 
   - caso: Curso sin laboratorio Docker (`laboratorio.imagenes` vacío)
     protocolo: >-

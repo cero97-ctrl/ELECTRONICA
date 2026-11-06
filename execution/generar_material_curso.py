@@ -77,6 +77,16 @@ ARTEFACTOS = (
 FUENTE_FECHA = "SOURCE_DATE_EPOCH"
 
 
+def etiqueta_semana(sem: dict[str, Any]) -> str:
+    """Nombre del documento semanal: ``Taller`` para teoría, ``Práctica`` si no.
+
+    Un curso puede dedicar las primeras semanas a teoría de errores y análisis
+    gráfico antes de entrar al laboratorio. Llamar «Práctica 01» a un taller de
+    teoría es una etiqueta falsa: el alumno cree que va a medir y no mide.
+    """
+    return "Taller" if str(sem.get("tipo", "practica")).lower() == "teoria" else "Práctica"
+
+
 # ── Escape a LaTeX ────────────────────────────────────────────────────────────
 
 # Variante para los campos que admiten matemática en línea ($...$): no se tocan la
@@ -386,6 +396,11 @@ def validar(datos: dict[str, Any]) -> list[str]:
 
     for sem in semanas:
         etiqueta = f"semana {sem.get('numero')}"
+        tipo = str(sem.get("tipo", "practica")).lower()
+        if tipo not in ("practica", "teoria"):
+            problemas.append(
+                f"{etiqueta}: tipo {tipo!r} no válido; use 'practica' o 'teoria'"
+            )
         if sem.get("fase") not in fases:
             problemas.append(f"{etiqueta}: fase {sem.get('fase')!r} no existe en 'fases'")
         for clave in ("titulo", "objetivo", "contenidos", "herramientas", "evaluacion"):
@@ -708,7 +723,7 @@ def tex_silabo(datos: dict[str, Any]) -> str:
                     "Entrega",
                     _t(
                         f'{entregas.get("plataforma", "GitHub")} por grupo, '
-                        "revisado al finalizar cada semana de práctica"
+                        "revisado al finalizar cada semana"
                     ),
                 ),
                 ("Dedicación", _t(meta.get("dedicacion_semanal", ""))),
@@ -780,7 +795,7 @@ def tex_silabo(datos: dict[str, Any]) -> str:
         partes.append(r"\textbf{Reglas de entrega}")
         partes.append(_lista(entregas.get("reglas") or []))
         partes.append(
-            r"\begin{cajaRecuerda}La práctica se considera entregada solo cuando está "
+            r"\begin{cajaRecuerda}La entrega se considera válida solo cuando está "
             r"en el repositorio del grupo antes del corte. Un enlace, una captura suelta o "
             r"un archivo enviado por mensajería no sustituyen el repositorio.\end{cajaRecuerda}"
         )
@@ -853,7 +868,7 @@ def tex_plan_semanal(datos: dict[str, Any]) -> str:
             r"\textbf{Contenidos}",
             _lista(sem["contenidos"]),
             r"\textbf{Herramientas:} " + _t(", ".join(sem["herramientas"])) + ".",
-            r"\textbf{Práctica.} \emph{" + _t(practica["titulo"]) + "}. " + _tm(practica["escenario"]),
+            r"\textbf{" + _t(etiqueta_semana(sem)) + ".} \emph{" + _t(practica["titulo"]) + "}. " + _tm(practica["escenario"]),
             r"\textbf{Entregable:} " + _tm(practica["entregable"]),
         ]
         instrumento = str(sem.get("evaluacion", "")).replace("_", " ")
@@ -1108,10 +1123,11 @@ def tex_practica(datos: dict[str, Any], sem: dict[str, Any]) -> str:
     practica = sem["practica"]
     grupos = datos.get("grupos") or {}
     entregas = datos.get("entregas") or {}
+    documento = f'{etiqueta_semana(sem)} {sem["numero"]:02d}'
 
     partes: list[str] = [
         banda_titulo(
-            _t(f'Práctica {sem["numero"]:02d} --- {practica["titulo"]}'),
+            _t(f'{documento} --- {practica["titulo"]}'),
             _t(f'Semana {sem["numero"]} --- Fase {fase["id"]}: {fase["nombre"]}'),
         ),
         _metadatos_curso(meta),
@@ -1219,7 +1235,7 @@ def tex_practica(datos: dict[str, Any], sem: dict[str, Any]) -> str:
         + "\n\\end{tcolorbox}"
     )
 
-    return _documento(meta, _t(f'Práctica {sem["numero"]:02d}'), "\n\n".join(partes))
+    return _documento(meta, _t(documento), "\n\n".join(partes))
 
 
 def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
@@ -1251,9 +1267,13 @@ def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
         seccion_con_icono("info-circle", "Instrucciones"),
         "\\begin{cajaRecuerda}"
         + _t(
-            "Responda de forma individual y sin apuntes. Cada respuesta debe justificar la "
-            "decisión técnica, no solo nombrarla. Se valoran la precisión del vocabulario, la "
-            "coherencia con el laboratorio y el reconocimiento de los límites legales."
+            _texto(
+                datos,
+                "instrucciones_control",
+                "Responda de forma individual y sin apuntes. Cada respuesta debe justificar la "
+                "decisión técnica, no solo nombrarla. Se valoran la precisión del vocabulario, la "
+                "coherencia con el laboratorio y el reconocimiento de los límites legales.",
+            )
         )
         + "\n\\end{cajaRecuerda}",
         seccion_con_icono("question-circle", "Preguntas"),
@@ -1270,7 +1290,7 @@ def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
         + "\n".join(
             _t(i + 1)
             + " & "
-            + _t(_tema_de(p["enunciado"]))
+            + _t(p.get("tema") or _tema_de(p["enunciado"]))
             + " & "
             + _n(p["puntaje"])
             + r" \\"
@@ -1287,12 +1307,33 @@ def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
 def _tema_de(enunciado: str) -> str:
     """Deriva una etiqueta corta de tema a partir del enunciado.
 
-    Es función pura del texto (primeras palabras significativas), no una
-    decisión editorial: el docente puede reescribir el enunciado y la tabla
-    seguirá siendo coherente con él.
+    Es solo el respaldo cuando la pregunta no declara `tema`. El texto
+    automático (primeras palabras significativas) suele quedar telegráfico,
+    así que la etiqueta editorial vive en el descriptor y esta función es
+    puramente mecánica para que la tabla no quede vacía.
     """
     palabras = [p for p in re.split(r"[\s,.;:]+", enunciado) if len(p) > 4]
     return " ".join(palabras[:4]).rstrip(",")
+
+
+def _condiciones_final(final: dict[str, Any]) -> str:
+    """Renderiza `evaluacion_final.condiciones` como lista o párrafo.
+
+    El descriptor admite la lista de condiciones (forma natural, y la que usa
+    el curso de referencia) o un párrafo suelto. Pasar la lista a `_t()` la
+    convertía en `str(lista)` y el PDF mostraba los corchetes y las comillas de
+    Python en vez de las condiciones.
+    """
+    condiciones = final.get("condiciones")
+    if isinstance(condiciones, list) and condiciones:
+        return _lista(condiciones)
+    if condiciones:
+        return _t(condiciones)
+    return _t(
+        "Solo se evalúa lo que está dentro del alcance entregado en la hoja de la "
+        "evaluación. Salirse de ese alcance anula la prueba, con independencia del "
+        "resultado técnico. Firme la aceptación del alcance antes de empezar."
+    )
 
 
 def tex_evaluacion_final(datos: dict[str, Any]) -> str:
@@ -1325,16 +1366,8 @@ def tex_evaluacion_final(datos: dict[str, Any]) -> str:
             ]
         ),
         seccion_con_icono("exclamation-triangle", "Condiciones del alcance"),
-        "\\begin{tcolorbox}[cajaMejora]"
-        + _t(
-            final.get("condiciones")
-            or (
-                "Solo se evalúa lo que está dentro del alcance entregado en la hoja de la "
-                "evaluación. Tocar un activo fuera de ese alcance anula la prueba, con "
-                "independencia del resultado técnico. Firme la aceptación del alcance antes "
-                "de empezar."
-            )
-        )
+        "\\begin{tcolorbox}[cajaMejora]\n"
+        + _condiciones_final(final)
         + "\n\\end{tcolorbox}",
         seccion_con_icono("clipboard-check", "Secciones y puntaje"),
         "\\begin{tabularx}{\\linewidth}{@{}X r@{}}\n\\toprule\n"
@@ -1535,15 +1568,16 @@ def md_readme(datos: dict[str, Any]) -> str:
         "curso.yaml                 descriptor (fuente de verdad)\n"
         "plan_estudios/             silabo.pdf y plan_semanal.pdf\n"
         "docs/                      guia_estudiante.pdf\n"
-        "practicas/                 practica_01.pdf .. una por semana\n"
+        "practicas/                 un documento por semana (taller o practica)\n"
         "evaluaciones/              controles de fase y evaluacion_final\n"
         "laboratorio/               docker-compose.yml y README\n"
         "```\n\n"
         "## Calendario\n\n"
-        "| Semana | Tema | Práctica |\n"
+        "| Semana | Tema | Documento semanal |\n"
         "| --- | --- | --- |\n"
         + "\n".join(
-            f'| {s["numero"]} | {s["titulo"]} | {s["practica"]["titulo"]} |' for s in semanas
+            f'| {s["numero"]} | {s["titulo"]} | {etiqueta_semana(s)}: {s["practica"]["titulo"]} |'
+            for s in semanas
         )
         + "\n\n## "
         + _texto(datos, "titulo_entregas", "Repositorio GitHub y entregas")
@@ -1669,7 +1703,8 @@ def generar(
         )
     if "practicas" in solo:
         for sem in datos["semanas"]:
-            job = f'practica_{sem["numero"]:02d}'
+            prefijo = "taller" if etiqueta_semana(sem) == "Taller" else "practica"
+            job = f'{prefijo}_{sem["numero"]:02d}'
             pendientes.append(
                 (
                     "practicas",

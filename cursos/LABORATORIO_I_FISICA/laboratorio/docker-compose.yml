@@ -1,0 +1,10 @@
+# Laboratorio generado desde curso.yaml — no editar a mano.
+# Solo accesible en localhost; nunca exponer estos servicios a Internet.
+name: laboratorio_fisica
+services: {}
+networks:
+  laboratorio_fisica:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.29.0.0/24
