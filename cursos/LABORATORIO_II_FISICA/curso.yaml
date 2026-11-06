@@ -22,11 +22,11 @@ meta:
   fecha: 2 de noviembre de 2026
   fecha_iso: 2026-11-02
   semanas: 10
-  grupos: 4
+  grupos: 3
   icono: atom
   duracion_sesion: 3 horas de laboratorio presencial más 2 horas de análisis
   modalidad: >-
-    Laboratorio presencial en mesas de cuatro grupos con roles rotativos, más
+    Laboratorio presencial en mesas de tres grupos con roles rotativos, más
     análisis de datos en Python y entrega semanal por repositorio privado.
   dedicacion_semanal: 3 horas de laboratorio + 2 horas de análisis e informe
   version: 1
@@ -76,9 +76,9 @@ resultados_aprendizaje:
       conclusiones contrastadas con el modelo.
 
 grupos:
-  cantidad: 4
+  cantidad: 3
   asignacion: >-
-    Cuatro grupos fijos durante el semestre, de tres a cuatro integrantes cada
+    Tres grupos fijos durante el semestre, de tres a cuatro integrantes cada
     uno. Los roles rotan al inicio de cada fase para que todos los integrantes
     pasen por la medición, el análisis, la documentación y la verificación.
   repositorio: >-
