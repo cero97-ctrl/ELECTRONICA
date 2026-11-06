@@ -516,6 +516,13 @@ def validar(datos: dict[str, Any]) -> list[str]:
                 f"control de fase {control.get('fase')}: los puntajes suman {sum(puntos):.2f} "
                 "y deben cerrar en la escala declarada"
             )
+        for i, pregunta in enumerate(control.get("preguntas") or [], 1):
+            problemas.extend(
+                _validar_matematica(
+                    pregunta.get("enunciado"),
+                    f"control de fase {control.get('fase')}: pregunta {i}.enunciado",
+                )
+            )
 
     final = datos.get("evaluacion_final") or {}
     puntos_final = [float(s.get("puntaje", 0)) for s in final.get("secciones") or []]
@@ -1280,6 +1287,7 @@ def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
         _lista(
             [f'({_n(p["puntaje"])} pt) {p["enunciado"]}' for p in control["preguntas"]],
             entorno="enumerate",
+            math=True,
         ),
     ]
 
