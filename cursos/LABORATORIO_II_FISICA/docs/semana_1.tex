@@ -1,0 +1,438 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{atom}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
+\fancyhead[R]{\footnotesize\color{grisTexto}Semana 1 --- Arranque del grupo}
+\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={LABORATORIO\_II\_FISICA}}
+
+\begin{document}
+
+\bandaTitulo{Semana 1 --- Arranque del grupo}{Laboratorio II de Física --- pasos del grupo antes, durante y después de la primera sesión}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física\end{center}
+
+\section{\iconotexto{book}{Antes de la primera sesión}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Leer \texttt{docs/guia\_estudiante.pdf} y \texttt{practicas/practica\_01.pdf} (\emph{Característica corriente-tensión de un resistor}). Calendario: entrega cada semana, controles de fase en las semanas 4 y 8, evaluación final y portafolio en la semana 10.
+  \item El curso trabaja con \textbf{tres grupos fijos} de tres a cuatro integrantes. Cada grupo crea su \textbf{repositorio GitHub privado} con el docente como colaborador de lectura. El repositorio es la entrega: no se recibe nada por correo ni impreso, salvo indicación expresa.
+  \item El \texttt{README.md} del repositorio lleva integrantes, roles de la fase y tabla de semanas entregadas. La carpeta de la semana se estructura así:
+  \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
+    \item \texttt{semana\_01/informe.pdf} --- informe de la práctica.
+    \item \texttt{semana\_01/datos/} --- CSV crudos, uno por ensayo, sin editar.
+    \item \texttt{semana\_01/analisis/} --- scripts de Python que reproducen cada figura.
+    \item \texttt{semana\_01/figuras/} --- gráficas en PDF o PNG generadas por los scripts.
+    \item \texttt{semana\_01/README.md} --- qué se hizo, qué no se pudo verificar y por qué.
+  \end{itemize}
+  \item Repartir los cuatro roles; giran una posición en sentido horario al inicio de cada fase (1, 2 y 3), de modo que al cierre cada integrante haya pasado por los cuatro. Si el grupo tiene tres integrantes, uno asume dos roles en la fase y lo declara en el \texttt{README.md}:
+  \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
+    \item \textbf{Medición.} Monta el circuito, comprueba rangos y polaridad antes de energizar, toma las lecturas y anota la resolución de cada instrumento.
+    \item \textbf{Análisis.} Propaga incertidumbres, ajusta por mínimos cuadrados, grafica y extrae los parámetros físicos del modelo.
+    \item \textbf{Documentación.} Redacta el informe, integra tablas y figuras y mantiene el repositorio ordenado según la estructura acordada.
+    \item \textbf{Verificación.} Contrasta el resultado con el modelo y con una medición independiente, busca errores sistemáticos y firma la trazabilidad de los datos.
+  \end{itemize}
+  \item Si el equipo del grupo no tiene Python instalado, arrancar el contenedor opcional de \texttt{laboratorio/} (Jupyter con NumPy, SciPy y Matplotlib). El contenedor procesa datos; nunca sustituye una medición real en la mesa.
+\end{itemize}
+
+\section{\iconotexto{flask}{En la sesión de laboratorio (3 horas)}}
+
+Cada grupo recibe una fuente de poder de 0 a \SI{30}{\volt}, dos multimedidores Keithley (179, 175 o 175-A), un resistor de carbón, un diodo semiconductor rectificador, tablero de montaje y cables.
+
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$] (0,3);
+  \draw (0,3) to[ammeter, l=$I$] (3,3);
+  \draw (3,3) to[R, l=$R$] (3,0);
+  \draw (3,0) -- (0,0);
+  \draw (3,3) -- (4.6,3) to[voltmeter, l=$V_R$] (4.6,0) -- (3,0);
+\end{circuitikz}
+
+{\small\color{grisTexto}Montaje de la práctica 1: amperímetro en serie y voltímetro en paralelo con el resistor.}
+\end{center}
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=3pt]
+  \item Leer en el manual de los Keithley cómo se selecciona cada función, cada rango y la resolución en voltímetro, amperímetro y óhmmetro.
+  \item Anotar el valor nominal del resistor por código de colores, con su tolerancia.
+  \item Montar el circuito del resistor \textbf{sin energizar} y hacerlo revisar por el profesor.
+  \item Conectar el voltímetro en paralelo con el resistor y el amperímetro en serie, ambos en el rango más alto, y bajar el rango hasta resolver la lectura.
+  \item Variar la salida de la fuente y obtener al menos \textbf{ocho pares $V$, $I$} para el resistor; anotar rango y resolución en cada punto.
+  \item Sustituir el resistor por el diodo en polarización directa y obtener al menos \textbf{veinte pares $V$, $I$}; invertir la polaridad y comprobar que la corriente es prácticamente nula dentro del rango del amperímetro.
+  \item Cortar la alimentación, medir el resistor con el óhmmetro y comparar con el valor nominal y con el del ajuste. Repetir tres puntos con el voltímetro antes del amperímetro y anotar la diferencia (efecto de carga).
+\end{enumerate}
+
+\begin{cajaRecuerda}El rol de Medición registra cada lectura cruda en un CSV por ensayo dentro de \texttt{semana\_01/datos/}, con la resolución y el rango de cada instrumento. Los datos crudos no se editan nunca: toda corrección vive en el script de análisis.\end{cajaRecuerda}
+
+\begin{tcolorbox}[cajaRecomendacion]
+Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\end{tcolorbox}
+
+\section{\iconotexto{chart-line}{Después de la sesión (2 horas de análisis e informe)}}
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=3pt]
+  \item Graficar $I$ frente a $V$ para cada elemento, con barras de incertidumbre y ejes rotulados con unidades.
+  \item Ajustar por mínimos cuadrados la rama lineal del resistor y reportar pendiente, su incertidumbre y el coeficiente de determinación. La resistencia sale del ajuste, no del promedio de los cocientes $V_k/I_k$.
+  \item Calcular los residuales del resistor y decidir si son aleatorios o sistemáticos, justificándolo con la gráfica (calentamiento del resistor, efecto de carga del amperímetro).
+  \item Comparar la resistencia del ajuste con el valor nominal, con el óhmmetro y con el código de colores.
+  \item Describir la curva del diodo en directa y en inversa y concluir si cumple o no la ley de Ohm.
+  \item Estimar la potencia máxima disipada por el resistor y comprobar que no excede su potencia nominal; cuantificar el efecto de carga observado y atribuirlo a la resistencia interna del instrumento.
+  \item Volcar todo en scripts que corren de punta a punta en \texttt{semana\_01/analisis/} y figuras en \texttt{semana\_01/figuras/}; redactar el informe grupal en \texttt{semana\_01/informe.pdf} con conclusiones firmadas individualmente.
+\end{enumerate}
+
+Cada script de análisis imprime por stdout un único objeto JSON con el resultado, sus unidades y su incertidumbre:
+
+\begin{lstlisting}
+{
+  "status": "ok",
+  "practica": 1,
+  "magnitud": "resistencia",
+  "valor": 99.4,
+  "unidad": "ohm",
+  "incertidumbre": 0.6,
+  "metodo": "ajuste_lineal_minimos_cuadrados",
+  "n_puntos": 8,
+  "residual_max": 0.012,
+  "fuente_datos": "semana_01/datos/iv_resistor_220.csv"
+}
+\end{lstlisting}
+
+\section{\iconotexto{upload}{Entrega y corrección}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Push antes del \textbf{domingo a las 23:59} de la semana; lo tardío se corrige con la penalización prevista en las políticas.
+  \item El docente revisa el repositorio al finalizar la semana y devuelve observaciones escritas antes de la práctica 2.
+  \item La práctica se califica con la rúbrica de siete criterios que suma 10 (\texttt{evaluaciones/rubrica\_practica.yaml}): fundamento teórico 1,0; montaje y seguridad 1,5; toma de datos 2,0; incertidumbres 2,0; análisis y gráficas 2,0; conclusiones 1,0; presentación 0,5.
+  \item Pesos del curso: prácticas 60\,\%, controles de fase (semanas 4 y 8) 20\,\%, evaluación final y portafolio (semana 10) 20\,\%; nota mínima 5.
+\end{itemize}
+
+\begin{cajaReto}Reglas duras desde el día uno: un resultado sin incertidumbre no se acepta como resultado; cada cifra del informe debe salir de una tabla de datos o de un script entregado; los datos crudos no se editan nunca; y nada de credenciales ni tokens en el repositorio.\end{cajaReto}
+
+\end{document}
