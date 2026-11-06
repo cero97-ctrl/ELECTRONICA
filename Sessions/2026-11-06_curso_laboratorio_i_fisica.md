@@ -107,7 +107,15 @@ generado con el flujo determinista de 3 capas.
   subíndice suelto falle antes de compilar en vez de romper el PDF. Congelado
   en `test_enunciado_de_control_con_matematica_no_se_escapa` (66 aserciones OK)
   y documentado en la directiva. Regenerado con `--solo controles`; verificado
-  con pdftotext que los 16 PDF quedan sin fugas de LaTeX.
+  con pdftotext que los 16 PDF quedan sin fugas de LaTeX. Commit `950471d` y
+  push.
+- A petición del docente (sus estudiantes arrancan la semana próxima), las
+  instrucciones de arranque de la semana 1 se vaciaron en un entregable propio:
+  `cursos/LABORATORIO_I_FISICA/docs/semana_1.tex/.pdf` (2 páginas,
+  PREAMBULO_INFOGRAFIA, compilado en `.tmp/latex_build/semana_1` y copiado el
+  PDF). Es un documento redactado a mano, no un artefacto del flujo: se edita
+  directamente el `.tex`. Se compactó el texto para evitar una página 3
+  huérfana con solo la caja final.
 
 ## Pendientes
 - Commitear y pushear el arreglo de la matemática de los controles (quedó como
