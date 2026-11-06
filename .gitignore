@@ -53,6 +53,12 @@ docs/AGENTE_IA/*.mp4
 docs/REFERENCIA/**
 !docs/REFERENCIA/README.md
 
+# Resultados de evaluaciones (notas, informes con nombres de estudiantes, actas).
+# El repo es PÚBLICO: estos datos viven solo en local. Se ignora todo salvo el
+# README que documenta la convención (misma pauta que docs/REFERENCIA).
+cursos/*/evaluaciones/resultados/**
+!cursos/*/evaluaciones/resultados/README.md
+
 # Dependencias de terceros instaladas: 321 MB de node_modules que `npm install`
 # regenera. Versionar un node_modules congela sus vulnerabilidades y sus
 # licencias: los forks se los descargan enteros y no los pueden actualizar.

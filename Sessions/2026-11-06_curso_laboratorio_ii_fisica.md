@@ -40,6 +40,17 @@ Ajuste del curso Laboratorio II de Física: el curso real tiene **3 grupos**, no
   `execution/generar_material_curso.py` (preámbulo infográfico estándar) con datos
   de `curso.yaml`; compilada aislada en `.tmp/latex_build/semana_1_lab2/` y copiada
   (0 errores, 0 overfull). Espejo de `cursos/LABORATORIO_I_FISICA/docs/semana_1`.
+- Commit y push de la guía: `95d2f81`.
+- Convención de resultados de evaluaciones: el repo es PÚBLICO (`gh repo view`:
+  visibility PUBLIC), así que las notas no pueden viajar por git. Creada
+  `cursos/LABORATORIO_II_FISICA/evaluaciones/resultados/` con regla nueva en
+  `.gitignore` (`cursos/*/evaluaciones/resultados/**` + excepción README, misma
+  pauta que `docs/REFERENCIA`). Estructura local: `actas.csv` (cabecera
+  fecha,semana,grupo,documento,nota_sobre_10,nota_fiable,informe) y
+  `semana_NN/grupo_N/` para entrega + informe + JSON; ya creadas
+  `semana_01/grupo_{1,2,3}`. Verificado con `git check-ignore` y `git add -n`:
+  solo el README es stageable.
 
 ## Pendientes
-- (Ninguno: ajuste de grupos y guía semana 1 commiteados y subidos.)
+- Commit y push del README de `resultados/` + la regla de `.gitignore` (el
+  contenido de resultados es local por diseño y nunca se sube).
