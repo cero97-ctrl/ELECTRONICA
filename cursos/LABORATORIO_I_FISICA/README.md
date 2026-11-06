@@ -52,7 +52,7 @@ laboratorio/               docker-compose.yml y README
 - Revisión: El docente revisa el repositorio al finalizar cada semana y devuelve observaciones antes de la semana siguiente.
 - Corte: Domingo a las 23:59 de la semana correspondiente. Lo entregado después del corte se corrige con la penalización prevista en las políticas.
 
-### Estructura del portafolio
+### Estructura del repositorio del grupo
 
 - README.md con integrantes, roles de la fase y tabla de semanas entregadas.
 - semana_NN/informe.pdf con el informe de la práctica o el taller resuelto.
