@@ -95,9 +95,15 @@ grupos:
     - Documentación
     - Verificación
   fase_con_roles: [1, 2, 3]
+  rotaciones:
+    - 'Semanas 1-2'
+    - 'Semanas 3-4'
+    - 'Semanas 5-7'
+    - 'Semanas 8-10'
   rotacion: >-
-    Al inicio de cada fase los roles giran una posición en sentido horario, de
-    modo que en la fase 3 cada integrante haya ocupado los cuatro roles.
+    Los roles giran una posición en sentido horario en cuatro rotaciones
+    (semanas 1-2, 3-4, 5-7 y 8-10), de modo que al cierre de la última cada
+    integrante haya ocupado los cuatro roles.
 
 evaluacion:
   escala: 10
@@ -146,7 +152,7 @@ entregas:
     corte se corrige con la penalización prevista en las políticas.
   carpeta: 'semana_{n:02d}'
   estructura:
-    - 'README.md con integrantes, roles de la fase y tabla de semanas entregadas.'
+    - 'README.md con integrantes, roles por rotación y tabla de semanas entregadas.'
     - 'semana_NN/informe.pdf con el informe de la práctica o el taller resuelto.'
     - 'semana_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.'
     - 'semana_NN/analisis/ con los scripts que reproducen cada figura.'

@@ -54,7 +54,7 @@ laboratorio/               docker-compose.yml y README
 
 ### Estructura del repositorio del grupo
 
-- README.md con integrantes, roles de la fase y tabla de semanas entregadas.
+- README.md con integrantes, roles por rotación y tabla de semanas entregadas.
 - semana_NN/informe.pdf con el informe de la práctica o el taller resuelto.
 - semana_NN/datos/ con los CSV crudos, uno por ensayo, sin editar.
 - semana_NN/analisis/ con los scripts que reproducen cada figura.
