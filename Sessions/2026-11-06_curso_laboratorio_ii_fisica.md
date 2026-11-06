@@ -29,6 +29,17 @@ Ajuste del curso Laboratorio II de Física: el curso real tiene **3 grupos**, no
   trabajo» y «mesas de tres grupos»; guía «El curso trabaja con 3 grupos.
   Tres grupos fijos…».
 - Conjunto de cambios: `curso.yaml` + 12 `.tex` + 12 `.pdf` (25 ficheros).
+- Commit y push del ajuste: `4278bb9` (el remoto había avanzado con trabajo de
+  otra sesión sobre Laboratorio I hasta `5503205`; el commit entró encima sin
+  conflicto).
+- Guía de arranque `docs/semana_1.{tex,pdf}` (4 páginas): pasos del grupo antes,
+  durante y después de la primera sesión, con el montaje de la práctica 1, los 4
+  roles (y la regla de 3 integrantes → uno asume dos roles), la estructura
+  `semana_01/`, el contrato JSON del análisis, la rúbrica de 7 criterios y los
+  pesos del curso. Generada reutilizando `_documento()` de
+  `execution/generar_material_curso.py` (preámbulo infográfico estándar) con datos
+  de `curso.yaml`; compilada aislada en `.tmp/latex_build/semana_1_lab2/` y copiada
+  (0 errores, 0 overfull). Espejo de `cursos/LABORATORIO_I_FISICA/docs/semana_1`.
 
 ## Pendientes
-- Commit y push del ajuste (no hecho: se hace cuando el usuario lo pida).
+- (Ninguno: ajuste de grupos y guía semana 1 commiteados y subidos.)
