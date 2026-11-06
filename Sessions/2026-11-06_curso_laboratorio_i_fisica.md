@@ -99,8 +99,20 @@ generado con el flujo determinista de 3 capas.
   `textos.titulo_estructura` (afecta README y guía a la vez, porque ambos la
   leen del descriptor). Regenerado con `--solo guia,readme`, commit `43dc13a`
   y push.
+- Bug reportado por el usuario al revisar `control_fase_1.pdf`: la sección
+  Preguntas imprimía la matemática cruda (`$L = 2{,}45 \{}pm 0{,}03$`). Causa:
+  `tex_control` escapaba los enunciados con `_t` (texto plano) en vez de `_tm`.
+  Arreglo: la lista de preguntas se renderiza con `math=True`, y
+  `_validar_matematica` ahora custodia cada `preguntas[].enunciado` para que un
+  subíndice suelto falle antes de compilar en vez de romper el PDF. Congelado
+  en `test_enunciado_de_control_con_matematica_no_se_escapa` (66 aserciones OK)
+  y documentado en la directiva. Regenerado con `--solo controles`; verificado
+  con pdftotext que los 16 PDF quedan sin fugas de LaTeX.
 
 ## Pendientes
+- Commitear y pushear el arreglo de la matemática de los controles (quedó como
+  cambio de trabajo: generador, test, directiva, los dos PDF de control y esta
+  bitácora).
 - OCR de `cursos/LABORATORIO_I_FISICA/docs/teoria_medicion_error_grafica.pdf`
   cuando se recupere la cuota Gemini; su contenido se cubrió con
   `Teoria_de_Error_v3.0.md` y física estándar, pero conviene contrastarlo.
@@ -109,5 +121,3 @@ generado con el flujo determinista de 3 capas.
   tablas de los 16 documentos ya se revisaron y corrigieron).
 - Decidir si la práctica 6 y la evaluación final comparten la semana 10; hoy
   están así por mandato de las diez semanas, pero concentra dos instrumentos.
-- El traslado de los 9 ficheros fuente a `docs/` sigue sin commit (git los ve
-  como borrado + no rastreado); no se ha commiteado nada.

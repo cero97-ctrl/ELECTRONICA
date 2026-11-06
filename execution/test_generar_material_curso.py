@@ -588,6 +588,52 @@ def test_tema_de_control_es_editorial() -> None:
     )
 
 
+def test_enunciado_de_control_con_matematica_no_se_escapa() -> None:
+    """Los enunciados del control se escapaban como texto plano y la matemática
+    se imprimía cruda: `$L = 2{,}45 \\pm 0{,}03$ cm` salía en el PDF como
+    `$L = 2{,}45 \\{}pm 0{,}03$ cm`. El enunciado es un campo con matemática
+    (como `pasos` o `escenario`): se renderiza con `_tm` y `_validar_matematica`
+    lo custodia, para que un subíndice suelto falle antes de compilar.
+    """
+    datos = descriptor_minimo()
+    control = {
+        "fase": 1,
+        "titulo": "Control de prueba",
+        "duracion_min": 45,
+        "preguntas": [
+            {
+                "enunciado": "Se reporta $L = 2{,}45 \\pm 0{,}03$ cm. Calcule el error relativo.",
+                "puntaje": 10.0,
+            }
+        ],
+    }
+    tex = gen.tex_control(copy.deepcopy(datos), control)
+    comprobar(
+        "la matemática del enunciado llega intacta al LaTeX",
+        r"$L = 2{,}45 \pm 0{,}03$" in tex,
+        tex,
+    )
+    comprobar(
+        "no queda ninguna barra escapada en el enunciado",
+        "\\{}pm" not in tex and "textbackslash" not in tex,
+        tex,
+    )
+    datos["controles"] = [control]
+    comprobar(
+        "un enunciado con matemática correcta valida sin problemas",
+        gen.validar(datos) == [],
+        str(gen.validar(datos)),
+    )
+    roto = copy.deepcopy(datos)
+    roto["controles"][0]["preguntas"][0]["enunciado"] = "Calcule V_C del cilindro."
+    problemas = gen.validar(roto)
+    comprobar(
+        "un subíndice fuera de $...$ en el enunciado falla la validación",
+        any("pregunta 1.enunciado" in p for p in problemas),
+        str(problemas),
+    )
+
+
 def test_determinismo() -> None:
     datos = descriptor_minimo()
     practica = datos["semanas"][0]["practica"]
@@ -621,6 +667,7 @@ def main() -> int:
     test_evaluacion_final_lista_no_es_repr_de_python()
     test_semana_de_teoria_se_rotula_taller()
     test_tema_de_control_es_editorial()
+    test_enunciado_de_control_con_matematica_no_se_escapa()
     test_determinismo()
 
     print()

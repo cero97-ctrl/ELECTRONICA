@@ -153,6 +153,10 @@ campos_opcionales:
     puntaje". Es contenido editorial y por eso vive en el descriptor. Si se
     omite, el generador deriva las primeras palabras del enunciado, una etiqueta
     mecánica que suele quedar telegráfica; no es una decisión del programa.
+  controles[].preguntas[].enunciado: >-
+    Admite matemática en línea con `$...$` (se renderiza con `_tm`, igual que
+    `pasos` o `escenario`). Un subíndice o exponente fuera de `$...$` falla la
+    validación con el campo señalado, porque rompería la compilación.
   laboratorio.recursos: >-
     Texto de recursos que acompaña a la tabla de imágenes.
   laboratorio.caracter: >-
