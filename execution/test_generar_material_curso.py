@@ -634,6 +634,53 @@ def test_enunciado_de_control_con_matematica_no_se_escapa() -> None:
     )
 
 
+def test_roles_por_integrante_independientes_del_numero_de_grupos() -> None:
+    """La tabla de rotación traía cuatro columnas fijas «Grupo 1..4» y el
+    validador exigía tantos roles como grupos. Los roles rotan DENTRO de cada
+    grupo (el propio YAML dice «cada integrante haya ocupado los cuatro
+    roles»), así que con dos grupos la tabla y la validación reventaban. Las
+    columnas pasan a ser posiciones de integrante y `cantidad` queda libre.
+    """
+    datos = descriptor_minimo()
+    datos["grupos"] = {
+        "cantidad": 2,
+        "asignacion": "Dos grupos fijos durante el semestre.",
+        "roles": [
+            {
+                "nombre": nombre,
+                "descripcion": f"Descripción de {nombre}.",
+                "aporta": f"Aporte de {nombre}.",
+            }
+            for nombre in ("Medición", "Análisis", "Documentación", "Verificación")
+        ],
+        "asignacion_inicial": ["Medición", "Análisis", "Documentación", "Verificación"],
+        "fase_con_roles": [1],
+    }
+    comprobar(
+        "dos grupos con cuatro roles validan sin problemas",
+        gen.validar(datos) == [],
+        str(gen.validar(datos)),
+    )
+    guia = gen.tex_guia(copy.deepcopy(datos))
+    comprobar(
+        "la guía declara el número de grupos del descriptor",
+        "El curso trabaja con 2 grupos" in guia,
+        guia,
+    )
+    comprobar(
+        "las columnas de la tabla son integrantes, no grupos",
+        "Integrante 1" in guia and "Grupo 4" not in guia,
+        guia,
+    )
+    mal = copy.deepcopy(datos)
+    mal["grupos"]["cantidad"] = 0
+    comprobar(
+        "una cantidad de grupos no positiva falla la validación",
+        any("grupos.cantidad" in p for p in gen.validar(mal)),
+        str(gen.validar(mal)),
+    )
+
+
 def test_determinismo() -> None:
     datos = descriptor_minimo()
     practica = datos["semanas"][0]["practica"]
@@ -668,6 +715,7 @@ def main() -> int:
     test_semana_de_teoria_se_rotula_taller()
     test_tema_de_control_es_editorial()
     test_enunciado_de_control_con_matematica_no_se_escapa()
+    test_roles_por_integrante_independientes_del_numero_de_grupos()
     test_determinismo()
 
     print()

@@ -115,7 +115,20 @@ generado con el flujo determinista de 3 capas.
   PREAMBULO_INFOGRAFIA, compilado en `.tmp/latex_build/semana_1` y copiado el
   PDF). Es un documento redactado a mano, no un artefacto del flujo: se edita
   directamente el `.tex`. Se compactó el texto para evitar una página 3
-  huérfana con solo la caja final.
+  huérfana con solo la caja final. Commit `00d59db` y push.
+- El docente informó que tiene **dos grupos, no cuatro**. Ajuste en
+  `curso.yaml` (`meta.grupos`, `meta.modalidad`, `grupos.cantidad` y
+  `grupos.asignacion`) y regeneración completa (16 PDF). El cambio destapó dos
+  defectos del generador que solo existían porque 4 grupos coincidía con 4
+  roles: el validador exigía `len(roles) == cantidad`, y la tabla de rotación
+  traía fijas cuatro columnas «Grupo 1..4». Como los roles rotan DENTRO de cada
+  grupo (el propio YAML dice «cada integrante haya ocupado los cuatro roles»),
+  las columnas pasan a ser posiciones de integrante (dinámicas) y `cantidad`
+  queda libre, con chequeo de entero positivo. Congelado en
+  `test_roles_por_integrante_independientes_del_numero_de_grupos`
+  (70 aserciones OK). Verificado: sílabo «2 grupos de trabajo», guía «El curso
+  trabaja con 2 grupos» y tabla Integrante 1..4; sin restos de «4 grupos» ni
+  «Grupo 4» en el árbol generado.
 
 ## Pendientes
 - Commitear y pushear el arreglo de la matemática de los controles (quedó como
@@ -129,3 +142,7 @@ generado con el flujo determinista de 3 capas.
   tablas de los 16 documentos ya se revisaron y corrigieron).
 - Decidir si la práctica 6 y la evaluación final comparten la semana 10; hoy
   están así por mandato de las diez semanas, pero concentra dos instrumentos.
+- La prosa de rotación de roles promete que «en la fase 3 cada integrante haya
+  ocupado los cuatro roles», pero con tres fases con roles cada integrante solo
+  cubre tres; conviene corregir esa frase del descriptor (o añadir una cuarta
+  rotación) cuando el docente lo apruebe.
