@@ -92,6 +92,13 @@ generado con el flujo determinista de 3 capas.
   movieron a `docs/_derivados/` con un README que explica su procedencia y cómo
   recompilarlos; en `docs/` quedan solo fuentes, datos crudos y el artefacto
   `guia_estudiante`. Ningún fichero del curso los referenciaba.
+- Commit `c6eb8d0` con todo lo anterior y push a `origin/master`.
+- Aclaración del README tras la revisión del usuario en GitHub: la sección
+  «Estructura del portafolio» se confundía con la estructura del repo del
+  curso; se renombró a «Estructura del repositorio del grupo» vía
+  `textos.titulo_estructura` (afecta README y guía a la vez, porque ambos la
+  leen del descriptor). Regenerado con `--solo guia,readme`, commit `43dc13a`
+  y push.
 
 ## Pendientes
 - OCR de `cursos/LABORATORIO_I_FISICA/docs/teoria_medicion_error_grafica.pdf`
