@@ -224,6 +224,11 @@ def validar_tareas(datos: dict[str, Any], fase: int) -> list[str]:
     for clave in ("corte", "estructura", "reglas"):
         if not entregas.get(clave):
             problemas.append(f"entregas.{clave} es obligatorio para explicar la entrega")
+        for item in entregas.get(clave) or []:
+            if clave in ("estructura", "reglas") and not isinstance(item, str):
+                problemas.append(
+                    f"entregas.{clave} contiene un ítem que no es texto ({item!r})"
+                )
 
     return problemas
 

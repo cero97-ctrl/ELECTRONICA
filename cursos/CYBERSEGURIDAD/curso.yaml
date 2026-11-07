@@ -123,9 +123,9 @@ entregas:
   - semana_NN/README.md con el resumen de lo hecho y lo que no se pudo verificar.
   reglas:
   - Nada de secretos, tokens ni contraseñas en el repositorio; las claves van en .env ignorado.
-  - Nada de imágenes de disco, muestras de malware ni binarios: solo hashes y enlaces.
-  - Evidencia anonimizada: sin datos personales de terceros ni credenciales reales.
-  - Un commit por entrega con mensaje "semana NN: <entregable>".
+  - 'Nada de imágenes de disco, muestras de malware ni binarios: solo hashes y enlaces.'
+  - 'Evidencia anonimizada: sin datos personales de terceros ni credenciales reales.'
+  - 'Un commit por entrega con mensaje "semana NN: <entregable>".'
   - La práctica cuenta como entregada solo si está en el repositorio antes del corte.
 laboratorio:
   motor: Docker
@@ -199,7 +199,7 @@ semanas:
   objetivo: Distinguir activos, amenazas y vulnerabilidades, y describir el ciclo de vida de un ataque con marcos reconocidos.
   contenidos:
   - Tríada CIA más autenticidad, integridad y no repudio.
-  - '{''Actores'': ''oportunista, crimen organizado, insider y APT.''}'
+  - 'Actores: oportunista, crimen organizado, insider y APT.'
   - Superficie de ataque, vector y cadena de explotación.
   - Cyber Kill Chain y MITRE ATT&CK como vocabulario común.
   - Roles rojo, azul y púrpura; modelos de amenaza STRIDE.
@@ -523,7 +523,7 @@ semanas:
   titulo: Respuesta a incidentes y triage estático de malware
   objetivo: Aplicar un playbook de respuesta y realizar triage estático de una muestra inerte sin ejecutarla.
   contenidos:
-  - '{''NIST SP 800-61'': ''preparación, detección, contención, erradicación y recuperación.''}'
+  - 'NIST SP 800-61: preparación, detección, contención, erradicación y recuperación.'
   - Playbooks, roles, comunicación y registro de decisiones.
   - Triage estático con hashes, strings, cabeceras y reglas YARA.
   - Límites legales y técnicos del análisis dinámico.

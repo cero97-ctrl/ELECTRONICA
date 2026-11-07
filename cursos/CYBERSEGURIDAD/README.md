@@ -25,27 +25,27 @@ cambio va al YAML.
 curso.yaml                 descriptor (fuente de verdad)
 plan_estudios/             silabo.pdf y plan_semanal.pdf
 docs/                      guia_estudiante.pdf
-practicas/                 practica_01.pdf .. una por semana
+practicas/                 un documento por semana (taller o practica)
 evaluaciones/              controles de fase y evaluacion_final
 laboratorio/               docker-compose.yml y README
 ```
 
 ## Calendario
 
-| Semana | Tema | Práctica |
+| Semana | Tema | Documento semanal |
 | --- | --- | --- |
-| 1 | Panorama de la ciberseguridad y superficie de ataque | Inventario de superficie de ataque del laboratorio |
-| 2 | Criptografía aplicada y gestión de secretos | Caja de herramientas criptográficas |
-| 3 | Marco legal, ético y normativo | Carta de autorización y análisis de caso |
-| 4 | Reconocimiento, OSINT y escaneo de puertos | Huella digital + escáner propio contra el laboratorio |
-| 5 | Vulnerabilidades web según OWASP Top 10 | Explotación guiada y evidencia |
-| 6 | Hardening, firewall y detección | Línea base, hardening, firewall y detección |
-| 7 | Desarrollo seguro y cadena de suministro | Parchear y demostrar la mitigación |
-| 8 | Forense digital: adquisición, artefactos y línea de tiempo | Imagen forense, reconstrucción y línea de tiempo |
-| 9 | Respuesta a incidentes y triage estático de malware | Playbook y triage estático |
-| 10 | Evaluación final práctica de alcance cerrado | Auditoría de alcance cerrado |
+| 1 | Panorama de la ciberseguridad y superficie de ataque | Práctica: Inventario de superficie de ataque del laboratorio |
+| 2 | Criptografía aplicada y gestión de secretos | Práctica: Caja de herramientas criptográficas |
+| 3 | Marco legal, ético y normativo | Práctica: Carta de autorización y análisis de caso |
+| 4 | Reconocimiento, OSINT y escaneo de puertos | Práctica: Huella digital + escáner propio contra el laboratorio |
+| 5 | Vulnerabilidades web según OWASP Top 10 | Práctica: Explotación guiada y evidencia |
+| 6 | Hardening, firewall y detección | Práctica: Línea base, hardening, firewall y detección |
+| 7 | Desarrollo seguro y cadena de suministro | Práctica: Parchear y demostrar la mitigación |
+| 8 | Forense digital: adquisición, artefactos y línea de tiempo | Práctica: Imagen forense, reconstrucción y línea de tiempo |
+| 9 | Respuesta a incidentes y triage estático de malware | Práctica: Playbook y triage estático |
+| 10 | Evaluación final práctica de alcance cerrado | Práctica: Auditoría de alcance cerrado |
 
-## Entrega por GitHub
+## Repositorio GitHub y entregas
 
 - Plataforma: GitHub
 - Modalidad: Un repositorio privado por grupo, con el docente como colaborador de lectura.
@@ -63,9 +63,9 @@ laboratorio/               docker-compose.yml y README
 ### Reglas de entrega
 
 - Nada de secretos, tokens ni contraseñas en el repositorio; las claves van en .env ignorado.
-- {'Nada de imágenes de disco, muestras de malware ni binarios': 'solo hashes y enlaces.'}
-- {'Evidencia anonimizada': 'sin datos personales de terceros ni credenciales reales.'}
-- {'Un commit por entrega con mensaje "semana NN': '<entregable>".'}
+- Nada de imágenes de disco, muestras de malware ni binarios: solo hashes y enlaces.
+- Evidencia anonimizada: sin datos personales de terceros ni credenciales reales.
+- Un commit por entrega con mensaje "semana NN: <entregable>".
 - La práctica cuenta como entregada solo si está en el repositorio antes del corte.
 
 ## Reglas de uso

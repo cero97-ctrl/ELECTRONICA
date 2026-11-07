@@ -1,0 +1,103 @@
+name: instrucciones_semana_curso
+description: >-
+  Emite las instrucciones paso a paso de una semana del curso: qué hacer antes de la
+  sesión, objetivo, contenidos, escenario, procedimiento, rol de cada grupo esa
+  semana, qué se entrega, cómo se corrige y lista de verificación antes del corte.
+  Documento único para todo el curso (no por grupo), guardado como
+  `<curso>/docs/semana_NN.{tex,pdf}`.
+version: 1.0
+
+goal: >-
+  Que el estudiante sepa exactamente qué hacer esta semana sin adivinar nada: qué
+  preparar en casa, qué pasos ejecutar en el laboratorio, qué aporta su rol y cuándo
+  y dónde entregar. El rol de cada grupo es una función pura de `(fase, grupo)`; no
+  se sortea ni se decide en el chat.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml`. Bloques consumidos: `meta` (codigo, titulo,
+      autor, fecha, fecha_iso, semanas, dedicacion_semanal), `fases`, `semanas`
+      (numero, fase, titulo, objetivo, contenidos, herramientas, evaluacion y practica
+      con titulo, escenario, pasos, entregable y criterios que suman 10), `grupos`
+      (roles, asignacion_inicial, fase_con_roles) y `entregas` (plataforma, corte,
+      estructura, reglas).
+
+  - name: semana
+    description: >-
+      Número de semana a emitir (1-based). Debe existir en `semanas` y su fase debe
+      existir en `fases`. Si la fase está en `grupos.fase_con_roles`, el documento
+      incluye la tabla de roles; si no, se emite como trabajo individual.
+
+  - name: salida
+    description: >-
+      Directorio de salida. Por defecto `<curso>/docs`. El nombre del fichero es
+      `semana_<NN>.tex` con su PDF al lado, para que una semana se localice sin abrir
+      el descriptor.
+
+steps:
+  - action: validar_semana
+    script: execution/generar_instrucciones_semana.py
+    description: >-
+      Comprueba meta, semana existente, fase existente, título, objetivo, contenidos,
+      herramientas, práctica completa, criterios que suman 10 y bloque `entregas`. Un
+      problema es un fallo ruidoso (código 3), no una omisión.
+
+  - action: redactar_instrucciones
+    script: execution/generar_instrucciones_semana.py
+    description: >-
+      Compone el documento: ficha con semana, fase, modalidad, dedicación, instrumento,
+      entrega y corte; tareas previas (la semana 1 crea el repositorio y añade al
+      docente; las demás lo mantienen); objetivo; contenidos; escenario; pasos;
+      herramientas; tabla grupo-rol de esa semana; qué se entrega; rúbrica de la
+      semana y lista de verificación.
+
+  - action: compilar_y_verificar
+    script: flujo_instrucciones_semana.py
+    description: >-
+      Compila con `SOURCE_DATE_EPOCH` fijado por `meta.fecha_iso` y comprueba en el
+      `.log` que no haya líneas `!` ni `Overfull \hbox`; después verifica en disco que
+      el `.tex` y el PDF existen y que el PDF supera el tamaño mínimo.
+
+  - action: alertar
+    script: execution/alert_user.py
+    description: >-
+      Alerta audible al terminar, salvo `--no-alert`. Si el flujo se detiene, alerta de
+      error con el motivo.
+
+expected_outputs:
+  - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`."
+  - "Tabla grupo-rol idéntica a la de la guía y a la del documento de tareas de la fase (misma fuente)."
+  - "Código de salida 0 solo si compiló sin errores y la entrega existe en disco."
+
+edge_cases:
+  - case: La semana no existe
+    protocol: >-
+      Código 3 con el número pedido y el rango disponible. No se emite un documento
+      vacío ni se aproxima a la semana siguiente.
+
+  - case: La semana pertenece a una fase sin roles (evaluación individual)
+    protocol: >-
+      Se emite igualmente, pero con la sección "Trabajo individual" en lugar de la tabla
+      de roles. No se inventan roles para una prueba individual.
+
+  - case: Los criterios de la práctica no suman 10
+    protocol: >-
+      Código 3: la rúbrica de la semana es un dato del descriptor y debe cerrar en la
+      escala del curso. Se corrige `curso.yaml`, nunca el `.tex` de salida.
+
+  - case: Error de LaTeX
+    protocol: >-
+      Código 4, se conserva el `.log` en `.tmp/latex_build/semana_<codigo>_<NN>/` y se
+      informa la primera línea `!`. Se corrige el generador o el dato.
+
+  - case: Se regenera una semana ya emitida
+    protocol: >-
+      Se sobrescriben `semana_<NN>.tex` y `.pdf`. Mismo descriptor -> mismos bytes; si
+      el PDF cambia sin cambiar el YAML, hay un fallo de reproducibilidad que se
+      investiga antes de entregar.
+
+  - case: El docente cambia los pasos de la práctica
+    protocol: >-
+      Se edita `practica.pasos` en `curso.yaml` y se regeneran la práctica, la semana y
+      la tarea de la fase para que los tres documentos coincidan.

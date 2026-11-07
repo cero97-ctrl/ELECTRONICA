@@ -5,16 +5,16 @@ escala: 10
 criterios:
   cobertura_del_alcance:
     peso: 3.0
-    descripcion: Se ejecutaron todos los pasos del procedimiento sobre el objetivo declarado.
+    descripcion: "Se ejecutaron todos los pasos del procedimiento sobre el objetivo declarado."
   evidencia_reproducible:
     peso: 2.5
-    descripcion: Cada afirmación se sostiene con una salida, captura o hash que otro puede repetir.
+    descripcion: "Cada afirmación se sostiene con una salida, captura o hash que otro puede repetir."
   causa_raiz_y_mitigacion:
     peso: 2.0
-    descripcion: Se identifica la causa técnica y el control que la elimina, no solo el síntoma.
+    descripcion: "Se identifica la causa técnica y el control que la elimina, no solo el síntoma."
   analisis_y_conclusion:
     peso: 1.5
-    descripcion: La conclusión se deriva de la evidencia y reconoce los límites de la práctica.
+    descripcion: "La conclusión se deriva de la evidencia y reconoce los límites de la práctica."
   calidad_del_informe:
     peso: 1.0
-    descripcion: Redacción clara, vocabulario correcto y evidencia anonimizada.
+    descripcion: "Redacción clara, vocabulario correcto y evidencia anonimizada."

@@ -51,6 +51,9 @@ Ajuste del curso Laboratorio II de Física: el curso real tiene **3 grupos**, no
   `semana_01/grupo_{1,2,3}`. Verificado con `git check-ignore` y `git add -n`:
   solo el README es stageable.
 
+- Convención de resultados commiteada y subida: `f5a480e` (README de
+  `resultados/` + regla de `.gitignore` + esta bitácora).
+
 ## Pendientes
-- Commit y push del README de `resultados/` + la regla de `.gitignore` (el
-  contenido de resultados es local por diseño y nunca se sube).
+- (Ninguno. Pausa acordada por el usuario; al reanudar, revisar si llegaron
+  entregas de la semana 1 para evaluarlas con la convención de `resultados/`.)
