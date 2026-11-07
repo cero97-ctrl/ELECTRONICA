@@ -20,8 +20,10 @@ required_inputs:
       autor, fecha, fecha_iso, semanas, dedicacion_semanal), `fases`, `semanas`
       (numero, fase, titulo, objetivo, contenidos, herramientas, evaluacion y practica
       con titulo, escenario, pasos, entregable y criterios que suman 10), `grupos`
-      (roles, asignacion_inicial, fase_con_roles) y `entregas` (plataforma, corte,
-      estructura, reglas).
+      (roles, asignacion_inicial, fase_con_roles), `entregas` (plataforma, corte,
+      estructura, reglas) y `glosario` (termino, definicion). Si la semana declara
+      `glosario: [términos...]`, se imprime la sección "Glosario de la semana" con esas
+      entradas del glosario del curso, en el orden declarado.
 
   - name: semana
     description: >-
@@ -68,6 +70,7 @@ steps:
 expected_outputs:
   - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`."
   - "Tabla grupo-rol idéntica a la de la guía y a la del documento de tareas de la fase (misma fuente)."
+  - "Glosario al final, solo si `semana.glosario` declara términos; una página propia."
   - "Código de salida 0 solo si compiló sin errores y la entrega existe en disco."
 
 edge_cases:
@@ -96,6 +99,12 @@ edge_cases:
       Se sobrescriben `semana_<NN>.tex` y `.pdf`. Mismo descriptor -> mismos bytes; si
       el PDF cambia sin cambiar el YAML, hay un fallo de reproducibilidad que se
       investiga antes de entregar.
+
+  - case: La semana declara un término que no está en el glosario del curso
+    protocol: >-
+      Código 3 con el término y la semana. El glosario es un dato compartido: se añade
+      la entrada en `glosario` (termino + definicion) y se regenera; no se escribe la
+      definición en el generador.
 
   - case: El docente cambia los pasos de la práctica
     protocol: >-

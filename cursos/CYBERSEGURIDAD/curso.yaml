@@ -208,6 +208,25 @@ semanas:
   - Docker
   - nmap sobre localhost
   - Navegador
+  glosario:
+  - Activo
+  - Amenaza
+  - Vulnerabilidad
+  - Riesgo
+  - Superficie de ataque
+  - Vector de ataque
+  - Cadena de explotación
+  - Tríada CIA
+  - No repudio
+  - APT
+  - Insider
+  - STRIDE
+  - Cyber Kill Chain
+  - MITRE ATT&CK
+  - Equipo rojo, azul y púrpura
+  - Enumeración de servicios
+  - Evidencia reproducible
+  - Localhost
   practica:
     titulo: Inventario de superficie de ataque del laboratorio
     escenario: 'El laboratorio tiene tres contenedores. Cada grupo inventaría puertos, servicios y versiones de su objetivo asignado, y propone tres vectores plausibles por servicio expuesto.
@@ -682,3 +701,41 @@ politicas:
 - La evidencia se anonimiza antes de entregarse.
 - El uso indebido de las técnicas del curso tiene consecuencias académicas y legales.
 - El código entregado usa type hints, docstrings estilo Google y manejo explícito de errores.
+
+glosario:
+  - termino: "Activo"
+    definicion: "Cualquier cosa que tiene valor para el curso o para el negocio: datos, servicios, cuentas, equipos o reputación. Se protege porque perderla o exponerla tiene un costo."
+  - termino: "Amenaza"
+    definicion: "Agente o evento con capacidad de causar daño a un activo. Puede ser oportunista, crimen organizado, insider o APT; la amenaza no es la vulnerabilidad."
+  - termino: "Vulnerabilidad"
+    definicion: "Debilidad concreta que una amenaza puede aprovechar: un servicio sin parche, una contraseña débil, un permiso de más o un diseño sin validación."
+  - termino: "Riesgo"
+    definicion: "Función de la probabilidad de que una amenaza explote una vulnerabilidad y del impacto que tendría sobre el activo. No es lo mismo que el impacto: se pondera con la probabilidad."
+  - termino: "Superficie de ataque"
+    definicion: "Conjunto de puntos por donde se puede intentar entrar: puertos abiertos, servicios, interfaces, cuentas y configuraciones expuestas. Inventariarla es el primer paso de la práctica."
+  - termino: "Vector de ataque"
+    definicion: "Camino concreto que usa el atacante para llegar al activo, por ejemplo un servicio con una versión vulnerable o una credencial por defecto."
+  - termino: "Cadena de explotación"
+    definicion: "Secuencia de pasos que va del reconocimiento al efecto final: reconocer, obtener acceso, escalar, persistir, moverse y actuar. Un control en cualquier eslabón puede romperla."
+  - termino: "Tríada CIA"
+    definicion: "Confidencialidad, integridad y disponibilidad: las tres propiedades que se protegen por defecto. A ellas se suman autenticidad, integridad de origen y no repudio."
+  - termino: "No repudio"
+    definicion: "Garantía de que quien realizó una acción no puede negar haberla hecho. Se apoya en firmas, registros confiables y control de identidad."
+  - termino: "APT"
+    definicion: "Amenaza persistente avanzada: un adversario con recursos, tiempo y objetivos concretos que opera de forma sigilosa y sostenida. No es un ataque puntual ni un script suelto."
+  - termino: "Insider"
+    definicion: "Persona con acceso legítimo que abusa de él, por negligencia o de forma deliberada. Su ventaja es que conoce la red y no necesita romper el perímetro."
+  - termino: "STRIDE"
+    definicion: "Modelo de amenazas con seis categorías: suplantación, manipulación, repudio, revelación de información, denegación de servicio y elevación de privilegios. Ayuda a no olvidar categorías al analizar un servicio."
+  - termino: "Cyber Kill Chain"
+    definicion: "Modelo de siete fases del ataque, del reconocimiento a la acción final. Sirve para ubicar en qué punto se puede detectar o interrumpir cada ataque."
+  - termino: "MITRE ATT&CK"
+    definicion: "Catálogo de tácticas y técnicas reales de adversarios, con identificadores estables. Se usa como vocabulario común para describir lo observado y lo detectado."
+  - termino: "Equipo rojo, azul y púrpura"
+    definicion: "Rojo ejecuta la ofensiva controlada; azul defiende y mitiga; púrpura mide la detección y acerca a los otros dos. En este curso son roles de grupo que rotan por fase."
+  - termino: "Enumeración de servicios"
+    definicion: "Descubrir qué puertos están abiertos y qué software y versión responde en cada uno. Se hace solo contra objetivos autorizados, en este laboratorio desde localhost."
+  - termino: "Evidencia reproducible"
+    definicion: "Salida, captura o hash que permite a otra persona repetir el paso y obtener lo mismo. Una descripción sin evidencia no es un hallazgo verificable."
+  - termino: "Localhost"
+    definicion: "La propia máquina (127.0.0.1). En el laboratorio el objetivo vive aquí, así que las pruebas no salen del equipo ni alcanzan infraestructura de terceros."
