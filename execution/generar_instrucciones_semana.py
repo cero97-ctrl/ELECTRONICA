@@ -199,13 +199,65 @@ def validar_semana(datos: dict[str, Any], numero: int) -> list[str]:
                     f"entregas.{clave} contiene un ítem que no es texto ({item!r}); "
                     "falta entrecomillar el valor que lleva ':'"
                 )
+    catalogo: dict[str, str] = {}
+    for entrada in datos.get("glosario") or []:
+        if not isinstance(entrada, dict):
+            problemas.append(f"glosario: una entrada no es un mapa ({entrada!r})")
+            continue
+        termino = str(entrada.get("termino", "")).strip()
+        definicion = str(entrada.get("definicion", "")).strip()
+        if not termino or not definicion:
+            problemas.append(f"glosario: entrada incompleta ({entrada!r})")
+            continue
+        if termino in catalogo:
+            problemas.append(f"glosario: el término {termino!r} está repetido")
+        catalogo[termino] = definicion
+
     for semana in datos.get("semanas") or []:
+        elegidos = semana.get("glosario") or []
+        if not isinstance(elegidos, list):
+            problemas.append(
+                f"semana {semana.get('numero')}: glosario debe ser una lista de términos"
+            )
+            elegidos = []
+        for termino in elegidos:
+            if not isinstance(termino, str):
+                problemas.append(
+                    f"semana {semana.get('numero')}: término de glosario no textual ({termino!r})"
+                )
+            elif termino not in catalogo:
+                problemas.append(
+                    f"semana {semana.get('numero')}: el término {termino!r} no está en el glosario del curso"
+                )
         for contenido in semana.get("contenidos") or []:
             if not isinstance(contenido, str):
                 problemas.append(
                     f"semana {semana.get('numero')}: un contenido no es texto ({contenido!r})"
                 )
     return problemas
+
+
+def _glosario(datos: dict[str, Any], semana: dict[str, Any]) -> list[tuple[str, str]]:
+    """Resuelve los términos que la semana declara contra el glosario del curso.
+
+    Args:
+        datos: Descriptor del curso.
+        semana: Bloque de la semana.
+
+    Returns:
+        Lista de pares (término, definición), en el orden declarado por la semana.
+        Vacía si la semana no declara glosario.
+    """
+    catalogo = {
+        str(entrada.get("termino", "")).strip(): str(entrada.get("definicion", "")).strip()
+        for entrada in datos.get("glosario") or []
+        if isinstance(entrada, dict)
+    }
+    return [
+        (nombre, catalogo[nombre])
+        for nombre in semana.get("glosario") or []
+        if nombre in catalogo
+    ]
 
 
 def _antes_de_la_sesion(datos: dict[str, Any], semana: dict[str, Any]) -> list[str]:
@@ -370,6 +422,21 @@ def tex_semana(datos: dict[str, Any], numero: int) -> str:
         )
     )
 
+    bloque_glosario: list[str] = []
+    glosario = _glosario(datos, semana)
+    if glosario:
+        bloque_glosario.append("\\clearpage")
+        bloque_glosario.append(seccion_con_icono("book", "Glosario de la semana"))
+        bloque_glosario.append(
+            "\\small\n"
+            "\\begin{longtable}{@{}>{\\raggedright\\arraybackslash}p{4.2cm}"
+            ">{\\raggedright\\arraybackslash}p{\\dimexpr\\linewidth-4.2cm-12pt\\relax}@{}}\n"
+            "\\toprule\n\\textbf{Término} & \\textbf{Definición}\\\\\n"
+            "\\midrule\n\\endhead\n\\bottomrule\n\\endlastfoot\n"
+            + "\n".join(f"\\textbf{{{_t(t)}}} & {_t(d)}\\\\" for t, d in glosario)
+            + "\n\\end{longtable}"
+        )
+
     partes.append(
         "\\begin{tcolorbox}[cajaMejora]\\textbf{Alcance y autorización:} solo se trabaja sobre "
         "los contenedores del laboratorio o sobre sistemas con autorización escrita. Si el "
@@ -380,10 +447,11 @@ def tex_semana(datos: dict[str, Any], numero: int) -> str:
     partes.append(
         "\\begin{cajaRecuerda}Dudas de la semana: se responden en clase o en el repositorio. "
         "Corte: "
-        + _t(str(entregas.get("corte", "")))
+        + _t(str(entregas.get("corte", "")).rstrip("."))
         + "."
         "\n\\end{cajaRecuerda}"
     )
+    partes.extend(bloque_glosario)
 
     return _documento(meta, _t(f"Semana {numero:02d}"), "\n\n".join(partes))
 

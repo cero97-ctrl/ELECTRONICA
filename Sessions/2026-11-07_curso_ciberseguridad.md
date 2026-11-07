@@ -43,6 +43,14 @@ hacer esta primera semana, guardado como `docs/semana_01.{tex,pdf}`.
   duplicado → 4, `--reemplazar` sustituye la fila y conserva el documento archivado,
   semana 10 sale `individual` y semana 11 → 3.
 - Registrado en `AGENTS.md`.
+- **Glosario en `semana_01`** (petición del usuario): añadido `glosario` al
+  descriptor (18 términos con definición) y `semana 1 → glosario: [18 nombres]`; el
+  generador resuelve los nombres contra el catálogo, valida que existan y emite la
+  sección "Glosario de la semana" en una página propia (`\clearpage`, `longtable`
+  `\small`, cabecera repetida). Un término desconocido es código 3, no un texto
+  inventado. PDF: 5 páginas, 0 solapes, 0 errores, idéntico entre corridas.
+- De paso, corregido el punto doble de la caja "Recuerda" (`no se corrige..`): el
+  corte se imprime sin duplicar el punto final.
 
 ## Pendientes
 - Confirmar `nota_minima: 5` con la institución.
