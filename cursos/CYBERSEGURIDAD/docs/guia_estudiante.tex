@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -349,7 +350,7 @@ El curso trabaja con 4 grupos. Fija durante el semestre; cada grupo entrega sus 
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
   \item Rojo: Ejecuta la técnica ofensiva sobre el objetivo autorizado: prepara el entorno, lanza el ataque, registra comandos y payloads, y guarda cada salida con su hash. Aporta: Evidencia cruda en semana\_NN/evidencia y el apartado de reproducción del informe.
-  \item Azul: Parte de la evidencia del Rojo y aplica el control equivalente: configuración, parche o regla de red. Repite el ataque para demostrar que falla y documenta el antes y el después. Aporta: La mitigación aplicada, el comando de verificación y la comparación de resultados.
+  \item Azul: Parte de su propia captura cruda y aplica el control equivalente: configuración, parche o regla de red. Repite el ataque para demostrar que falla y documenta el antes y el después. Aporta: La mitigación aplicada, el comando de verificación y la comparación de resultados.
   \item Púrpura: Instrumenta la detección del mismo evento: activa el registro, define la alerta y mide lo que se habría visto, incluidos los falsos positivos y negativos. Aporta: La regla o consulta de detección y la tabla de lo detectado frente a lo ejecutado.
   \item Legal y reporte: Verifica que el alcance y la autorización cubran lo ejecutado, anonimiza la evidencia, revisa la cadena de custodia e integra el informe técnico y el resumen ejecutivo. Aporta: La versión final del informe y la declaración explícita de lo que no se pudo verificar.
 \end{itemize}

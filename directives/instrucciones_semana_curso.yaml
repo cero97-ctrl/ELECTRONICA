@@ -4,8 +4,9 @@ description: >-
   sesión, objetivo, contenidos, escenario, procedimiento, rol de cada grupo esa
   semana, qué se entrega, cómo se corrige y lista de verificación antes del corte.
   Documento único para todo el curso (no por grupo), guardado como
-  `<curso>/docs/semana_NN.{tex,pdf}`.
-version: 1.0
+  `<curso>/docs/semana_NN.{tex,pdf}`. Con `grupo: N` emite además el ejemplo de
+  trabajo de ese grupo para la semana, `<curso>/docs/grupo_N_NN.{tex,pdf}`.
+version: 1.1
 
 goal: >-
   Que el estudiante sepa exactamente qué hacer esta semana sin adivinar nada: qué
@@ -23,7 +24,8 @@ required_inputs:
       (roles, asignacion_inicial, fase_con_roles), `entregas` (plataforma, corte,
       estructura, reglas) y `glosario` (termino, definicion). Si la semana declara
       `glosario: [términos...]`, se imprime la sección "Glosario de la semana" con esas
-      entradas del glosario del curso, en el orden declarado.
+      entradas del glosario del curso, en el orden declarado. Cada semana puede declarar
+      `ejemplos` (lista con `grupo` y `titulo`) para el documento por grupo.
 
   - name: semana
     description: >-
@@ -31,11 +33,20 @@ required_inputs:
       existir en `fases`. Si la fase está en `grupos.fase_con_roles`, el documento
       incluye la tabla de roles; si no, se emite como trabajo individual.
 
+  - name: grupo
+    description: >-
+      Número de grupo (1-based). Si se indica, emite el ejemplo de trabajo de ese grupo
+      en vez del documento de la semana. El grupo debe existir, tener rol esa semana y
+      la semana debe declarar un `ejemplos` con ese `grupo`; en otro caso es código 3.
+      Cada ejemplo consumido: `titulo`, `intro`, `bloques` (titulo, texto, comandos),
+      `tabla` (columnas, filas, `anchos` en cm para >4 columnas, nota), `entregable`,
+      `estructura`, `comprobaciones` y `avisos`.
+
   - name: salida
     description: >-
       Directorio de salida. Por defecto `<curso>/docs`. El nombre del fichero es
-      `semana_<NN>.tex` con su PDF al lado, para que una semana se localice sin abrir
-      el descriptor.
+      `semana_<NN>.tex` con su PDF al lado (o `grupo_<G>_<NN>.tex` con `--grupo`), para
+      que una semana se localice sin abrir el descriptor.
 
 steps:
   - action: validar_semana
@@ -44,6 +55,16 @@ steps:
       Comprueba meta, semana existente, fase existente, título, objetivo, contenidos,
       herramientas, práctica completa, criterios que suman 10 y bloque `entregas`. Un
       problema es un fallo ruidoso (código 3), no una omisión.
+
+  - action: redactar_ejemplo
+    script: execution/generar_instrucciones_semana.py
+    description: >-
+      Con `--grupo N` compone el ejemplo de trabajo: ficha (grupo, rol, entrega, corte),
+      rol en la práctica, qué aporta al entregable, pasos con comandos en bloque de
+      código, tabla de ejemplo, qué guardar en el repositorio (árbol), comprobaciones,
+      rúbrica de la semana y avisos. Los títulos de sección llevan `\needspace` para no
+      quedarse solos al pie de página, y las tablas de más de 4 columnas usan anchos
+      declarados en `anchos` (cm) con `\footnotesize`.
 
   - action: redactar_instrucciones
     script: execution/generar_instrucciones_semana.py
@@ -68,7 +89,8 @@ steps:
       error con el motivo.
 
 expected_outputs:
-  - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`."
+  - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`; con `--grupo`, `grupo_<G>_<NN>.{tex,pdf}`."
+  - "El ejemplo no duplica datos de la práctica: los reutiliza del descriptor (criterios, corte, estructura)."
   - "Tabla grupo-rol idéntica a la de la guía y a la del documento de tareas de la fase (misma fuente)."
   - "Glosario al final, solo si `semana.glosario` declara términos; una página propia."
   - "Código de salida 0 solo si compiló sin errores y la entrega existe en disco."
@@ -105,6 +127,24 @@ edge_cases:
       Código 3 con el término y la semana. El glosario es un dato compartido: se añade
       la entrada en `glosario` (termino + definicion) y se regenera; no se escribe la
       definición en el generador.
+
+  - case: Se pide el ejemplo de un grupo que la semana no declara
+    protocol: >-
+      Código 3 con la semana y el grupo. El ejemplo es dato del descriptor
+      (`semana.ejemplos`), no texto del generador: se añade el bloque con el contenido y
+      se regenera.
+
+  - case: Una celda de tabla vale `No`, `Sí`, `On` u `Off` sin comillas
+    protocol: >-
+      YAML lo convierte en booleano y el PDF imprime `False` en vez de `No`. Toda celda
+      que sea literalmente una palabra reservada de YAML va entrecomillada; la
+      validación no puede distinguirla de un booleano legítimo, así que la regla es de
+      escritura en `curso.yaml`.
+
+  - case: Una tabla del ejemplo tiene más de 4 columnas y no declara `anchos`
+    protocol: >-
+      Código 3. Con celdas `c` el texto se sale del margen (Overfull \hbox); `anchos`
+      (cm) fija el ancho de cada columna y la tabla se compone en `\footnotesize`.
 
   - case: El docente cambia los pasos de la práctica
     protocol: >-

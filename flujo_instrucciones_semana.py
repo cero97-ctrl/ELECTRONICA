@@ -67,6 +67,7 @@ def flujo_instrucciones_semana(
     compilar: bool,
     alert: bool,
     como_json: bool,
+    grupo: int | None = None,
 ) -> int:
     run_id = RS.run_id_de_la_corrida("flujo-instrucciones-semana")
     state = {
@@ -77,13 +78,15 @@ def flujo_instrucciones_semana(
         "current_step": 0,
         "steps_completed": [],
         "steps_failed": [],
-        "context": {"curso": str(curso), "semana": semana, "compilar": compilar},
+        "context": {"curso": str(curso), "semana": semana, "grupo": grupo, "compilar": compilar},
     }
     guardar(state)
 
     cmd = [PYTHON, str(GENERADOR), "--curso", str(curso), "--semana", str(semana), "--json"]
     if salida:
         cmd += ["--salida", str(salida)]
+    if grupo:
+        cmd += ["--grupo", str(grupo)]
     if not compilar:
         cmd.append("--sin-compilar")
 
@@ -116,7 +119,7 @@ def flujo_instrucciones_semana(
     guardar(state)
 
     artefacto = {
-        "job": f"semana_{semana:02d}",
+        "job": f"grupo_{grupo}_{semana:02d}" if grupo else f"semana_{semana:02d}",
         "tex": datos.get("tex"),
         "pdf": datos.get("pdf"),
         "errores": datos.get("errores") or [],
@@ -162,6 +165,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Orquesta la emisión de las instrucciones de una semana del curso.")
     parser.add_argument("--curso", required=True, help="Ruta al descriptor curso.yaml")
     parser.add_argument("--semana", required=True, type=int, help="Número de semana")
+    parser.add_argument(
+        "--grupo",
+        type=int,
+        default=None,
+        help="Emite el ejemplo de trabajo de ese grupo (docs/grupo_N_NN.tex) en vez de la semana",
+    )
     parser.add_argument("--salida", default=None, help="Directorio de salida")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe solo el .tex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
@@ -175,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
         compilar=not args.sin_compilar,
         alert=not args.no_alert,
         como_json=args.json,
+        grupo=args.grupo,
     )
 
 

@@ -210,6 +210,12 @@ def validar_tareas(datos: dict[str, Any], fase: int) -> list[str]:
                 f"el rol {rol.get('nombre')!r} no tiene 'en_la_practica': "
                 "sin eso la tarea no le dice al grupo qué hacer"
             )
+        for accion in rol.get("en_la_practica") or []:
+            if not isinstance(accion, str):
+                problemas.append(
+                    f"el rol {rol.get('nombre')!r}: una acción de 'en_la_practica' no es "
+                    f"texto ({accion!r}); falta entrecomillar el valor que lleva ':'"
+                )
 
     semanas = _semanas_de_fase(datos, bloque)
     if not semanas:
