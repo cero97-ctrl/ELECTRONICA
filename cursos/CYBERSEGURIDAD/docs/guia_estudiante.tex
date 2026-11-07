@@ -356,11 +356,11 @@ El curso trabaja con 4 grupos. Fija durante el semestre; cada grupo entrega sus 
 
 Los roles rotan una posición al inicio de cada fase (de la 1 a la 4), de modo que cada grupo pasa por las cuatro perspectivas. En la fase 5 no hay roles de grupo; la evaluación final es individual.
 
-\textbf{Asignación de roles por fase}
+\textbf{Asignación de roles por rotación (idéntica en cada grupo)}
 
 \begin{tabularx}{\linewidth}{@{}l X X X X@{}}
 \toprule
-Fase & Grupo 1 & Grupo 2 & Grupo 3 & Grupo 4\\
+Rotación & Integrante 1 & Integrante 2 & Integrante 3 & Integrante 4 \\
 \midrule
 Fase 1 & Rojo & Azul & Púrpura & Legal y reporte \\
 Fase 2 & Azul & Púrpura & Legal y reporte & Rojo \\
@@ -393,9 +393,9 @@ Corte de cada semana: Domingo 23:59 de la semana correspondiente; lo posterior n
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
   \item Nada de secretos, tokens ni contraseñas en el repositorio; las claves van en .env ignorado.
-  \item \{'Nada de imágenes de disco, muestras de malware ni binarios': 'solo hashes y enlaces.'\}
-  \item \{'Evidencia anonimizada': 'sin datos personales de terceros ni credenciales reales.'\}
-  \item \{'Un commit por entrega con mensaje "semana NN': '\textless{}entregable\textgreater{}".'\}
+  \item Nada de imágenes de disco, muestras de malware ni binarios: solo hashes y enlaces.
+  \item Evidencia anonimizada: sin datos personales de terceros ni credenciales reales.
+  \item Un commit por entrega con mensaje "semana NN: \textless{}entregable\textgreater{}".
   \item La práctica cuenta como entregada solo si está en el repositorio antes del corte.
 \end{itemize}
 
@@ -405,6 +405,8 @@ Corte de cada semana: Domingo 23:59 de la semana correspondiente; lo posterior n
 \section{\iconotexto{cube}{Puesta en marcha del laboratorio}}
 
 El docker-compose de esta carpeta es opcional. Cada grupo puede usar su propio entorno en su PC siempre que respete el alcance autorizado.
+
+Requiere \textasciitilde{}2 GB de RAM libre y \textasciitilde{}5 GB de disco; DVWA y Juice Shop juntos consumen menos de 700 MB.
 
 Si se usa el laboratorio de la carpeta del curso, se levanta con docker compose -f laboratorio/docker-compose.yml up -d. Los servicios quedan accesibles solo en localhost y en la red doméstica de cada grupo.
 
@@ -420,6 +422,15 @@ objetivo-linux & \texttt{ubuntu:24.04} & \texttt{localhost:2222} \\
 
 \begin{cajaRecuerda}Para reiniciar el laboratorio a su estado inicial: \texttt{docker compose down -v} y volver a levantarlo. Ningún cambio debe sobrevivir entre prácticas sin documentarse.
 \end{cajaRecuerda}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item \{'Cada grupo trabaja desde su propio equipo y red': 'no hay red compartida del curso.'\}
+  \item El laboratorio corre en localhost y nunca se expone a Internet.
+  \item Solo se atacan contenedores del laboratorio o sistemas con autorización escrita y firmada.
+  \item \{'Las muestras de malware no se ejecutan': 'el análisis es estático y sobre copias inertes.'\}
+  \item La evidencia se anonimiza antes de entregarse; los datos personales no salen del laboratorio.
+  \item Se prohíbe el uso de estas técnicas contra la infraestructura de la universidad o de terceros.
+\end{itemize}
 
 \section{\iconotexto{code}{Contrato de datos de los scripts}}
 

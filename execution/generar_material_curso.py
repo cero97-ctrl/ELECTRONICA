@@ -579,6 +579,12 @@ def validar(datos: dict[str, Any]) -> list[str]:
     for clave in ("estructura", "reglas"):
         if not entregas.get(clave):
             problemas.append(f"entregas.{clave} no puede estar vacío")
+        for item in entregas.get(clave) or []:
+            if not isinstance(item, str):
+                problemas.append(
+                    f"entregas.{clave} contiene un ítem que no es texto ({item!r}); "
+                    "un ':' sin comillas lo convierte en mapa y se imprime como basura"
+                )
 
     return problemas
 

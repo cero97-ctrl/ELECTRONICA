@@ -173,6 +173,7 @@ flujo_elaborar_examen.py   --tema "Semana 4: Condensadores" --output examenes/
 flujo_elaborar_ejercicios.py --tema "Semana 8: BJT" --path ejercicios/BJT
 flujo_disenar_curso.py     --curso cursos/<NOMBRE>/curso.yaml [--salida DIR] [--solo silabo,plan_semanal,guia,practicas,controles,final,rubrica,laboratorio,readme] [--sin-compilar] [--json] [--no-alert]   (genera todo el material del curso desde el descriptor YAML: sílabo, plan semanal, guía, prácticas, controles, evaluación final, rúbrica, laboratorio y README; validación que falla antes de compilar y LaTeX crudo validado con _validar_matematica; SOP en directives/disenar_curso.yaml)
 flujo_asignar_tareas.py    --curso cursos/<NOMBRE>/curso.yaml --fase N [--salida DIR] [--sin-compilar] [--json] [--no-alert]   (asigna las tareas de una fase del curso por grupo de forma determinista desde el descriptor; SOP en directives/asignar_tareas_curso.yaml)
+flujo_instrucciones_semana.py --curso cursos/<NOMBRE>/curso.yaml --semana N [--salida DIR] [--sin-compilar] [--json] [--no-alert]   (instrucciones paso a paso de una semana para todo el curso: antes de la sesión, objetivo, contenidos, procedimiento, rol de cada grupo, entrega, rúbrica y checklist; sale en docs/semana_NN.{tex,pdf}; SOP en directives/instrucciones_semana_curso.yaml)
 flujo_libro_a_skill.py      --pdf <libro.pdf> [--tema ...] [--nombre <name>] [--dry-run]
 flujo_repo_a_skill.py       --repo <url-github|ruta-local> [--tema ...] [--nombre <name>] [--dry-run] [--incluir glob...] [--excluir glob...]
 flujo_imagen_a_kicad.py    circuito.png
