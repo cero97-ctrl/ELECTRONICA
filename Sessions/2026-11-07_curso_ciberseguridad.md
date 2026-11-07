@@ -90,11 +90,13 @@ hacer esta primera semana, guardado como `docs/semana_01.{tex,pdf}`.
   validación rechaza `anchos` cuya suma no quepa en 16,6 cm.
 
 ## Pendientes
-- Confirmar `nota_minima: 5` con la institución.
+- `nota_minima: 5` confirmada y ya consta en `curso.yaml` (bloque `evaluacion`, escala 10).
 - Commit del trabajo (no se pidió explícitamente): incluye el fix del rol Rojo, el
   preámbulo con `needspace`, el flujo `--grupo` y sus artefactos.
 - Repetir el patrón `--semana N` para las semanas 2 a 10 y escribir sus `ejemplos`
   cuando toque.
+- Commiteado y empujado todo el trabajo del día como `47b77c8` (43 archivos): ejemplos
+  por grupo, flujo `--grupo`, fixes del generador y rol Azul corregido.
 - Corregida la contradicción del rol Azul (decisión del usuario): `descripcion` y el
   primer ítem de `en_la_practica` ya no dicen "parte de la evidencia del Rojo" sino "de
   su propia captura cruda" / "su propia evidencia cruda". Regenerado todo lo que imprime
