@@ -55,6 +55,7 @@ from generar_material_curso import (  # noqa: E402
     _n,
     _slug,
     _t,
+    _tabla_columnas,
     _tabla_datos,
     banda_titulo,
     seccion_con_icono,
@@ -282,6 +283,261 @@ def _antes_de_la_sesion(datos: dict[str, Any], semana: dict[str, Any]) -> list[s
     ]
 
 
+def _ejemplo_de(
+    datos: dict[str, Any], numero: int, grupo: int
+) -> dict[str, Any] | None:
+    """Devuelve el ejemplo de trabajo declarado para ese grupo y semana.
+
+    Args:
+        datos: Descriptor del curso.
+        numero: Número de semana.
+        grupo: Número de grupo.
+
+    Returns:
+        El bloque `ejemplo` o `None` si la semana no lo declara.
+    """
+    semana = _semana(datos, numero)
+    for ejemplo in semana.get("ejemplos") or []:
+        if int(ejemplo.get("grupo", 0)) == grupo:
+            return ejemplo
+    return None
+
+
+def validar_ejemplo(datos: dict[str, Any], numero: int, grupo: int) -> list[str]:
+    """Comprueba que el ejemplo del grupo existe y está completo.
+
+    Args:
+        datos: Descriptor del curso.
+        numero: Número de semana.
+        grupo: Número de grupo.
+
+    Returns:
+        Lista de problemas; vacía si el ejemplo se puede emitir.
+    """
+    problemas = validar_semana(datos, numero)
+    ejemplo = _ejemplo_de(datos, numero, grupo)
+    if ejemplo is None:
+        disponibles = sorted(
+            int(e.get("grupo", 0)) for e in _semana(datos, numero).get("ejemplos") or []
+        )
+        problemas.append(
+            f"la semana {numero:02d} no declara ejemplo para el grupo {grupo} "
+            f"(declarados: {disponibles or 'ninguno'})"
+        )
+        return problemas
+    for clave in ("titulo", "intro", "bloques", "entregable"):
+        if not ejemplo.get(clave):
+            problemas.append(f"semana {numero:02d}, grupo {grupo}: falta ejemplo.{clave}")
+    for bloque in ejemplo.get("bloques") or []:
+        if not isinstance(bloque, dict) or not bloque.get("titulo"):
+            problemas.append(
+                f"semana {numero:02d}, grupo {grupo}: un bloque del ejemplo no tiene título"
+            )
+        elif not (bloque.get("texto") or bloque.get("comandos")):
+            problemas.append(
+                f"semana {numero:02d}, grupo {grupo}: el bloque {bloque.get('titulo')!r} está vacío"
+            )
+    tabla = ejemplo.get("tabla") or {}
+    if tabla:
+        columnas = tabla.get("columnas") or []
+        if not columnas:
+            problemas.append(f"semana {numero:02d}, grupo {grupo}: la tabla no tiene columnas")
+        anchos = tabla.get("anchos") or []
+        if anchos and len(anchos) != len(columnas):
+            problemas.append(
+                f"semana {numero:02d}, grupo {grupo}: la tabla declara "
+                f"{len(anchos)} anchos para {len(columnas)} columnas"
+            )
+        if anchos and sum(float(a) for a in anchos) + 0.42 * len(columnas) > 16.6:
+            problemas.append(
+                f"semana {numero:02d}, grupo {grupo}: los anchos de la tabla suman "
+                f"{sum(float(a) for a in anchos):.2f} cm y no caben en el margen"
+            )
+        if len(columnas) > 4 and len(anchos) != len(columnas):
+            problemas.append(
+                f"semana {numero:02d}, grupo {grupo}: una tabla de {len(columnas)} "
+                "columnas necesita 'anchos' (cm) para no salirse del margen"
+            )
+        for fila in tabla.get("filas") or []:
+            if len(fila) != len(columnas):
+                problemas.append(
+                    f"semana {numero:02d}, grupo {grupo}: una fila de la tabla tiene "
+                    f"{len(fila)} celdas y la cabecera {len(columnas)}"
+                )
+    return problemas
+
+
+def _tabla_ejemplo(tabla: dict[str, Any]) -> str:
+    """Tabla del ejemplo con columnas de ancho fijo y texto justificado.
+
+    Las tablas de siete columnas no caben con celdas `c`: el texto se sale del
+    margen. Aquí cada columna recibe su ancho en cm (`anchos` del descriptor) y la
+    tabla se compone en `\footnotesize`; la validación exige un ancho por columna.
+
+    Args:
+        tabla: Bloque `tabla` del ejemplo.
+
+    Returns:
+        LaTeX de la tabla, o cadena vacía si no hay columnas.
+    """
+    columnas = [_t(str(c)) for c in tabla.get("columnas") or []]
+    filas = tabla.get("filas") or []
+    if not columnas:
+        return ""
+    anchos = [float(a) for a in tabla.get("anchos") or []]
+    if len(anchos) != len(columnas):
+        # 16,0 cm útiles menos los dos \tabcolsep de cada columna.
+        ancho = max(1.0, (16.0 - 0.45 * len(columnas)) / max(1, len(columnas)))
+        anchos = [ancho for _ in columnas]
+    especificacion = "".join(
+        r">{\raggedright\arraybackslash}p{" + f"{a:.2f}" + "cm}" for a in anchos
+    )
+    cuerpo = "\n".join(
+        " & ".join(_t(str(c)) for c in fila) + r" \\" for fila in filas
+    )
+    partes = [
+        r"\begin{center}",
+        r"\begin{minipage}{\linewidth}",
+        r"\centering",
+        r"{\footnotesize",
+    ]
+    if tabla.get("titulo"):
+        partes.append(r"\textbf{" + _t(str(tabla["titulo"])) + r"}\par\smallskip")
+    partes.extend(
+        [
+            r"\begin{tabular}{@{}" + especificacion + "@{}}",
+            r"\toprule",
+            " & ".join(r"\textbf{" + c + "}" for c in columnas) + r" \\",
+            r"\midrule",
+            cuerpo,
+            r"\bottomrule",
+            r"\end{tabular}",
+            "}",
+        ]
+    )
+    if tabla.get("nota"):
+        partes.append(r"\par\smallskip{\footnotesize " + _t(str(tabla["nota"])) + "}")
+    partes.extend([r"\end{minipage}", r"\end{center}"])
+    return "\n".join(partes)
+
+
+def _seccion_ejemplo(icono: str, texto: str) -> str:
+    """Título de sección que no se queda solo al pie de página.
+
+    Args:
+        icono: Nombre del icono FontAwesome.
+        texto: Texto del título.
+
+    Returns:
+        LaTeX del título, precedido de `\needspace`.
+    """
+    return "\\needspace{5\\baselineskip}\n" + seccion_con_icono(icono, texto)
+
+
+def tex_ejemplo_grupo(datos: dict[str, Any], numero: int, grupo: int) -> str:
+    """Genera el documento con el ejemplo de trabajo de un grupo en una semana.
+
+    Args:
+        datos: Descriptor validado.
+        numero: Número de semana.
+        grupo: Número de grupo.
+
+    Returns:
+        Documento LaTeX completo.
+    """
+    meta = datos["meta"]
+    semana = _semana(datos, numero)
+    fase = _fase(datos, int(semana["fase"]))
+    entregas = datos.get("entregas") or {}
+    roles = {int(n): r for n, r in roles_de_la_semana(datos, numero)}
+    rol = roles.get(grupo) or {"nombre": "individual", "descripcion": "", "en_la_practica": []}
+    ejemplo = _ejemplo_de(datos, numero, grupo) or {}
+    practica = semana["practica"]
+
+    partes: list[str] = [
+        banda_titulo(
+            _t(f"Semana {numero:02d} --- {ejemplo['titulo']}"),
+            _t(f"Grupo {grupo} · rol {rol.get('nombre')} · ejemplo de trabajo"),
+        ),
+        _metadatos_curso(meta),
+        _tabla_datos(
+            [
+                ("Curso", _t(f"{meta['codigo']} --- {meta['titulo']}")),
+                ("Semana", _t(f"{numero:02d} de {meta.get('semanas', '')}")),
+                ("Fase", _t(f"{fase['id']} --- {fase['nombre']}")),
+                ("Grupo", _t(str(grupo))),
+                ("Rol", _t(str(rol.get("nombre", "")))),
+                ("Entrega", _t(f"{entregas.get('plataforma', '')}, carpeta semana_{numero:02d}/")),
+                ("Corte", _t(str(entregas.get("corte", "")))),
+            ]
+        ),
+        _seccion_ejemplo("user-shield", "Tu rol en la práctica"),
+        _t(str(rol.get("descripcion", ""))),
+        _lista([str(a) for a in rol.get("en_la_practica") or []]),
+        _seccion_ejemplo("flag", "Qué aporta este rol al entregable"),
+        _t(str(rol.get("aporta", ""))),
+        _seccion_ejemplo("list-ol", "Ejemplo paso a paso"),
+        _t(str(ejemplo["intro"])),
+    ]
+
+    for bloque in ejemplo.get("bloques") or []:
+        partes.append("\\subsection{" + _t(str(bloque["titulo"])) + "}")
+        if bloque.get("texto"):
+            partes.append(_t(str(bloque["texto"])))
+        if bloque.get("comandos"):
+            partes.append(
+                "\\begin{lstlisting}[style=estiloCodigo]\n"
+                + str(bloque["comandos"]).strip("\n")
+                + "\n\\end{lstlisting}"
+            )
+
+    tabla = ejemplo.get("tabla") or {}
+    if tabla:
+        partes.append(
+            "\\needspace{8\\baselineskip}"
+            "\\subsection{" + _t(str(tabla.get("titulo", "Tabla de ejemplo"))) + "}"
+        )
+        partes.append(_tabla_ejemplo(tabla))
+
+    partes.append(_seccion_ejemplo("box-open", "Qué guardar en el repositorio"))
+    partes.append(_t(str(ejemplo["entregable"])))
+    if ejemplo.get("estructura"):
+        partes.append(
+            "\\begin{lstlisting}[style=estiloCodigo]\n"
+            + str(ejemplo["estructura"]).strip("\n")
+            + "\n\\end{lstlisting}"
+        )
+    if ejemplo.get("comprobaciones"):
+        partes.append(_lista([str(c) for c in ejemplo["comprobaciones"]]))
+
+    partes.append(_seccion_ejemplo("ruler-combined", "Cómo se corrige"))
+    partes.append(
+        "\\begin{tabularx}{\\linewidth}{@{}X r@{}}\n\\toprule\n"
+        "Criterio & Peso\\\\\n\\midrule\n"
+        + "\n".join(
+            _t(c["criterio"]) + " & " + _n(c["peso"]) + r" \\"
+            for c in practica["criterios"]
+        )
+        + "\n\\midrule\n\\textbf{Total} & \\textbf{"
+        + _n(sum(float(c["peso"]) for c in practica["criterios"]))
+        + "}\\\\\n\\bottomrule\n\\end{tabularx}"
+    )
+
+    if ejemplo.get("avisos"):
+        partes.append(_lista([str(a) for a in ejemplo["avisos"]]))
+
+    partes.append(
+        "\\begin{cajaRecuerda}El trabajo es independiente: cada grupo usa su propio "
+        "repositorio y su propio laboratorio, y la comparación de resultados es en clase. "
+        "Corte: "
+        + _t(str(entregas.get("corte", "")).rstrip("."))
+        + "."
+        "\n\\end{cajaRecuerda}"
+    )
+
+    return _documento(meta, _t(f"Semana {numero:02d}"), "\n\n".join(partes))
+
+
 def tex_semana(datos: dict[str, Any], numero: int) -> str:
     """Genera el documento de instrucciones de una semana.
 
@@ -459,15 +715,21 @@ def tex_semana(datos: dict[str, Any], numero: int) -> str:
 
 
 def generar(
-    datos: dict[str, Any], numero: int, salida: Path, compilar: bool
+    datos: dict[str, Any],
+    numero: int,
+    salida: Path,
+    compilar: bool,
+    grupo: int | None = None,
 ) -> tuple[Path, dict[str, Any]]:
-    """Escribe y compila las instrucciones de la semana.
+    """Escribe y compila las instrucciones de la semana (o el ejemplo de un grupo).
 
     Args:
         datos: Descriptor validado.
         numero: Número de semana.
         salida: Directorio `docs/` del curso.
         compilar: Si es False, escribe solo el `.tex`.
+        grupo: Si se indica, emite el ejemplo de trabajo de ese grupo en vez del
+            documento de la semana.
 
     Returns:
         Tupla `(ruta_tex, artefacto)`.
@@ -475,15 +737,19 @@ def generar(
     meta = datos["meta"]
     codigo = _slug(meta["codigo"])
     salida.mkdir(parents=True, exist_ok=True)
-    build = RAIZ / ".tmp" / "latex_build" / f"semana_{codigo}_{numero:02d}"
+    job = f"grupo_{grupo}_{numero:02d}" if grupo else f"semana_{numero:02d}"
+    build = RAIZ / ".tmp" / "latex_build" / job
     build.mkdir(parents=True, exist_ok=True)
     os.environ[FUENTE_FECHA] = str(_epoch(meta))
 
-    tex = salida / f"semana_{numero:02d}.tex"
-    tex.write_text(tex_semana(datos, numero), encoding="utf-8")
-    artefacto: dict[str, Any] = {"job": f"semana_{numero:02d}", "tex": str(tex), "pdf": None, "errores": [], "overfull": 0}
+    tex = salida / f"{job}.tex"
+    contenido = (
+        tex_ejemplo_grupo(datos, numero, grupo) if grupo else tex_semana(datos, numero)
+    )
+    tex.write_text(contenido, encoding="utf-8")
+    artefacto: dict[str, Any] = {"job": job, "tex": str(tex), "pdf": None, "errores": [], "overfull": 0}
     if compilar:
-        artefacto.update(_compilar(tex.read_text(encoding="utf-8"), f"semana_{numero:02d}", build, tex))
+        artefacto.update(_compilar(contenido, job, build, tex))
     return tex, artefacto
 
 
@@ -494,6 +760,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--curso", required=True, help="Ruta al descriptor curso.yaml")
     parser.add_argument("--semana", required=True, type=int, help="Número de semana")
+    parser.add_argument(
+        "--grupo",
+        type=int,
+        default=None,
+        help="Emite el ejemplo de trabajo de ese grupo (docs/grupo_N_NN.tex) en vez de la semana",
+    )
     parser.add_argument("--salida", default=None, help="Directorio de salida (por defecto <curso>/docs)")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe el .tex sin invocar pdflatex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
@@ -506,14 +778,20 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "error", "problemas": [str(exc)]}, ensure_ascii=False), file=sys.stderr)
         return EXIT_DESCRIPTOR
 
-    problemas = validar_semana(datos, args.semana)
+    problemas = (
+        validar_ejemplo(datos, args.semana, args.grupo)
+        if args.grupo
+        else validar_semana(datos, args.semana)
+    )
     if problemas:
         print(json.dumps({"status": "invalido", "problemas": problemas}, ensure_ascii=False, indent=2))
         return EXIT_INVALIDO
 
     salida = Path(args.salida).resolve() if args.salida else curso.parent / "docs"
     try:
-        _, artefacto = generar(datos, args.semana, salida, not args.sin_compilar)
+        _, artefacto = generar(
+            datos, args.semana, salida, not args.sin_compilar, grupo=args.grupo
+        )
     except OSError as exc:
         print(json.dumps({"status": "error", "problemas": [str(exc)]}, ensure_ascii=False), file=sys.stderr)
         return EXIT_DISCO
@@ -521,6 +799,7 @@ def main(argv: list[str] | None = None) -> int:
     salida_json = {
         "status": "ok",
         "semana": args.semana,
+        "grupo": args.grupo,
         "tex": artefacto["tex"],
         "pdf": artefacto["pdf"],
         "errores": artefacto["errores"],

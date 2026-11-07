@@ -99,6 +99,7 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 

@@ -58,13 +58,13 @@ grupos:
     en_la_practica:
     - Confirmar el objetivo autorizado y preparar el entorno antes de la primera captura.
     - Ejecutar la técnica de la semana en el orden de los pasos y guardar cada salida cruda con su hash.
-    - Redactar la reproducción: comando, salida esperada y salida obtenida, sin retocar la evidencia.
+    - 'Redactar la reproducción: comando, salida esperada y salida obtenida, sin retocar la evidencia.'
   - nombre: Azul
-    descripcion: 'Parte de la evidencia del Rojo y aplica el control equivalente: configuración,
+    descripcion: 'Parte de su propia captura cruda y aplica el control equivalente: configuración,
       parche o regla de red. Repite el ataque para demostrar que falla y documenta el antes y el después.'
     aporta: La mitigación aplicada, el comando de verificación y la comparación de resultados.
     en_la_practica:
-    - Leer la evidencia del Rojo y elegir el control que corta el ataque en el punto más barato.
+    - Leer su propia evidencia cruda y elegir el control que corta el ataque en el punto más barato.
     - Aplicar el control y repetir el ataque para demostrar que ya no funciona.
     - Documentar el antes y el después con los mismos comandos y la diferencia medida.
   - nombre: Púrpura
@@ -251,6 +251,272 @@ semanas:
     - criterio: Redacción clara y evidencia anonimizada
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Ejemplo de trabajo del Grupo 1
+    intro: >-
+      El rol Rojo pone el énfasis en la evidencia cruda y en la reproducción. Este
+      ejemplo muestra una forma correcta de resolver la práctica de la semana 1 con ese
+      énfasis; no es la única, pero sí la más fácil de corregir.
+    bloques:
+    - titulo: Preparar y verificar el objetivo autorizado
+      texto: >-
+        Trabaja solo contra los tres contenedores del laboratorio. Si docker compose ps no
+        muestra los tres servicios arriba, la práctica todavía no puede empezar.
+      comandos: |
+        docker compose up -d
+        docker compose ps
+    - titulo: Enumerar la superficie solo desde localhost
+      texto: >-
+        Escanea la propia máquina, no la red del curso ni la infraestructura de la
+        universidad. Guarda la salida cruda y su hash en el momento: es la evidencia que
+        después se cita en el informe.
+      comandos: |
+        mkdir -p semana_01/evidencia
+        nmap -sT -sV -p- 127.0.0.1 -oN semana_01/evidencia/nmap_full.txt
+        sha256sum semana_01/evidencia/nmap_full.txt > semana_01/evidencia/nmap_full.txt.sha256
+    - titulo: Identificar versiones y grabar cada salida
+      texto: >-
+        Cada cabecera HTTP y cada banner es un hallazgo con su archivo. Si un servicio no
+        responde, se anota igual: lo que no se pudo verificar también es parte del
+        inventario.
+      comandos: |
+        curl -sI http://127.0.0.1:8081/ | tee semana_01/evidencia/dvwa_headers.txt
+        curl -sI http://127.0.0.1:3000/ | tee semana_01/evidencia/juice_headers.txt
+        ssh -o BatchMode=yes -p 2222 alumno@127.0.0.1 2>&1 | tee semana_01/evidencia/ssh_banner.txt
+        sha256sum semana_01/evidencia/*.txt > semana_01/evidencia/hashes.sha256
+    - titulo: Aplicar STRIDE y priorizar tres vectores
+      texto: >-
+        No se listan diez amenazas: se eligen tres y se justifica por qué esas. Cada fila
+        de la tabla debe poder defenderse con la evidencia del paso anterior.
+    tabla:
+      titulo: Priorización de ejemplo
+      nota: >-
+        Los puertos y servicios salen del bloque laboratorio.imagenes del descriptor; si
+        el entorno del grupo cambia, la tabla refleja lo observado y no lo esperado.
+      columnas: [Servicio, Puerto, Versión observada, Categoría STRIDE, Vector plausible, Prob., Impacto]
+      anchos: [2.2, 0.9, 1.9, 2.4, 3.2, 1.05, 1.35]
+      filas:
+      - [DVWA, '8081', 'Apache 2.4.x', Elevación de privilegios, 'Credenciales por defecto admin/password', Alta, Alto]
+      - [Juice Shop, '3000', 'Node.js / Express', Manipulación, 'Inyección en parámetros de búsqueda', Media, Alto]
+      - [Linux del laboratorio, '2222', 'OpenSSH 9.x', Suplantación, 'Fuerza bruta con usuarios por defecto', Media, Medio]
+    entregable: >-
+      El informe lleva la tabla de activos y servicios, el modelo STRIDE y la conclusión
+      con tres vectores priorizados. Además incluye una sección de reproducción con el
+      formato comando, salida esperada y salida obtenida, sin retocar la evidencia.
+    estructura: |
+      semana_01/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- nmap_full.txt
+      |   |-- dvwa_headers.txt
+      |   |-- juice_headers.txt
+      |   |-- ssh_banner.txt
+      |   `-- hashes.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada comando del informe aparece también en evidencia/, con su hash.
+    - La tabla no incluye datos personales ni credenciales reales.
+    - Los tres vectores priorizados dicen qué comando o petición los comprobaría.
+    - El commit de la semana está hecho antes del corte y describe el entregable.
+    avisos:
+    - Nada de capturas con datos personales ni credenciales reales; la evidencia se anonimiza antes de subirla.
+    - Si un servicio no responde, se documenta como no verificado; no se omite.
+  - grupo: 2
+    titulo: Ejemplo de trabajo del Grupo 2
+    intro: >-
+      El rol Azul parte de su propia captura cruda, elige el control más barato y repite
+      la misma medición. El entregable es la comparación antes/después, no la captura
+      suelta: un control sin verificación es una intención.
+    bloques:
+    - titulo: Fijar la línea base
+      texto: >-
+        Antes de tocar nada se mide lo que hay. Se repiten los mismos comandos que se
+        usarán después, porque comparar mediciones distintas no demuestra nada.
+      comandos: |
+        docker compose up -d
+        docker compose ps
+        ss -tulpn | grep -E ':8081|:3000|:2222' | tee semana_01/evidencia/azul_antes_servicios.txt
+        curl -sI http://127.0.0.1:8081/ | grep -i '^server' | tee semana_01/evidencia/azul_antes_server.txt
+    - titulo: Elegir el control por coste
+      texto: >-
+        Entre dos controles que cortan lo mismo, se aplica el que se verifica con un
+        comando y no rompe el resto del laboratorio. Aquí: cerrar el acceso de root por
+        SSH y dejar de anunciar la versión del servidor web.
+    - titulo: Aplicar el control
+      texto: >-
+        Cada cambio se hace con un comando reproducible. Si el contenedor no tiene el
+        archivo esperado, se documenta como control no aplicado en lugar de simularlo.
+      comandos: |
+        docker exec objetivo-linux sh -c "sed -i -E 's/^#?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && sshd -t && (kill -HUP 1 || true)"
+        docker exec objetivo-linux sshd -T | grep -E '^(permitrootlogin|maxauthtries)' | tee semana_01/evidencia/azul_control_ssh.txt
+        docker exec objetivo-web sh -c "printf '\nServerTokens Prod\nServerSignature Off\n' >> /etc/apache2/apache2.conf && apache2ctl -k graceful"
+    - titulo: Repetir la medición y diferenciar
+      texto: >-
+        La misma orden del inicio, sobre el sistema ya cambiado, y un diff explícito. Si
+        el resultado no cambia, el control no sirvió y eso también se reporta.
+      comandos: |
+        ss -tulpn | grep -E ':8081|:3000|:2222' > semana_01/evidencia/azul_despues_servicios.txt
+        curl -sI http://127.0.0.1:8081/ | grep -i '^server' > semana_01/evidencia/azul_despues_server.txt
+        diff semana_01/evidencia/azul_antes_server.txt semana_01/evidencia/azul_despues_server.txt | tee semana_01/evidencia/azul_diff.txt
+    tabla:
+      titulo: Control aplicado y verificación
+      nota: >-
+        La columna de verificación se llena con la salida real, no con la esperada; si no
+        hay diferencia, se escribe "sin cambio" y se explica por qué.
+      columnas: [Servicio, Puerto, Estado antes, Control aplicado, Verificación después]
+      anchos: [2.2, 0.9, 2.4, 4.6, 3.7]
+      filas:
+      - [Linux del laboratorio, '2222', 'Root con acceso por SSH', 'PermitRootLogin no y sshd -t antes de recargar', 'sshd -T muestra permitrootlogin no']
+      - [DVWA, '8081', 'Cabecera Server con versión de Apache', 'ServerTokens Prod y ServerSignature Off', 'La cabecera ya no anuncia versión']
+      - [Juice Shop, '3000', 'Cabecera Server con versión de Express', 'Sin control: el servicio no expone esa opción', 'Sin cambio; se documenta el motivo']
+    entregable: >-
+      El informe incluye la tabla de control y verificación, el diff antes/después y una
+      conclusión con el coste de cada control: cuántos comandos, cuánto riesgo de romper
+      el servicio y qué queda expuesto después.
+    estructura: |
+      semana_01/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- azul_antes_servicios.txt
+      |   |-- azul_despues_servicios.txt
+      |   |-- azul_antes_server.txt
+      |   |-- azul_despues_server.txt
+      |   |-- azul_control_ssh.txt
+      |   `-- azul_diff.txt
+      `-- README.md
+    comprobaciones:
+    - La medición de antes y la de después usan exactamente el mismo comando.
+    - Cada control tiene su comando de verificación y su salida real pegada.
+    - Si un control no se pudo aplicar, está dicho con el motivo, no omitido.
+    - El diff está en evidencia/ y el informe lo cita línea por línea.
+    avisos:
+    - No se cambian credenciales del laboratorio sin anotarlas en el README privado del grupo.
+    - Recargar un servicio cuenta como cambio de configuración; se documenta el comando exacto.
+  - grupo: 3
+    titulo: Ejemplo de trabajo del Grupo 3
+    intro: >-
+      El rol Púrpura no ataca ni parchea: instrumenta. Primero define qué señal debería
+      aparecer en el registro, después ejecuta la acción y por último compara lo que se
+      registró con lo que se hizo. Lo que no aparece es tan importante como lo que aparece.
+    bloques:
+    - titulo: Definir la señal antes de ejecutar
+      texto: >-
+        Se escribe primero la regla, con su umbral, y solo después se busca en el
+        registro. Al revés se termina justificando lo que apareció en vez de medir lo que
+        debería aparecer.
+    - titulo: Conservar los registros del periodo
+      texto: >-
+        La ventana de los registros se define en minutos y se guarda en crudo. Un
+        registro que se consulta dos veces cambia; uno guardado no.
+      comandos: |
+        docker compose logs --since 30m --no-color objetivo-web > semana_01/evidencia/purpura_web.log
+        docker compose logs --since 30m --no-color objetivo-linux > semana_01/evidencia/purpura_linux.log
+    - titulo: Ejecutar y medir la detección
+      texto: >-
+        Con la regla ya escrita, se ejecutan las acciones de la semana y se cuenta cuántas
+        dejan señal. El conteo por origen es el primer indicador de fuerza bruta o de
+        enumeración.
+      comandos: |
+        nmap -sT -sV -p 8081,3000,2222 127.0.0.1 -oN semana_01/evidencia/purpura_nmap.txt
+        grep -c ' 404 ' semana_01/evidencia/purpura_web.log
+        awk '{print $1}' semana_01/evidencia/purpura_web.log | sort | uniq -c | sort -nr | head -5
+        grep -Ei 'failed password|invalid user|connection closed by' semana_01/evidencia/purpura_linux.log | tee semana_01/evidencia/purpura_alertas.txt
+    - titulo: Ajustar la regla con lo observado
+      texto: >-
+        Una regla que dispara con todo no detecta nada. Se propone un umbral concreto
+        (por ejemplo, más de 30 líneas del mismo origen en un minuto) y se dice qué falso
+        positivo y qué falso negativo quedan.
+    tabla:
+      titulo: Lo ejecutado frente a lo detectado
+      nota: >-
+        "Parcial" es una respuesta válida: obliga a explicar qué parte de la acción quedó
+        fuera del registro y por qué.
+      columnas: [Acción ejecutada, Señal disponible, '¿Se detectó?', Ajuste propuesto]
+      filas:
+      - [Nmap con -sV sobre 8081 y 3000, 'Peticiones GET en el registro de Apache y Express', Sí, 'Umbral de 30 peticiones por minuto y origen']
+      - [Exploración de rutas inexistentes, 'Respuestas 404 en el registro web', Parcial, 'Contar 404 por ruta y no solo por origen']
+      - [Intento de SSH con usuario alumno, 'Failed password e Invalid user en el registro de Linux', Sí, 'Alerta a partir de 3 intentos en 2 minutos']
+      - [Lectura de cabeceras con curl, 'Una sola petición en el registro web', 'No', 'No se alerta: el volumen no distingue reconocimiento de uso normal']
+    entregable: >-
+      El informe lleva la regla de detección escrita antes de la ejecución, la tabla de lo
+      ejecutado frente a lo detectado y la lista de falsos positivos y negativos con el
+      ajuste concreto. La consulta final debe poder copiarse y volver a ejecutarse.
+    estructura: |
+      semana_01/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- purpura_web.log
+      |   |-- purpura_linux.log
+      |   |-- purpura_alertas.txt
+      |   `-- purpura_nmap.txt
+      `-- README.md
+    comprobaciones:
+    - La regla y el umbral están escritos antes de la tabla de resultados.
+    - Cada fila de la tabla cita el archivo y la consulta que la respalda.
+    - Hay al menos un falso positivo o negativo declarado, con su ajuste.
+    - Los registros se guardaron en crudo y no se editaron después.
+    avisos:
+    - Los registros pueden contener rutas y direcciones internas; se anonimizan antes de subirlos.
+    - Una detección no demuestra que el ataque fallara: son dos medidas distintas.
+  - grupo: 4
+    titulo: Ejemplo de trabajo del Grupo 4
+    intro: >-
+      El rol Legal y reporte no repite el análisis: comprueba el alcance, anonimiza,
+      verifica la cadena de custodia e integra. Su producto es el informe final y la
+      declaración explícita de lo que no se pudo verificar.
+    bloques:
+    - titulo: Comprobar que el alcance cubre lo ejecutado
+      texto: >-
+        Se contrasta cada acción del informe con la autorización y con el alcance escrito.
+        Lo que no esté cubierto se retira, aunque el resultado técnico sea correcto.
+    - titulo: Anonimizar y verificar la integridad
+      texto: >-
+        Anonimizar es sustituir el dato, no borrar la línea. Después se recalcula el hash
+        de lo entregado: si el hash no coincide con el que se anotó al capturar, la
+        evidencia no es la misma.
+      comandos: |
+        sed -E 's/([0-9]{1,3}\.){3}[0-9]{1,3}/[IP]/g' semana_01/evidencia/nmap_full.txt > semana_01/evidencia/nmap_anon.txt
+        grep -RniE 'password|token|api[_-]?key|correo|c[eé]dula' semana_01 --include='*.md' --include='*.txt' | tee semana_01/evidencia/leg_revision_datos.txt
+        find semana_01 -type f -print0 | xargs -0 sha256sum > semana_01/evidencia/leg_cadena_custodia.sha256
+    - titulo: Integrar técnico y ejecutivo
+      texto: >-
+        El resumen ejecutivo no es un adorno: dice qué se encontró, qué riesgo implica y
+        qué se recomienda, en una página y sin jerga. El informe técnico es el que
+        respalda cada afirmación con su evidencia.
+    tabla:
+      titulo: Datos del informe y su tratamiento
+      nota: >-
+        La columna de tratamiento no admite "anonimizado" a secas: se escribe la
+        sustitución concreta y el archivo donde consta.
+      columnas: [Elemento, '¿Dato personal?', Tratamiento aplicado, Dónde consta]
+      filas:
+      - ['Direcciones IP del laboratorio', 'No', 'Sustituidas por [IP] en la versión entregable', 'nmap_anon.txt y diff de líneas']
+      - ['Nombres de usuario del sistema', 'Posible', 'Se conservan solo los de servicio, no los de persona', 'leg_revision_datos.txt']
+      - ['Credenciales usadas en el laboratorio', Sí, 'No se transcriben; se referencia el README privado del grupo', 'README.md del repositorio']
+      - ['Capturas de pantalla', 'Posible', 'Recortadas para excluir correo, nombre y sesión', 'Índice de figuras del informe']
+    entregable: >-
+      Un informe único con resumen ejecutivo de una página, informe técnico con la
+      evidencia citada, declaración de alcance y límites, y la cadena de custodia con los
+      hashes de todo lo entregado.
+    estructura: |
+      semana_01/
+      |-- informe.md
+      |-- resumen_ejecutivo.md
+      |-- evidencia/
+      |   |-- nmap_full.txt
+      |   |-- nmap_anon.txt
+      |   |-- leg_revision_datos.txt
+      |   `-- leg_cadena_custodia.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada afirmación del informe técnico cita un archivo de evidencia.
+    - El resumen ejecutivo cabe en una página y no usa siglas sin explicarlas.
+    - Los hashes entregados coinciden con los calculados sobre los archivos finales.
+    - Hay una sección de límites que dice qué no se pudo verificar y por qué.
+    avisos:
+    - La anonimización es irreversible en la versión entregable; el original queda en el README privado.
+    - Si el alcance no cubre una acción, se retira del informe aunque el resultado sea válido.
 - numero: 2
   fase: 1
   titulo: Criptografía aplicada y gestión de secretos

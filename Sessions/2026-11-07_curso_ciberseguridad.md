@@ -55,8 +55,49 @@ hacer esta primera semana, guardado como `docs/semana_01.{tex,pdf}`.
 - De paso, corregido el punto doble de la caja "Recuerda" (`no se corrige..`): el
   corte se imprime sin duplicar el punto final.
 
+- **Ejemplo de trabajo por grupo** (petición del usuario: "guarda un ejemplo del grupo
+  1, semana 1"): se extendió el flujo semanal existente en vez de escribir un `.tex` a
+  mano. `semana.ejemplos` es dato del descriptor (`grupo`, `titulo`, `intro`, `bloques`,
+  `tabla` con `anchos` en cm, `entregable`, `estructura`, `comprobaciones`, `avisos`);
+  `execution/generar_instrucciones_semana.py` gana `--grupo` y emite
+  `docs/grupo_N_NN.{tex,pdf}`; el orquestador `flujo_instrucciones_semana.py` lo pasa
+  tal cual. Grupo sin ejemplo declarado → código 3 (probado con grupo 2).
+- Tres defectos vistos en el PDF y corregidos en el generador, no en el `.tex`:
+  los títulos numerados a mano duplicaban la numeración de `\subsection`; un título al
+  pie de página quedaba separado de su tabla (se añadió `needspace` al preámbulo
+  compartido y un helper `_seccion_ejemplo`); la tabla de 7 columnas se salía 126 pt del
+  margen (ahora `anchos` en cm + `\footnotesize`, y la validación exige `anchos` cuando
+  hay más de 4 columnas).
+- De paso corregido el defecto del rol: el ítem `en_la_practica` del rol Rojo estaba
+  entrecomillado en YAML (se imprimía como mapa con comillas); ahora es texto y la
+  validación de `en_la_practica` lo detecta en material y tareas.
+- Resultado: `docs/grupo_1_01.pdf` de 4 páginas, 0 solapes, 0 `Overfull \hbox`,
+  0 errores y bytes idénticos entre corridas; `semana_01` sigue en 5 páginas.
+
+- **Ejemplos de los grupos 2, 3 y 4** (petición del usuario): mismos esquema y flujo que
+  el del grupo 1, con el ángulo de cada rol: Azul mide línea base, aplica el control más
+  barato y entrega el diff antes/después; Púrpura escribe la regla de detección antes de
+  ejecutar y entrega la tabla de lo ejecutado frente a lo detectado; Legal comprueba
+  alcance, anonimiza con sustitución explícita, sella la cadena de custodia e integra
+  técnico y ejecutivo. Los tres salen en `docs/grupo_{2,3,4}_01.{tex,pdf}`, 4 páginas
+  cada uno, 0 errores, 0 solapes, 0 overfull y bytes idénticos entre corridas.
+- Trampa YAML nueva encontrada y congelada en la directiva: una celda `No` sin comillas
+  es el booleano `False` y el PDF imprimía "False" en la tabla. Toda celda que sea
+  palabra reservada de YAML va entrecomillada; la validación no puede distinguirla de un
+  booleano legítimo.
+- Mejora del generador: el ancho por defecto de las tablas de ejemplo ahora descuenta los
+  `\tabcolsep` (antes una tabla de 4 columnas sin `anchos` se salía del margen), y la
+  validación rechaza `anchos` cuya suma no quepa en 16,6 cm.
+
 ## Pendientes
 - Confirmar `nota_minima: 5` con la institución.
-- Commit del trabajo (no se pidió explícitamente).
-- Repetir el patrón `--semana N` para las semanas 2 a 10 cuando toque.
-- Commit del registro de resultados: no se pidió; queda en el árbol de trabajo.
+- Commit del trabajo (no se pidió explícitamente): incluye el fix del rol Rojo, el
+  preámbulo con `needspace`, el flujo `--grupo` y sus artefactos.
+- Repetir el patrón `--semana N` para las semanas 2 a 10 y escribir sus `ejemplos`
+  cuando toque.
+- Corregida la contradicción del rol Azul (decisión del usuario): `descripcion` y el
+  primer ítem de `en_la_practica` ya no dicen "parte de la evidencia del Rojo" sino "de
+  su propia captura cruda" / "su propia evidencia cruda". Regenerado todo lo que imprime
+  el rol: material completo (20 artefactos), tareas de la fase 1, `semana_01` y los cuatro
+  ejemplos; 0 errores y 0 overfull en todos los logs, y `semana_01`/`grupo_2_01`
+  idénticos entre corridas.

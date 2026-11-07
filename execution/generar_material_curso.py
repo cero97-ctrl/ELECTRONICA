@@ -544,6 +544,13 @@ def validar(datos: dict[str, Any]) -> list[str]:
                 )
 
     grupos = datos.get("grupos") or {}
+    for rol in grupos.get("roles") or []:
+        for accion in rol.get("en_la_practica") or []:
+            if not isinstance(accion, str):
+                problemas.append(
+                    f"rol {rol.get('nombre')!r}: una acción de 'en_la_practica' no es texto "
+                    f"({accion!r}); falta entrecomillar el valor que lleva ':'"
+                )
     roles = [r.get("nombre") for r in grupos.get("roles") or []]
     if roles:
         try:
