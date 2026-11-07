@@ -350,8 +350,10 @@ def tex_semana(datos: dict[str, Any], numero: int) -> str:
         partes.append(seccion_con_icono("users", "Rol de cada grupo esta semana"))
         partes.append(
             _t(
-                "Todos los grupos resuelven la misma práctica. El rol cambia el énfasis del "
-                "trabajo y lo que cada grupo aporta al comparar resultados en clase."
+                "Todos los grupos resuelven la misma práctica, cada uno en su propio "
+                "repositorio y su propio laboratorio: el trabajo de un grupo no depende "
+                "del de otro. El rol cambia el énfasis del trabajo y lo que cada grupo "
+                "aporta al comparar resultados en clase, al final."
             )
         )
         partes.append(
