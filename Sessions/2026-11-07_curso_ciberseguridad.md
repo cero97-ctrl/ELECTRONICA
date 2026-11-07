@@ -31,8 +31,21 @@ hacer esta primera semana, guardado como `docs/semana_01.{tex,pdf}`.
 - Regenerado todo el material (17 `.tex`/17 PDF, 0 problemas) y las tareas de la
   fase 1 para que práctica, guía, tarea y semana cuenten lo mismo.
 - Añadido el flujo a `AGENTS.md`.
+- **Registro de entregas corregidas** (petición del usuario): creada
+  `cursos/CYBERSEGURIDAD/evaluaciones/resultados/` con `actas.csv` (cabecera fija) y
+  README que documenta la convención local — misma pauta que Laboratorio II, que ya
+  ignoraba `cursos/*/evaluaciones/resultados/**` salvo el README (el repo es público).
+- Nuevo flujo de 3 capas para anotar cada entrega: `directives/registrar_resultado_curso.yaml`,
+  `flujo_registrar_resultado.py` y `execution/registrar_resultado.py`. Copia el informe
+  a `semana_NN/grupo_N/`, deriva el rol de la rotación del descriptor, valida la nota
+  0..10 y rechaza semana+grupo duplicado (código 4) salvo `--reemplazar`; el acta se
+  escribe de forma atómica. Probado en `.tmp/`: 0 fuera de rango → 3, válido → 0,
+  duplicado → 4, `--reemplazar` sustituye la fila y conserva el documento archivado,
+  semana 10 sale `individual` y semana 11 → 3.
+- Registrado en `AGENTS.md`.
 
 ## Pendientes
 - Confirmar `nota_minima: 5` con la institución.
 - Commit del trabajo (no se pidió explícitamente).
 - Repetir el patrón `--semana N` para las semanas 2 a 10 cuando toque.
+- Commit del registro de resultados: no se pidió; queda en el árbol de trabajo.

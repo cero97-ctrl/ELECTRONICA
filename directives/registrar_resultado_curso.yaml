@@ -1,0 +1,99 @@
+name: registrar_resultado_curso
+description: >-
+  Guarda en local la entrega corregida de un grupo y su nota, y la anota en el acta
+  acumulada del curso (`evaluaciones/resultados/actas.csv`). La carpeta es privada:
+  `.gitignore` excluye `cursos/*/evaluaciones/resultados/**` salvo el README porque
+  el repositorio es público y el acta lleva nombres y notas.
+version: 1.0
+
+goal: >-
+  Que cada entrega corregida quede en un único sitio, con su informe, su nota y su
+  rol, sin filas duplicadas ni notas fuera de escala. El acta es la fuente del cierre
+  de notas, así que se escribe con validación de forma y de rango, no a mano.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml`. Se usan `meta.semanas`, `grupos.cantidad`,
+      `grupos.asignacion_inicial`, `grupos.fase_con_roles`, `semanas[].fase` y
+      `evaluacion.escala` (debe ser 10).
+
+  - name: semana
+    description: Número de semana de la entrega (1-based, dentro de `meta.semanas`).
+
+  - name: grupo
+    description: Número de grupo (1-based, dentro de `grupos.cantidad`).
+
+  - name: nota
+    description: >-
+      Nota sobre 10, calculada por el programa de evaluación (no por el modelo). Se
+      escribe con dos decimales.
+
+  - name: documento
+    description: >-
+      Opcional. Informe corregido (PDF) que se copia a
+      `resultados/semana_NN/grupo_N/` como registro durable. Si se omite, el acta
+      guarda la ruta de origen o queda vacía.
+
+  - name: salida
+    description: >-
+      Opcional. Carpeta `resultados/`. Por defecto
+      `<curso>/evaluaciones/resultados/`.
+
+steps:
+  - action: validar_registro
+    script: execution/registrar_resultado.py
+    description: >-
+      Comprueba que la semana y el grupo existen, que la nota está en 0..10, que la
+      escala del curso es 10 y que el documento existe. Un fallo es código 3 con el
+      motivo, no una fila mal escrita en el acta.
+
+  - action: archivar_documento
+    script: execution/registrar_resultado.py
+    description: >-
+      Copia el informe corregido a `semana_NN/grupo_N/`, creando la carpeta si hace
+      falta. El nombre original se conserva para poder rastrearlo.
+
+  - action: anotar_acta
+    script: execution/registrar_resultado.py
+    description: >-
+      Añade la fila (fecha, semana, grupo, rol, documento, nota, fiabilidad,
+      observaciones) y escribe el CSV de forma atómica. El rol se deriva de la
+      rotación del descriptor, no se teclea. Si ya existe una fila para esa
+      semana y grupo, se rechaza con código 4 salvo `--reemplazar`.
+
+  - action: alertar
+    script: execution/alert_user.py
+    description: >
+      Alerta audible al terminar, salvo `--no-alert`.
+
+expected_outputs:
+  - "`evaluaciones/resultados/actas.csv` con una fila por entrega corregida."
+  - "`evaluaciones/resultados/semana_NN/grupo_N/<informe>.pdf` (si se dio `--documento`)."
+  - "Código 0 solo cuando la fila quedó escrita; 4 si la entrega ya estaba registrada."
+
+edge_cases:
+  - case: La nota llega como texto o fuera de rango
+    protocol: >-
+      Código 3 con la nota recibida. No se redondea ni se recorta en silencio: una
+      nota recortada sin aviso es una nota falsa.
+
+  - case: `nota_fiable=false` (escala indescifrable)
+    protocol: >-
+      Se registra con `--no-fiable` y la fila lo declara; el cierre de notas debe
+      revisar esas filas a mano antes de publicarlas.
+
+  - case: Se corrige una entrega ya registrada
+    protocol: >-
+      Código 4 con la nota anterior. Se repite con `--reemplazar`: la fila se
+      sustituye en su misma posición, no se duplica.
+
+  - case: La carpeta de resultados no existe
+    protocol: >-
+      Se crea. El README de la carpeta y la regla de `.gitignore` viajan en el repo;
+      el contenido (entregas y acta) es local y nunca se sube.
+
+  - case: Se intenta registrar fuera del alcance del curso
+    protocol: >-
+      Semana o grupo fuera de rango devuelve código 3: el acta no admite grupos
+      inventados porque luego no cuadra con las listas del curso.
