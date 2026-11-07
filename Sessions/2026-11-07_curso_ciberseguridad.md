@@ -49,6 +49,9 @@ hacer esta primera semana, guardado como `docs/semana_01.{tex,pdf}`.
   sección "Glosario de la semana" en una página propia (`\clearpage`, `longtable`
   `\small`, cabecera repetida). Un término desconocido es código 3, no un texto
   inventado. PDF: 5 páginas, 0 solapes, 0 errores, idéntico entre corridas.
+- Aclarado en la sección de roles que el trabajo es **independiente** (cada grupo en su
+  propio repositorio y laboratorio) y que la comparación es en clase, al final; el
+  texto vive en el generador, así que aplica a todas las semanas.
 - De paso, corregido el punto doble de la caja "Recuerda" (`no se corrige..`): el
   corte se imprime sin duplicar el punto final.
 
