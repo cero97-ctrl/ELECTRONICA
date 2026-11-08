@@ -531,6 +531,15 @@ semanas:
   - openssl
   - sha256sum
   - Python hashlib
+  glosario:
+  - Cifrado simétrico
+  - Cifrado asimétrico
+  - Hash criptográfico
+  - HMAC
+  - Derivación de claves
+  - TLS
+  - Cadena de certificados
+  - Gestión de secretos
   practica:
     titulo: Caja de herramientas criptográficas
     escenario: 'Cada grupo cifra y descifra un archivo, firma y verifica un mensaje, inspecciona un certificado real y mide el coste de derivar una clave con distinto número de iteraciones.
@@ -569,6 +578,14 @@ semanas:
   herramientas:
   - Plantilla de autorización
   - Normativa en PDF
+  glosario:
+  - Autorización escrita
+  - Reglas de enfrentamiento
+  - ISO/IEC 27001
+  - NIST CSF
+  - OWASP ASVS
+  - Cadena de custodia
+  - Código de ética
   practica:
     titulo: Carta de autorización y análisis de caso
     escenario: 'Cada grupo redacta la autorización de la auditoría de su objetivo del laboratorio y analiza un incidente ficticio, identificando qué normas se violaron y qué evidencia sería admisible.
@@ -614,6 +631,15 @@ semanas:
   - python-whois
   - dig
   - socket
+  glosario:
+  - Registro DNS
+  - WHOIS
+  - Enumeración de subdominios
+  - Google dorks
+  - OPSEC
+  - Escaneo SYN
+  - Banner grabbing
+  - Fingerprinting
   practica:
     titulo: Huella digital + escáner propio contra el laboratorio
     requiere_codigo: true
@@ -652,6 +678,13 @@ semanas:
   - DVWA
   - Juice Shop
   - Navegador con herramientas de desarrollo
+  glosario:
+  - OWASP Top 10
+  - Control de acceso roto
+  - Inyección SQL
+  - XSS
+  - LFI
+  - Causa raíz
   practica:
     titulo: Explotación guiada y evidencia
     escenario: 'Cada grupo explota tres vulnerabilidades en DVWA y resuelve tres retos de Juice Shop, documentando payload, evidencia, causa raíz y mitigación.
@@ -699,6 +732,15 @@ semanas:
   - ubuntu 24.04
   - nftables
   - ufw
+  glosario:
+  - Mínimo privilegio
+  - SUID
+  - CIS Benchmarks
+  - AppArmor
+  - Línea base
+  - nftables
+  - IDS/IPS
+  - Suricata
   practica:
     titulo: Línea base, hardening, firewall y detección
     requiere_codigo: true
@@ -736,6 +778,13 @@ semanas:
   - bandit
   - pip-audit
   - DVWA editado
+  glosario:
+  - Validación de entrada
+  - Parametrización de consultas
+  - CSP
+  - SBOM
+  - Análisis estático
+  - Cabeceras de seguridad
   practica:
     titulo: Parchear y demostrar la mitigación
     escenario: 'Cada grupo corrige tres vulnerabilidades de la semana 5 en su copia del laboratorio y demuestra que el payload original ya no funciona.
@@ -781,6 +830,14 @@ semanas:
   - mount en solo lectura
   - sha256sum
   - journalctl
+  glosario:
+  - Principio de Locard
+  - Orden de volatilidad
+  - Adquisición lógica
+  - Imagen forense
+  - Persistencia
+  - Línea de tiempo
+  - Indicador de compromiso
   practica:
     titulo: Imagen forense, reconstrucción y línea de tiempo
     escenario: '> Cada grupo adquiere imagen forense, reconstruye la secuencia del compromiso simulado y construye línea de tiempo con IoCs.'
@@ -817,6 +874,14 @@ semanas:
   - file y strings
   - YARA
   - sha256sum
+  glosario:
+  - NIST SP 800-61
+  - Playbook
+  - Contención
+  - Triage
+  - YARA
+  - Análisis dinámico
+  - Post mortem
   practica:
     titulo: Playbook y triage estático
     escenario: 'Cada grupo escribe el playbook del incidente reconstruido en la semana 8 y realiza triage estático de una muestra inerte entregada por el docente.
@@ -852,6 +917,9 @@ semanas:
   - Defensa oral de decisiones y limitaciones del alcance.
   herramientas:
   - Todo el laboratorio
+  glosario:
+  - Resumen ejecutivo
+  - Remediación
   practica:
     titulo: Auditoría de alcance cerrado
     escenario: 'Evaluación individual de cuatro horas sobre un alcance definido por el docente. Se entregan informe técnico, resumen ejecutivo y una defensa oral de diez minutos.
@@ -1005,3 +1073,121 @@ glosario:
     definicion: "Salida, captura o hash que permite a otra persona repetir el paso y obtener lo mismo. Una descripción sin evidencia no es un hallazgo verificable."
   - termino: "Localhost"
     definicion: "La propia máquina (127.0.0.1). En el laboratorio el objetivo vive aquí, así que las pruebas no salen del equipo ni alcanzan infraestructura de terceros."
+  - termino: "Cifrado simétrico"
+    definicion: "Cifrado que usa la misma clave para cifrar y descifrar. Es rápido y adecuado para volumen, pero exige repartir la clave por un canal seguro."
+  - termino: "Cifrado asimétrico"
+    definicion: "Cifrado con un par de claves: la pública cifra o verifica y la privada descifra o firma. Resuelve el reparto de claves a cambio de ser más lento."
+  - termino: "Hash criptográfico"
+    definicion: "Función de un solo sentido que produce una huella de tamaño fijo; cambiar un byte cambia la huella. No cifra ni se puede revertir."
+  - termino: "HMAC"
+    definicion: "Hash con clave que autentica un mensaje y detecta manipulación. Aporta integridad y autenticidad de origen, no confidencialidad."
+  - termino: "Derivación de claves"
+    definicion: "Convertir una contraseña o secreto débil en una clave del tamaño adecuado con un coste deliberado (PBKDF2, Argon2) para frenar la fuerza bruta."
+  - termino: "TLS"
+    definicion: "Protocolo que cifra y autentica una conexión entre cliente y servidor. HTTPS es HTTP sobre TLS."
+  - termino: "Cadena de certificados"
+    definicion: "Secuencia de certificados firmados que enlaza la clave del servidor con una autoridad de confianza. Si falta un eslabón o es inválido, la validación falla."
+  - termino: "Gestión de secretos"
+    definicion: "Crear, almacenar, rotar y revocar claves y contraseñas sin dejarlas en el código, en los argumentos ni en el historial de git."
+  - termino: "Autorización escrita"
+    definicion: "Permiso firmado que delimita qué se puede probar, desde dónde y en qué ventana de tiempo. Sin ella no hay prueba técnica legítima."
+  - termino: "Reglas de enfrentamiento"
+    definicion: "Condiciones operativas de la prueba: alcance, ventana, sistemas excluidos, contacto y criterios de parada. Se acuerdan antes de empezar."
+  - termino: "ISO/IEC 27001"
+    definicion: "Norma de sistemas de gestión de seguridad de la información. Exige política, análisis de riesgos, controles y mejora continua."
+  - termino: "NIST CSF"
+    definicion: "Marco voluntario con las funciones identificar, proteger, detectar, responder y recuperar. Ordena el programa de seguridad sin prescribir productos."
+  - termino: "OWASP ASVS"
+    definicion: "Estándar de verificación de seguridad de aplicaciones con requisitos por nivel. Se usa como lista de comprobación técnica."
+  - termino: "Cadena de custodia"
+    definicion: "Registro que documenta quién tuvo la evidencia, cuándo, dónde y con qué integridad. Una rotura de la cadena le quita valor probatorio."
+  - termino: "Código de ética"
+    definicion: "Reglas de conducta del curso: solo objetivos autorizados, evidencia anonimizada, sin daño y con divulgación responsable."
+  - termino: "Registro DNS"
+    definicion: "Entrada de la zona que publica datos como A, AAAA, MX, NS, TXT o SOA. Es información pública y parte del reconocimiento."
+  - termino: "WHOIS"
+    definicion: "Consulta del registro de un dominio que devuelve registrante, fechas y servidores. Se está sustituyendo por RDAP, con salida estructurada."
+  - termino: "Enumeración de subdominios"
+    definicion: "Descubrir nombres bajo un dominio (dev, staging, vpn) para localizar servicios que no aparecen en el inventario."
+  - termino: "Google dorks"
+    definicion: "Consultas con operadores de búsqueda que encuentran documentos y paneles indexados. Solo se usan sobre el alcance autorizado."
+  - termino: "OPSEC"
+    definicion: "Hábitos que evitan filtrar identidad, infraestructura o intención durante la recolección de información."
+  - termino: "Escaneo SYN"
+    definicion: "Sondeo semiabierto que no completa la conexión TCP. Es más sigiloso que connect y requiere privilegios."
+  - termino: "Banner grabbing"
+    definicion: "Leer la cabecera que anuncia el servicio para identificar producto y versión; es la base del fingerprinting."
+  - termino: "Fingerprinting"
+    definicion: "Inferir sistema operativo y software a partir de las respuestas, los tiempos y los detalles del protocolo."
+  - termino: "OWASP Top 10"
+    definicion: "Lista de las categorías de riesgo web con mayor impacto, revisada periódicamente. Es un punto de partida, no un catálogo exhaustivo."
+  - termino: "Control de acceso roto"
+    definicion: "Fallo que permite ver o modificar recursos de otro usuario cambiando un identificador o una petición (IDOR, BOLA)."
+  - termino: "Inyección SQL"
+    definicion: "Introducir sintaxis SQL en una entrada no parametrizada para alterar la consulta. Se evita parametrizando y validando."
+  - termino: "XSS"
+    definicion: "Inyectar script que se ejecuta en el navegador de otra persona. Puede ser reflejado, almacenado o en el DOM según dónde persista."
+  - termino: "LFI"
+    definicion: "Inclusión local de ficheros que permite leer archivos del servidor a través de una ruta manipulada."
+  - termino: "Causa raíz"
+    definicion: "Defecto concreto que permite la vulnerabilidad, como una consulta concatenada o una salida sin codificar. Es distinto del síntoma observado."
+  - termino: "Mínimo privilegio"
+    definicion: "Cada cuenta, servicio y proceso tiene solo los permisos necesarios para su función."
+  - termino: "SUID"
+    definicion: "Bit que hace que un ejecutable corra con los permisos de su propietario. Un SUID mal configurado es una vía de elevación."
+  - termino: "CIS Benchmarks"
+    definicion: "Guías de configuración segura con comprobaciones concretas por sistema y servicio. Sirven para construir la línea base."
+  - termino: "AppArmor"
+    definicion: "Módulo del kernel que confina un programa a los archivos y capacidades que declara su perfil."
+  - termino: "Línea base"
+    definicion: "Estado medido y documentado de una configuración. Sin ella no se puede demostrar que el endurecimiento cambió algo."
+  - termino: "nftables"
+    definicion: "Framework de filtrado del kernel que sustituye a iptables. ufw es una interfaz simplificada sobre él."
+  - termino: "IDS/IPS"
+    definicion: "Sistema que detecta (IDS) o bloquea (IPS) tráfico y comportamiento según firmas o reglas."
+  - termino: "Suricata"
+    definicion: "Motor IDS/IPS de código abierto con firmas y extracción de eventos. Sus alertas se leen, no solo se cuentan."
+  - termino: "Validación de entrada"
+    definicion: "Comprobar tipo, formato, longitud y rango de lo que llega antes de usarlo. No sustituye la parametrización."
+  - termino: "Parametrización de consultas"
+    definicion: "Enviar los datos como parámetros separados de la sentencia, de modo que no puedan alterar su estructura."
+  - termino: "CSP"
+    definicion: "Cabecera que restringe desde dónde puede cargar recursos la página y mitiga XSS. No repara una salida sin codificar."
+  - termino: "SBOM"
+    definicion: "Inventario de componentes y versiones de un producto. Permite responder qué dependencia está afectada por una vulnerabilidad."
+  - termino: "Análisis estático"
+    definicion: "Revisar código sin ejecutarlo para encontrar patrones inseguros. Es rápido y repetible, pero produce falsos positivos."
+  - termino: "Cabeceras de seguridad"
+    definicion: "Respuestas HTTP como HSTS, X-Content-Type-Options o Referrer-Policy que reducen la superficie del navegador."
+  - termino: "Principio de Locard"
+    definicion: "Todo contacto deja un rastro. En forense, el atacante deja artefactos y el analista también puede alterarlos."
+  - termino: "Orden de volatilidad"
+    definicion: "Recoger primero lo que se pierde antes: memoria y procesos, luego red, disco y por último respaldos o logs externos."
+  - termino: "Adquisición lógica"
+    definicion: "Copiar archivos y metadatos del sistema de archivos. Es suficiente para muchos casos y menos invasiva que la física."
+  - termino: "Imagen forense"
+    definicion: "Copia bit a bit de un soporte, verificada con hash antes y después, para analizar sin tocar el original."
+  - termino: "Persistencia"
+    definicion: "Mecanismo que mantiene el acceso tras reiniciar: servicio, cron, timer o clave SSH añadida. Su rastro es un indicador clave."
+  - termino: "Línea de tiempo"
+    definicion: "Ordenar los artefactos por marca temporal para reconstruir qué ocurrió y en qué secuencia."
+  - termino: "Indicador de compromiso"
+    definicion: "Huella observable (hash, IP, ruta, usuario) que sugiere actividad maliciosa. Por sí sola no prueba el compromiso."
+  - termino: "NIST SP 800-61"
+    definicion: "Guía de respuesta a incidentes con preparación, detección y análisis, contención, erradicación, recuperación y lecciones aprendidas."
+  - termino: "Playbook"
+    definicion: "Procedimiento escrito con pasos, responsables y criterios de decisión para un tipo de incidente."
+  - termino: "Contención"
+    definicion: "Limitar el alcance del incidente, aislando el equipo o cortando la cuenta, antes de erradicarlo y preservando la evidencia."
+  - termino: "Triage"
+    definicion: "Clasificación rápida de un incidente o una muestra por gravedad, urgencia y confianza para decidir el siguiente paso."
+  - termino: "YARA"
+    definicion: "Lenguaje de reglas para identificar muestras por cadenas y patrones binarios. Se valida contra muestras conocidas."
+  - termino: "Análisis dinámico"
+    definicion: "Ejecutar la muestra en un entorno aislado y observar su comportamiento. El curso lo limita y nunca lo hace sobre el equipo real."
+  - termino: "Post mortem"
+    definicion: "Informe posterior, sin culpables, que documenta cronología, decisiones, causas y acciones de mejora."
+  - termino: "Resumen ejecutivo"
+    definicion: "Versión breve y sin jerga del informe para quien decide. Prioriza impacto, riesgo y recomendación."
+  - termino: "Remediación"
+    definicion: "Acción concreta que elimina o mitiga un hallazgo, con responsable, esfuerzo y verificación posterior."
