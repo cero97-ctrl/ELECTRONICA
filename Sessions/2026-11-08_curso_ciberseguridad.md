@@ -46,15 +46,23 @@ curso_ciberseguridad
   `README.md`; `git rm --cached` de los 4 PNG (siguen en disco).
 - `cursos/CYBERSEGURIDAD/docs/INFOGRAFIAS/README.md`: documenta la convención
   (una carpeta `SEM_NN` por semana, nombres en español, nunca `git add -f`).
+- **Reescritura de historia** (autorizada por el usuario) para sacar los PNG del
+  historial: `git filter-repo --invert-paths --path-glob
+  'cursos/CYBERSEGURIDAD/docs/INFOGRAFIAS/SEM_1/*.png'` sobre 321 commits (2,13 s
+  de reescritura, 141 s de repack). Resultado: 0 PNG en toda la historia,
+  `.git` 848 MB → 779 MB. Los 4 PNG siguen en disco (ignorados).
+- Respaldo previo en `/tmp`: `electronica_pre_rewrite.bundle` (805 MB, todas las
+  refs) y copia de los 4 PNG en `/tmp/infografias_sem1_backup/`.
+- `filter-repo` elimina el remoto `origin`: se volvió a añadir y se empujó con
+  `git push --force origin master` (`c20a92b` → `a6a579a`), upstream restaurado.
+- Consecuencia: los commits de esta sesión cambiaron de SHA —
+  `d6493c5` → `11b7288`, `c51c53e` → `34730e5`, `c20a92b` → `a6a579a`. Todo lo
+  anterior a `2a87e31` conserva su SHA.
 
 ## Pendientes
-- Commit + push de esta sesión: `d6493c5` (descriptor, 9 documentos semanales,
-  infografías y esta bitácora), empujado a `master`; árbol limpio.
-- Infografías de la semana 1 en `docs/INFOGRAFIAS/SEM_1/` (4 PNG, ~28 MB),
-  ya **fuera de git** (ignoradas, permanecen en disco y en MEGA).
-- Los ~28 MB siguen en el historial por el commit `d6493c5`. Reclamarlos exige
-  reescribir historia y `push --force`: no se hace sin confirmación explícita
-  del usuario.
+- `master` remoto en `a6a579a`; árbol limpio y sin PNG en la historia.
+- GitHub puede conservar objetos inalcanzables en caché un tiempo: el tamaño del
+  repositorio en la web puede tardar en reflejar los ~28 MB liberados.
 - Redactar los `ejemplos:` por grupo de las semanas 2–10 (36 bloques), semana a
   semana; la semana 2 (criptografía) es la siguiente natural.
 - `nota_minima: 5` confirmada por el usuario el 2026-11-08 y ya consta en el
