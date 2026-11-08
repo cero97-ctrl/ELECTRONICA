@@ -59,6 +59,14 @@ docs/REFERENCIA/**
 cursos/*/evaluaciones/resultados/**
 !cursos/*/evaluaciones/resultados/README.md
 
+# Exámenes de curso (controles y evaluación final): el repo es PÚBLICO y un
+# estudiante con el enlace ve el examen antes de rendirlo. Los .tex/.pdf de
+# `evaluaciones/` viven solo en local (MEGA los sincroniza) y se regeneran con
+# flujo_disenar_curso.py. La rúbrica (`rubrica_practica.yaml`) SÍ se publica: es
+# criterio de corrección, no la prueba. Misma pauta que resultados/ e INFOGRAFIAS.
+cursos/*/evaluaciones/*.tex
+cursos/*/evaluaciones/*.pdf
+
 # Infografías para estudiantes: material binario grande (varios MB por PNG) que
 # no se genera con ningún script y no aporta nada al clon del repositorio. Vive
 # solo en local (MEGA lo sincroniza). Se ignora todo salvo el README, que
