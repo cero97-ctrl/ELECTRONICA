@@ -564,6 +564,383 @@ semanas:
     - criterio: Explicación de qué propiedad cubre cada primitiva
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Cifrar, firmar y romper la integridad
+    intro: >-
+      El rol Rojo no confia en una primitiva hasta verla fallar: cifra un archivo,
+      altera un byte y comprueba que la integridad se detecta. La evidencia es la
+      salida real de cada paso, no la explicacion.
+    bloques:
+    - titulo: Cifrar con AES-256-GCM y guardar clave, nonce y hashes
+      texto: >-
+        GCM es cifrado autenticado: produce confidencialidad e integridad en una sola
+        operacion. La clave y el nonce se guardan aparte porque sin ellos no hay
+        reproduccion posible.
+      comandos: |
+        mkdir -p semana_02/evidencia
+        head -c 4096 /dev/urandom > semana_02/evidencia/mensaje.bin
+        python3 - <<'PY'
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        import os
+        clave = AESGCM.generate_key(bit_length=256)
+        nonce = os.urandom(12)
+        datos = open('semana_02/evidencia/mensaje.bin', 'rb').read()
+        open('semana_02/evidencia/clave.bin', 'wb').write(clave)
+        open('semana_02/evidencia/nonce.bin', 'wb').write(nonce)
+        open('semana_02/evidencia/mensaje.gcm', 'wb').write(
+            AESGCM(clave).encrypt(nonce, datos, None))
+        PY
+        sha256sum semana_02/evidencia/mensaje.bin semana_02/evidencia/mensaje.gcm \
+          > semana_02/evidencia/hashes.sha256
+    - titulo: Alterar un byte y demostrar que la autenticacion falla
+      texto: >-
+        Un solo bit cambiado debe hacer que el descifrado lance excepcion. Si no la
+        lanza, lo que se uso no era cifrado autenticado y el hallazgo se reporta.
+      comandos: |
+        cp semana_02/evidencia/mensaje.gcm semana_02/evidencia/alterado.gcm
+        python3 - <<'PY' | tee semana_02/evidencia/integridad.txt
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        p = 'semana_02/evidencia/alterado.gcm'
+        b = bytearray(open(p, 'rb').read())
+        b[20] ^= 0x01
+        open(p, 'wb').write(bytes(b))
+        try:
+            AESGCM(open('semana_02/evidencia/clave.bin','rb').read()).decrypt(
+                open('semana_02/evidencia/nonce.bin','rb').read(), bytes(b), None)
+            print('ERROR: el texto alterado se descifro')
+        except Exception as exc:
+            print('integridad rota:', type(exc).__name__)
+        PY
+    - titulo: Firmar un mensaje, verificar y repetir con el mensaje alterado
+      texto: >-
+        La firma cubre el hash del mensaje y la identidad de la clave. Se verifica el
+        original y despues se repite con otro contenido: la segunda verificacion debe
+        fallar y ese fallo es la prueba.
+      comandos: |
+        openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
+          -out semana_02/evidencia/firma.pem
+        openssl pkey -in semana_02/evidencia/firma.pem -pubout \
+          -out semana_02/evidencia/firma.pub.pem
+        openssl dgst -sha256 -sign semana_02/evidencia/firma.pem \
+          -out semana_02/evidencia/mensaje.sig semana_02/evidencia/mensaje.bin
+        openssl dgst -sha256 -verify semana_02/evidencia/firma.pub.pem \
+          -signature semana_02/evidencia/mensaje.sig semana_02/evidencia/mensaje.bin \
+          | tee semana_02/evidencia/firma_ok.txt
+        printf 'mensaje distinto\n' > semana_02/evidencia/mensaje_alterado.bin
+        openssl dgst -sha256 -verify semana_02/evidencia/firma.pub.pem \
+          -signature semana_02/evidencia/mensaje.sig \
+          semana_02/evidencia/mensaje_alterado.bin 2>&1 \
+          | tee semana_02/evidencia/firma_alterada.txt
+    - titulo: Medir el coste de PBKDF2 y elegir iteraciones con datos
+      texto: >-
+        El coste de derivar una clave es una defensa contra la fuerza bruta, pero
+        tambien una condicion de usabilidad. Se mide tres veces cada valor y se
+        reporta la mediana, no la mejor cifra.
+      comandos: |
+        python3 - <<'PY' | tee semana_02/evidencia/pbkdf2.txt
+        import hashlib, statistics, time
+        for iteraciones in (10_000, 100_000, 600_000):
+            tiempos = []
+            for _ in range(3):
+                t = time.perf_counter()
+                hashlib.pbkdf2_hmac('sha256', b'clave-de-prueba', b'sal-fija',
+                                    iteraciones)
+                tiempos.append(time.perf_counter() - t)
+            print(iteraciones, round(statistics.median(tiempos), 3), 's')
+        PY
+    tabla:
+      titulo: Primitiva, operacion y propiedad garantizada
+      nota: >-
+        La ultima columna se llena con lo observado en esta practica; si una fila no se
+        ejecuto, se marca como no verificada en vez de suponer el resultado.
+      columnas: [Primitiva, Operacion, Propiedad, Si se altera un byte, Resultado observado]
+      anchos: [2.6, 3.0, 3.0, 2.9, 3.0]
+      filas:
+      - [AES-256-GCM, 'AESGCM.encrypt y decrypt', 'Confidencialidad e integridad', 'El descifrado lanza excepcion', 'Falla detectada y registrada']
+      - [RSA-2048 con SHA-256, 'openssl dgst -sign', 'Autenticidad e integridad', 'La verificacion no valida', 'Firma rechazada']
+      - [SHA-256, 'sha256sum sobre el archivo', 'Integridad del archivo', 'El resumen cambia por completo', 'Cambio evidente']
+      - [PBKDF2-HMAC-SHA256, 'hashlib.pbkdf2_hmac', 'Resistencia a fuerza bruta', 'No aplica a la medicion', '600000 itera unas 60 veces mas']
+    entregable: >-
+      El informe enlaza cada archivo de evidencia con el comando que lo produjo y
+      explica, con la tabla, que propiedad cubre cada primitiva y que se rompe al
+      alterar un byte.
+    estructura: |
+      semana_02/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- mensaje.bin
+      |   |-- mensaje.gcm
+      |   |-- clave.bin
+      |   |-- nonce.bin
+      |   |-- alterado.gcm
+      |   |-- integridad.txt
+      |   |-- firma_ok.txt
+      |   |-- firma_alterada.txt
+      |   |-- pbkdf2.txt
+      |   `-- hashes.sha256
+      `-- README.md
+    comprobaciones:
+    - El fallo de integridad se reproduce con el comando del informe y el archivo alterado.
+    - La verificacion de la firma alterada aparece en evidencia/ con su salida real.
+    - La tabla distingue confidencialidad, integridad y autenticidad sin confundirlas.
+    - Ninguna clave privada ni contrasena real esta en el repositorio.
+    avisos:
+    - La clave y el nonce de prueba son desechables; no se reutilizan fuera de la practica.
+    - Un byte alterado tambien puede romper el padding: se distingue ese error del fallo de autenticacion.
+  - grupo: 2
+    titulo: Diagnosticar TLS y elegir parametros con medicion
+    intro: >-
+      El rol Azul parte de una configuracion que ya existe y comprueba si valida: lee
+      el certificado, la cadena y el algoritmo, y elige los parametros de derivacion con
+      una medicion propia.
+    bloques:
+    - titulo: Fijar la linea base del certificado y la cadena
+      texto: >-
+        Se inspecciona un sitio real y se guarda la salida completa. Emisor, fechas y
+        algoritmo se leen del certificado, no de la pagina web.
+      comandos: |
+        mkdir -p semana_02/evidencia
+        openssl s_client -connect www.example.com:443 -servername www.example.com \
+          -verify_return_error </dev/null > semana_02/evidencia/tls_handshake.txt 2>&1
+        openssl s_client -connect www.example.com:443 -servername www.example.com \
+          -showcerts </dev/null 2>/dev/null \
+          | openssl x509 -noout -issuer -subject -dates \
+          | tee semana_02/evidencia/cert_resumen.txt
+    - titulo: Leer algoritmo, clave publica y verificacion de la cadena
+      texto: >-
+        La cadena se valida contra el almacen del sistema. Si falla la validacion, esa
+        linea del registro es el hallazgo: no se cambia el comando para que pase.
+      comandos: |
+        openssl s_client -connect www.example.com:443 -servername www.example.com \
+          -showcerts </dev/null 2>/dev/null | openssl x509 -noout -text \
+          | grep -E 'Signature Algorithm|Public-Key|DNS:' \
+          | tee semana_02/evidencia/cert_detalle.txt
+        openssl s_client -connect www.example.com:443 -servername www.example.com \
+          -CAfile /etc/ssl/certs/ca-certificates.crt -verify_return_error </dev/null \
+          >/dev/null 2>semana_02/evidencia/cadena.txt; \
+          grep -E 'Verify return code' semana_02/evidencia/cadena.txt
+    - titulo: Comparar PBKDF2 y Argon2 con el mismo criterio
+      texto: >-
+        Se mide el coste de cada opcion con el mismo hardware y se elige la que sostiene
+        el mismo tiempo objetivo con mas resistencia. Si Argon2 no esta instalado, se
+        documenta la limitacion y se decide solo con PBKDF2.
+      comandos: |
+        python3 - <<'PY' | tee semana_02/evidencia/kdf_comparativa.txt
+        import hashlib, time
+        for iteraciones in (100_000, 600_000):
+            t = time.perf_counter()
+            hashlib.pbkdf2_hmac('sha256', b'clave', b'sal', iteraciones)
+            print('pbkdf2', iteraciones, round(time.perf_counter() - t, 3), 's')
+        try:
+            from argon2.low_level import hash_secret_raw, Type
+            t = time.perf_counter()
+            hash_secret_raw(b'clave', b'sal', time_cost=3, memory_cost=65536,
+                            parallelism=4, hash_len=32, type=Type.ID)
+            print('argon2id', round(time.perf_counter() - t, 3), 's')
+        except ImportError:
+            print('argon2 no disponible: se documenta como limitacion')
+        PY
+    - titulo: Verificar que el repositorio no filtra secretos
+      texto: >-
+        Antes de entregar se busca material sensible con patrones y con el historial de
+        git. Un secreto en un commit viejo sigue siendo un secreto expuesto.
+      comandos: |
+        git grep -nE 'BEGIN (RSA|OPENSSH|EC|PRIVATE) PRIVATE KEY' || true
+        git grep -nEi '(api[_-]?key|secret|token|password)[[:space:]]*=' || true
+        git log --all --oneline -- semana_02/evidencia/*.pem || true
+    tabla:
+      titulo: Configuracion observada y decision
+      nota: >-
+        La decision se justifica con la salida pegada; "correcto" sin evidencia no se
+        acepta como verificacion.
+      columnas: [Elemento, Estado observado, Riesgo, Decision, Verificacion]
+      anchos: [2.4, 3.2, 2.4, 3.2, 2.9]
+      filas:
+      - [Certificado, 'Emisor, fechas y DNS leidos', 'Caducidad o nombre incorrecto', 'Se documenta y se vigila la fecha', 'Salida en cert_resumen.txt']
+      - [Cadena, 'Verify return code 0 contra el almacen del sistema', 'Cadena incompleta', 'Sin accion si valida', 'Salida en cadena.txt']
+      - [Algoritmo de firma, 'Leido del certificado', 'Algoritmo debil o clave corta', 'Se reporta si es menor de 2048 bits', 'Linea en cert_detalle.txt']
+      - [KDF, 'Tiempo medido por iteraciones', 'Coste insuficiente', '600000 iteraciones como minimo', 'Tabla de tiempos']
+      - [Secretos, 'Busqueda en arbol e historial', 'Clave privada versionada', 'Se retira y se rota', 'git grep sin resultados']
+    entregable: >-
+      El informe incluye la lectura del certificado y su cadena, la comparacion de KDF
+      con tiempos propios y la lista de verificaciones ejecutadas antes de entregar.
+    estructura: |
+      semana_02/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- tls_handshake.txt
+      |   |-- cert_resumen.txt
+      |   |-- cert_detalle.txt
+      |   |-- cadena.txt
+      |   |-- kdf_comparativa.txt
+      |   `-- secretos.txt
+      `-- README.md
+    comprobaciones:
+    - La validacion de la cadena se ejecuta con el almacen del sistema, no con uno propio.
+    - La eleccion de iteraciones se apoya en tiempos medidos y repetidos.
+    - La busqueda de secretos cubre el historial, no solo el arbol actual.
+    - Si Argon2 no esta disponible, la limitacion esta escrita.
+    avisos:
+    - No se pega la clave privada ni el contenido del almacen de confianza en el informe.
+    - Un certificado valido no implica que el servicio sea seguro: se separan ambos juicios.
+  - grupo: 3
+    titulo: Instrumentar las operaciones criptograficas
+    intro: >-
+      El rol Púrpura no cifra por cifrar: define que señal deberia quedar registrada,
+      ejecuta la operacion y comprueba que el registro permite reconstruirla sin
+      exponer secretos.
+    bloques:
+    - titulo: Envolver las operaciones y registrar solo metadatos
+      texto: >-
+        El registro guarda operacion, marca de tiempo, identificador de clave y
+        resultado. Nunca la clave, el nonce completo ni el texto claro.
+      comandos: |
+        mkdir -p semana_02/evidencia
+        cat > semana_02/registro.py <<'PY'
+        import json, sys, time
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        import os
+
+        def registrar(operacion, clave_id, resultado):
+            linea = {"ts": time.time(), "op": operacion,
+                     "clave_id": clave_id, "resultado": resultado}
+            with open('semana_02/evidencia/cripto.jsonl', 'a') as fh:
+                fh.write(json.dumps(linea) + "\n")
+
+        clave = AESGCM.generate_key(bit_length=256)
+        nonce = os.urandom(12)
+        datos = open('semana_02/evidencia/mensaje.bin', 'rb').read()
+        AESGCM(clave).encrypt(nonce, datos, None)
+        registrar('aes-gcm-cifrar', 'clave-01', 'ok')
+        try:
+            AESGCM(clave).decrypt(nonce, datos, None)
+            registrar('aes-gcm-cifrar', 'clave-01', 'ok')
+        except Exception:
+            registrar('aes-gcm-cifrar', 'clave-01', 'error')
+        PY
+        python3 semana_02/registro.py
+    - titulo: Medir reutilizacion de nonce en cien cifrados
+      texto: >-
+        Repetir un nonce con la misma clave rompe GCM por completo. El script genera
+        cien nonces y verifica que no se repite ninguno; el resultado va al registro.
+      comandos: |
+        python3 - <<'PY' | tee semana_02/evidencia/nonces.txt
+        import os
+        nonces = [os.urandom(12) for _ in range(100)]
+        print('total', len(nonces))
+        print('unicos', len(set(nonces)))
+        print('reutilizados', len(nonces) - len(set(nonces)))
+        PY
+    - titulo: Buscar material criptografico expuesto
+      texto: >-
+        Se buscan claves privadas y cadenas con alta entropia en el arbol y en el
+        historial. La deteccion mira el repositorio, no solo los archivos del informe.
+      comandos: |
+        git grep -nE 'BEGIN (RSA|OPENSSH|EC|PRIVATE) PRIVATE KEY' \
+          | tee semana_02/evidencia/secretos.txt || true
+        git grep -nEi '(api[_-]?key|token)[[:space:]]*=[[:space:]]*[A-Za-z0-9/+]{20,}' \
+          >> semana_02/evidencia/secretos.txt || true
+    tabla:
+      titulo: Señal, fuente y umbral de alerta
+      nota: >-
+        El umbral se declara antes de medir; si se ajusta despues de ver el resultado,
+        se anota el cambio y el motivo.
+      columnas: [Senal, Fuente, Registro, Umbral, Accion]
+      anchos: [2.4, 2.5, 3.2, 2.4, 3.4]
+      filas:
+      - [Cifrado fallido, 'Envoltorio de AESGCM', 'cripto.jsonl resultado error', 'Mas de 3 en 5 minutos', 'Revisar clave y nonce']
+      - [Nonce repetido, 'Generador de 100 cifrados', 'nonces.txt reutilizados', 'Cualquier valor mayor que 0', 'Rotar clave de inmediato']
+      - [Clave privada en repo, 'git grep en arbol e historial', 'secretos.txt', 'Cualquier coincidencia', 'Retirar, rotar y avisar']
+      - [KDF por debajo del objetivo, 'Medicion de tiempos', 'pbkdf2.txt', 'Menos de 0,2 s', 'Subir iteraciones']
+    entregable: >-
+      El informe presenta el envoltorio, un extracto del registro JSONL y la tabla de
+      señales con su umbral, ademas de la busqueda de material expuesto.
+    estructura: |
+      semana_02/
+      |-- informe.md
+      |-- registro.py
+      |-- evidencia/
+      |   |-- cripto.jsonl
+      |   |-- nonces.txt
+      |   `-- secretos.txt
+      `-- README.md
+    comprobaciones:
+    - El registro no contiene claves, nonces completos ni texto claro.
+    - La comprobacion de nonces se ejecuta y su salida esta en evidencia/.
+    - Cada señal tiene un umbral declarado y una accion asociada.
+    - La busqueda de secretos incluye el historial de git.
+    avisos:
+    - Registrar metadatos de una operacion sensible tambien es dato personal: se limita a lo necesario.
+    - Un nonce de prueba no se reutiliza en produccion aunque el registro diga ok.
+  - grupo: 4
+    titulo: Custodia de secretos y admisibilidad de la evidencia
+    intro: >-
+      El rol Legal ordena lo que los demas producen: quien custodia cada secreto, quien
+      puede usarlo, cuanto se conserva y que evidencia seria admisible si el hallazgo
+      termina en un procedimiento.
+    bloques:
+    - titulo: Inventariar los secretos del laboratorio
+      texto: >-
+        Se listan credenciales, claves y tokens que existen en el entorno, con su
+        soporte y responsable. No se copia su valor en el inventario: se identifica,
+        no se duplica.
+      comandos: |
+        mkdir -p semana_02/evidencia
+        docker compose ps --format json > semana_02/evidencia/servicios.json
+        printf 'inventario de secretos: solo identificadores, nunca valores\n' \
+          > semana_02/evidencia/secretos_politica.txt
+    - titulo: Definir custodia, rotacion y acceso
+      texto: >-
+        Cada secreto tiene un custodio nombrado, una frecuencia de rotacion y una regla
+        de acceso. Un secreto sin custodio es un secreto sin dueño y, por tanto, sin
+        responsabilidad.
+    - titulo: Registrar la cadena de custodia de la evidencia
+      texto: >-
+        El formulario anota quien adquiere, cuando, con que herramienta y con que hash.
+        Cualquier transferencia posterior se registra con hora y firma.
+      comandos: |
+        sha256sum semana_02/evidencia/*.txt semana_02/evidencia/*.json \
+          > semana_02/evidencia/custodia.sha256
+        date -u +%Y-%m-%dT%H:%M:%SZ >> semana_02/evidencia/registro_custodia.txt
+        id -un >> semana_02/evidencia/registro_custodia.txt
+    - titulo: Analizar admisibilidad y tipificar el caso
+      texto: >-
+        Se separa lo que se obtuvo con autorizacion de lo que no. La evidencia sin
+        autorizacion no se "arregla" con un informe mejor: se excluye y se explica por
+        que.
+    tabla:
+      titulo: Secreto, custodia y base de la decision
+      nota: >-
+        La columna normativa cita la fuente usada en la semana 3; si el grupo no tiene
+        la norma a mano, escribe "pendiente de verificar" en vez de inventar el articulo.
+      columnas: [Secreto, Soporte, Custodio, Rotacion, Base de la decision]
+      anchos: [2.8, 2.6, 2.4, 2.2, 4.2]
+      filas:
+      - [Credenciales de DVWA, 'Contenedor del laboratorio', 'Grupo 2', 'Por practica', 'Dato de prueba, no personal']
+      - [Clave de firma RSA, 'Archivo local con permisos 600', 'Grupo 1', 'Mensual o ante incidente', 'Autenticidad del entregable']
+      - [Token de GitHub del grupo, 'Gestor de secretos del repositorio', 'Grupo 4', 'Trimestral', 'Acceso al repositorio privado']
+      - [Evidencia de la practica, 'Carpeta con hashes y registro', 'Grupo 4', 'Hasta cerrar el curso', 'Trazabilidad y cadena de custodia']
+    entregable: >-
+      El informe entrega el inventario, la politica de custodia y rotacion, el registro
+      con hashes y el juicio de admisibilidad del caso, separando hechos de hipotesis.
+    estructura: |
+      semana_02/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- servicios.json
+      |   |-- secretos_politica.txt
+      |   |-- custodia.sha256
+      |   `-- registro_custodia.txt
+      `-- README.md
+    comprobaciones:
+    - El inventario identifica secretos sin transcribir su valor.
+    - Cada secreto tiene custodio y frecuencia de rotacion declarados.
+    - El registro de custodia incluye hash, fecha y usuario que adquirio.
+    - El juicio de admisibilidad distingue lo autorizado de lo que no lo esta.
+    avisos:
+    - No se sube al repositorio ningun valor de credencial, ni siquiera de laboratorio.
+    - La evidencia sin autorizacion se documenta como excluida, no se intenta justificar.
 - numero: 3
   fase: 1
   titulo: Marco legal, ético y normativo
@@ -610,6 +987,278 @@ semanas:
     - criterio: Código de ética firmado individualmente
       peso: 1.0
   evaluacion: control_fase_1
+  ejemplos:
+  - grupo: 1
+    titulo: Alcance, activos y reglas de enfrentamiento
+    intro: >-
+      El rol Rojo define primero el campo de juego: que se toca, que no se toca, en que
+      ventana y que se hace si aparece algo critico. Sin eso, cualquier hallazgo es
+      inutilizable aunque sea cierto.
+    bloques:
+    - titulo: Convertir el laboratorio en un alcance escrito
+      texto: >-
+        El alcance se escribe con activos observados, no con lo que se recuerda. Cada
+        linea del inventario se puede rastrear a una salida de `docker compose ps`.
+      comandos: |
+        mkdir -p semana_03/evidencia
+        docker compose ps > semana_03/evidencia/activos_observados.txt
+        date -u +%Y-%m-%dT%H:%M:%SZ > semana_03/evidencia/ventana.txt
+        git log -1 --format='%H %ad' >> semana_03/evidencia/ventana.txt
+        sha256sum semana_03/activos_observados.txt \
+          > semana_03/evidencia/activos_observados.sha256
+    - titulo: Separar incluido, excluido y fuera de alcance
+      texto: >-
+        Excluir es tan importante como incluir: la red del campus, los servicios de la
+        universidad y cualquier host que no sea 127.0.0.1 quedan fuera por escrito.
+    - titulo: Escribir las reglas de enfrentamiento
+      texto: >-
+        Las reglas dicen que hacer ante un hallazgo critico y ante datos personales.
+        No son recomendaciones: son detenciones obligatorias con un responsable
+        nombrado y un canal de aviso.
+    - titulo: Firmar y sellar la autorizacion
+      texto: >-
+        La autorizacion se firma antes de ejecutar el primer comando. Su hash y su
+        fecha entran en la evidencia para que nadie pueda sustituirla despues.
+      comandos: |
+        sha256sum semana_03/autorizacion.md > semana_03/evidencia/autorizacion.sha256
+        cat semana_03/evidencia/autorizacion.sha256
+    tabla:
+      titulo: Activo, decision y limite aplicable
+      nota: >-
+        La columna de limite se llena con una regla operativa concreta; "con cuidado" no
+        es un limite verificable.
+      columnas: [Activo, Incluido, Limite operativo, Ventana, Responsable]
+      anchos: [2.8, 1.9, 4.2, 2.8, 2.6]
+      filas:
+      - [DVWA en 127.0.0.1:8081, 'Si', 'Pruebas de inyeccion sin borrar datos', 'Sesion de laboratorio', 'Grupo 1']
+      - [Juice Shop en 127.0.0.1:3000, 'Si', 'Sin denegacion de servicio ni fuerza bruta masiva', 'Sesion de laboratorio', 'Grupo 1']
+      - [SSH del contenedor en 2222, 'Si', 'Maximo 20 intentos por cuenta', 'Sesion de laboratorio', 'Grupo 1']
+      - [Red del campus, 'No', 'Fuera de alcance por escrito', 'No aplica', 'Grupo 1']
+      - [Datos personales reales, 'No', 'Si aparecen, se detiene y se avisa', 'Inmediato', 'Grupo 1']
+    entregable: >-
+      Se entrega la autorizacion firmada con activos, exclusiones, ventana y reglas de
+      enfrentamiento, mas el hash que la sella y el inventario que la respalda.
+    estructura: |
+      semana_03/
+      |-- autorizacion.md
+      |-- informe.md
+      |-- evidencia/
+      |   |-- activos_observados.txt
+      |   |-- activos_observados.sha256
+      |   |-- ventana.txt
+      |   `-- autorizacion.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada activo incluido aparece en la salida de docker compose ps.
+    - Las exclusiones nombran hosts concretos, no categorias vagas.
+    - Las reglas de enfrentamiento tienen responsable y canal de aviso.
+    - El hash de la autorizacion se calculo antes de ejecutar cualquier prueba.
+    avisos:
+    - Un hallazgo critico obliga a detenerse y avisar antes de seguir explorando.
+    - La autorizacion no se modifica despues de firmada; si cambia el alcance, se firma otra.
+  - grupo: 2
+    titulo: Autorizacion con limites verificables
+    intro: >-
+      El rol Azul escribe la autorizacion pensando en como se comprueba: tasas maximas,
+      herramientas permitidas y un plan de vuelta atras. Una autorizacion sin limites
+      medibles no protege a nadie.
+    bloques:
+    - titulo: Declarar herramientas y tasas permitidas
+      texto: >-
+        La tasa se declara antes de medir y se aplica en el comando. Si el escaneo tarda
+        mas, es correcto: el limite manda sobre la prisa.
+      comandos: |
+        mkdir -p semana_03/evidencia
+        nmap --version | head -1 > semana_03/evidencia/herramientas.txt
+        nmap -sT -p 8081,3000,2222 --max-rate 20 127.0.0.1 \
+          -oN semana_03/evidencia/roe_scan.txt
+        grep -E 'Nmap scan report|Not shown|elapsed' \
+          semana_03/evidencia/roe_scan.txt
+    - titulo: Fijar el plan de vuelta atras
+      texto: >-
+        Antes de tocar configuracion se guarda el estado que permite restaurarla. Si el
+        servicio no arranca despues del cambio, ese archivo es la unica salida.
+      comandos: |
+        docker exec objetivo-web cp /etc/apache2/apache2.conf \
+          /tmp/apache2.conf.bak
+        docker exec objetivo-web sha256sum /tmp/apache2.conf.bak \
+          > semana_03/evidencia/rollback.sha256
+    - titulo: Definir criterios de parada
+      texto: >-
+        Se declaran tres detenciones: datos personales, indisponibilidad de un servicio
+        y hallazgo que permita acceso fuera del alcance. Cada una tiene quien decide y
+        como se comunica.
+    - titulo: Verificar que la autorizacion cubre lo que se ejecuta
+      texto: >-
+        Se compara comando por comando con el alcance. Lo que no esta cubierto no se
+        ejecuta, aunque parezca inofensivo.
+    tabla:
+      titulo: Limite declarado y como se verifica
+      nota: >-
+        La verificacion se hace con una salida del propio comando, no con una promesa en
+        el documento.
+      columnas: [Limite, Valor, Verificacion, Evidencia, Si se incumple]
+      anchos: [2.4, 1.8, 3.6, 2.8, 3.4]
+      filas:
+      - [Tasa de sondeo, '20 paquetes por segundo', 'Opcion max-rate del comando', 'roe_scan.txt', 'Se detiene y se repite']
+      - [Intentos SSH, '20 por cuenta', 'Contador del propio script', 'ssh_intentos.txt', 'Se aborta la prueba']
+      - [Servicios objetivo, 'Solo 8081, 3000 y 2222', 'Lista de puertos del comando', 'roe_scan.txt', 'No se ejecuta']
+      - [Vuelta atras, 'Copia previa y hash', 'sha256sum de la copia', 'rollback.sha256', 'Se restaura antes de seguir']
+    entregable: >-
+      La autorizacion incluye herramientas, tasas, criterios de parada y plan de vuelta
+      atras, con una verificacion ejecutada para cada limite.
+    estructura: |
+      semana_03/
+      |-- autorizacion.md
+      |-- informe.md
+      |-- evidencia/
+      |   |-- herramientas.txt
+      |   |-- roe_scan.txt
+      |   `-- rollback.sha256
+      `-- README.md
+    comprobaciones:
+    - La tasa declarada aparece en el comando y en la salida.
+    - El plan de vuelta atras se probo al menos una vez sin romper el laboratorio.
+    - Los criterios de parada nombran quien decide.
+    - Lo ejecutado no excede lo autorizado, comparado linea por linea.
+    avisos:
+    - Un escaneo lento por respetar la tasa no es un fallo de la practica.
+    - Restaurar un servicio modificado cuenta como cambio: se documenta el comando.
+  - grupo: 3
+    titulo: Trazabilidad de la prueba y aviso de hallazgos
+    intro: >-
+      El rol Púrpura define que se registra mientras se prueba y quien recibe el aviso.
+      Sin trazabilidad, la autorizacion no se puede demostrar cumplida.
+    bloques:
+    - titulo: Registrar inicio, comandos y fin de la ventana
+      texto: >-
+        Se abre un registro con marca de tiempo antes del primer comando y se cierra al
+        terminar. Cada entrada dice quien ejecuto y sobre que activo.
+      comandos: |
+        mkdir -p semana_03/evidencia
+        printf '%s inicio %s\n' "$(date -u +%FT%TZ)" "$(id -un)" \
+          > semana_03/evidencia/bitacora.txt
+        docker compose ps >> semana_03/evidencia/bitacora.txt
+    - titulo: Definir la ruta de escalado de un hallazgo
+      texto: >-
+        El escalado tiene cuatro datos: quien avisa, a quien, por que canal y en cuanto
+        tiempo. Un hallazgo critico no espera al informe semanal.
+    - titulo: Conservar los eventos del servicio durante la prueba
+      texto: >-
+        Se guardan los registros del contenedor de la ventana de pruebas. Es la prueba
+        de que la actividad observada corresponde a la sesion autorizada.
+      comandos: |
+        docker logs --since 30m objetivo-linux \
+          > semana_03/evidencia/eventos_linux.txt 2>&1 || true
+        docker logs --since 30m objetivo-web \
+          >> semana_03/evidencia/eventos_web.txt 2>&1 || true
+        sha256sum semana_03/evidencia/bitacora.txt \
+          >> semana_03/evidencia/bitacora.sha256
+    - titulo: Cerrar la bitacora y verificar la integridad
+      texto: >-
+        Al cerrar se anota el resultado y el hash de todo lo producido. Si el hash no
+        coincide en la revision, la evidencia se marca como no confiable.
+    tabla:
+      titulo: Evento, aviso y plazo
+      nota: >-
+        Los plazos se declaran en minutos u horas; "lo antes posible" no se puede
+        auditar.
+      columnas: [Evento, Avisa a, Canal, Plazo, Registro]
+      anchos: [2.8, 2.6, 2.8, 1.8, 4.0]
+      filas:
+      - [Hallazgo critico, 'Docente y Grupo 4', 'Canal del curso', '15 minutos', 'bitacora.txt']
+      - [Datos personales, 'Docente', 'Canal del curso', 'Inmediato', 'bitacora.txt']
+      - [Servicio caido, 'Grupo 2', 'Chat del grupo', '10 minutos', 'eventos_web.txt']
+      - [Fin de la ventana, 'Grupo 4', 'Repositorio', 'Al cerrar', 'bitacora.sha256']
+    entregable: >-
+      Se entrega la bitacora con inicio, comandos, eventos, cierre y hashes, y la ruta
+      de escalado con sus plazos.
+    estructura: |
+      semana_03/
+      |-- autorizacion.md
+      |-- informe.md
+      |-- evidencia/
+      |   |-- bitacora.txt
+      |   |-- bitacora.sha256
+      |   |-- eventos_linux.txt
+      |   `-- eventos_web.txt
+      `-- README.md
+    comprobaciones:
+    - La bitacora tiene hora de inicio y de cierre en UTC.
+    - Cada aviso registrado indica destinatario, canal y plazo.
+    - Los eventos conservados cubren la misma ventana que la prueba.
+    - El hash final permite detectar cualquier cambio posterior.
+    avisos:
+    - Los registros pueden contener datos personales: se anonimizan antes de versionarlos.
+    - La bitacora no se reescribe despues del cierre; las correcciones se anexan.
+  - grupo: 4
+    titulo: Tipificacion, admisibilidad y codigo de etica
+    intro: >-
+      El rol Legal traduce el caso ficticio a obligaciones concretas: que conducta
+      encaja en que tipo, que evidencia se sostiene y cual se contamino. La etica se
+      firma de forma individual, no en nombre del grupo.
+    bloques:
+    - titulo: Separar hechos, pruebas y conclusiones del caso
+      texto: >-
+        Primero se transcribe lo que ocurrio, sin calificar. Despues se marca que parte
+        tiene respaldo documental y que parte es inferencia. Mezclarlas es el error que
+        hace inadmisible un informe.
+    - titulo: Tipificar sin inventar articulos
+      texto: >-
+        El tipo se identifica por su denominacion y se cita el articulo solo despues de
+        verificarlo en el texto de la norma. Si no se pudo verificar, se escribe
+        "pendiente de verificar" y se explica que falta.
+      comandos: |
+        mkdir -p semana_03/evidencia
+        sha256sum semana_03/norma.pdf > semana_03/evidencia/norma.sha256
+        printf 'norma verificada: %s\n' "$(date -u +%FT%TZ)" \
+          > semana_03/evidencia/verificacion_norma.txt
+    - titulo: Decidir que evidencia es admisible
+      texto: >-
+        Se evalua cada pieza con tres preguntas: se obtuvo con autorizacion, se conservo
+        su integridad y se puede rastrear su origen. Si falla una, se excluye y se dice
+        por que.
+    - titulo: Firmar el codigo de etica de forma individual
+      texto: >-
+        Cada estudiante firma su propia copia. La firma del grupo no sustituye la
+        individual: la responsabilidad no se delega.
+      comandos: |
+        sha256sum semana_03/codigo_etica_firmado_*.pdf \
+          > semana_03/evidencia/etica.sha256
+    tabla:
+      titulo: Conducta, tipo aplicable y evidencia
+      nota: >-
+        El tipo se escribe por su denominacion; el numero de articulo solo si se verifico
+        contra la norma. La ultima columna justifica la decision, no la repite.
+      columnas: [Conducta, Tipo aplicable, Evidencia, Admisible, Motivo]
+      anchos: [3.2, 3.0, 2.6, 1.6, 3.6]
+      filas:
+      - [Acceso sin autorizacion, 'Acceso indebido a sistema protegido', 'Registro del servidor', 'No', 'Se obtuvo fuera del alcance']
+      - [Copia de datos de clientes, 'Violacion de privacidad de datos', 'Archivo sin hash', 'No', 'Integridad no verificable']
+      - [Prueba dentro del alcance, 'Actividad autorizada', 'Bitacora y hashes', 'Si', 'Autorizacion previa y trazabilidad']
+      - [Captura publicada sin anonimizar, 'Infraccion del codigo de etica', 'Publicacion en repositorio', 'No', 'Expone datos de terceros']
+    entregable: >-
+      Se entregan el analisis del caso, la tabla de admisibilidad con motivo por pieza,
+      la verificacion de la norma y el codigo de etica firmado por cada estudiante.
+    estructura: |
+      semana_03/
+      |-- autorizacion.md
+      |-- analisis_caso.md
+      |-- codigo_etica_firmado_1.pdf
+      |-- codigo_etica_firmado_2.pdf
+      |-- evidencia/
+      |   |-- norma.sha256
+      |   |-- verificacion_norma.txt
+      |   `-- etica.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada tipo aplicable cita la fuente verificada o declara que falta verificarla.
+    - Cada pieza de evidencia tiene decision y motivo.
+    - Hay un codigo de etica firmado por cada integrante.
+    - El analisis distingue hecho, inferencia y conclusion.
+    avisos:
+    - Publicar capturas con datos de terceros es una infraccion del codigo, no un detalle de estilo.
+    - La verificacion de la norma se hace sobre el PDF entregado, no sobre una fuente de memoria.
 - numero: 4
   fase: 2
   titulo: Reconocimiento, OSINT y escaneo de puertos
@@ -663,6 +1312,314 @@ semanas:
     - criterio: Código con type hints, docstrings y manejo de errores
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Medir lo expuesto y comprobar que el control lo reduce
+    intro: >-
+      El rol Azul no se queda en el inventario: fija una linea base, aplica un control
+      sobre un puerto concreto y repite la misma medicion. Lo que no se repite igual no
+      demuestra nada.
+    bloques:
+    - titulo: Fijar la linea base con la tasa autorizada
+      texto: >-
+        La primera medicion se hace antes de tocar nada y con el limite de tasa del
+        alcance. Se guarda la salida cruda y su hash.
+      comandos: |
+        mkdir -p semana_04/evidencia
+        nmap -sT -p 8081,3000,2222 --max-rate 20 127.0.0.1 \
+          -oN semana_04/evidencia/antes.txt
+        sha256sum semana_04/evidencia/antes.txt > semana_04/evidencia/antes.sha256
+    - titulo: Aplicar un control sobre un puerto
+      texto: >-
+        Se elige un control barato y reversible: denegar el puerto 2222 en el cortafuegos
+        del host. Si el servicio debe seguir disponible para el grupo, se documenta la
+        excepcion y no se aplica.
+      comandos: |
+        sudo nft add table inet filtro 2>/dev/null || true
+        sudo nft 'add chain inet filtro entrada { type filter hook input priority 0; }' 2>/dev/null || true
+        sudo nft add rule inet filtro entrada tcp dport 2222 drop
+        sudo nft list chain inet filtro entrada | tee semana_04/evidencia/regla.txt
+    - titulo: Repetir la medicion y diferenciar
+      texto: >-
+        El mismo comando, sobre el mismo objetivo, con el control activo. El diff entre
+        las dos salidas es la evidencia; si no cambia, el control no estaba donde se
+        creia.
+      comandos: |
+        nmap -sT -p 8081,3000,2222 --max-rate 20 127.0.0.1 \
+          -oN semana_04/evidencia/despues.txt
+        diff -u semana_04/evidencia/antes.txt semana_04/evidencia/despues.txt \
+          | tee semana_04/evidencia/diff.txt
+    - titulo: Revertir el control y dejar el laboratorio como estaba
+      texto: >-
+        Toda prueba tiene vuelta atras. Se elimina la regla, se verifica que el puerto
+        responde otra vez y se anota el comando exacto que se uso.
+      comandos: |
+        sudo nft delete rule inet filtro entrada tcp dport 2222 drop 2>/dev/null || true
+        nmap -sT -p 2222 127.0.0.1 -oN semana_04/evidencia/revertido.txt
+    tabla:
+      titulo: Puerto, estado y efecto del control
+      nota: >-
+        "Cerrado" y "filtrado" no son lo mismo: el estado se copia de la salida de nmap,
+        no se deduce.
+      columnas: [Puerto, Servicio, Antes, Control, Despues]
+      anchos: [1.5, 2.4, 2.6, 4.4, 3.0]
+      filas:
+      - ['8081', 'DVWA', 'Abierto', 'Sin control: fuera del ensayo', 'Abierto']
+      - ['3000', 'Juice Shop', 'Abierto', 'Sin control: fuera del ensayo', 'Abierto']
+      - ['2222', 'SSH', 'Abierto', 'Regla nftables con drop', 'Filtrado']
+    entregable: >-
+      El informe incluye la linea base, el control aplicado con su regla, la medicion
+      posterior, el diff y la reversion verificada.
+    estructura: |
+      semana_04/
+      |-- informe.md
+      |-- escaner.py
+      |-- evidencia/
+      |   |-- antes.txt
+      |   |-- despues.txt
+      |   |-- revertido.txt
+      |   |-- regla.txt
+      |   `-- diff.txt
+      `-- README.md
+    comprobaciones:
+    - Antes y despues usan exactamente el mismo comando y la misma tasa.
+    - La regla del cortafuegos se muestra con sudo nft list.
+    - La reversion se verifico y el servicio volvio a responder.
+    - El estado reportado coincide con la salida de nmap.
+    avisos:
+    - Modificar el cortafuegos del host puede afectar otras sesiones: se revierte al terminar.
+    - Si el grupo necesita el puerto 2222, se elige otro puerto o se documenta la excepcion.
+  - grupo: 2
+    titulo: Ver el escaneo desde el otro lado
+    intro: >-
+      El rol Púrpura instrumenta el objetivo: captura el trafico que produce su propio
+      escaneo, lo cuenta y lo clasifica. La pregunta no es "que puertos hay" sino "como
+      se ve este escaneo en el registro".
+    bloques:
+    - titulo: Capturar el trafico durante un escaneo corto
+      texto: >-
+        Se captura solo la interfaz de loopback y solo los puertos del alcance. La
+        captura se detiene sola para no crecer sin control.
+      comandos: |
+        mkdir -p semana_04/evidencia
+        sudo timeout 20 tcpdump -i lo -nn -w semana_04/evidencia/captura.pcap \
+          'tcp and (port 8081 or port 3000 or port 2222)' &
+        sleep 2
+        nmap -sT -p 8081,3000,2222 --max-rate 20 127.0.0.1 \
+          -oN semana_04/evidencia/scan.txt
+        wait
+        tcpdump -nn -r semana_04/evidencia/captura.pcap | wc -l
+    - titulo: Clasificar el trafico por tecnica
+      texto: >-
+        Un connect completa el saludo en tres pasos; un SYN semiabierto no. Contar esos
+        patrones es lo que permite distinguir tecnicas desde el registro.
+      comandos: |
+        tcpdump -nn -r semana_04/evidencia/captura.pcap 'tcp[tcpflags] & tcp-syn != 0' \
+          | wc -l > semana_04/evidencia/syn.txt
+        tcpdump -nn -r semana_04/evidencia/captura.pcap \
+          'tcp[tcpflags] & (tcp-syn|tcp-ack) == (tcp-syn|tcp-ack)' \
+          | wc -l > semana_04/evidencia/synack.txt
+        cat semana_04/evidencia/syn.txt semana_04/evidencia/synack.txt
+    - titulo: Proponer una regla de deteccion
+      texto: >-
+        La regla se escribe con el umbral medido, no con una intuicion. Si en la ventana
+        se ven veinte SYNs a puertos distintos desde una sola origen, eso es un escaneo.
+    - titulo: Comprobar que la regla no dispara con trafico normal
+      texto: >-
+        Se repite la captura navegando por DVWA sin escanear. Si la regla dispara, el
+        umbral es demasiado bajo y se ajusta anotando el motivo.
+    tabla:
+      titulo: Tecnica, rastro observable y deteccion
+      nota: >-
+        Los conteos son de esta practica concreta; otro objetivo o otra tasa da otros
+        numeros y eso no invalida el metodo.
+      columnas: [Tecnica, Trafico observado, Rastro, Umbral, Accion]
+      anchos: [1.9, 3.4, 3.2, 2.2, 3.2]
+      filas:
+      - [TCP connect, 'SYN, SYN-ACK y ACK completos', 'Conexion establecida en el registro', 'Mas de 10 en un minuto', 'Revisar origen']
+      - [TCP SYN, 'SYN sin completar el saludo', 'Intentos sin conexion', 'Mas de 10 en un minuto', 'Alertar']
+      - [UDP, 'Paquetes sin respuesta', 'ICMP port unreachable', 'Mas de 20 en un minuto', 'Correlacionar con otros eventos']
+      - [Navegacion normal, 'Conexiones a 8081', 'Sesion HTTP con contenido', 'No aplica', 'Sin accion']
+    entregable: >-
+      Se entrega la captura, los conteos por tecnica, la regla propuesta con su umbral y
+      la prueba de que no dispara con trafico normal.
+    estructura: |
+      semana_04/
+      |-- informe.md
+      |-- escaner.py
+      |-- evidencia/
+      |   |-- captura.pcap
+      |   |-- scan.txt
+      |   |-- syn.txt
+      |   `-- synack.txt
+      `-- README.md
+    comprobaciones:
+    - La captura se limita a loopback y a los puertos autorizados.
+    - Los conteos salen de la misma captura que se entrega.
+    - La regla tiene umbral y accion.
+    - Se probo que la regla no dispara con navegacion normal.
+    avisos:
+    - La captura puede contener credenciales de laboratorio: no se comparte fuera del grupo.
+    - Capturar sin limite de tiempo llena el disco; siempre con timeout.
+  - grupo: 3
+    titulo: OSINT con limite y dato minimo
+    intro: >-
+      El rol Legal define que se puede recolectar y que no. La huella digital se limita a
+      datos publicos del dominio propio o autorizado, y se descarta todo lo que
+      identifique a personas.
+    bloques:
+    - titulo: Recolectar solo registros publicos del dominio autorizado
+      texto: >-
+        Se consultan los registros DNS y el RDAP del dominio. El objetivo es propio o
+        esta autorizado por escrito; no se consulta el dominio de un tercero.
+      comandos: |
+        mkdir -p semana_04/evidencia
+        for tipo in A AAAA MX NS TXT SOA; do
+          echo "== $tipo"; dig +short $tipo example.com
+        done | tee semana_04/evidencia/dns.txt
+        curl -s https://rdap.org/domain/example.com \
+          > semana_04/evidencia/rdap.json
+    - titulo: Distinguir dato publico de dato personal
+      texto: >-
+        El correo del registrante, si aparece, es dato personal aunque sea publico. Se
+        documenta su existencia sin transcribirlo y se marca como excluido del informe.
+    - titulo: Aplicar minimizacion y plazo de conservacion
+      texto: >-
+        Se conserva solo lo necesario para el objetivo y por el tiempo declarado. Lo que
+        no se usa se borra; no se acumula "por si acaso".
+    - titulo: Anonimizar la evidencia antes de versionarla
+      texto: >-
+        Los dominios ajenos y cualquier identificador personal se sustituyen por
+        marcadores. La evidencia cruda queda fuera del repositorio.
+    tabla:
+      titulo: Fuente, dato y limite aplicable
+      nota: >-
+        La base se cita por su denominacion; si el grupo no verifico la norma, escribe
+        "pendiente" en vez de inventar el fundamento.
+      columnas: [Fuente, Dato obtenido, Naturaleza, Limite, Decision]
+      anchos: [2.4, 3.2, 2.2, 3.0, 3.0]
+      filas:
+      - [DNS, 'Registros A, MX y TXT', 'Publico tecnico', 'Solo dominio autorizado', 'Se conserva']
+      - [RDAP, 'Fechas y estado del dominio', 'Publico tecnico', 'No se transcribe el contacto', 'Se resume']
+      - [Buscadores, 'Subdominios indexados', 'Publico', 'Sin tecnicas de presion ni enganno', 'Se cita la fuente']
+      - [Correo del registrante, 'Contacto administrativo', 'Dato personal', 'No se transcribe ni se contacta', 'Se excluye']
+    entregable: >-
+      Se entrega la huella digital con fuentes citadas, una tabla de que se recolecto y
+      que se descarto, y la evidencia anonimizada.
+    estructura: |
+      semana_04/
+      |-- informe.md
+      |-- escaner.py
+      |-- evidencia/
+      |   |-- dns.txt
+      |   `-- rdap.json
+      `-- README.md
+    comprobaciones:
+    - El dominio consultado es propio o esta autorizado por escrito.
+    - No se transcribe ningun dato de contacto personal.
+    - La tabla indica que se descarto y por que.
+    - La evidencia versionada esta anonimizada.
+    avisos:
+    - La recoleccion sobre dominios de terceros queda fuera del curso aunque la tecnica sea la misma.
+    - Un dato publico no deja de ser personal por estar publicado.
+  - grupo: 4
+    titulo: Escaner propio frente a nmap
+    intro: >-
+      El rol Rojo construye el escaner, lo ejecuta contra el laboratorio y lo compara con
+      nmap. La comparacion tiene que explicar las diferencias, no solo listarlas.
+    bloques:
+    - titulo: Implementar sondeo TCP connect con tiempo de espera configurable
+      texto: >-
+        El script recibe host, puertos y timeout, y devuelve JSON normalizado. Un puerto
+        cerrado y un timeout son resultados distintos y se reportan por separado.
+      comandos: |
+        mkdir -p semana_04/evidencia
+        cat > semana_04/escaner.py <<'PY'
+        import argparse, json, socket, time
+
+        def connect(host, puerto, timeout):
+            inicio = time.perf_counter()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(timeout)
+            try:
+                sock.connect((host, puerto))
+                estado = 'abierto'
+            except socket.timeout:
+                estado = 'timeout'
+            except ConnectionRefusedError:
+                estado = 'cerrado'
+            finally:
+                sock.close()
+            return {'puerto': puerto, 'estado': estado,
+                    'ms': round((time.perf_counter() - inicio) * 1000, 1)}
+
+        ap = argparse.ArgumentParser()
+        ap.add_argument('--host', default='127.0.0.1')
+        ap.add_argument('--puertos', default='8081,3000,2222')
+        ap.add_argument('--timeout', type=float, default=0.5)
+        args = ap.parse_args()
+        resultados = [connect(args.host, int(p), args.timeout)
+                      for p in args.puertos.split(',')]
+        print(json.dumps(resultados, indent=2))
+        PY
+        python3 semana_04/escaner.py > semana_04/evidencia/propio.json
+    - titulo: Añadir sondeo UDP y documentar el SYN
+      texto: >-
+        UDP se prueba enviando un datagrama y esperando ICMP. El SYN semiabierto exige
+        raw sockets y privilegios: si el entorno no lo permite, se documenta la
+        limitacion y se compara con nmap -sS en lugar de simularlo.
+      comandos: |
+        python3 -c "
+        import socket
+        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.settimeout(0.5)
+        s.sendto(b'ping',('127.0.0.1',3000))
+        try: print('respuesta', s.recvfrom(64))
+        except socket.timeout: print('sin respuesta en 500 ms')
+        " | tee semana_04/evidencia/udp.txt
+        sudo nmap -sS -p 8081,3000,2222 127.0.0.1 -oN semana_04/evidencia/syn_nmap.txt
+    - titulo: Comparar y medir tiempos
+      texto: >-
+        Se ejecuta nmap sobre el mismo objetivo y se tabulan coincidencias, diferencias y
+        tiempo por tecnica. Un falso positivo es un puerto que el script da por abierto y
+        nmap no confirma.
+    - titulo: Explicar los falsos positivos
+      texto: >-
+        Cada falso positivo tiene una causa concreta: timeout demasiado corto, servicio
+        que acepta y cierra, o filtrado que responde distinto. La explicacion se escribe
+        junto al resultado.
+    tabla:
+      titulo: Tecnica, resultado propio y contraste con nmap
+      nota: >-
+        Los tiempos son de esta maquina y esta sesion; se reportan para comparar tecnicas
+        entre si, no como valor absoluto.
+      columnas: [Tecnica, Propio, nmap, Tiempo propio, Falso positivo]
+      anchos: [2.6, 1.8, 1.8, 2.2, 3.6]
+      filas:
+      - [TCP connect, 'Abierto 8081, 3000, 2222', 'Abierto en los tres', 'Menos de 1 s', 'Ninguno observado']
+      - [TCP SYN, 'No implementado sin privilegios', 'Abierto en los tres', 'Menos de 1 s', 'Se documenta la limitacion']
+      - [UDP, 'Sin respuesta en 500 ms', 'Abierto o filtrado', '500 ms por puerto', 'No se puede distinguir con un paquete']
+      - [Timeout corto, 'Cerrado por timeout', 'Abierto', '50 ms', 'Si: el limite era menor que la latencia']
+    entregable: >-
+      Se entrega el script con type hints y docstrings, la salida JSON, la comparacion con
+      nmap y la explicacion de cada diferencia.
+    estructura: |
+      semana_04/
+      |-- informe.md
+      |-- escaner.py
+      |-- evidencia/
+      |   |-- propio.json
+      |   |-- syn_nmap.txt
+      |   |-- udp.txt
+      |   `-- comparativa.txt
+      `-- README.md
+    comprobaciones:
+    - El script acepta host, puertos y timeout por linea de comandos.
+    - Un puerto cerrado y un timeout se reportan como estados distintos.
+    - La comparacion incluye tiempo por tecnica y explica las diferencias.
+    - Las limitaciones de privilegios estan declaradas, no simuladas.
+    avisos:
+    - El escaneo se ejecuta solo contra 127.0.0.1 y los puertos del alcance.
+    - Un falso positivo no se corrige bajando el timeout a ojo: se mide y se justifica.
   pasos_fix: true
 - numero: 5
   fase: 2
@@ -709,6 +1666,307 @@ semanas:
     - criterio: Retos de Juice Shop justificados
       peso: 1.0
   evaluacion: control_fase_2
+  ejemplos:
+  - grupo: 1
+    titulo: Reproducir, mitigar y verificar con el mismo payload
+    intro: >-
+      El rol Azul reproduce la falla y despues aplica el control que la corta, sin
+      cambiar el payload. Si el resultado cambia porque se cambio la peticion, no se
+      demostro nada.
+    bloques:
+    - titulo: Iniciar sesion y fijar el nivel de DVWA
+      texto: >-
+        Todo se ejecuta con la sesion del laboratorio y el nivel bajo, que es el que se
+        quiere demostrar vulnerable. El token CSRF se extrae de la pagina, no se supone.
+      comandos: |
+        mkdir -p semana_05/evidencia
+        curl -s -c semana_05/evidencia/cookies.txt \
+          http://127.0.0.1:8081/login.php > semana_05/evidencia/login.html
+        TOKEN=$(grep -o "name='user_token' value='[^']*'" \
+          semana_05/evidencia/login.html | head -1 | cut -d"'" -f4)
+        curl -s -b semana_05/evidencia/cookies.txt -c semana_05/evidencia/cookies.txt \
+          -d "username=admin&password=password&Login=Login&user_token=$TOKEN" \
+          http://127.0.0.1:8081/login.php -o /dev/null
+        curl -s -b semana_05/evidencia/cookies.txt \
+          -d "security=low&seclev_submit=Submit" \
+          http://127.0.0.1:8081/security.php -o /dev/null
+    - titulo: Capturar la evidencia de los tres hallazgos
+      texto: >-
+        Cada peticion se guarda con su respuesta completa. El reflejo del XSS, la fila
+        extra de la inyeccion y el contenido del archivo leido son la prueba, y se
+        guardan tal cual.
+      comandos: |
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/xss_r/?name=%3Cscript%3Ealert(1)%3C/script%3E' \
+          > semana_05/evidencia/xss_antes.html
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit' \
+          > semana_05/evidencia/sqli_antes.html
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/fi/?page=../../../../etc/passwd' \
+          > semana_05/evidencia/lfi_antes.txt
+        sha256sum semana_05/evidencia/*_antes.* > semana_05/evidencia/antes.sha256
+    - titulo: Aplicar el control que elimina la causa
+      texto: >-
+        El control se aplica donde esta la causa: parametrizacion y codificacion en la
+        aplicacion, o nivel alto de DVWA cuando el codigo no se puede editar. Se elige
+        uno y se documenta el motivo.
+      comandos: |
+        curl -s -b semana_05/evidencia/cookies.txt \
+          -d "security=high&seclev_submit=Submit" \
+          http://127.0.0.1:8081/security.php -o /dev/null
+        printf 'nivel alto aplicado; se documenta que el control es de la aplicacion\n' \
+          > semana_05/evidencia/control.txt
+    - titulo: Repetir exactamente el mismo payload
+      texto: >-
+        Las mismas URL, el mismo orden y la misma sesion. El resultado esperado es que el
+        reflejo se codifique, la inyeccion no devuelva filas extra y el archivo no se
+        lea.
+      comandos: |
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/xss_r/?name=%3Cscript%3Ealert(1)%3C/script%3E' \
+          > semana_05/evidencia/xss_despues.html
+        grep -c '&lt;script&gt;' semana_05/evidencia/xss_despues.html
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/fi/?page=../../../../etc/passwd' \
+          | wc -c > semana_05/evidencia/lfi_despues.txt
+    tabla:
+      titulo: Hallazgo, control y verificacion con el mismo payload
+      nota: >-
+        "Neutralizado" solo se escribe si la repeticion del payload lo demuestra; si el
+        control no se pudo aplicar, se escribe "no aplicado" con el motivo.
+      columnas: [Hallazgo, Control aplicado, Resultado antes, Resultado despues, Verificacion]
+      anchos: [2.2, 3.4, 2.8, 2.8, 2.8]
+      filas:
+      - [XSS reflejado, 'Codificacion de salida y nivel alto', 'Script reflejado sin codificar', 'Texto codificado', 'xss_despues.html']
+      - [Inyeccion SQL, 'Consulta parametrizada', 'Filas no previstas', 'Sin filas extra', 'sqli_despues.html']
+      - [LFI, 'Lista blanca de archivos', 'Contenido de /etc/passwd', 'Error controlado', 'lfi_despues.txt']
+    entregable: >-
+      El informe muestra, por hallazgo, la peticion, la respuesta antes, el control
+      aplicado y la respuesta despues con el mismo payload, mas el hash de la evidencia.
+    estructura: |
+      semana_05/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- cookies.txt
+      |   |-- xss_antes.html
+      |   |-- xss_despues.html
+      |   |-- sqli_antes.html
+      |   |-- sqli_despues.html
+      |   |-- lfi_antes.txt
+      |   |-- lfi_despues.txt
+      |   `-- antes.sha256
+      `-- README.md
+    comprobaciones:
+    - El payload de antes y el de despues son identicos byte a byte.
+    - El control se aplico en la causa, no en el enunciado del informe.
+    - La sesion y el nivel de seguridad estan documentados.
+    - La evidencia esta anonimizada antes de versionarse.
+    avisos:
+    - Las cookies de sesion son credenciales: no se suben al repositorio.
+    - Subir el nivel de DVWA es un control de laboratorio; no sustituye corregir el codigo.
+  - grupo: 2
+    titulo: Detectar la explotacion en el registro
+    intro: >-
+      El rol Púrpura busca la huella de los tres ataques en los registros del servicio.
+      La deteccion se disena antes de explotar y se comprueba despues con la evidencia.
+    bloques:
+    - titulo: Capturar la linea base del registro sin ataques
+      texto: >-
+        Primero se registra el trafico normal durante un minuto. Sin linea base no se
+        puede afirmar que un patron es anomalo.
+      comandos: |
+        mkdir -p semana_05/evidencia
+        docker logs --since 1m objetivo-web \
+          > semana_05/evidencia/base_web.txt 2>&1 || true
+        wc -l semana_05/evidencia/base_web.txt
+    - titulo: Ejecutar los ataques y volver a leer el registro
+      texto: >-
+        Se repiten las peticiones del grupo Rojo y se extraen del registro solo las lineas
+        con los patrones buscados. Cada patron tiene su expresion regular documentada.
+      comandos: |
+        docker logs --since 10m objetivo-web \
+          > semana_05/evidencia/ataque_web.txt 2>&1 || true
+        grep -Ei 'union|select|or%20|%27' semana_05/evidencia/ataque_web.txt \
+          | tee semana_05/evidencia/sqli_lineas.txt || true
+        grep -Ei '<script|%3Cscript' semana_05/evidencia/ataque_web.txt \
+          | tee semana_05/evidencia/xss_lineas.txt || true
+        grep -Ei 'etc/passwd|\.\./' semana_05/evidencia/ataque_web.txt \
+          | tee semana_05/evidencia/lfi_lineas.txt || true
+    - titulo: Escribir la regla de deteccion con umbral
+      texto: >-
+        La regla combina patron y frecuencia. Un `SELECT` suelto no es un ataque; diez
+        en un minuto desde la misma origen si es una señal que merece revision.
+    - titulo: Probar la regla con trafico limpio
+      texto: >-
+        Se navega la aplicacion sin atacar y se comprueba que la regla no dispara. Si
+        dispara, el patron es demasiado amplio y se corrige.
+    tabla:
+      titulo: Ataque, patron y regla propuesta
+      nota: >-
+        La columna de falsos positivos se llena con lo observado al probar la regla, no
+        con una estimacion.
+      columnas: [Ataque, Patron, Fuente, Regla propuesta, Falsos positivos]
+      anchos: [2.0, 3.2, 2.2, 3.6, 2.6]
+      filas:
+      - [XSS reflejado, 'Script en parametro de la URL', 'Registro de Apache', 'Script codificado o literal en query', 'Ninguno en la prueba']
+      - [Inyeccion SQL, 'Union o comillas en id', 'Registro de Apache', 'Mas de 5 consultas anomalas en 1 min', 'Formularios con comillas legitimas']
+      - [LFI, 'Secuencias de directorio', 'Registro de Apache', 'Ruta con ../ fuera de la raiz', 'Ninguno en la prueba']
+      - [Navegacion normal, 'Solo rutas conocidas', 'Registro de Apache', 'Sin alerta', 'No aplica']
+    entregable: >-
+      Se entrega la linea base, los extractos del registro por ataque, la regla con su
+      umbral y la prueba de no disparo con trafico limpio.
+    estructura: |
+      semana_05/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- base_web.txt
+      |   |-- ataque_web.txt
+      |   |-- sqli_lineas.txt
+      |   |-- xss_lineas.txt
+      |   `-- lfi_lineas.txt
+      `-- README.md
+    comprobaciones:
+    - Existe una linea base anterior a los ataques.
+    - Cada regla cita su patron y su umbral.
+    - La prueba con trafico limpio esta registrada.
+    - Los extractos no incluyen cookies completas.
+    avisos:
+    - El registro puede contener datos de sesion: se recorta antes de versionarlo.
+    - Una regla que dispara con todo no es deteccion, es ruido.
+  - grupo: 3
+    titulo: Evidencia explotada sin daño y sin datos de terceros
+    intro: >-
+      El rol Legal revisa como se documenta la explotacion: que se extrajo, cuanto se
+      conserva y como se evita que la evidencia se convierta en una fuga.
+    bloques:
+    - titulo: Declarar que datos se obtuvieron y con que limite
+      texto: >-
+        De la inyeccion se documenta el esquema y el numero de filas, no el contenido
+        personal. Del LFI se guarda la linea que prueba la lectura, no el archivo
+        completo.
+    - titulo: Recortar y anonimizar la evidencia
+      texto: >-
+        Los nombres, correos y cualquier identificador se sustituyen por marcadores. El
+        recorte se hace antes de guardar la copia que se versiona.
+      comandos: |
+        mkdir -p semana_05/evidencia
+        sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+/[correo]/g' \
+          semana_05/evidencia/extraccion.txt \
+          > semana_05/evidencia/extraccion_anonima.txt 2>/dev/null || true
+        sha256sum semana_05/evidencia/extraccion_anonima.txt \
+          > semana_05/evidencia/extraccion.sha256
+    - titulo: Justificar la retencion y el borrado
+      texto: >-
+        La evidencia se conserva hasta el cierre de la evaluacion y despues se borra. El
+        plazo se declara por escrito y se aplica igual para todos los grupos.
+    - titulo: Revisar el informe contra el codigo de etica
+      texto: >-
+        Se comprueba que no hay capturas con datos reales, que no se publico ningun
+        payload fuera del repositorio del grupo y que el alcance de la semana 3 cubre lo
+        ejecutado.
+    tabla:
+      titulo: Dato, tratamiento y fundamento
+      nota: >-
+        La columna de fundamento cita la autorizacion de la semana 3 y la norma
+        verificada; si falta, el dato no se conserva.
+      columnas: [Dato obtenido, Tratamiento, Se conserva, Plazo, Fundamento]
+      anchos: [3.0, 3.2, 1.6, 2.0, 3.6]
+      filas:
+      - [Esquema de la base, 'Se documenta estructura', 'Si', 'Hasta cerrar', 'Autorizacion del alcance']
+      - [Filas de usuarios, 'Solo conteo, sin contenido', 'Si', 'Hasta cerrar', 'Minimizacion']
+      - [Contenido de /etc/passwd, 'Solo la linea que prueba acceso', 'Si', 'Hasta cerrar', 'Prueba del hallazgo']
+      - [Datos personales reales, 'No se transcriben', 'No', 'Borrado inmediato', 'Proteccion de datos']
+    entregable: >-
+      Se entrega la evidencia anonimizada con su hash, la declaracion de retencion y la
+      revision del informe contra el codigo de etica.
+    estructura: |
+      semana_05/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- extraccion_anonima.txt
+      |   `-- extraccion.sha256
+      `-- README.md
+    comprobaciones:
+    - Ninguna captura contiene datos personales sin anonimizar.
+    - El plazo de retencion esta declarado y se cumple.
+    - Lo ejecutado esta cubierto por la autorizacion de la semana 3.
+    - El hash corresponde al archivo anonimizado, no al original.
+    avisos:
+    - Copiar datos reales "para demostrar el hallazgo" es una fuga, no una prueba.
+    - La anonimizacion se verifica abriendo el archivo final, no confiando en el comando.
+  - grupo: 4
+    titulo: Tres ataques, payload y causa raiz
+    intro: >-
+      El rol Rojo explota los tres casos y documenta el payload exacto, la respuesta y la
+      linea de codigo o configuracion que lo permite. Un hallazgo sin causa raiz es una
+      anecdota.
+    bloques:
+    - titulo: XSS reflejado con evidencia del reflejo
+      texto: >-
+        El payload se envia en el parametro y se guarda la respuesta donde aparece sin
+        codificar. La captura del reflejo es la prueba; el aviso del navegador es
+        secundario.
+      comandos: |
+        mkdir -p semana_05/evidencia
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/xss_r/?name=%3Cscript%3Ealert(1)%3C/script%3E' \
+          > semana_05/evidencia/xss_reflejo.html
+        grep -n '<script>alert(1)</script>' semana_05/evidencia/xss_reflejo.html
+    - titulo: Inyeccion SQL que devuelve filas no previstas
+      texto: >-
+        El payload transforma la consulta y devuelve mas filas de las que el formulario
+        pedia. Se documenta el numero de filas y el campo que lo delata.
+      comandos: |
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit' \
+          > semana_05/evidencia/sqli_filas.html
+        grep -c 'First name' semana_05/evidencia/sqli_filas.html
+    - titulo: LFI para leer un archivo del contenedor
+      texto: >-
+        Se lee un archivo inocuo del sistema y se guarda solo la prueba de acceso. No se
+        recorre el sistema buscando secretos: el objetivo es demostrar la ruta, no
+        exprimirla.
+      comandos: |
+        curl -s -b semana_05/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/fi/?page=../../../../etc/passwd' \
+          | head -5 > semana_05/evidencia/lfi_prueba.txt
+        wc -l semana_05/evidencia/lfi_prueba.txt
+    - titulo: Resolver tres retos de Juice Shop y anotar el razonamiento
+      texto: >-
+        De cada reto se anota la pista, la peticion y por que funciono. El reto resuelto
+        sin explicacion no cuenta como evidencia.
+    tabla:
+      titulo: Hallazgo, payload y causa raiz
+      nota: >-
+        La causa raiz se escribe como linea o configuracion concreta; "falta validacion"
+        sin señalar donde no se acepta.
+      columnas: [Hallazgo, Payload, Evidencia, Causa raiz, Mitigacion]
+      anchos: [1.9, 3.4, 2.6, 3.2, 3.4]
+      filas:
+      - [XSS reflejado, 'Script en el parametro name', 'xss_reflejo.html', 'Salida sin codificar en la busqueda', 'Escape contextual']
+      - [Inyeccion SQL, 'Comilla y OR tautologico en id', 'sqli_filas.html', 'Consulta concatenada', 'Parametrizacion']
+      - [LFI, 'Secuencia de directorios en page', 'lfi_prueba.txt', 'Ruta resuelta sin lista blanca', 'Lista blanca y ruta fija']
+      - [Juice Shop, 'Peticiones del reto', 'Anotaciones por reto', 'Validacion solo en el cliente', 'Validacion en servidor']
+    entregable: >-
+      El informe presenta por hallazgo el payload, la evidencia, la causa raiz y la
+      mitigacion, ademas de los tres retos de Juice Shop con su razonamiento.
+    estructura: |
+      semana_05/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- xss_reflejo.html
+      |   |-- sqli_filas.html
+      |   `-- lfi_prueba.txt
+      `-- README.md
+    comprobaciones:
+    - Cada payload esta escrito de forma literal y reproducible.
+    - La causa raiz señala el punto concreto, no una categoria.
+    - La mitigacion se puede verificar con una prueba.
+    - Los retos de Juice Shop tienen pista y razonamiento.
+    avisos:
+    - La explotacion se limita a los contenedores del laboratorio y a los datos de prueba.
+    - No se usa fuerza bruta ni denegacion de servicio contra el laboratorio.
 - numero: 6
   fase: 3
   titulo: Hardening, firewall y detección
@@ -764,6 +2022,340 @@ semanas:
     - criterio: Antes/después comparables y justificación de excepciones
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Instrumentar la linea base y clasificar alertas
+    intro: >-
+      El rol Púrpura mide antes y despues con el mismo auditor, y convierte las alertas
+      de Suricata en una tabla con decision. Una alerta sin clasificar no es deteccion.
+    bloques:
+    - titulo: Capturar doce controles antes de cambiar nada
+      texto: >-
+        El auditor recorre los doce controles y emite un veredicto por cada uno. Se
+        ejecuta antes del hardening para que la comparacion tenga sentido.
+      comandos: |
+        mkdir -p semana_06/evidencia
+        cat > semana_06/auditor.sh <<'SH'
+        #!/bin/sh
+        echo "usuario_root_ssh: $(sshd -T 2>/dev/null | awk '/^permitrootlogin/{print $2}')"
+        echo "password_auth: $(sshd -T 2>/dev/null | awk '/^passwordauthentication/{print $2}')"
+        echo "suid_total: $(find / -perm -4000 -type f 2>/dev/null | wc -l)"
+        echo "world_writable: $(find / -xdev -type f -perm -0002 2>/dev/null | wc -l)"
+        echo "puertos_escucha: $(ss -tulpn 2>/dev/null | grep -c LISTEN)"
+        echo "ufw: $(ufw status 2>/dev/null | head -1)"
+        SH
+        chmod +x semana_06/auditor.sh
+        sudo semana_06/auditor.sh | tee semana_06/evidencia/antes.txt
+    - titulo: Ejecutar el hardening y repetir el auditor
+      texto: >-
+        Los cambios se aplican con comandos reproducibles y se recargan los servicios. El
+        auditor se repite sin modificarlo: la unica variable es el sistema.
+      comandos: |
+        sudo sed -i -E 's/^#?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+        sudo sed -i -E 's/^#?PasswordAuthentication.*/PasswordAuthentication no/' \
+          /etc/ssh/sshd_config
+        sudo sshd -t && sudo systemctl reload ssh 2>/dev/null || sudo kill -HUP 1
+        sudo ufw default deny incoming
+        sudo ufw allow 2222/tcp
+        sudo ufw --force enable
+        sudo semana_06/auditor.sh | tee semana_06/evidencia/despues.txt
+    - titulo: Leer y clasificar las alertas de Suricata
+      texto: >-
+        Se extraen las alertas de la ventana de pruebas y se clasifican en verdaderas,
+        esperadas y ruido. Cada clasificacion tiene un motivo escrito.
+      comandos: |
+        sudo suricata -T -c /etc/suricata/suricata.yaml 2>&1 | tail -3 \
+          | tee semana_06/evidencia/suricata_check.txt
+        sudo python3 - <<'PY' | tee semana_06/evidencia/alertas.txt
+        import json
+        rutas = ['/var/log/suricata/eve.json']
+        for ruta in rutas:
+            try:
+                for linea in open(ruta, errors='ignore'):
+                    evento = json.loads(linea)
+                    if evento.get('event_type') == 'alert':
+                        print(evento['timestamp'], evento['alert']['signature'])
+            except FileNotFoundError:
+                print('sin eve.json: se documenta como no verificado')
+        PY
+    - titulo: Proponer una regla concreta
+      texto: >-
+        La regla cubre el ataque que la politica freno: repetir el escaneo y detectar el
+        intento contra el puerto cerrado. Se escribe para el motor que ya esta en uso.
+    tabla:
+      titulo: Control, umbral y accion
+      nota: >-
+        El estado inicial se copia de antes.txt; si un control no se pudo medir, se marca
+        como no verificado y se explica por que.
+      columnas: [Control, Verificacion, Estado inicial, Umbral, Accion]
+      anchos: [2.6, 3.2, 2.4, 2.4, 2.6]
+      filas:
+      - [Acceso de root por SSH, 'sshd -T', 'Permitido', 'Prohibido', 'Corregir']
+      - [Autenticacion por contrasena, 'sshd -T', 'Habilitada', 'Deshabilitada', 'Corregir']
+      - [Archivos SUID, 'find -perm -4000', 'Conteo base', 'Sin cambios no justificados', 'Revisar']
+      - [Puertos en escucha, 'ss -tulpn', 'Conteo base', 'Solo los necesarios', 'Cerrar']
+      - [Politica de filtrado, 'ufw status', 'Inactiva', 'Deny por defecto', 'Activar']
+    entregable: >-
+      Se entrega el auditor, las salidas antes y despues, la tabla de alertas clasificadas
+      y la regla propuesta con su justificacion.
+    estructura: |
+      semana_06/
+      |-- informe.md
+      |-- auditor.sh
+      |-- evidencia/
+      |   |-- antes.txt
+      |   |-- despues.txt
+      |   |-- suricata_check.txt
+      |   `-- alertas.txt
+      `-- README.md
+    comprobaciones:
+    - El auditor es el mismo archivo antes y despues.
+    - Cada alerta tiene clasificacion y motivo.
+    - La regla propuesta se refiere a un ataque concreto observado.
+    - Las limitaciones de Suricata en el contenedor estan declaradas.
+    avisos:
+    - Recargar SSH puede cortar la sesion: se usa una sesion de consola separada.
+    - Si Suricata no arranca en el contenedor, se documenta y se evalua con las firmas disponibles.
+  - grupo: 2
+    titulo: Excepciones justificadas y control del cambio
+    intro: >-
+      El rol Legal decide que excepcion de hardening se acepta y cual no. Una excepcion
+      sin riesgo declarado, responsable y fecha de revision es una puerta abierta.
+    bloques:
+    - titulo: Registrar el cambio con su motivo
+      texto: >-
+        Cada cambio de configuracion entra en un registro con fecha, autor, motivo y
+        vuelta atras. El registro es el que permite reconstruir el estado si algo falla.
+      comandos: |
+        mkdir -p semana_06/evidencia
+        printf '%s | sshd | PermitRootLogin no | Grupo 4 | vuelta: copia previa\n' \
+          "$(date -u +%FT%TZ)" > semana_06/evidencia/cambios.txt
+        cp /etc/ssh/sshd_config semana_06/evidencia/sshd_config.bak 2>/dev/null || true
+        sha256sum semana_06/evidencia/sshd_config.bak \
+          > semana_06/evidencia/sshd_config.bak.sha256 2>/dev/null || true
+    - titulo: Clasificar cada excepcion por riesgo
+      texto: >-
+        Se acepta una excepcion solo si el riesgo es bajo, el responsable esta nombrado y
+        hay fecha de revision. Las de riesgo alto no se aceptan: se corrigen.
+    - titulo: Comprobar que la excepcion no reabre el hallazgo
+      texto: >-
+        Una excepcion se verifica igual que un control: con el mismo comando. Si la
+        excepcion permite el acceso que se queria cerrar, no era una excepcion.
+      comandos: |
+        sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication)' \
+          | tee semana_06/evidencia/excepcion_ssh.txt
+    - titulo: Definir la fecha de revision
+      texto: >-
+        Toda excepcion caduca. La fecha se escribe en el registro y se revisa aunque nadie
+        la recuerde.
+    tabla:
+      titulo: Excepcion, riesgo y decision
+      nota: >-
+        La decision se escribe como aceptada, rechazada o pendiente. "Se vera" no es una
+        decision.
+      columnas: [Excepcion, Riesgo, Responsable, Revision, Decision]
+      anchos: [3.2, 2.0, 2.4, 2.2, 3.4]
+      filas:
+      - [PasswordAuthentication si en laboratorio, 'Medio', 'Grupo 4', 'Fin de semana 6', 'Rechazada']
+      - [Puerto 22 abierto en lugar de 2222, 'Bajo', 'Grupo 4', 'Fin de curso', 'Aceptada con registro']
+      - [Servicio de base de datos en escucha, 'Alto', 'Grupo 4', 'Inmediato', 'Rechazada']
+      - [Sin fail2ban en contenedor, 'Bajo', 'Grupo 4', 'Fin de semana 7', 'Aceptada temporal']
+    entregable: >-
+      Se entrega el registro de cambios, la tabla de excepciones con su decision y la
+      verificacion de que ninguna excepcion reabre el hallazgo.
+    estructura: |
+      semana_06/
+      |-- informe.md
+      |-- auditor.sh
+      |-- evidencia/
+      |   |-- cambios.txt
+      |   |-- excepcion_ssh.txt
+      |   `-- sshd_config.bak.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada cambio tiene autor, fecha y vuelta atras.
+    - Cada excepcion tiene responsable y fecha de revision.
+    - Las excepciones de riesgo alto estan rechazadas.
+    - La excepcion aceptada se verifico con el mismo comando del auditor.
+    avisos:
+    - Aceptar una excepcion no es ignorar el control: queda registrada y con caducidad.
+    - Si no hay copia previa del archivo modificado, el cambio no se aplica.
+  - grupo: 3
+    titulo: Verificar el cierre del alcance desde fuera
+    intro: >-
+      El rol Rojo repite el escaneo despues del hardening y comprueba que lo que debia
+      cerrarse se cerro. Tambien busca el camino que la politica dejo abierto sin
+      querer.
+    bloques:
+    - titulo: Escanear el alcance antes y despues
+      texto: >-
+        El mismo comando, la misma tasa y el mismo objetivo. La comparacion es puerto por
+        puerto, no una impresion general.
+      comandos: |
+        mkdir -p semana_06/evidencia
+        nmap -sT -p 22,2222,8081,3000 --max-rate 20 127.0.0.1 \
+          -oN semana_06/evidencia/antes.txt
+        nmap -sT -p 22,2222,8081,3000 --max-rate 20 127.0.0.1 \
+          -oN semana_06/evidencia/despues.txt
+        diff -u semana_06/evidencia/antes.txt semana_06/evidencia/despues.txt \
+          | tee semana_06/evidencia/diff.txt
+    - titulo: Probar si el puerto cerrado responde de otra forma
+      texto: >-
+        Un puerto filtrado no es lo mismo que uno cerrado: se distingue con la salida de
+        nmap y con una conexion directa cronometrada.
+      comandos: |
+        python3 - <<'PY' | tee semana_06/evidencia/cierre.txt
+        import socket, time
+        for puerto in (22, 2222):
+            s = socket.socket(); s.settimeout(1.0)
+            t = time.perf_counter()
+            try:
+                s.connect(('127.0.0.1', puerto)); estado = 'abierto'
+            except socket.timeout:
+                estado = 'filtrado'
+            except ConnectionRefusedError:
+                estado = 'cerrado'
+            finally:
+                s.close()
+            print(puerto, estado, round(time.perf_counter() - t, 3), 's')
+        PY
+    - titulo: Buscar el servicio que quedo expuesto
+      texto: >-
+        La politica por defecto deja pasar solo lo autorizado. Se revisa la lista de
+        reglas y se comprueba que no haya un allow mas amplio de lo necesario.
+      comandos: |
+        sudo ufw status numbered | tee semana_06/evidencia/ufw_reglas.txt
+    - titulo: Documentar el intento fallido
+      texto: >-
+        Un intento que no funciona tambien es resultado: demuestra que el control esta en
+        el camino y no solo en el documento.
+    tabla:
+      titulo: Puerto, estado y conclusion
+      nota: >-
+        La conclusion se escribe como control efectivo, control parcial o sin cambio. El
+        "sin cambio" se justifica.
+      columnas: [Puerto, Antes, Despues, Intento posterior, Conclusion]
+      anchos: [1.6, 2.0, 2.0, 3.6, 3.6]
+      filas:
+      - ['22', 'Abierto', 'Filtrado', 'Conexion directa', 'Control efectivo']
+      - ['2222', 'Abierto', 'Abierto', 'Acceso con clave', 'Permitido por alcance']
+      - ['8081', 'Abierto', 'Abierto', 'Peticion HTTP', 'Permitido por alcance']
+      - ['3000', 'Abierto', 'Abierto', 'Peticion HTTP', 'Permitido por alcance']
+    entregable: >-
+      Se entrega el escaneo antes y despues, el diff, la prueba del cierre por puerto y la
+      revision de las reglas de filtrado.
+    estructura: |
+      semana_06/
+      |-- informe.md
+      |-- auditor.sh
+      |-- evidencia/
+      |   |-- antes.txt
+      |   |-- despues.txt
+      |   |-- diff.txt
+      |   |-- cierre.txt
+      |   `-- ufw_reglas.txt
+      `-- README.md
+    comprobaciones:
+    - El escaneo usa el mismo comando antes y despues.
+    - Se distingue filtrado de cerrado con una prueba cronometrada.
+    - Las reglas de filtrado se revisan, no solo se activan.
+    - Cada "sin cambio" esta justificado por el alcance.
+    avisos:
+    - Cerrar un puerto que el grupo necesita rompe el laboratorio: se comprueba el alcance.
+    - El escaneo se hace solo contra 127.0.0.1.
+  - grupo: 4
+    titulo: Auditor con veredicto y hardening reproducible
+    intro: >-
+      El rol Azul escribe el auditor que decide, aplica los cambios y demuestra con la
+      misma herramienta que el estado cambio. El entregable es la comparacion, no la
+      configuracion sola.
+    bloques:
+    - titulo: Escribir el auditor con veredicto por control
+      texto: >-
+        El auditor emite una linea por control con estado y veredicto. Un control no
+        medible devuelve "no_verificado", no un aprobado por defecto.
+      comandos: |
+        mkdir -p semana_06/evidencia
+        cat > semana_06/auditor.py <<'PY'
+        import subprocess
+
+        def sshd(clave):
+            salida = subprocess.run(['sshd', '-T'], capture_output=True, text=True)
+            for linea in salida.stdout.splitlines():
+                if linea.startswith(clave):
+                    return linea.split()[1]
+            return 'no_verificado'
+
+        controles = {
+            'permitrootlogin': sshd('permitrootlogin'),
+            'passwordauthentication': sshd('passwordauthentication'),
+        }
+        for nombre, valor in controles.items():
+            if valor == 'no_verificado':
+                veredicto = 'no_verificado'
+            else:
+                veredicto = 'ok' if valor == 'no' else 'fallo'
+            print(nombre, valor, veredicto)
+        PY
+        python3 semana_06/auditor.py | tee semana_06/evidencia/veredictos_antes.txt
+    - titulo: Aplicar el hardening por lotes con vuelta atras
+      texto: >-
+        Se copia la configuracion antes de tocarla y se recarga solo lo necesario. Si un
+        servicio no vuelve a arrancar, se restaura la copia.
+      comandos: |
+        sudo cp /etc/ssh/sshd_config semana_06/evidencia/sshd_config.orig
+        sudo sed -i -E 's/^#?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+        sudo sshd -t && sudo systemctl reload ssh 2>/dev/null || sudo kill -HUP 1
+        sudo ufw default deny incoming
+        sudo ufw allow 2222/tcp
+        sudo ufw --force enable
+        python3 semana_06/auditor.py | tee semana_06/evidencia/veredictos_despues.txt
+    - titulo: Comparar y justificar excepciones
+      texto: >-
+        Se comparan los veredictos y se justifica cada control que sigue en fallo. La
+        excepcion se documenta con su motivo y su fecha de revision.
+    - titulo: Verificar que el sistema sigue operativo
+      texto: >-
+        Un hardening que deja el sistema inaccesible no es un hardening. Se comprueba el
+        acceso permitido y el servicio que el grupo necesita.
+      comandos: |
+        ss -tulpn | tee semana_06/evidencia/puertos_final.txt
+        curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/ \
+          | tee semana_06/evidencia/http_final.txt
+    tabla:
+      titulo: Control, antes, cambio y verificacion
+      nota: >-
+        La columna de verificacion cita la salida del auditor que soporta el veredicto.
+      columnas: [Control, Antes, Cambio, Despues, Verificacion]
+      anchos: [2.8, 2.2, 3.4, 2.2, 3.4]
+      filas:
+      - [Root por SSH, 'Si', 'PermitRootLogin no', 'No', 'sshd -T']
+      - [Contrasena SSH, 'Si', 'PasswordAuthentication no', 'No', 'sshd -T']
+      - [Filtrado, 'Inactivo', 'Deny por defecto y allow 2222', 'Activo', 'ufw status']
+      - [SUID, 'Conteo base', 'Sin cambios', 'Igual', 'find -perm -4000']
+      - [Puertos, 'Conteo base', 'Solo los del alcance', 'Reducido', 'ss -tulpn']
+    entregable: >-
+      Se entrega el auditor con veredicto, los veredictos antes y despues, los comandos de
+      hardening y la justificacion de cada excepcion.
+    estructura: |
+      semana_06/
+      |-- informe.md
+      |-- auditor.py
+      |-- auditor.sh
+      |-- evidencia/
+      |   |-- veredictos_antes.txt
+      |   |-- veredictos_despues.txt
+      |   |-- puertos_final.txt
+      |   `-- http_final.txt
+      `-- README.md
+    comprobaciones:
+    - El auditor devuelve no_verificado cuando no puede medir.
+    - Los veredictos de antes y despues salen del mismo script.
+    - Cada excepcion tiene motivo y fecha de revision.
+    - El sistema sigue operativo despues del hardening.
+    avisos:
+    - Un control no medible no se escribe como aprobado.
+    - Recargar SSH en la sesion activa puede expulsar al estudiante: se usa consola local.
 - numero: 7
   fase: 3
   titulo: Desarrollo seguro y cadena de suministro
@@ -809,6 +2401,289 @@ semanas:
     - criterio: Sin regresiones funcionales en la aplicación
       peso: 1.0
   evaluacion: control_fase_3
+  ejemplos:
+  - grupo: 1
+    titulo: Controles automatizados con umbral y veredicto
+    intro: >-
+      El rol Púrpura convierte la revision en un control que falla solo. Cada herramienta
+      tiene umbral, veredicto y una salida que se puede citar en el informe.
+    bloques:
+    - titulo: Ejecutar analisis estatico y fijar el umbral
+      texto: >-
+        El umbral se declara antes de mirar el resultado. Un hallazgo de severidad alta
+        bloquea la entrega; los de severidad baja se registran y se deciden.
+      comandos: |
+        mkdir -p semana_07/evidencia
+        bandit -r semana_07/codigo -f json -o semana_07/evidencia/bandit.json || true
+        python3 - <<'PY' | tee semana_07/evidencia/bandit_resumen.txt
+        import json
+        datos = json.load(open('semana_07/evidencia/bandit.json'))
+        for hallazgo in datos.get('results', []):
+            print(hallazgo['severity'], hallazgo['test_id'], hallazgo['filename'])
+        PY
+    - titulo: Auditar dependencias y generar el inventario
+      texto: >-
+        El inventario de componentes permite saber que se usa y que version. Sin el, una
+        vulnerabilidad publicada no se puede correlacionar con lo instalado.
+      comandos: |
+        pip-audit -r semana_07/requirements.txt \
+          -f json -o semana_07/evidencia/pip_audit.json || true
+        python3 - <<'PY' | tee semana_07/evidencia/sbom.txt
+        import json
+        datos = json.load(open('semana_07/evidencia/pip_audit.json'))
+        for dep in datos.get('dependencies', []):
+            print(dep['name'], dep['version'], len(dep.get('vulns', [])))
+        PY
+    - titulo: Buscar secretos antes de que lleguen al historial
+      texto: >-
+        El escaneo mira el arbol y el historial. Un secreto retirado del arbol sigue
+        estando en el commit anterior.
+      comandos: |
+        git grep -nEi '(api[_-]?key|secret|token|password)[[:space:]]*=' \
+          > semana_07/evidencia/secretos.txt || true
+        git log --all -p -S 'BEGIN RSA PRIVATE KEY' --oneline \
+          >> semana_07/evidencia/secretos.txt || true
+    - titulo: Convertir el resultado en veredicto
+      texto: >-
+        El veredicto por herramienta es pasa, falla o no_verificado. Si una herramienta no
+        se pudo ejecutar, el veredicto no es pasa.
+    tabla:
+      titulo: Control, umbral y veredicto
+      nota: >-
+        El veredicto se copia del resumen, no se interpreta de memoria. Un control no
+        ejecutado se escribe como no verificado.
+      columnas: [Control, Umbral, Hallazgos, Veredicto, Accion]
+      anchos: [2.4, 2.6, 4.0, 2.2, 2.6]
+      filas:
+      - [Bandit, 'Severidad alta igual a cero', 'Conteo del resumen', 'Pasa o falla', 'Corregir antes de entregar']
+      - [pip-audit, 'Cero vulnerabilidades conocidas', 'Conteo del SBOM', 'Pasa o falla', 'Actualizar dependencia']
+      - [Secretos, 'Cero coincidencias', 'Conteo del escaneo', 'Pasa o falla', 'Rotar y retirar']
+      - [Regresion funcional, 'Todo en verde', 'Resultado de las pruebas', 'Pasa o falla', 'Corregir el parche']
+    entregable: >-
+      Se entrega la salida cruda de los tres controles, el resumen con veredicto y la
+      decision tomada por cada hallazgo.
+    estructura: |
+      semana_07/
+      |-- informe.md
+      |-- codigo/
+      |-- requirements.txt
+      |-- evidencia/
+      |   |-- bandit.json
+      |   |-- bandit_resumen.txt
+      |   |-- pip_audit.json
+      |   |-- sbom.txt
+      |   `-- secretos.txt
+      `-- README.md
+    comprobaciones:
+    - Los umbrales estan escritos antes de ejecutar los controles.
+    - El veredicto de cada herramienta se apoya en su resumen.
+    - Un control no ejecutado figura como no verificado.
+    - El escaneo de secretos incluye el historial.
+    avisos:
+    - Un analisis estatico con cero hallazgos no demuestra que el codigo sea seguro.
+    - Las dependencias actualizadas sin prueba de regresion no son una correccion.
+  - grupo: 2
+    titulo: Cadena de suministro, licencias y criterio de aceptacion
+    intro: >-
+      El rol Legal revisa lo que el equipo instala: licencia, origen y riesgo. Una
+      dependencia sin licencia declarada es un problema legal aunque funcione.
+    bloques:
+    - titulo: Inventariar dependencias y licencias
+      texto: >-
+        Se listan las dependencias directas con su version y su licencia. Lo que no se
+        puede verificar se marca como pendiente, no se asume permisivo.
+      comandos: |
+        mkdir -p semana_07/evidencia
+        python3 -m pip list --format=json > semana_07/evidencia/instalado.json
+        python3 - <<'PY' | tee semana_07/evidencia/licencias.txt
+        import json
+        for paquete in json.load(open('semana_07/evidencia/instalado.json'))[:40]:
+            print(paquete['name'], paquete['version'], 'licencia: pendiente de verificar')
+        PY
+    - titulo: Decidir que se acepta en el repositorio
+      texto: >-
+        Se acepta una dependencia si tiene licencia compatible, origen conocido y version
+        fijada. Las que no cumplen se sustituyen o se aisan.
+    - titulo: Escribir el criterio de aceptacion de seguridad
+      texto: >-
+        El criterio es una condicion verificable: por ejemplo, ninguna consulta se
+        construye por concatenacion y toda ruta de archivo pasa por lista blanca. Se
+        escribe para que otra persona pueda comprobarlo sin preguntar.
+    - titulo: Comprobar que el criterio se puede auditar
+      texto: >-
+        Cada criterio se asocia a un comando o a una prueba. Si no se puede comprobar de
+        forma automatica, se documenta como revision manual con responsable.
+    tabla:
+      titulo: Dependencia, licencia y decision
+      nota: >-
+        La licencia se cita tal como aparece en el paquete; "open source" no es una
+        licencia y no sirve como decision.
+      columnas: [Dependencia, Version, Licencia, Riesgo, Decision]
+      anchos: [3.0, 1.8, 3.0, 2.4, 3.6]
+      filas:
+      - [Flask, 'Version instalada', 'BSD-3-Clause', 'Bajo', 'Aceptada']
+      - [Dependencia sin metadatos, 'Version instalada', 'Pendiente de verificar', 'Medio', 'No se acepta hasta verificar']
+      - [Paquete sin mantenimiento, 'Version instalada', 'MIT', 'Medio', 'Se aisla y se vigila']
+      - [Herramienta de analisis, 'Version instalada', 'Apache-2.0', 'Bajo', 'Aceptada']
+    entregable: >-
+      Se entrega el inventario con licencias, la decision por dependencia y el criterio de
+      aceptacion con su forma de verificacion.
+    estructura: |
+      semana_07/
+      |-- informe.md
+      |-- codigo/
+      |-- requirements.txt
+      |-- evidencia/
+      |   |-- instalado.json
+      |   `-- licencias.txt
+      `-- README.md
+    comprobaciones:
+    - Cada dependencia directa tiene licencia o queda como pendiente.
+    - Las decisiones distinguen aceptada, aislada y rechazada.
+    - El criterio de aceptacion es comprobable por un tercero.
+    - Las versiones estan fijadas en requirements.
+    avisos:
+    - Una licencia "pendiente" no se puede presentar como aceptada.
+    - Fijar la version sin revisar vulnerabilidades no resuelve el riesgo de suministro.
+  - grupo: 3
+    titulo: Repetir el ataque y demostrar que ya no funciona
+    intro: >-
+      El rol Rojo conserva los payloads de la semana 5 y los repite contra la copia
+      parcheada. La prueba es el mismo ataque, no uno parecido.
+    bloques:
+    - titulo: Guardar la evidencia del antes en la copia sin parchear
+      texto: >-
+        Se reproduce cada hallazgo y se guardan peticion y respuesta. Esta evidencia es la
+        referencia contra la que se compara el despues.
+      comandos: |
+        mkdir -p semana_07/evidencia
+        curl -s -b semana_07/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit' \
+          > semana_07/evidencia/sqli_antes.html
+        grep -c 'First name' semana_07/evidencia/sqli_antes.html \
+          > semana_07/evidencia/sqli_antes_conteo.txt
+    - titulo: Reaplicar el mismo payload sobre el codigo parcheado
+      texto: >-
+        Se cambia solo el destino: mismo parametro, mismo orden, misma sesion. Si el
+        resultado ya no devuelve filas extra, la mitigacion se sostiene.
+      comandos: |
+        curl -s -b semana_07/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit' \
+          > semana_07/evidencia/sqli_despues.html
+        grep -c 'First name' semana_07/evidencia/sqli_despues.html \
+          > semana_07/evidencia/sqli_despues_conteo.txt
+        diff semana_07/evidencia/sqli_antes_conteo.txt \
+          semana_07/evidencia/sqli_despues_conteo.txt || true
+    - titulo: Probar una variante del mismo ataque
+      texto: >-
+        Cambiar mayusculas, comentarios o codificacion es parte del mismo ataque. Si la
+        variante funciona, el parche cubrio el ejemplo y no la causa.
+    - titulo: Documentar la regresion funcional
+      texto: >-
+        Ademas de que el ataque falle, la funcionalidad legitima debe seguir funcionando.
+        Se prueban los casos normales del formulario.
+    tabla:
+      titulo: Hallazgo, payload y resultado despues
+      nota: >-
+        La columna de variante se llena solo si se probo; si no, se marca como no probada
+        en lugar de suponer que tambien falla.
+      columnas: [Hallazgo, Payload original, Resultado, Variante probada, Conclusion]
+      anchos: [2.2, 3.6, 2.4, 3.2, 2.6]
+      filas:
+      - [Inyeccion SQL, 'Comilla y OR tautologico', 'Sin filas extra', 'Mayusculas y comentario', 'Mitigado']
+      - [XSS reflejado, 'Script en name', 'Texto codificado', 'Etiqueta img', 'Mitigado']
+      - [LFI, 'Secuencia ../ en page', 'Error controlado', 'Codificacion URL', 'Mitigado']
+      - [Formulario legitimo, 'Consulta normal', 'Funciona igual', 'No aplica', 'Sin regresion']
+    entregable: >-
+      Se entrega la evidencia antes y despues con el mismo payload, el resultado de la
+      variante y la comprobacion de que la funcionalidad legitima sigue operativa.
+    estructura: |
+      semana_07/
+      |-- informe.md
+      |-- codigo/
+      |-- evidencia/
+      |   |-- sqli_antes.html
+      |   |-- sqli_despues.html
+      |   |-- sqli_antes_conteo.txt
+      |   `-- sqli_despues_conteo.txt
+      `-- README.md
+    comprobaciones:
+    - El payload de antes y el de despues son identicos.
+    - La variante se probo o se declaro no probada.
+    - La funcionalidad legitima se verifico despues del parche.
+    - La conclusion distingue mitigado de no verificado.
+    avisos:
+    - Cambiar el payload para que falle no demuestra nada.
+    - Un parche que rompe la aplicacion no es una mitigacion aceptable.
+  - grupo: 4
+    titulo: Parchear la causa y probar la regresion
+    intro: >-
+      El rol Azul escribe el parche en el punto donde nace la falla: parametrizacion,
+      codificacion y lista blanca. Despues lo prueba con el payload del grupo Rojo.
+    bloques:
+    - titulo: Parametrizar la consulta
+      texto: >-
+        La consulta deja de concatenar y recibe el valor como parametro. El cambio se ve
+        en el diff y se explica en una linea.
+      comandos: |
+        mkdir -p semana_07/evidencia
+        git diff -- semana_07/codigo/ > semana_07/evidencia/parche.diff
+        grep -nE 'execute|cursor' semana_07/codigo/*.py \
+          | tee semana_07/evidencia/consulta.txt
+    - titulo: Codificar la salida y validar la entrada
+      texto: >-
+        La salida se codifica en el contexto donde se usa y la entrada se valida contra
+        un formato esperado. Validar sin codificar no evita el XSS.
+    - titulo: Resolver la ruta con lista blanca
+      texto: >-
+        El nombre de archivo se compara contra una lista permitida y se compone con una
+        raiz fija. Concatenar la entrada del usuario y despues "limpiar" no es suficiente.
+      comandos: |
+        python3 - <<'PY' | tee semana_07/evidencia/rutas.txt
+        permitidos = {'inicio.php', 'ayuda.php'}
+        for pedido in ('inicio.php', '../../../../etc/passwd'):
+            print(pedido, 'aceptado' if pedido in permitidos else 'rechazado')
+        PY
+    - titulo: Ejecutar la prueba de regresion
+      texto: >-
+        La prueba automatizada usa el mismo payload y espera el rechazo. Si la prueba
+        falla, el parche no esta completo.
+      comandos: |
+        python3 -m pytest semana_07/pruebas -q \
+          | tee semana_07/evidencia/pytest.txt
+    tabla:
+      titulo: Vulnerabilidad, parche y prueba
+      nota: >-
+        La prueba se cita por su nombre y su resultado; "se probo a mano" no sustituye una
+        prueba reproducible.
+      columnas: [Vulnerabilidad, Parche, Archivo, Prueba, Resultado]
+      anchos: [2.4, 3.4, 2.6, 3.0, 2.2]
+      filas:
+      - [Inyeccion SQL, 'Consulta parametrizada', 'consulta.py', 'test_sqli_rechaza', 'Pasa']
+      - [XSS reflejado, 'Codificacion de salida', 'vista.py', 'test_xss_codifica', 'Pasa']
+      - [LFI, 'Lista blanca de rutas', 'archivos.py', 'test_lfi_rechaza', 'Pasa']
+      - [Regresion, 'Sin cambios de contrato', 'consulta.py', 'test_caso_normal', 'Pasa']
+    entregable: >-
+      Se entrega el diff del parche, la prueba de regresion con su salida y la explicacion
+      de por que la correccion ataca la causa.
+    estructura: |
+      semana_07/
+      |-- informe.md
+      |-- codigo/
+      |-- pruebas/
+      |-- evidencia/
+      |   |-- parche.diff
+      |   |-- rutas.txt
+      |   `-- pytest.txt
+      `-- README.md
+    comprobaciones:
+    - El diff muestra el cambio en la causa, no en el mensaje de error.
+    - La prueba usa el payload original y espera rechazo.
+    - La regresion funcional sigue en verde.
+    - La lista blanca se comprueba con el intento de salir de la raiz.
+    avisos:
+    - Escapar la salida sin validar la entrada deja otras rutas abiertas.
+    - Una prueba que solo comprueba el caso malo no demuestra que el bueno sigue vivo.
 - numero: 8
   fase: 4
   titulo: 'Forense digital: adquisición, artefactos y línea de tiempo'
@@ -860,6 +2735,287 @@ semanas:
     - criterio: IoCs reutilizables y separación hecho/hipótesis
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Cadena de custodia y admisibilidad de la imagen
+    intro: >-
+      El rol Legal custodia la evidencia desde el primer minuto: quien la adquiere, con
+      que, cuando y con que hash. Sin ese registro, la imagen es un archivo mas.
+    bloques:
+    - titulo: Abrir el formulario antes de adquirir
+      texto: >-
+        El formulario se abre antes de tocar el sistema. Se anotan hora UTC, operador,
+        herramienta y estado del equipo; despues se completa con los hashes.
+      comandos: |
+        mkdir -p semana_08/evidencia
+        printf '%s | adquisicion | operador=%s | herramienta=dcfldd\n' \
+          "$(date -u +%FT%TZ)" "$(id -un)" > semana_08/evidencia/custodia.txt
+        printf 'estado del equipo: encendido, orden de volatilidad documentado\n' \
+          >> semana_08/evidencia/custodia.txt
+    - titulo: Registrar hash de origen y de destino
+      texto: >-
+        El hash se calcula durante la copia, no despues. Si los dos hashes no coinciden,
+        la imagen no se usa: se repite la adquisicion.
+      comandos: |
+        sha256sum caso.dd | tee semana_08/evidencia/origen.sha256
+        sha256sum semana_08/imagen.dd | tee semana_08/evidencia/destino.sha256
+        cmp -s semana_08/evidencia/origen.sha256 semana_08/evidencia/destino.sha256 \
+          && echo 'hashes coinciden' || echo 'NO coinciden: repetir'
+    - titulo: Registrar cada transferencia
+      texto: >-
+        Cada cambio de manos se anota con hora, quien entrega, quien recibe y para que. El
+        registro se firma y se conserva junto a la imagen.
+    - titulo: Decidir que evidencia se excluye
+      texto: >-
+        La evidencia adquirida sin autorizacion o sin integridad verificable se excluye
+        del informe. Se explica el motivo en lugar de corregir el registro.
+    tabla:
+      titulo: Pieza, integridad y admisibilidad
+      nota: >-
+        La ultima columna justifica la decision con el registro; si falta la autorizacion,
+        la pieza no entra aunque el hash sea correcto.
+      columnas: [Pieza, Hash, Autorizacion, Integridad, Decision]
+      anchos: [2.6, 2.4, 2.6, 2.2, 3.0]
+      filas:
+      - [Imagen del disco, 'SHA-256 doble', 'Alcance semana 3', 'Verificada', 'Admisible']
+      - [Registro de autenticacion, 'SHA-256', 'Alcance semana 3', 'Verificada', 'Admisible']
+      - [Captura de memoria, 'Pendiente', 'No incluida en el alcance', 'No verificada', 'Excluida']
+      - [Nota del analista, 'No aplica', 'No es evidencia', 'No aplica', 'Solo contexto']
+    entregable: >-
+      Se entrega el formulario de custodia completo, los hashes de origen y destino, el
+      registro de transferencias y la decision por pieza.
+    estructura: |
+      semana_08/
+      |-- informe.md
+      |-- imagen.dd
+      |-- evidencia/
+      |   |-- custodia.txt
+      |   |-- origen.sha256
+      |   `-- destino.sha256
+      `-- README.md
+    comprobaciones:
+    - El formulario se abrio antes de adquirir y tiene hora UTC.
+    - Los hashes de origen y destino coinciden o la adquisicion se repitio.
+    - Cada transferencia tiene hora y responsable.
+    - La pieza excluida esta excluida aunque su hash sea correcto.
+    avisos:
+    - La imagen no se abre en modo lectura y escritura en ningun momento.
+    - Un hash correcto no sustituye la autorizacion del alcance.
+  - grupo: 2
+    titulo: Adquirir, verificar y localizar persistencia
+    intro: >-
+      El rol Rojo adquiere la imagen con hash en el mismo paso y busca los mecanismos que
+      sobreviven al reinicio. La busqueda es dirigida por hipotesis, no por barrido.
+    bloques:
+    - titulo: Adquirir con hash simultaneo
+      texto: >-
+        La copia y el hash se hacen en la misma operacion. Si la herramienta no esta
+        disponible, se usa dd y se documenta la limitacion en lugar de omitir el hash.
+      comandos: |
+        mkdir -p semana_08/evidencia
+        dcfldd if=caso.dd of=semana_08/imagen.dd hash=sha256 \
+          hashlog=semana_08/evidencia/dcfldd.sha256 2>&1 \
+          | tail -5 | tee semana_08/evidencia/dcfldd.txt
+        sha256sum semana_08/imagen.dd | tee -a semana_08/evidencia/dcfldd.sha256
+    - titulo: Montar en solo lectura y confirmar el contenido
+      texto: >-
+        El montaje se hace con loop y solo lectura. Se comprueba que el arbol se lee y que
+        no se modifico nada comparando el hash despues de desmontar.
+      comandos: |
+        sudo mkdir -p /mnt/caso
+        sudo mount -o ro,loop,noload semana_08/imagen.dd /mnt/caso
+        ls /mnt/caso | tee semana_08/evidencia/raiz.txt
+        sudo umount /mnt/caso
+        sha256sum semana_08/imagen.dd
+    - titulo: Buscar persistencia por mecanismo
+      texto: >-
+        Se revisan tareas programadas, servicios añadidos, claves de arranque y usuarios
+        creados. Cada hallazgo se contrasta con la fecha de creacion del archivo.
+      comandos: |
+        sudo mount -o ro,loop,noload semana_08/imagen.dd /mnt/caso
+        find /mnt/caso -xdev -type f -newermt '2026-01-01' \
+          -printf '%T@ %p\n' 2>/dev/null | sort -n \
+          | tee semana_08/evidencia/archivos_recientes.txt
+        grep -RIn 'curl\|wget\|base64' /mnt/caso/etc/cron* /mnt/caso/var/spool/cron 2>/dev/null \
+          | tee semana_08/evidencia/cron.txt || true
+        sudo umount /mnt/caso
+    - titulo: Enlazar cada persistencia con su artefacto
+      texto: >-
+        Una persistencia aislada es una hipotesis. Se enlaza con el registro de acceso, el
+        historial o el paquete instalado que la origino.
+    tabla:
+      titulo: Persistencia, ruta y prueba
+      nota: >-
+        La prueba cita el archivo y su marca de tiempo; "parece sospechoso" no es una
+        prueba.
+      columnas: [Mecanismo, Ruta, Marca de tiempo, Artefacto asociado, Conclusion]
+      anchos: [2.6, 3.4, 2.4, 3.2, 2.2]
+      filas:
+      - [Cron, 'Archivo en /etc/cron.d', 'Fecha del archivo', 'Descarga remota en el script', 'Confirmada']
+      - [Servicio systemd, 'Unidad añadida', 'Fecha de la unidad', 'Ejecutable fuera de /usr/bin', 'Hipotesis']
+      - [Usuario nuevo, 'Entrada en passwd', 'Fecha de alta', 'Acceso en auth.log', 'Confirmada']
+      - [Clave SSH, 'authorized_keys', 'Fecha del archivo', 'Acceso desde IP externa', 'Confirmada']
+    entregable: >-
+      Se entrega la imagen con sus hashes, la busqueda de persistencia y la tabla que
+      enlaza cada mecanismo con su prueba.
+    estructura: |
+      semana_08/
+      |-- informe.md
+      |-- imagen.dd
+      |-- evidencia/
+      |   |-- dcfldd.sha256
+      |   |-- raiz.txt
+      |   |-- archivos_recientes.txt
+      |   `-- cron.txt
+      `-- README.md
+    comprobaciones:
+    - La adquisicion calcula el hash durante la copia.
+    - El montaje es de solo lectura y se desmonta al terminar.
+    - Cada mecanismo de persistencia tiene su artefacto asociado.
+    - La hipotesis se distingue de la confirmacion.
+    avisos:
+    - Nunca se monta la imagen en lectura y escritura, ni para "mirar rapido".
+    - Los artefactos con datos personales se citan sin transcribirlos.
+  - grupo: 3
+    titulo: Reconstruir la linea de tiempo y el relato
+    intro: >-
+      El rol Azul convierte los artefactos en una secuencia coherente: que paso, en que
+      orden y que lo demuestra. La linea de tiempo es la prueba, no un resumen.
+    bloques:
+    - titulo: Extraer eventos con marca de tiempo
+      texto: >-
+        Se normalizan fechas a UTC y se descartan las lineas sin hora. Cada evento
+        conserva su archivo de origen para poder citarlo.
+      comandos: |
+        mkdir -p semana_08/evidencia
+        sudo mount -o ro,loop,noload semana_08/imagen.dd /mnt/caso
+        awk '{print $1" "$2" "$3" auth: "$0}' /mnt/caso/var/log/auth.log \
+          > semana_08/evidencia/eventos_auth.txt 2>/dev/null || true
+        printf 'eventos extraidos: '; wc -l < semana_08/evidencia/eventos_auth.txt
+        sudo umount /mnt/caso
+    - titulo: Ordenar y deduplicar
+      texto: >-
+        La misma accion puede aparecer en dos registros. Se unifica por instante y se
+        anota la fuente doble en lugar de contarla dos veces.
+      comandos: |
+        sort -u semana_08/evidencia/eventos_auth.txt \
+          > semana_08/eventos_ordenados.txt
+        head -20 semana_08/eventos_ordenados.txt
+    - titulo: Construir al menos diez eventos con fuente
+      texto: >-
+        La linea de tiempo tiene diez filas minimo, cada una con instante, evento, fuente y
+        si es hecho o inferencia.
+    - titulo: Contrastar el relato con la persistencia
+      texto: >-
+        Si la persistencia aparecio antes del primer acceso, el relato falla. La
+        incoherencia se documenta como pendiente de explicar, no se oculta.
+    tabla:
+      titulo: Instante, evento y fuente
+      nota: >-
+        La columna de tipo distingue hecho comprobado de inferencia; la inferencia no se
+        presenta como concluyente.
+      columnas: [Instante UTC, Evento, Fuente, Tipo, Coherencia]
+      anchos: [2.6, 4.2, 3.0, 2.0, 2.0]
+      filas:
+      - ['00:12:03', 'Acceso SSH correcto', 'auth.log', 'Hecho', 'Coherente']
+      - ['00:13:40', 'Creacion de usuario', 'passwd', 'Hecho', 'Coherente']
+      - ['00:15:02', 'Alta de cron', 'cron.d', 'Hecho', 'Coherente']
+      - ['00:16:10', 'Descarga remota', 'cron', 'Hecho', 'Coherente']
+      - ['00:20:00', 'Conexion saliente', 'firewall', 'Inferencia', 'Pendiente']
+    entregable: >-
+      Se entrega la linea de tiempo con al menos diez eventos, su fuente y el relato del
+      incidente separando hechos de inferencias.
+    estructura: |
+      semana_08/
+      |-- informe.md
+      |-- imagen.dd
+      |-- eventos_ordenados.txt
+      |-- evidencia/
+      |   `-- eventos_auth.txt
+      `-- README.md
+    comprobaciones:
+    - Todos los instantes estan en UTC.
+    - Cada evento cita archivo y linea de origen.
+    - Hay al menos diez eventos y la secuencia es coherente.
+    - Las inferencias estan marcadas como tales.
+    avisos:
+    - Una linea de tiempo con huecos no se rellena con suposiciones.
+    - El desfase horario del contenedor se documenta antes de normalizar.
+  - grupo: 4
+    titulo: Indicadores reutilizables y reglas de deteccion
+    intro: >-
+      El rol Púrpura extrae indicadores del incidente y los convierte en reglas
+      comprobables. Un indicador sirve si permite detectar el mismo comportamiento en
+      otro equipo.
+    bloques:
+    - titulo: Extraer indicadores de los artefactos
+      texto: >-
+        Se extraen rutas, nombres de usuario, hashes de archivos y patrones de comando.
+        Cada indicador se clasifica por tipo y por grado de confianza.
+      comandos: |
+        mkdir -p semana_08/evidencia
+        sha256sum semana_08/imagen.dd > semana_08/evidencia/imagen.sha256
+        grep -RhoE '/tmp/[A-Za-z0-9._/-]+' /mnt/caso/var/log 2>/dev/null \
+          | sort -u > semana_08/evidencia/rutas_tmp.txt || true
+        grep -RhoE '([0-9]{1,3}\.){3}[0-9]{1,3}' /mnt/caso/var/log 2>/dev/null \
+          | sort -u > semana_08/evidencia/ips.txt || true
+    - titulo: Distinguir indicador de coincidencia
+      texto: >-
+        Una ruta en /tmp no es un indicador por si sola; lo es combinada con ejecucion y
+        persistencia. Se documenta la combinacion que eleva la confianza.
+    - titulo: Escribir la regla y probarla contra el caso
+      texto: >-
+        La regla se prueba contra la evidencia del caso y contra un archivo limpio. Debe
+        disparar en el primero y no en el segundo.
+      comandos: |
+        cat > semana_08/regla.yar <<'YAR'
+        rule persistencia_tmp_cron {
+          strings:
+            $a = "/tmp/" ascii
+            $b = "curl" ascii
+          condition:
+            $a and $b
+        }
+        YAR
+        yara semana_08/regla.yar semana_08/imagen.dd \
+          | tee semana_08/evidencia/yara.txt || true
+    - titulo: Publicar los indicadores sin datos sensibles
+      texto: >-
+        La tabla final no incluye nombres reales ni direcciones internas fuera del
+        laboratorio. Se anonimiza antes de versionar.
+    tabla:
+      titulo: Indicador, tipo y confianza
+      nota: >-
+        La confianza se justifica por la combinacion observada; un indicador aislado no
+        pasa de baja.
+      columnas: [Indicador, Tipo, Fuente, Confianza, Regla]
+      anchos: [3.0, 2.6, 2.4, 2.1, 2.7]
+      filas:
+      - [Ruta en /tmp con descarga, 'Comportamiento', 'cron y log', 'Alta', 'Contiene /tmp y curl']
+      - [Usuario fuera de politica, 'Cuenta', 'passwd', 'Alta', 'No pertenece a la lista base']
+      - [IP externa en auth.log, 'Red', 'auth.log', 'Media', 'Correlacionar con hora']
+      - [Hash de ejecutable, 'Archivo', 'find y sha256sum', 'Alta', 'Coincidencia exacta']
+    entregable: >-
+      Se entrega la tabla de indicadores con confianza, la regla probada contra el caso y
+      contra un archivo limpio, y la evidencia anonimizada.
+    estructura: |
+      semana_08/
+      |-- informe.md
+      |-- regla.yar
+      |-- evidencia/
+      |   |-- rutas_tmp.txt
+      |   |-- ips.txt
+      |   |-- yara.txt
+      |   `-- imagen.sha256
+      `-- README.md
+    comprobaciones:
+    - Cada indicador cita su fuente.
+    - La regla se probo contra el caso y contra un limpio.
+    - La confianza se justifica por la combinacion observada.
+    - La tabla esta anonimizada.
+    avisos:
+    - Un indicador de IP puede ser infraestructura compartida: la confianza lo refleja.
+    - La regla no se publica fuera del repositorio del grupo.
 - numero: 9
   fase: 4
   titulo: Respuesta a incidentes y triage estático de malware
@@ -906,6 +3062,286 @@ semanas:
     - criterio: Cumplimiento de las reglas de manejo de muestras
       peso: 1.0
   evaluacion: formativa
+  ejemplos:
+  - grupo: 1
+    titulo: Playbook, roles y limites legales del manejo
+    intro: >-
+      El rol Legal escribe el playbook como un documento operativo: quien decide en cada
+      fase, que se comunica y que no se puede hacer con la muestra. La claridad legal es
+      parte de la respuesta.
+    bloques:
+    - titulo: Fijar fases, responsables y criterios de escalado
+      texto: >-
+        Cada fase tiene un responsable nombrado y un criterio de salida. Un playbook sin
+        criterio de salida se queda en la fase de deteccion para siempre.
+      comandos: |
+        mkdir -p semana_09/evidencia
+        printf '%s | playbook v1 | responsable: Grupo 1\n' \
+          "$(date -u +%FT%TZ)" > semana_09/evidencia/playbook_registro.txt
+    - titulo: Declarar los limites del analisis dinamico
+      texto: >-
+        La muestra no se ejecuta. Se documenta por que: riesgo de propagacion, falta de
+        aislamiento y reglas del curso. Si en el futuro se autoriza, se exige entorno
+        aislado y registro.
+    - titulo: Definir la ruta de comunicacion
+      texto: >-
+        Quien avisa, a quien, por que canal y en cuanto tiempo. La comunicacion incluye a
+        quien no debe informarse todavia para no contaminar la investigacion.
+    - titulo: Cerrar con post mortem y decisiones registradas
+      texto: >-
+        El post mortem lista decisiones, aciertos y errores, y prioriza acciones por
+        impacto y esfuerzo. Cada accion tiene responsable y fecha.
+    tabla:
+      titulo: Fase, responsable y criterio de salida
+      nota: >-
+        El criterio de salida es verificable; "cuando este claro" no se puede auditar.
+      columnas: [Fase, Responsable, Criterio de salida, Comunicacion, Plazo]
+      anchos: [1.9, 2.2, 4.0, 3.4, 1.8]
+      filas:
+      - [Preparacion, 'Grupo 1', 'Playbook aprobado y contactos vigentes', 'Canal del curso', 'Antes del corte']
+      - [Deteccion, 'Grupo 4', 'Alerta clasificada como verdadera', 'Docente', '15 minutos']
+      - [Contencion, 'Grupo 3', 'Servicio aislado y evidencia preservada', 'Docente y grupo', '30 minutos']
+      - [Erradicacion, 'Grupo 2', 'Persistencia eliminada y verificada', 'Grupo', '2 horas']
+      - [Recuperacion, 'Grupo 3', 'Servicio restaurado y comprobado', 'Grupo', '4 horas']
+    entregable: >-
+      Se entrega el playbook de una pagina con fases, responsables, criterios, ruta de
+      comunicacion y limites legales, mas el post mortem con acciones priorizadas.
+    estructura: |
+      semana_09/
+      |-- playbook.md
+      |-- post_mortem.md
+      |-- informe.md
+      |-- evidencia/
+      |   `-- playbook_registro.txt
+      `-- README.md
+    comprobaciones:
+    - Cada fase tiene responsable y criterio de salida verificable.
+    - Los limites del analisis dinamico estan escritos.
+    - La ruta de comunicacion indica canal y plazo.
+    - El post mortem prioriza acciones con responsable y fecha.
+    avisos:
+    - Ejecutar la muestra queda prohibido aunque el playbook lo contemple: falta aislamiento.
+    - Un playbook que no se puede ejecutar en una hora no es un playbook de una pagina.
+  - grupo: 2
+    titulo: Triage estatico sin ejecutar la muestra
+    intro: >-
+      El rol Rojo describe la muestra sin ejecutarla: tipo de archivo, cabeceras, cadenas
+      y hash. La regla es simple: se lee, no se corre.
+    bloques:
+    - titulo: Identificar el tipo y calcular el hash
+      texto: >-
+        El tipo se lee de la cabecera y se contrasta con la extension. El hash es la
+        identidad de la muestra y se calcula antes de cualquier analisis.
+      comandos: |
+        mkdir -p semana_09/evidencia
+        file muestra.bin | tee semana_09/evidencia/tipo.txt
+        sha256sum muestra.bin | tee semana_09/evidencia/sha256.txt
+        md5sum muestra.bin | tee semana_09/evidencia/md5.txt
+    - titulo: Leer cabeceras sin ejecutar
+      texto: >-
+        Para un ELF se leen cabecera y secciones; para un documento se revisan objetos
+        embebidos. Nada de abrir el archivo con el programa que lo interpretaria.
+      comandos: |
+        readelf -h muestra.bin | tee semana_09/evidencia/elf.txt 2>/dev/null || true
+        xxd -l 128 muestra.bin | tee semana_09/evidencia/hex.txt
+    - titulo: Extraer cadenas y clasificarlas
+      texto: >-
+        Las cadenas se agrupan por interes: rutas, dominios, comandos, mensajes. La lista
+        cruda va como evidencia; la clasificacion va en el informe.
+      comandos: |
+        strings -n 6 muestra.bin > semana_09/evidencia/strings.txt
+        grep -Ei 'http|curl|wget|/tmp/|base64|chmod|system' \
+          semana_09/evidencia/strings.txt | head -30 \
+          | tee semana_09/evidencia/indicadores.txt || true
+    - titulo: Consultar reputacion sin subir la muestra
+      texto: >-
+        Se consulta solo el hash. Si no hay API disponible, se documenta como no
+        verificado en lugar de inventar un veredicto.
+    tabla:
+      titulo: Artefacto, hallazgo y valor probatorio
+      nota: >-
+        La columna de valor probatorio distingue indicio de prueba; un string suelto es
+        indicio.
+      columnas: [Artefacto, Hallazgo, Valor probatorio, Accion]
+      anchos: [2.6, 4.4, 2.8, 3.0]
+      filas:
+      - [Tipo y hash, 'ELF de 64 bits con SHA-256 propio', 'Identidad de la muestra', 'Registrar y buscar reputacion']
+      - [Cabecera, 'Entrada y secciones legibles', 'Estructura del binario', 'Documentar']
+      - [Cadenas, 'Rutas y comandos de descarga', 'Indicio de funcionalidad', 'Correlacionar con la regla']
+      - [Reputacion, 'No consultada por falta de API', 'No verificado', 'Declarar limitacion']
+    entregable: >-
+      Se entrega el informe de triage con tipo, hashes, cabeceras, cadenas clasificadas y
+      la declaracion de lo que no se pudo verificar.
+    estructura: |
+      semana_09/
+      |-- informe.md
+      |-- muestra.bin
+      |-- evidencia/
+      |   |-- tipo.txt
+      |   |-- sha256.txt
+      |   |-- elf.txt
+      |   |-- hex.txt
+      |   |-- strings.txt
+      |   `-- indicadores.txt
+      `-- README.md
+    comprobaciones:
+    - La muestra no se ejecuto en ningun momento.
+    - El hash se calculo antes de abrir el archivo con otras herramientas.
+    - Las cadenas estan clasificadas, no solo volcadas.
+    - Lo no verificado esta declarado.
+    avisos:
+    - La muestra no se abre con el programa que la interpreta, ni con doble clic.
+    - Subir la muestra a un servicio externo puede exponer datos: solo se consulta el hash.
+  - grupo: 3
+    titulo: Contener, erradicar y verificar la recuperacion
+    intro: >-
+      El rol Azul aplica el playbook al incidente de la semana 8: contiene, erradica y
+      comprueba que el servicio vuelve sin el mecanismo de persistencia.
+    bloques:
+    - titulo: Contener sin destruir evidencia
+      texto: >-
+        Se aísla el servicio y se preserva la evidencia antes de borrar nada. Contener no
+        es limpiar: es evitar la propagacion sin perder el rastro.
+      comandos: |
+        mkdir -p semana_09/evidencia
+        docker stop objetivo-linux | tee semana_09/evidencia/contencion.txt
+        docker inspect objetivo-linux > semana_09/evidencia/contenedor_antes.json
+    - titulo: Erradicar la persistencia identificada
+      texto: >-
+        Se eliminan solo los mecanismos confirmados en la semana 8. Cada eliminacion se
+        registra con el comando y el motivo.
+      comandos: |
+        docker start objetivo-linux
+        docker exec objetivo-linux sh -c 'crontab -l 2>/dev/null || true' \
+          > semana_09/evidencia/cron_antes.txt
+        docker exec objetivo-linux sh -c 'rm -f /etc/cron.d/sospechoso' \
+          | tee semana_09/evidencia/erradicacion.txt
+    - titulo: Verificar que la persistencia no volvio
+      texto: >-
+        Se repite la busqueda del mecanismo eliminado. Si el archivo reaparece, hay otra
+        persistencia que alimenta el primero y la erradicacion no termino.
+      comandos: |
+        docker exec objetivo-linux sh -c 'ls /etc/cron.d/ 2>/dev/null' \
+          | tee semana_09/evidencia/cron_despues.txt
+        docker exec objetivo-linux sh -c 'ps -eo pid,cmd' \
+          | tee semana_09/evidencia/procesos_despues.txt
+    - titulo: Comprobar la recuperacion del servicio
+      texto: >-
+        El servicio se prueba con la misma peticion que antes del incidente. La
+        recuperacion se demuestra con la respuesta, no con el arranque del contenedor.
+      comandos: |
+        curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/ \
+          | tee semana_09/evidencia/recuperacion.txt
+    tabla:
+      titulo: Fase, accion y verificacion
+      nota: >-
+        La verificacion se hace con la misma busqueda que detecto el mecanismo; si se
+        cambia el criterio, no demuestra nada.
+      columnas: [Fase, Accion, Evidencia, Verificacion, Resultado]
+      anchos: [2.0, 3.2, 2.6, 3.0, 2.2]
+      filas:
+      - [Contencion, 'Detener el contenedor', 'contencion.txt', 'Estado del contenedor', 'Aislado']
+      - [Erradicacion, 'Eliminar cron confirmado', 'erradicacion.txt', 'Listado de cron.d', 'Sin el archivo']
+      - [Verificacion, 'Buscar persistencia', 'cron_despues.txt', 'Archivo ausente', 'Confirmado']
+      - [Recuperacion, 'Peticion HTTP al servicio', 'recuperacion.txt', 'Codigo 200', 'Restaurado']
+    entregable: >-
+      Se entrega la secuencia de contencion, erradicacion y recuperacion con la
+      verificacion de cada fase y el servicio probado.
+    estructura: |
+      semana_09/
+      |-- informe.md
+      |-- evidencia/
+      |   |-- contencion.txt
+      |   |-- contenedor_antes.json
+      |   |-- erradicacion.txt
+      |   |-- cron_antes.txt
+      |   |-- cron_despues.txt
+      |   `-- recuperacion.txt
+      `-- README.md
+    comprobaciones:
+    - La evidencia se preserva antes de eliminar nada.
+    - Solo se elimina lo confirmado, no lo sospechoso.
+    - La verificacion repite la busqueda original.
+    - El servicio responde despues de la recuperacion.
+    avisos:
+    - Detener el contenedor sin preservar la evidencia destruye la prueba.
+    - Si el archivo reaparece, no se insiste en borrarlo: se busca el origen.
+  - grupo: 4
+    titulo: Regla YARA probada y deteccion reutilizable
+    intro: >-
+      El rol Púrpura escribe la regla que detecta la muestra y la prueba contra un archivo
+      limpio. Una regla que detecta todo no sirve; una que no se prueba tampoco.
+    bloques:
+    - titulo: Elegir cadenas discriminantes
+      texto: >-
+        Se eligen cadenas que no aparezcan en archivos normales. Las rutas genericas o
+        palabras comunes producen falsos positivos y se descartan.
+      comandos: |
+        mkdir -p semana_09/evidencia
+        strings -n 8 muestra.bin | grep -E '/tmp/|http|chmod' \
+          | sort -u | tee semana_09/evidencia/cadenas_candidatas.txt || true
+    - titulo: Escribir la regla con condicion estricta
+      texto: >-
+        La condicion exige varias cadenas a la vez. Se documenta por que cada una esta y
+        que se elimino por ser demasiado comun.
+      comandos: |
+        cat > semana_09/regla.yar <<'YAR'
+        rule muestra_curso {
+          meta:
+            autor = "Grupo 4"
+            descripcion = "Ruta temporal y descarga en la misma muestra"
+          strings:
+            $a = "/tmp/" ascii
+            $b = "http" ascii
+            $c = "chmod" ascii
+          condition:
+            all of them
+        }
+        YAR
+        yara semana_09/regla.yar muestra.bin | tee semana_09/evidencia/yara_muestra.txt
+    - titulo: Probar contra archivos limpios
+      texto: >-
+        Se ejecuta contra archivos del sistema que no deberian coincidir. Si coinciden, la
+        regla se ajusta y se vuelve a probar.
+      comandos: |
+        yara semana_09/regla.yar /bin/ls > semana_09/evidencia/yara_limpio.txt 2>&1 || true
+        wc -l < semana_09/evidencia/yara_limpio.txt
+    - titulo: Documentar la cobertura y el limite
+      texto: >-
+        La regla detecta esta muestra, no la familia. El informe dice que cambios la
+        evaden y que se necesitaria para generalizarla.
+    tabla:
+      titulo: Cadena, motivo y resultado de la prueba
+      nota: >-
+        La columna de falsos positivos se llena con la prueba real contra archivos limpios.
+      columnas: [Cadena, Motivo, Discriminante, Prueba, Resultado]
+      anchos: [2.4, 3.2, 2.1, 2.9, 2.4]
+      filas:
+      - ['/tmp/', 'Ruta temporal usada en la muestra', 'Media', 'Contra /bin/ls', 'No coincide']
+      - ['http', 'Descarga remota', 'Baja', 'Contra /bin/ls', 'No coincide']
+      - ['chmod', 'Cambio de permisos', 'Media', 'Contra /bin/ls', 'No coincide']
+      - [Combinacion, 'Exige las tres a la vez', 'Alta', 'Contra la muestra', 'Detecta']
+    entregable: >-
+      Se entrega la regla con metadatos, el resultado contra la muestra, la prueba contra
+      archivos limpios y la declaracion de cobertura.
+    estructura: |
+      semana_09/
+      |-- informe.md
+      |-- regla.yar
+      |-- muestra.bin
+      |-- evidencia/
+      |   |-- cadenas_candidatas.txt
+      |   |-- yara_muestra.txt
+      |   `-- yara_limpio.txt
+      `-- README.md
+    comprobaciones:
+    - La regla exige una combinacion, no una cadena suelta.
+    - Se probo contra la muestra y contra al menos un archivo limpio.
+    - La cobertura se declara como muestra concreta, no como familia.
+    - Las cadenas descartadas estan justificadas.
+    avisos:
+    - Una regla sin prueba contra limpios es una hipotesis, no una deteccion.
+    - La regla no se ejecuta sobre archivos del sistema fuera de la prueba declarada.
 - numero: 10
   fase: 5
   titulo: Evaluación final práctica de alcance cerrado
@@ -944,6 +3380,92 @@ semanas:
     - criterio: Defensa oral que reconoce limitaciones
       peso: 1.0
   evaluacion: final
+  ejemplos:
+  - grupo: 0
+    titulo: Auditoria de alcance cerrado, informe y defensa
+    intro: >-
+      Ejemplo de cierre para el trabajo individual. El recorrido completo en cuatro horas:
+      aceptar el alcance, reconocer, explotar de forma controlada, preservar la evidencia
+      y comunicar en dos registros. No hay roles: cada estudiante responde por todo el
+      ciclo.
+    bloques:
+    - titulo: Aceptar el alcance antes de ejecutar
+      texto: >-
+        Se firma la aceptacion con activos incluidos, ventana y limites. El reloj de las
+        cuatro horas empieza cuando la aceptacion esta firmada, no antes.
+      comandos: |
+        mkdir -p semana_10/evidencia
+        date -u +%FT%TZ > semana_10/evidencia/inicio.txt
+        sha256sum semana_10/alcance_firmado.pdf > semana_10/evidencia/alcance.sha256
+    - titulo: Reconocimiento y explotacion controlada
+      texto: >-
+        Se documenta la superficie observada y se elige un hallazgo para explotar. La
+        explotacion se detiene en la prueba: no se extraen datos ni se persiste acceso.
+      comandos: |
+        nmap -sT -p 8081,3000,2222 --max-rate 20 127.0.0.1 \
+          -oN semana_10/evidencia/nmap.txt
+        curl -s -b semana_10/evidencia/cookies.txt \
+          'http://127.0.0.1:8081/vulnerabilities/xss_r/?name=%3Cscript%3Ealert(1)%3C/script%3E' \
+          > semana_10/evidencia/xss_antes.html
+    - titulo: Preservar la evidencia con hash
+      texto: >-
+        Cada pieza se hashea al producirse y el conjunto se sella al final. La evidencia
+        anonimizada es la que se versiona; la cruda queda fuera del repositorio.
+      comandos: |
+        sha256sum semana_10/evidencia/*.txt semana_10/evidencia/*.html \
+          > semana_10/evidencia/evidencia.sha256
+        sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+/[correo]/g' \
+          semana_10/evidencia/xss_antes.html \
+          > semana_10/evidencia/xss_anonima.html
+    - titulo: Aplicar y verificar la mitigacion
+      texto: >-
+        Se aplica el control y se repite el mismo payload. La defensa se demuestra con el
+        antes y el despues, igual que en la semana 7.
+    - titulo: Redactar los dos registros
+      texto: >-
+        El informe tecnico cita evidencia y causa raiz; el resumen ejecutivo explica el
+        riesgo y la decision sin jerga. La defensa oral reconoce los limites del alcance.
+    tabla:
+      titulo: Producto, contenido y criterio
+      nota: >-
+        La columna de evidencia se llena con el archivo concreto; un criterio sin archivo
+        que lo respalde no esta cubierto.
+      columnas: [Producto, Contenido, Evidencia, Criterio]
+      anchos: [2.4, 4.2, 2.8, 3.6]
+      filas:
+      - [Alcance aceptado, 'Activos, ventana y limites', 'alcance.sha256', 'Cobertura declarada']
+      - [Reconocimiento, 'Puertos y servicios observados', 'nmap.txt', 'Evidencia verificable']
+      - [Explotacion, 'Payload y resultado', 'xss_antes.html', 'Hallazgo trazable']
+      - [Mitigacion, 'Control y repeticion', 'xss_despues.html', 'Control demostrado']
+      - [Informe tecnico, 'Hallazgos, causa y remediacion', 'evidencia.sha256', 'Precision y trazabilidad']
+      - [Resumen ejecutivo, 'Riesgo y decision en lenguaje llano', 'resumen.md', 'Comprensible sin jerga']
+      - [Defensa oral, 'Decisiones y limitaciones', 'guion.md', 'Reconoce limites']
+    entregable: >-
+      Se entrega el informe tecnico, el resumen ejecutivo, la evidencia anonimizada con su
+      hash y el guion de la defensa oral, con el alcance firmado al inicio.
+    estructura: |
+      semana_10/
+      |-- alcance_firmado.pdf
+      |-- informe_tecnico.md
+      |-- resumen_ejecutivo.md
+      |-- guion.md
+      |-- evidencia/
+      |   |-- inicio.txt
+      |   |-- nmap.txt
+      |   |-- xss_antes.html
+      |   |-- xss_anonima.html
+      |   |-- xss_despues.html
+      |   `-- evidencia.sha256
+      `-- README.md
+    comprobaciones:
+    - El alcance esta firmado antes de la primera prueba.
+    - Cada hallazgo del informe tecnico cita un archivo de evidencia.
+    - El resumen ejecutivo se entiende sin conocer las herramientas.
+    - La defensa oral declara al menos una limitacion del alcance.
+    - La evidencia versionada esta anonimizada y sellada con hash.
+    avisos:
+    - Las cuatro horas incluyen la redaccion: se reserva al menos una hora para escribir.
+    - No se explota nada fuera del alcance aunque quede tiempo disponible.
 controles:
 - fase: 1
   titulo: Control de fase uno, fundamentos y marco legal

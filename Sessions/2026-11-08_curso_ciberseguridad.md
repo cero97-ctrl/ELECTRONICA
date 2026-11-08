@@ -59,13 +59,68 @@ curso_ciberseguridad
   `d6493c5` → `11b7288`, `c51c53e` → `34730e5`, `c20a92b` → `a6a579a`. Todo lo
   anterior a `2a87e31` conserva su SHA.
 
+### Segunda parte — ejemplos por grupo y cierre individual (37 PDF)
+
+- Aclarado al usuario que los 32 ejemplos de las semanas 2–9 **no** son el mismo
+  trabajo repetido: mismo molde, contenido distinto por semana y por rol; la
+  semana 10 no se reparte por roles (fase de cierre individual).
+- Semanas 2–9: 4 ejemplos cada una (`grupo_1..4_NN`), redactados e insertados con
+  `.tmp/insertar_ejemplos.py <semana> <fragmento>` (inserta tras la línea
+  `evaluacion:` del bloque `- numero: N`).
+  - 02 criptografía · 03 marco legal · 04 OSINT/escáner · 05 OWASP web ·
+    06 hardening/Suricata · 07 DevSec/SBOM · 08 forense (adquisición, timeline,
+    IoC) · 09 respuesta a incidentes y triaje estático de malware.
+  - La rotación de roles se respetó leyendo `roles_de_la_semana`: 4–5 G1 Azul,
+    G2 Púrpura, G3 Legal, G4 Rojo; 6–7 G1 Púrpura, G2 Legal, G3 Rojo, G4 Azul;
+    8–9 G1 Legal, G2 Rojo, G3 Azul, G4 Púrpura.
+- **Semana 10 (cierre)**: nueva capacidad `--cierre` en las 3 capas.
+  - Capa 3 `execution/generar_instrucciones_semana.py`: `es_cierre = grupo == 0`,
+    cabecera «Trabajo individual (cierre del curso)», job `cierre_{NN}`,
+    validación con `validar_ejemplo(datos, semana, 0)`.
+  - Capa 2 `flujo_instrucciones_semana.py`: `--cierre`, mutuamente excluyente con
+    `--grupo`.
+  - Capa 1 `directives/instrucciones_semana_curso.yaml`: **v1.2**, input
+    `cierre`, salida `cierre_<NN>.{tex,pdf}`, 12 casos límite.
+  - Entrada `ejemplos: [{grupo: 0, ...}]` con el recorrido completo de 4 h
+    (aceptar alcance, reconocer, explotar controlado, preservar con hash,
+    informe técnico + resumen ejecutivo + defensa oral).
+- **Bug encontrado y corregido**: en la rama de cierre las secciones «Tu rol en
+  la práctica» y «Qué aporta este rol» quedaban con `itemize` vacío →
+  `! LaTeX Error: Something's wrong--perhaps a missing \item.` El flujo lo
+  detectó y devolvió `status: error` con 1 línea `!` en el log (no lo dio por
+  bueno aunque el PDF existiera). La rama `es_cierre` ahora emite una sección
+  «Trabajo individual» con texto fijo. Verificado: el `.tex` de un grupo es
+  **idéntico** antes y después del refactor (`diff` sin cambios) → el cambio no
+  altera la salida de las 36 piezas por grupo.
+- **Trampa de verificación registrada**: `grep -c 'Overfull \\\\hbox'` con ese
+  escapado busca *dos* barras invertidas y devuelve 0 siempre → dio falsos
+  «0 overfull» en las semanas 7–9. La fuente de verdad es el campo `overfull` de
+  `execution/verificar_pdf.py --log ...`.
+- 2 overfull reales en `grupo_4_08` (4,61 pt) y `grupo_4_09` (2,03 pt): no era
+  ancho total de tabla sino una **celda** con palabra más larga que su columna
+  («Comportamiento», «Discriminante»); al estrechar más la columna el overfull
+  crecía. Corregido repartiendo anchos: `[3.0, 2.6, 2.4, 2.1, 2.7]` y
+  `[2.4, 3.2, 2.1, 2.9, 2.4]`.
+- Verificación final: **37/37 PDF limpios** (`status ok`, 0 `!`, 0 overfull,
+  0 solapes; 3–5 páginas). `execution/test_generar_material_curso.py`: 72
+  aserciones, 0 fallos.
+- `AGENTS.md`: comando de `flujo_instrucciones_semana.py` actualizado con
+  `[--grupo N | --cierre]` y `cierre_NN.{tex,pdf}`; se corrigió el conteo de
+  aserciones del test del descriptor (52 → 72, estaba desfasado).
+- Coste: 0 créditos OpenRouter (todo determinista, sin LLM).
+
 ## Pendientes
 - `master` remoto en `a6a579a`; árbol limpio y sin PNG en la historia.
 - GitHub puede conservar objetos inalcanzables en caché un tiempo: el tamaño del
   repositorio en la web puede tardar en reflejar los ~28 MB liberados.
-- Redactar los `ejemplos:` por grupo de las semanas 2–10 (36 bloques), semana a
-  semana; la semana 2 (criptografía) es la siguiente natural.
+- **sin commitear**: `curso.yaml` (ejemplos semanas 2–10), `AGENTS.md`,
+  `execution/generar_instrucciones_semana.py`, `flujo_instrucciones_semana.py`,
+  `directives/instrucciones_semana_curso.yaml` y 37 PDF + `.tex` de ejemplos en
+  `cursos/CYBERSEGURIDAD/docs/`. El usuario no ha pedido commit todavía.
+- Revisar visualmente los 37 PDF de ejemplos (en esta sesión solo se validaron
+  por log/texto, no uno a uno).
 - `nota_minima: 5` confirmada por el usuario el 2026-11-08 y ya consta en el
   descriptor; nada que cambiar.
-- Revisar visualmente los PDF nuevos (no se abrieron uno a uno en esta sesión,
-  solo validación determinista y extracción de texto de la página de glosario).
+- Decisión aparcada: no contratar OpenCode Go ($10) y **no** cambiar
+  `MODELO_FALLBACK` (sigue `openrouter/qwen/qwen3.8-max-0902`) — orden expresa
+  del usuario («dejalo tal cual está, no modifiques»).

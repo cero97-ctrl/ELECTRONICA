@@ -5,8 +5,10 @@ description: >-
   semana, qué se entrega, cómo se corrige y lista de verificación antes del corte.
   Documento único para todo el curso (no por grupo), guardado como
   `<curso>/docs/semana_NN.{tex,pdf}`. Con `grupo: N` emite además el ejemplo de
-  trabajo de ese grupo para la semana, `<curso>/docs/grupo_N_NN.{tex,pdf}`.
-version: 1.1
+  trabajo de ese grupo para la semana, `<curso>/docs/grupo_N_NN.{tex,pdf}`. Con
+  `cierre: true` emite el ejemplo único de cierre individual de la semana,
+  `<curso>/docs/cierre_NN.{tex,pdf}`, tomado de la entrada `grupo: 0`.
+version: 1.2
 
 goal: >-
   Que el estudiante sepa exactamente qué hacer esta semana sin adivinar nada: qué
@@ -42,11 +44,19 @@ required_inputs:
       `tabla` (columnas, filas, `anchos` en cm para >4 columnas, nota), `entregable`,
       `estructura`, `comprobaciones` y `avisos`.
 
+  - name: cierre
+    description: >-
+      Booleano. Si es verdadero, emite el ejemplo único de cierre (trabajo individual)
+      desde la entrada `ejemplos` con `grupo: 0`. La cabecera dice "Trabajo individual"
+      en vez de "Grupo N"; el resto de la composición es la misma. Mutuamente excluyente
+      con `grupo`. Una semana sin entrada `grupo: 0` es código 3.
+
   - name: salida
     description: >-
       Directorio de salida. Por defecto `<curso>/docs`. El nombre del fichero es
-      `semana_<NN>.tex` con su PDF al lado (o `grupo_<G>_<NN>.tex` con `--grupo`), para
-      que una semana se localice sin abrir el descriptor.
+      `semana_<NN>.tex` con su PDF al lado (`grupo_<G>_<NN>.tex` con `--grupo`,
+      `cierre_<NN>.tex` con `--cierre`), para que una semana se localice sin abrir el
+      descriptor.
 
 steps:
   - action: validar_semana
@@ -89,7 +99,7 @@ steps:
       error con el motivo.
 
 expected_outputs:
-  - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`; con `--grupo`, `grupo_<G>_<NN>.{tex,pdf}`."
+  - "`<curso>/docs/semana_<NN>.tex` y `<curso>/docs/semana_<NN>.pdf`; con `--grupo`, `grupo_<G>_<NN>.{tex,pdf}`; con `--cierre`, `cierre_<NN>.{tex,pdf}`."
   - "El ejemplo no duplica datos de la práctica: los reutiliza del descriptor (criterios, corte, estructura)."
   - "Tabla grupo-rol idéntica a la de la guía y a la del documento de tareas de la fase (misma fuente)."
   - "Glosario al final, solo si `semana.glosario` declara términos; una página propia."
@@ -127,6 +137,16 @@ edge_cases:
       Código 3 con el término y la semana. El glosario es un dato compartido: se añade
       la entrada en `glosario` (termino + definicion) y se regenera; no se escribe la
       definición en el generador.
+
+  - case: Se pide el cierre y la semana no declara la entrada con grupo 0
+    protocol: >-
+      Código 3 con la lista de grupos declarados, igual que con `--grupo`. El cierre es
+      dato del descriptor, no texto inventado por el orquestador.
+
+  - case: Se pasan `--grupo` y `--cierre` a la vez
+    protocol: >-
+      Error de uso (código 3 del generador): son dos formas excluyentes de elegir el
+      ejemplo; el programa no adivina cuál manda.
 
   - case: Se pide el ejemplo de un grupo que la semana no declara
     protocol: >-

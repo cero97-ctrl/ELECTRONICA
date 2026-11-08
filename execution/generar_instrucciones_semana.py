@@ -453,32 +453,60 @@ def tex_ejemplo_grupo(datos: dict[str, Any], numero: int, grupo: int) -> str:
     rol = roles.get(grupo) or {"nombre": "individual", "descripcion": "", "en_la_practica": []}
     ejemplo = _ejemplo_de(datos, numero, grupo) or {}
     practica = semana["practica"]
+    es_cierre = grupo == 0
+    cabecera = [
+        ("Curso", _t(f"{meta['codigo']} --- {meta['titulo']}")),
+        ("Semana", _t(f"{numero:02d} de {meta.get('semanas', '')}")),
+        ("Fase", _t(f"{fase['id']} --- {fase['nombre']}")),
+    ]
+    if es_cierre:
+        cabecera.append(("Trabajo", _t("Individual (cierre del curso)")))
+    else:
+        cabecera.append(("Grupo", _t(str(grupo))))
+        cabecera.append(("Rol", _t(str(rol.get("nombre", "")))))
+    cabecera.append(
+        ("Entrega", _t(f"{entregas.get('plataforma', '')}, carpeta semana_{numero:02d}/"))
+    )
+    cabecera.append(("Corte", _t(str(entregas.get("corte", "")))))
 
     partes: list[str] = [
         banda_titulo(
             _t(f"Semana {numero:02d} --- {ejemplo['titulo']}"),
-            _t(f"Grupo {grupo} · rol {rol.get('nombre')} · ejemplo de trabajo"),
+            _t(
+                "Trabajo individual · ejemplo de cierre"
+                if es_cierre
+                else f"Grupo {grupo} · rol {rol.get('nombre')} · ejemplo de trabajo"
+            ),
         ),
         _metadatos_curso(meta),
-        _tabla_datos(
-            [
-                ("Curso", _t(f"{meta['codigo']} --- {meta['titulo']}")),
-                ("Semana", _t(f"{numero:02d} de {meta.get('semanas', '')}")),
-                ("Fase", _t(f"{fase['id']} --- {fase['nombre']}")),
-                ("Grupo", _t(str(grupo))),
-                ("Rol", _t(str(rol.get("nombre", "")))),
-                ("Entrega", _t(f"{entregas.get('plataforma', '')}, carpeta semana_{numero:02d}/")),
-                ("Corte", _t(str(entregas.get("corte", "")))),
-            ]
-        ),
-        _seccion_ejemplo("user-shield", "Tu rol en la práctica"),
-        _t(str(rol.get("descripcion", ""))),
-        _lista([str(a) for a in rol.get("en_la_practica") or []]),
-        _seccion_ejemplo("flag", "Qué aporta este rol al entregable"),
-        _t(str(rol.get("aporta", ""))),
-        _seccion_ejemplo("list-ol", "Ejemplo paso a paso"),
-        _t(str(ejemplo["intro"])),
+        _tabla_datos(cabecera),
     ]
+    if es_cierre:
+        partes.extend(
+            [
+                _seccion_ejemplo("user-shield", "Trabajo individual"),
+                _t(
+                    "El cierre no reparte responsabilidad por roles: cada sección del "
+                    "entregable se defiende completa y con evidencia propia."
+                ),
+            ]
+        )
+    else:
+        partes.extend(
+            [
+                _seccion_ejemplo("user-shield", "Tu rol en la práctica"),
+                _t(str(rol.get("descripcion", ""))),
+                _lista([str(a) for a in rol.get("en_la_practica") or []]),
+                _seccion_ejemplo("flag", "Qué aporta este rol al entregable"),
+                _t(str(rol.get("aporta", ""))),
+            ]
+        )
+    partes.extend(
+        [
+            _seccion_ejemplo("list-ol", "Ejemplo paso a paso"),
+            _t(str(ejemplo["intro"])),
+        ]
+    )
 
     for bloque in ejemplo.get("bloques") or []:
         partes.append("\\subsection{" + _t(str(bloque["titulo"])) + "}")
@@ -720,6 +748,7 @@ def generar(
     salida: Path,
     compilar: bool,
     grupo: int | None = None,
+    cierre: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
     """Escribe y compila las instrucciones de la semana (o el ejemplo de un grupo).
 
@@ -730,6 +759,8 @@ def generar(
         compilar: Si es False, escribe solo el `.tex`.
         grupo: Si se indica, emite el ejemplo de trabajo de ese grupo en vez del
             documento de la semana.
+        cierre: Si es True, emite el ejemplo único de cierre (trabajo individual)
+            desde la entrada con `grupo: 0`.
 
     Returns:
         Tupla `(ruta_tex, artefacto)`.
@@ -737,15 +768,23 @@ def generar(
     meta = datos["meta"]
     codigo = _slug(meta["codigo"])
     salida.mkdir(parents=True, exist_ok=True)
-    job = f"grupo_{grupo}_{numero:02d}" if grupo else f"semana_{numero:02d}"
+    if cierre:
+        job = f"cierre_{numero:02d}"
+    elif grupo:
+        job = f"grupo_{grupo}_{numero:02d}"
+    else:
+        job = f"semana_{numero:02d}"
     build = RAIZ / ".tmp" / "latex_build" / job
     build.mkdir(parents=True, exist_ok=True)
     os.environ[FUENTE_FECHA] = str(_epoch(meta))
 
     tex = salida / f"{job}.tex"
-    contenido = (
-        tex_ejemplo_grupo(datos, numero, grupo) if grupo else tex_semana(datos, numero)
-    )
+    if cierre:
+        contenido = tex_ejemplo_grupo(datos, numero, 0)
+    elif grupo:
+        contenido = tex_ejemplo_grupo(datos, numero, grupo)
+    else:
+        contenido = tex_semana(datos, numero)
     tex.write_text(contenido, encoding="utf-8")
     artefacto: dict[str, Any] = {"job": job, "tex": str(tex), "pdf": None, "errores": [], "overfull": 0}
     if compilar:
@@ -766,10 +805,17 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Emite el ejemplo de trabajo de ese grupo (docs/grupo_N_NN.tex) en vez de la semana",
     )
+    parser.add_argument(
+        "--cierre",
+        action="store_true",
+        help="Emite el ejemplo único de cierre individual (docs/cierre_NN.tex) desde la entrada grupo 0",
+    )
     parser.add_argument("--salida", default=None, help="Directorio de salida (por defecto <curso>/docs)")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe el .tex sin invocar pdflatex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
     args = parser.parse_args(argv)
+    if args.cierre and args.grupo is not None:
+        parser.error("--cierre y --grupo son mutuamente excluyentes")
 
     curso = Path(args.curso).resolve()
     try:
@@ -778,11 +824,12 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "error", "problemas": [str(exc)]}, ensure_ascii=False), file=sys.stderr)
         return EXIT_DESCRIPTOR
 
-    problemas = (
-        validar_ejemplo(datos, args.semana, args.grupo)
-        if args.grupo
-        else validar_semana(datos, args.semana)
-    )
+    if args.cierre:
+        problemas = validar_ejemplo(datos, args.semana, 0)
+    elif args.grupo:
+        problemas = validar_ejemplo(datos, args.semana, args.grupo)
+    else:
+        problemas = validar_semana(datos, args.semana)
     if problemas:
         print(json.dumps({"status": "invalido", "problemas": problemas}, ensure_ascii=False, indent=2))
         return EXIT_INVALIDO
@@ -790,7 +837,12 @@ def main(argv: list[str] | None = None) -> int:
     salida = Path(args.salida).resolve() if args.salida else curso.parent / "docs"
     try:
         _, artefacto = generar(
-            datos, args.semana, salida, not args.sin_compilar, grupo=args.grupo
+            datos,
+            args.semana,
+            salida,
+            not args.sin_compilar,
+            grupo=args.grupo,
+            cierre=args.cierre,
         )
     except OSError as exc:
         print(json.dumps({"status": "error", "problemas": [str(exc)]}, ensure_ascii=False), file=sys.stderr)
@@ -800,6 +852,7 @@ def main(argv: list[str] | None = None) -> int:
         "status": "ok",
         "semana": args.semana,
         "grupo": args.grupo,
+        "cierre": args.cierre,
         "tex": artefacto["tex"],
         "pdf": artefacto["pdf"],
         "errores": artefacto["errores"],

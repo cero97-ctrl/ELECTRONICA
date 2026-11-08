@@ -1,0 +1,509 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{needspace}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\renewcommand{\iconoBanda}{shield-alt}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{shield-alt}~CYBERSEGURIDAD}
+\fancyhead[R]{\footnotesize\color{grisTexto}Semana 02}
+\hypersetup{pdftitle={Ciberseguridad Aplicada},pdfauthor={Prof. César Rodríguez}
+  pdfsubject={CYBERSEGURIDAD}}
+
+\begin{document}
+\bandaTitulo[fondoOscuro]{Semana 02 --- Diagnosticar TLS y elegir parametros con medicion}{Grupo 2 $\cdot$ rol Azul $\cdot$ ejemplo de trabajo}
+
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} ELECTRONICA \textbar{} 1 de noviembre de 2026\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
+\toprule
+\textbf{Curso} & CYBERSEGURIDAD --- Ciberseguridad Aplicada \\
+\textbf{Semana} & 02 de 10 \\
+\textbf{Fase} & 1 --- Fundamentos, criptografía y marco legal \\
+\textbf{Grupo} & 2 \\
+\textbf{Rol} & Azul \\
+\textbf{Entrega} & GitHub, carpeta semana\_02/ \\
+\textbf{Corte} & Domingo 23:59 de la semana correspondiente; lo posterior no se corrige. \\
+\bottomrule
+\end{tabularx}
+
+\needspace{5\baselineskip}
+\section{\iconotexto{user-shield}{Tu rol en la práctica}}
+
+Parte de su propia captura cruda y aplica el control equivalente: configuración, parche o regla de red. Repite el ataque para demostrar que falla y documenta el antes y el después.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Leer su propia evidencia cruda y elegir el control que corta el ataque en el punto más barato.
+  \item Aplicar el control y repetir el ataque para demostrar que ya no funciona.
+  \item Documentar el antes y el después con los mismos comandos y la diferencia medida.
+\end{itemize}
+
+\needspace{5\baselineskip}
+\section{\iconotexto{flag}{Qué aporta este rol al entregable}}
+
+La mitigación aplicada, el comando de verificación y la comparación de resultados.
+
+\needspace{5\baselineskip}
+\section{\iconotexto{list-ol}{Ejemplo paso a paso}}
+
+El rol Azul parte de una configuracion que ya existe y comprueba si valida: lee el certificado, la cadena y el algoritmo, y elige los parametros de derivacion con una medicion propia.
+
+\subsection{Fijar la linea base del certificado y la cadena}
+
+Se inspecciona un sitio real y se guarda la salida completa. Emisor, fechas y algoritmo se leen del certificado, no de la pagina web.
+
+\begin{lstlisting}[style=estiloCodigo]
+mkdir -p semana_02/evidencia
+openssl s_client -connect www.example.com:443 -servername www.example.com \
+  -verify_return_error </dev/null > semana_02/evidencia/tls_handshake.txt 2>&1
+openssl s_client -connect www.example.com:443 -servername www.example.com \
+  -showcerts </dev/null 2>/dev/null \
+  | openssl x509 -noout -issuer -subject -dates \
+  | tee semana_02/evidencia/cert_resumen.txt
+\end{lstlisting}
+
+\subsection{Leer algoritmo, clave publica y verificacion de la cadena}
+
+La cadena se valida contra el almacen del sistema. Si falla la validacion, esa linea del registro es el hallazgo: no se cambia el comando para que pase.
+
+\begin{lstlisting}[style=estiloCodigo]
+openssl s_client -connect www.example.com:443 -servername www.example.com \
+  -showcerts </dev/null 2>/dev/null | openssl x509 -noout -text \
+  | grep -E 'Signature Algorithm|Public-Key|DNS:' \
+  | tee semana_02/evidencia/cert_detalle.txt
+openssl s_client -connect www.example.com:443 -servername www.example.com \
+  -CAfile /etc/ssl/certs/ca-certificates.crt -verify_return_error </dev/null \
+  >/dev/null 2>semana_02/evidencia/cadena.txt; \
+  grep -E 'Verify return code' semana_02/evidencia/cadena.txt
+\end{lstlisting}
+
+\subsection{Comparar PBKDF2 y Argon2 con el mismo criterio}
+
+Se mide el coste de cada opcion con el mismo hardware y se elige la que sostiene el mismo tiempo objetivo con mas resistencia. Si Argon2 no esta instalado, se documenta la limitacion y se decide solo con PBKDF2.
+
+\begin{lstlisting}[style=estiloCodigo]
+python3 - <<'PY' | tee semana_02/evidencia/kdf_comparativa.txt
+import hashlib, time
+for iteraciones in (100_000, 600_000):
+    t = time.perf_counter()
+    hashlib.pbkdf2_hmac('sha256', b'clave', b'sal', iteraciones)
+    print('pbkdf2', iteraciones, round(time.perf_counter() - t, 3), 's')
+try:
+    from argon2.low_level import hash_secret_raw, Type
+    t = time.perf_counter()
+    hash_secret_raw(b'clave', b'sal', time_cost=3, memory_cost=65536,
+                    parallelism=4, hash_len=32, type=Type.ID)
+    print('argon2id', round(time.perf_counter() - t, 3), 's')
+except ImportError:
+    print('argon2 no disponible: se documenta como limitacion')
+PY
+\end{lstlisting}
+
+\subsection{Verificar que el repositorio no filtra secretos}
+
+Antes de entregar se busca material sensible con patrones y con el historial de git. Un secreto en un commit viejo sigue siendo un secreto expuesto.
+
+\begin{lstlisting}[style=estiloCodigo]
+git grep -nE 'BEGIN (RSA|OPENSSH|EC|PRIVATE) PRIVATE KEY' || true
+git grep -nEi '(api[_-]?key|secret|token|password)[[:space:]]*=' || true
+git log --all --oneline -- semana_02/evidencia/*.pem || true
+\end{lstlisting}
+
+\needspace{8\baselineskip}\subsection{Configuracion observada y decision}
+
+\begin{center}
+\begin{minipage}{\linewidth}
+\centering
+{\footnotesize
+\textbf{Configuracion observada y decision}\par\smallskip
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.40cm}>{\raggedright\arraybackslash}p{3.20cm}>{\raggedright\arraybackslash}p{2.40cm}>{\raggedright\arraybackslash}p{3.20cm}>{\raggedright\arraybackslash}p{2.90cm}@{}}
+\toprule
+\textbf{Elemento} & \textbf{Estado observado} & \textbf{Riesgo} & \textbf{Decision} & \textbf{Verificacion} \\
+\midrule
+Certificado & Emisor, fechas y DNS leidos & Caducidad o nombre incorrecto & Se documenta y se vigila la fecha & Salida en cert\_resumen.txt \\
+Cadena & Verify return code 0 contra el almacen del sistema & Cadena incompleta & Sin accion si valida & Salida en cadena.txt \\
+Algoritmo de firma & Leido del certificado & Algoritmo debil o clave corta & Se reporta si es menor de 2048 bits & Linea en cert\_detalle.txt \\
+KDF & Tiempo medido por iteraciones & Coste insuficiente & 600000 iteraciones como minimo & Tabla de tiempos \\
+Secretos & Busqueda en arbol e historial & Clave privada versionada & Se retira y se rota & git grep sin resultados \\
+\bottomrule
+\end{tabular}
+}
+\par\smallskip{\footnotesize La decision se justifica con la salida pegada; "correcto" sin evidencia no se acepta como verificacion.}
+\end{minipage}
+\end{center}
+
+\needspace{5\baselineskip}
+\section{\iconotexto{box-open}{Qué guardar en el repositorio}}
+
+El informe incluye la lectura del certificado y su cadena, la comparacion de KDF con tiempos propios y la lista de verificaciones ejecutadas antes de entregar.
+
+\begin{lstlisting}[style=estiloCodigo]
+semana_02/
+|-- informe.md
+|-- evidencia/
+|   |-- tls_handshake.txt
+|   |-- cert_resumen.txt
+|   |-- cert_detalle.txt
+|   |-- cadena.txt
+|   |-- kdf_comparativa.txt
+|   `-- secretos.txt
+`-- README.md
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item La validacion de la cadena se ejecuta con el almacen del sistema, no con uno propio.
+  \item La eleccion de iteraciones se apoya en tiempos medidos y repetidos.
+  \item La busqueda de secretos cubre el historial, no solo el arbol actual.
+  \item Si Argon2 no esta disponible, la limitacion esta escrita.
+\end{itemize}
+
+\needspace{5\baselineskip}
+\section{\iconotexto{ruler-combined}{Cómo se corrige}}
+
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+\toprule
+Criterio & Peso\\
+\midrule
+Cifrado y descifrado correctos con verificación de integridad & 3,0 \\
+Firma y verificación demostradas, incluido el caso alterado & 2,5 \\
+Lectura correcta del certificado y de la cadena & 2,0 \\
+Medición de KDF con conclusión sobre coste y seguridad & 1,5 \\
+Explicación de qué propiedad cubre cada primitiva & 1,0 \\
+\midrule
+\textbf{Total} & \textbf{10,0}\\
+\bottomrule
+\end{tabularx}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item No se pega la clave privada ni el contenido del almacen de confianza en el informe.
+  \item \{'Un certificado valido no implica que el servicio sea seguro': 'se separan ambos juicios.'\}
+\end{itemize}
+
+\begin{cajaRecuerda}El trabajo es independiente: cada grupo usa su propio repositorio y su propio laboratorio, y la comparación de resultados es en clase. Corte: Domingo 23:59 de la semana correspondiente; lo posterior no se corrige.
+\end{cajaRecuerda}
+\end{document}

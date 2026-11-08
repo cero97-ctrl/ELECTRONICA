@@ -68,6 +68,7 @@ def flujo_instrucciones_semana(
     alert: bool,
     como_json: bool,
     grupo: int | None = None,
+    cierre: bool = False,
 ) -> int:
     run_id = RS.run_id_de_la_corrida("flujo-instrucciones-semana")
     state = {
@@ -78,14 +79,16 @@ def flujo_instrucciones_semana(
         "current_step": 0,
         "steps_completed": [],
         "steps_failed": [],
-        "context": {"curso": str(curso), "semana": semana, "grupo": grupo, "compilar": compilar},
+        "context": {"curso": str(curso), "semana": semana, "grupo": grupo, "cierre": cierre, "compilar": compilar},
     }
     guardar(state)
 
     cmd = [PYTHON, str(GENERADOR), "--curso", str(curso), "--semana", str(semana), "--json"]
     if salida:
         cmd += ["--salida", str(salida)]
-    if grupo:
+    if cierre:
+        cmd.append("--cierre")
+    elif grupo:
         cmd += ["--grupo", str(grupo)]
     if not compilar:
         cmd.append("--sin-compilar")
@@ -118,8 +121,14 @@ def flujo_instrucciones_semana(
     state["steps_completed"].append({"step": 1, "script": "generar_instrucciones_semana.py", "status": "ok"})
     guardar(state)
 
+    if cierre:
+        job = f"cierre_{semana:02d}"
+    elif grupo:
+        job = f"grupo_{grupo}_{semana:02d}"
+    else:
+        job = f"semana_{semana:02d}"
     artefacto = {
-        "job": f"grupo_{grupo}_{semana:02d}" if grupo else f"semana_{semana:02d}",
+        "job": job,
         "tex": datos.get("tex"),
         "pdf": datos.get("pdf"),
         "errores": datos.get("errores") or [],
@@ -171,11 +180,18 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Emite el ejemplo de trabajo de ese grupo (docs/grupo_N_NN.tex) en vez de la semana",
     )
+    parser.add_argument(
+        "--cierre",
+        action="store_true",
+        help="Emite el ejemplo único de cierre individual (docs/cierre_NN.tex) en vez de la semana",
+    )
     parser.add_argument("--salida", default=None, help="Directorio de salida")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe solo el .tex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta sonora")
     args = parser.parse_args(argv)
+    if args.cierre and args.grupo is not None:
+        parser.error("--cierre y --grupo son mutuamente excluyentes")
 
     return flujo_instrucciones_semana(
         curso=Path(args.curso).resolve(),
@@ -185,6 +201,7 @@ def main(argv: list[str] | None = None) -> int:
         alert=not args.no_alert,
         como_json=args.json,
         grupo=args.grupo,
+        cierre=args.cierre,
     )
 
 
