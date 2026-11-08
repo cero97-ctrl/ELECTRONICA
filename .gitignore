@@ -59,6 +59,13 @@ docs/REFERENCIA/**
 cursos/*/evaluaciones/resultados/**
 !cursos/*/evaluaciones/resultados/README.md
 
+# Infografías para estudiantes: material binario grande (varios MB por PNG) que
+# no se genera con ningún script y no aporta nada al clon del repositorio. Vive
+# solo en local (MEGA lo sincroniza). Se ignora todo salvo el README, que
+# documenta la convención y sí debe viajar.
+cursos/*/docs/INFOGRAFIAS/**
+!cursos/*/docs/INFOGRAFIAS/README.md
+
 # Dependencias de terceros instaladas: 321 MB de node_modules que `npm install`
 # regenera. Versionar un node_modules congela sus vulnerabilidades y sus
 # licencias: los forks se los descargan enteros y no los pueden actualizar.

@@ -19,6 +19,9 @@ curso_ciberseguridad
    ejemplos por grupo se redactan semana a semana cuando toque.
 2. **Sí añadir glosario por semana**, manteniendo el patrón de la semana 1.
 3. Plan y lista de términos aprobados por el usuario antes de ejecutar.
+4. Las infografías **no se versionan** en git: se quedan en local (MEGA las
+   sincroniza) porque pesan ~28 MB y no aportan al clon. Misma pauta que
+   `docs/REFERENCIA/` y `evaluaciones/resultados/`: se ignora todo salvo el README.
 
 ## Actividades
 - `cursos/CYBERSEGURIDAD/curso.yaml`: glosario global de 18 → **77 términos**
@@ -39,14 +42,19 @@ curso_ciberseguridad
   rol azul, rol púrpura y flujo legal y reporte), en formato divulgativo para sus
   estudiantes.
 - Bitácora creada con `bitacoras.py nueva --tema curso_ciberseguridad`.
+- `.gitignore`: nueva regla `cursos/*/docs/INFOGRAFIAS/**` con excepción del
+  `README.md`; `git rm --cached` de los 4 PNG (siguen en disco).
+- `cursos/CYBERSEGURIDAD/docs/INFOGRAFIAS/README.md`: documenta la convención
+  (una carpeta `SEM_NN` por semana, nombres en español, nunca `git add -f`).
 
 ## Pendientes
 - Commit + push de esta sesión: `d6493c5` (descriptor, 9 documentos semanales,
   infografías y esta bitácora), empujado a `master`; árbol limpio.
 - Infografías de la semana 1 en `docs/INFOGRAFIAS/SEM_1/` (4 PNG, ~28 MB),
-  aportadas y revisadas por el usuario como material para estudiantes. No las
-  genera ningún script: si el repositorio crece demasiado, valorar almacenarlas
-  fuera de git.
+  ya **fuera de git** (ignoradas, permanecen en disco y en MEGA).
+- Los ~28 MB siguen en el historial por el commit `d6493c5`. Reclamarlos exige
+  reescribir historia y `push --force`: no se hace sin confirmación explícita
+  del usuario.
 - Redactar los `ejemplos:` por grupo de las semanas 2–10 (36 bloques), semana a
   semana; la semana 2 (criptografía) es la siguiente natural.
 - `nota_minima: 5` confirmada por el usuario el 2026-11-08 y ya consta en el
