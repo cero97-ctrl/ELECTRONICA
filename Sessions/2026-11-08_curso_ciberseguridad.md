@@ -160,9 +160,9 @@ curso_ciberseguridad
   `resultados/README.md` siguen públicos.
 
 ## Pendientes
-- `master` remoto en `54e03b1`; árbol limpio y sin exámenes en la historia.
-- **Sin commitear**: `.gitignore`, `AGENTS.md` y esta bitácora (el usuario no ha
-  pedido commit de estos tres).
+- `master` remoto en `d6ec3734`; árbol limpio y sin exámenes en la historia.
+  Commits de esta cuarta parte: `54e03b1` (`.gitignore` + `git rm --cached` +
+  reescritura) y `d6ec3734` (`AGENTS.md` + bitácora).
 - GitHub puede conservar objetos inalcanzables en caché un tiempo: los PDF
   pueden seguir descargables por SHA directo hasta que GitHub recoja la basura.
   Quien ya hubiera clonado el repo conserva los exámenes.
