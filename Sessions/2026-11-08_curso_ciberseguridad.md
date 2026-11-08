@@ -126,7 +126,46 @@ curso_ciberseguridad
   el `itemize` vacío en `nonstopmode`, que genera PDF con `! LaTeX Error:
   Something's wrong--perhaps a missing \item` y solo se ve en el `.log`.
 
+### Cuarta parte — exámenes fuera del repositorio público
+
+- El usuario detectó que `cursos/CYBERSEGURIDAD/evaluaciones/` era público. Al
+  revisar, el problema era mayor: **los tres cursos** tenían publicados
+  `control_fase_1..3` y `evaluacion_final` (`.tex` + `.pdf`), 20 ficheros en git.
+- Decisiones del usuario: ocultar los **tres cursos**, **reescribir el historial**
+  y dejar la **rúbrica pública** (es criterio, no prueba).
+- `.gitignore`: nuevas reglas `cursos/*/evaluaciones/*.tex` y `*.pdf` (glob, así
+  cubre controles futuros); `git rm -r --cached` de los 20 ficheros. Los archivos
+  siguen en disco (MEGA los sincroniza) y se regeneran con `flujo_disenar_curso.py`.
+- Respaldo previo: `/tmp/electronica_pre_examenes.bundle` (785 MB, todas las refs).
+- Reescritura: `git filter-repo --invert-paths --path-glob
+  'cursos/*/evaluaciones/*.pdf' --path-glob 'cursos/*/evaluaciones/*.tex'`
+  (325 commits parseados, 1,16 s + 21,4 s de repack). Verificación: **0** commits
+  y **0** blobs con `control_fase|evaluacion_final` en toda la historia; `.git`
+  787 MB → 784 MB.
+- `filter-repo` elimina `origin`: se volvió a añadir y se empujó con
+  `push --force` (`519109e` → `54e03b1`); upstream restaurado.
+- SHA nuevos: `1186c4d` → `693ca05`, `63ea0b8` → `89d5815`, `519109e` →
+  `78521e9`, y el commit nuevo `54e03b1`. Todo lo anterior a `2ed963bd`
+  (primer commit con exámenes) conserva su SHA.
+- Remoto verificado con `git ls-tree -r origin/master cursos/`: 0 ficheros de
+  examen; quedan `rubrica_practica.yaml` y `resultados/README.md`.
+
+- Verificación de que el ocultamiento no pierde nada:
+  `flujo_disenar_curso.py --salida .tmp/check_gen --solo controles,final
+  --sin-compilar` sigue escribiendo `control_fase_1..3.tex` y
+  `evaluacion_final.tex`, y los cuatro son **idénticos byte a byte** a los
+  locales ya ignorados (`cmp`); el directorio temporal se borró después.
+  `git check-ignore -v` confirma que las dos reglas nuevas son las que
+  alcanzan los exámenes de los tres cursos y que `rubrica_practica.yaml` y
+  `resultados/README.md` siguen públicos.
+
 ## Pendientes
+- `master` remoto en `54e03b1`; árbol limpio y sin exámenes en la historia.
+- **Sin commitear**: `.gitignore`, `AGENTS.md` y esta bitácora (el usuario no ha
+  pedido commit de estos tres).
+- GitHub puede conservar objetos inalcanzables en caché un tiempo: los PDF
+  pueden seguir descargables por SHA directo hasta que GitHub recoja la basura.
+  Quien ya hubiera clonado el repo conserva los exámenes.
 - `master` remoto en `63ea0b8`; árbol limpio y sin PNG en la historia.
 - GitHub puede conservar objetos inalcanzables en caché un tiempo: el tamaño del
   repositorio en la web puede tardar en reflejar los ~28 MB liberados.
