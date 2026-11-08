@@ -41,8 +41,8 @@ curso_ciberseguridad
 - Bitácora creada con `bitacoras.py nueva --tema curso_ciberseguridad`.
 
 ## Pendientes
-- Commit + push de esta sesión (pedido por el usuario tras revisar los PDF): el
-  descriptor, los 9 documentos semanales, las infografías y esta bitácora.
+- Commit + push de esta sesión: `d6493c5` (descriptor, 9 documentos semanales,
+  infografías y esta bitácora), empujado a `master`; árbol limpio.
 - Infografías de la semana 1 en `docs/INFOGRAFIAS/SEM_1/` (4 PNG, ~28 MB),
   aportadas y revisadas por el usuario como material para estudiantes. No las
   genera ningún script: si el repositorio crece demasiado, valorar almacenarlas
