@@ -227,6 +227,7 @@ sudo ./manage_waydroid.sh  — Waydroid Android container
 - `examen*` pinned in `.gitignore` — exam PDFs/`.tex` starting with `examen` are never committed; likewise raw datasets (`datasets/`) and router telemetry (`.tmp/routing_log.jsonl`)
 - `db_state.json` is tracked (not auto-generated in the CI sense, but it's the RAG state file — be careful modifying)
 - Repo update flow: `./update_repo.sh [-m "msg"] [--push] [--dry-run]` (commit+pull+push, per `directives/git_update.yaml`) or `./git-update.sh` (shortcut: WIP commit + pull + push)
+- **`update_repo.sh` hace `pull --rebase` ANTES del commit**, así que con cambios sin marcar falla con `no se puede pull con rebase: Tienes cambios sin marcar` y no llega a commitear. Con el árbol limpio no hay problema; si hay trabajo pendiente, verificar primero la divergencia (`git fetch && git rev-list --left-right --count origin/master...HEAD`) y, si es `0	0`, ejecutar `./update_repo.sh -m "..." --no-pull --push`. No saltarse la comprobación: `--no-pull` sin haber mirado la divergencia es cómo se empuja encima de otro commit
 
 ## Migración de entorno (a otra PC)
 

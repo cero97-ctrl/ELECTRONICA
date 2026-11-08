@@ -109,14 +109,27 @@ curso_ciberseguridad
   aserciones del test del descriptor (52 → 72, estaba desfasado).
 - Coste: 0 créditos OpenRouter (todo determinista, sin LLM).
 
+### Tercera parte — commit y documentación
+
+- Commit + push autorizados por el usuario:
+  `63ea0b8 feat(curso): 33 ejemplos por grupo (semanas 2-10) y --cierre en 3 capas`
+  (`1186c4d..63ea0b8`, 72 entradas: 6 modificados + 66 nuevos `.tex`/`.pdf`).
+- **Trampa de `update_repo.sh`**: el script hace `pull --rebase` **antes** del
+  commit, así que con cambios sin marcar falla
+  (`no se puede pull con rebase: Tienes cambios sin marcar`). Se verificó
+  `git fetch` + `rev-list --left-right --count origin/master...HEAD` = `0 0` y se
+  repitió con `--no-pull --push`. Queda documentado en `AGENTS.md` → Git quirks.
+- `AGENTS.md`: además de `--cierre`, se añadió el quirk anterior.
+- `.agent/latex.md`: dos trampas nuevas documentadas — #22 el `Overfull \hbox`
+  de una **celda** (estrechar la columna lo empeora) y el `grep` mal escapado que
+  da 0 siempre (usar `grep -cF` o el campo `overfull` de `verificar_pdf.py`); #23
+  el `itemize` vacío en `nonstopmode`, que genera PDF con `! LaTeX Error:
+  Something's wrong--perhaps a missing \item` y solo se ve en el `.log`.
+
 ## Pendientes
-- `master` remoto en `a6a579a`; árbol limpio y sin PNG en la historia.
+- `master` remoto en `63ea0b8`; árbol limpio y sin PNG en la historia.
 - GitHub puede conservar objetos inalcanzables en caché un tiempo: el tamaño del
   repositorio en la web puede tardar en reflejar los ~28 MB liberados.
-- **sin commitear**: `curso.yaml` (ejemplos semanas 2–10), `AGENTS.md`,
-  `execution/generar_instrucciones_semana.py`, `flujo_instrucciones_semana.py`,
-  `directives/instrucciones_semana_curso.yaml` y 37 PDF + `.tex` de ejemplos en
-  `cursos/CYBERSEGURIDAD/docs/`. El usuario no ha pedido commit todavía.
 - Revisar visualmente los 37 PDF de ejemplos (en esta sesión solo se validaron
   por log/texto, no uno a uno).
 - `nota_minima: 5` confirmada por el usuario el 2026-11-08 y ya consta en el

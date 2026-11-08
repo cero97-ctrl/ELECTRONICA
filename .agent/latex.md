@@ -1099,3 +1099,102 @@ sugerida, en vez de descubrirlo tras una compilación completa. Cubre todo cará
 > - `cursos/LABORATORIO_II_FISICA/curso.yaml` (tablas de los apéndices 1, 2 y 3)
 > - `execution/generar_material_curso.py` (`_unicode_crudo`, `_validar_tabla`, `validar`)
 > - `execution/test_generar_material_curso.py` (`test_unicode_en_latex_crudo_falla`)
+
+---
+
+## 22. `Overfull \hbox` de una **celda**, no de la tabla: estrechar la columna lo empeora
+
+### Síntoma / Mensaje de Error
+
+```text
+Overfull \hbox (4.61145pt too wide) in paragraph at lines 426--426
+```
+
+El aviso apunta a la línea del `\begin{tabular}` (o del `\toprule`), no a la celda que
+se sale, y la tabla "parece" caber porque la suma de `anchos` está dentro del margen.
+
+### Causa
+
+En columnas `p{...}` el ancho lo fija el preámbulo, pero una **palabra** más larga que
+la columna desborda igual y LaTeX lo reporta como `Overfull \hbox` de ese párrafo. Si
+se reacciona estrechando más la tabla, el desbordamiento **crece** (`4,6 pt` → `7,5 pt`):
+el diagnóstico correcto es que la columna es demasiado estrecha para su contenido, no
+que la tabla sea ancha.
+
+Caso real: `Comportamiento` en una columna `p{2.0cm}` y `Discriminante` (cabecera en
+negrita) en `p{1.7cm}`.
+
+### Solución
+
+Anchar la columna del texto largo y compensar quitando ancho a las demás, manteniendo
+la suma total. El overfull desaparece sin tocar el margen.
+
+```yaml
+# Antes: suma 13.8, pero "Comportamiento" no cabe en 2.0 cm
+anchos: [3.4, 2.0, 2.8, 2.4, 3.2]
+# Después: suma 12.8, la columna del texto largo pasa a 2.6 cm
+anchos: [3.0, 2.6, 2.4, 2.1, 2.7]
+```
+
+### Cómo verificarlo (la trampa del `grep`)
+
+`grep -c 'Overfull \\\\hbox' log` busca **dos** barras invertidas y devuelve `0`
+siempre. Para contar de verdad:
+
+```bash
+grep -cF 'Overfull \hbox' .tmp/latex_build/<job>/<job>.log
+```
+
+O mejor, no parsear a mano: el campo `overfull` de `python3 execution/verificar_pdf.py
+--pdf <pdf> --log <log>` es la fuente de verdad y además distingue errores (`!`),
+overfull y solapes.
+
+> **Archivos afectados:**
+> - `cursos/CYBERSEGURIDAD/curso.yaml` (`semanas[7].ejemplos[3].tabla.anchos`, semana 8 grupo 4)
+> - `cursos/CYBERSEGURIDAD/curso.yaml` (`semanas[8].ejemplos[3].tabla.anchos`, semana 9 grupo 4)
+
+---
+
+## 23. `itemize` Vacío en `nonstopmode`: `Something's wrong--perhaps a missing \item` y PDF Igual
+
+### Síntoma / Mensaje de Error
+
+```text
+! LaTeX Error: Something's wrong--perhaps a missing \item.
+l.361 \end{itemize}
+```
+
+Con `-interaction=nonstopmode` el PDF **se genera igual**, así que un flujo que solo
+comprueba "existe el PDF" (`compile_latex_code()` devuelve `success=True`) lo da por
+bueno. El único indicio es la línea `!` en el `.log`.
+
+### Causa
+
+Se emite `\begin{itemize}[...]` seguido inmediatamente de `\end{itemize}` cuando la
+lista de entrada está vacía. Es el caso típico de una plantilla que pinta secciones
+"de rol" para todas las variantes, pero una variante (aquí, el cierre individual
+`grupo: 0`) no tiene rol: `rol.get("en_la_practica")` devuelve `[]`.
+
+### Solución
+
+No emitir la sección cuando no hay contenido, o sustituirla por un párrafo fijo:
+
+```python
+if es_cierre:
+    partes.extend([
+        _seccion_ejemplo("user-shield", "Trabajo individual"),
+        _t("El cierre no reparte responsabilidad por roles: ..."),
+    ])
+else:
+    partes.append(_lista([...]))   # solo si la lista no está vacía
+```
+
+Y verificar siempre el `.log`, no la existencia del PDF:
+
+```python
+errores = re.findall(r"^! (.+)$", open(log, encoding="utf-8", errors="ignore").read(), re.M)
+```
+
+> **Archivos afectados:**
+> - `execution/generar_instrucciones_semana.py` (`tex_ejemplo_grupo`, rama `es_cierre`)
+> - `cursos/CYBERSEGURIDAD/docs/cierre_10.tex`
