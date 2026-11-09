@@ -1398,51 +1398,20 @@ controles:
     instrumento: Prueba escrita individual
     caracter: Individual, sin apuntes, con calculadora y una hoja de fórmulas
     preguntas:
-      - enunciado: >-
-          Un multímetro de clase 0,5 por ciento más dos dígitos mide 8,20 V.
-          Exprese el resultado con su incertidumbre y explique qué parte es del
-          instrumento y qué parte de la lectura.
-        puntaje: 2.5
-      - enunciado: >-
-          Explique por qué la resistencia se obtiene de la pendiente de un ajuste
-          y no del promedio de los cocientes punto a punto. Ilústrelo con un caso
-          de ruido en la corriente.
-        puntaje: 2.5
-      - enunciado: >-
-          Dibuje los dos montajes voltamperimétricos y escriba la corrección que
-          corresponde a cada uno. Indique en qué rango de resistencia conviene usar
-          cada montaje.
-        puntaje: 2.5
-      - enunciado: >-
-          Una fuente de 12 V con resistencia interna de 2 Ω alimenta una carga.
-          Calcule la carga de máxima transferencia, la potencia entregada y el
-          rendimiento en ese punto.
-        puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
   - fase: 2
     titulo: Control de fase dos, no linealidad y régimen senoidal
     duracion_min: 45
     instrumento: Prueba escrita individual
     caracter: Individual, sin apuntes, con calculadora y una hoja de fórmulas
     preguntas:
-      - enunciado: >-
-          A partir de la ecuación de Shockley, derive la expresión que permite
-          obtener el factor de idealidad de una gráfica del logaritmo de la
-          corriente frente a la tensión, e indique qué representa la ordenada.
-        puntaje: 2.5
-      - enunciado: >-
-          Explique por qué la corriente en un capacitor se adelanta a la tensión y
-          por qué la reactancia capacitiva disminuye al aumentar la frecuencia.
-        puntaje: 2.5
-      - enunciado: >-
-          Un circuito RLC serie tiene L de 10 mH, C de 100 nF y R de 220 Ω.
-          Calcule la frecuencia de resonancia, el factor de calidad y el ancho de
-          banda.
-        puntaje: 2.5
-      - enunciado: >-
-          Para un circuito RC con tau de 2 segundos, calcule el tiempo hasta el
-          63,2 por ciento de la carga final, el semiperiodo de la descarga y el
-          tiempo para considerarla completa.
-        puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
+      - puntaje: 2.5
 
 evaluacion_final:
   titulo: Evaluación final práctica de laboratorio y defensa del portafolio

@@ -589,25 +589,40 @@ def test_tema_de_control_es_editorial() -> None:
 
 
 def test_enunciado_de_control_con_matematica_no_se_escapa() -> None:
-    """Los enunciados del control se escapaban como texto plano y la matemática
-    se imprimía cruda: `$L = 2{,}45 \\pm 0{,}03$ cm` salía en el PDF como
-    `$L = 2{,}45 \\{}pm 0{,}03$ cm`. El enunciado es un campo con matemática
-    (como `pasos` o `escenario`): se renderiza con `_tm` y `_validar_matematica`
-    lo custodia, para que un subíndice suelto falle antes de compilar.
+    """Los enunciados se escapaban como texto plano y la matemática salía cruda:
+    `$L = 2{,}45 \\pm 0{,}03$ cm` se imprimía como `$L = 2{,}45 \\{}pm 0{,}03$ cm`.
+    El enunciado es un campo con matemática (como `pasos` o `escenario`): se
+    renderiza con `_tm` y `validar_preguntas` lo custodia. Desde que el descriptor
+    es público, el enunciado llega del banco y se valida ya compuesto.
     """
     datos = descriptor_minimo()
-    control = {
-        "fase": 1,
-        "titulo": "Control de prueba",
-        "duracion_min": 45,
-        "preguntas": [
+    datos["controles"] = [
+        {
+            "fase": 1,
+            "titulo": "Control de prueba",
+            "duracion_min": 45,
+            "preguntas": [{"puntaje": 10.0}],
+        }
+    ]
+    comprobar(
+        "un descriptor público sin enunciados valida",
+        gen.validar(datos) == [],
+        str(gen.validar(datos)),
+    )
+    variante = {
+        "numero": 1,
+        "estado": "utilizable",
+        "controles": [
             {
-                "enunciado": "Se reporta $L = 2{,}45 \\pm 0{,}03$ cm. Calcule el error relativo.",
-                "puntaje": 10.0,
+                "fase": 1,
+                "preguntas": [
+                    {"enunciado": "Se reporta $L = 2{,}45 \\pm 0{,}03$ cm. Calcule el error relativo."}
+                ],
             }
         ],
     }
-    tex = gen.tex_control(copy.deepcopy(datos), control)
+    compuesto = gen.componer_controles(datos, variante)
+    tex = gen.tex_control(copy.deepcopy(datos), compuesto[0])
     comprobar(
         "la matemática del enunciado llega intacta al LaTeX",
         r"$L = 2{,}45 \pm 0{,}03$" in tex,
@@ -618,15 +633,14 @@ def test_enunciado_de_control_con_matematica_no_se_escapa() -> None:
         "\\{}pm" not in tex and "textbackslash" not in tex,
         tex,
     )
-    datos["controles"] = [control]
     comprobar(
-        "un enunciado con matemática correcta valida sin problemas",
-        gen.validar(datos) == [],
-        str(gen.validar(datos)),
+        "el enunciado compuesto con matemática correcta valida",
+        gen.validar_preguntas(compuesto) == [],
+        str(gen.validar_preguntas(compuesto)),
     )
-    roto = copy.deepcopy(datos)
+    roto = copy.deepcopy(variante)
     roto["controles"][0]["preguntas"][0]["enunciado"] = "Calcule V_C del cilindro."
-    problemas = gen.validar(roto)
+    problemas = gen.validar_preguntas(gen.componer_controles(datos, roto))
     comprobar(
         "un subíndice fuera de $...$ en el enunciado falla la validación",
         any("pregunta 1.enunciado" in p for p in problemas),
@@ -694,6 +708,266 @@ def test_roles_por_integrante_independientes_del_numero_de_grupos() -> None:
     )
 
 
+# ── Banco privado de preguntas ────────────────────────────────────────────────
+
+
+def banco_minimo() -> dict:
+    """Banco de prueba: una variante utilizable, una comprometida y un borrador."""
+    return {
+        "meta": {"curso": "CURSO_TEST", "escala": 10},
+        "variantes": [
+            {
+                "numero": 1,
+                "estado": "utilizable",
+                "creada": "2026-11-08",
+                "controles": [
+                    {
+                        "fase": 1,
+                        "preguntas": [
+                            {"enunciado": "Pregunta uno del banco."},
+                            {"enunciado": "Pregunta dos del banco."},
+                        ],
+                    }
+                ],
+            },
+            {
+                "numero": 2,
+                "estado": "comprometida",
+                "creada": "2026-11-08",
+                "controles": [
+                    {
+                        "fase": 1,
+                        "preguntas": [
+                            {"enunciado": "Otra pregunta uno."},
+                            {"enunciado": "Otra pregunta dos."},
+                        ],
+                    }
+                ],
+            },
+            {"numero": 3, "estado": "borrador", "creada": "2026-11-08", "controles": []},
+        ],
+    }
+
+
+def descriptor_con_control_publico() -> dict:
+    """Descriptor con un control de dos posiciones y sin enunciados."""
+    datos = descriptor_minimo()
+    datos["controles"] = [
+        {
+            "fase": 1,
+            "titulo": "Control de prueba",
+            "duracion_min": 45,
+            "preguntas": [
+                {"puntaje": 5.0, "tema": "Tema uno"},
+                {"puntaje": 5.0},
+            ],
+        }
+    ]
+    return datos
+
+
+def test_descriptor_publico_rechaza_enunciado() -> None:
+    """El descriptor viaja en un repo público: un `enunciado` ahí es una fuga.
+
+    Antes de este contrato el enunciado vivía en `curso.yaml`, que está
+    versionado: cualquiera con el enlace leía el examen. El validador lo rechaza
+    para que la fuga no pueda volver por descuido.
+    """
+    datos = descriptor_con_control_publico()
+    comprobar(
+        "un control público (sin enunciado) valida",
+        gen.validar(datos) == [],
+        str(gen.validar(datos)),
+    )
+    fugado = copy.deepcopy(datos)
+    fugado["controles"][0]["preguntas"][0]["enunciado"] = "Pregunta filtrada."
+    problemas = gen.validar(fugado)
+    comprobar(
+        "un enunciado en el descriptor público falla la validación",
+        any("no lleva 'enunciado'" in p for p in problemas),
+        str(problemas),
+    )
+    sin_puntaje = copy.deepcopy(datos)
+    del sin_puntaje["controles"][0]["preguntas"][0]["puntaje"]
+    comprobar(
+        "una posición sin puntaje falla la validación",
+        any("falta 'puntaje'" in p for p in gen.validar(sin_puntaje)),
+        str(gen.validar(sin_puntaje)),
+    )
+
+
+def test_banco_elige_la_unica_utilizable() -> None:
+    """Sin `--variante` la elección es determinista: la única `utilizable`.
+
+    Elegir «la primera» o «la última» haría que dos corridas del mismo comando
+    pudieran emitir exámenes distintos. Si no hay exactamente una utilizable, el
+    programa se detiene en vez de adivinar.
+    """
+    banco = banco_minimo()
+    elegida = gen.seleccionar_variante(banco)
+    comprobar("sin número se elige la única utilizable", elegida["numero"] == 1)
+    comprobar(
+        "la elección es la misma en llamadas repetidas",
+        gen.seleccionar_variante(banco)["numero"] == 1,
+    )
+    comprobar(
+        "una variante comprometida exige confirmación explícita",
+        "comprometida" in _error_de(gen.seleccionar_variante, banco, 2),
+    )
+    comprobar(
+        "con permiso explícito la comprometida se aplica",
+        gen.seleccionar_variante(banco, 2, permitir_comprometida=True)["numero"] == 2,
+    )
+    comprobar(
+        "una variante en borrador nunca se aplica",
+        "borrador" in _error_de(gen.seleccionar_variante, banco, 3, True),
+    )
+    mensaje = _error_de(gen.seleccionar_variante, banco, 9)
+    comprobar(
+        "una variante inexistente lista las disponibles",
+        "no existe" in mensaje and "1, 2, 3" in mensaje,
+        mensaje,
+    )
+
+
+def test_banco_ambiguo_o_sin_utilizables_falla() -> None:
+    """Dos utilizables (o ninguna) es un error de configuración, no un empate."""
+    dos = banco_minimo()
+    dos["variantes"][2]["estado"] = "utilizable"
+    comprobar(
+        "dos variantes utilizables exigen --variante",
+        "varias variantes" in _error_de(gen.seleccionar_variante, dos),
+    )
+    ninguna = banco_minimo()
+    ninguna["variantes"][0]["estado"] = "borrador"
+    comprobar(
+        "sin ninguna utilizable el error pide elegir una",
+        "ninguna variante" in _error_de(gen.seleccionar_variante, ninguna),
+    )
+
+
+def test_banco_con_estructura_invalida_falla() -> None:
+    """El banco es dato privado y no pasa por revisión: se valida al cargarlo."""
+    sin_variantes = {"meta": {}, "variantes": []}
+    comprobar(
+        "un banco sin variantes se rechaza",
+        "variantes" in _error_de(gen.variantes_del_banco, sin_variantes),
+    )
+    repetida = banco_minimo()
+    repetida["variantes"][1]["numero"] = 1
+    comprobar(
+        "dos variantes con el mismo número se rechazan",
+        "repetido" in _error_de(gen.variantes_del_banco, repetida),
+    )
+    sin_numero = banco_minimo()
+    del sin_numero["variantes"][0]["numero"]
+    comprobar(
+        "una variante sin número entero se rechaza",
+        "entero" in _error_de(gen.variantes_del_banco, sin_numero),
+    )
+    estado_raro = banco_minimo()
+    estado_raro["variantes"][1]["estado"] = "publicada"
+    comprobar(
+        "un estado fuera del vocabulario se rechaza",
+        "estado" in _error_de(gen.seleccionar_variante, estado_raro, 2, True),
+    )
+    comprobar(
+        "un banco inexistente se reporta con su ruta",
+        "no encontrado" in _error_de(
+            gen.cargar_banco, RAIZ / ".tmp" / "banco_que_no_existe.yaml"
+        ),
+    )
+
+
+def test_componer_controles_empareja_por_orden() -> None:
+    """El banco aporta el texto; el descriptor, cuántas preguntas y cuánto valen.
+
+    Un emparejamiento por contenido o por número de pregunta sería frágil; por
+    fase y orden es predecible y un desajuste de conteo falla en vez de rellenar.
+    """
+    datos = descriptor_con_control_publico()
+    variante = gen.seleccionar_variante(banco_minimo())
+    compuestos = gen.componer_controles(datos, variante)
+    preguntas = compuestos[0]["preguntas"]
+    comprobar(
+        "las preguntas recibidas conservan el orden del banco",
+        [p["enunciado"] for p in preguntas]
+        == ["Pregunta uno del banco.", "Pregunta dos del banco."],
+    )
+    comprobar(
+        "el puntaje del descriptor sobrevive a la composición",
+        [p["puntaje"] for p in preguntas] == [5.0, 5.0],
+    )
+    comprobar(
+        "el tema del descriptor no se pierde",
+        preguntas[0]["tema"] == "Tema uno",
+    )
+    tex = gen.tex_control(copy.deepcopy(datos), compuestos[0])
+    comprobar(
+        "el control compuesto imprime los enunciados del banco",
+        "Pregunta uno del banco." in tex and "Pregunta dos del banco." in tex,
+    )
+    comprobar(
+        "el control compuesto valida",
+        gen.validar_preguntas(compuestos) == [],
+        str(gen.validar_preguntas(compuestos)),
+    )
+    faltan = copy.deepcopy(variante)
+    faltan["controles"][0]["preguntas"].pop()
+    comprobar(
+        "un banco con menos preguntas que el descriptor falla",
+        "declara 2" in _error_de(gen.componer_controles, datos, faltan),
+    )
+    otra_fase = copy.deepcopy(variante)
+    otra_fase["controles"][0]["fase"] = 2
+    mensaje = _error_de(gen.componer_controles, datos, otra_fase)
+    comprobar(
+        "un banco que no cubre la fase del descriptor falla",
+        "no cubre la fase 1" in mensaje,
+        mensaje,
+    )
+    discrepante = copy.deepcopy(variante)
+    discrepante["controles"][0]["preguntas"][0]["puntaje"] = 3.0
+    comprobar(
+        "un puntaje del banco que no coincide con el descriptor falla",
+        "debe coincidir" in _error_de(gen.componer_controles, datos, discrepante),
+    )
+
+
+def test_descriptores_reales_sin_enunciados() -> None:
+    """Los tres cursos del repo deben quedar públicos: cero enunciados.
+
+    Este test es la puerta contra la regresión real: el generador sigue
+    aceptando un `enunciado` inline para poder renderizar el control compuesto,
+    así que nada impediría que un `curso.yaml` volviera a llevarlo salvo este
+    chequeo sobre los ficheros que están en git.
+    """
+    for nombre in ("CYBERSEGURIDAD", "LABORATORIO_I_FISICA", "LABORATORIO_II_FISICA"):
+        ruta = RAIZ / "cursos" / nombre / "curso.yaml"
+        if not ruta.exists():
+            comprobar(f"{nombre}: el descriptor existe", False, str(ruta))
+            continue
+        datos = gen.cargar_descriptor(ruta)
+        problemas = gen.validar(datos)
+        comprobar(f"{nombre}: descriptor público válido", problemas == [], str(problemas))
+        fugas = [
+            (control.get("fase"), i)
+            for control in datos.get("controles") or []
+            for i, pregunta in enumerate(control.get("preguntas") or [], 1)
+            if "enunciado" in pregunta
+        ]
+        comprobar(f"{nombre}: ningún control lleva enunciado", fugas == [], str(fugas))
+
+
+def _error_de(funcion, *args, **kwargs) -> str:
+    """Devuelve el mensaje del ValueError que lanza `funcion`, o el fallo."""
+    try:
+        funcion(*args, **kwargs)
+    except (ValueError, OSError) as exc:
+        return str(exc)
+    return f"(no lanzó error: {funcion.__name__})"
+
+
 def test_determinismo() -> None:
     datos = descriptor_minimo()
     practica = datos["semanas"][0]["practica"]
@@ -729,6 +1003,12 @@ def main() -> int:
     test_tema_de_control_es_editorial()
     test_enunciado_de_control_con_matematica_no_se_escapa()
     test_roles_por_integrante_independientes_del_numero_de_grupos()
+    test_descriptor_publico_rechaza_enunciado()
+    test_banco_elige_la_unica_utilizable()
+    test_banco_ambiguo_o_sin_utilizables_falla()
+    test_banco_con_estructura_invalida_falla()
+    test_componer_controles_empareja_por_orden()
+    test_descriptores_reales_sin_enunciados()
     test_determinismo()
 
     print()

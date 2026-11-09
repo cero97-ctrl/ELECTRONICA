@@ -41,6 +41,7 @@ DIAGNOSTICO = {
     3: "descriptor incoherente (semanas, fases o pesos que no cierran)",
     4: "error de compilación LaTeX (revisar .tmp/latex_build/curso_<codigo>/*.log)",
     5: "error de escritura en disco",
+    6: "banco de preguntas ausente, ilegible o variante no aplicable",
 }
 
 
@@ -91,6 +92,9 @@ def flujo_disenar_curso(
     compilar: bool,
     alert: bool,
     como_json: bool,
+    banco: Path | None = None,
+    variante: int | None = None,
+    permitir_comprometida: bool = False,
 ) -> int:
     """Orquesta la generación del material de un curso.
 
@@ -101,6 +105,9 @@ def flujo_disenar_curso(
         compilar: Si es False, se escriben solo los `.tex`.
         alert: Si es True, emite alerta audible al terminar.
         como_json: Si es True, imprime un único objeto JSON.
+        banco: Ruta al banco privado de preguntas (None = junto al descriptor).
+        variante: Variante del banco a aplicar (None = la única utilizable).
+        permitir_comprometida: Autoriza aplicar una variante ya publicada.
 
     Returns:
         Código de salida del flujo: 0 ok, si no el del generador.
@@ -118,6 +125,8 @@ def flujo_disenar_curso(
             "curso": str(curso),
             "solo": solo,
             "compilar": compilar,
+            "variante": variante,
+            "banco": str(banco) if banco else None,
         },
     }
     guardar(state)
@@ -129,6 +138,12 @@ def flujo_disenar_curso(
         cmd += ["--solo", solo]
     if not compilar:
         cmd.append("--sin-compilar")
+    if banco:
+        cmd += ["--banco", str(banco)]
+    if variante is not None:
+        cmd += ["--variante", str(variante)]
+    if permitir_comprometida:
+        cmd.append("--permitir-comprometida")
 
     resultado = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
     try:
@@ -197,7 +212,7 @@ def flujo_disenar_curso(
         print(json.dumps(
             {"status": "ok", "curso": datos.get("curso"), "salida": datos.get("salida"),
              "tex_escritos": datos.get("tex_escritos"), "compilados": datos.get("compilados"),
-             "artefactos": artefactos, "run_id": run_id},
+             "artefactos": artefactos, "banco": datos.get("banco"), "run_id": run_id},
             ensure_ascii=False, indent=2))
     else:
         barra = "═" * 60
@@ -207,6 +222,9 @@ def flujo_disenar_curso(
         print(f"  Documentos LaTeX : {datos.get('tex_escritos')}")
         print(f"  PDF compilados   : {datos.get('compilados')}")
         print(f"  Salida           : {datos.get('salida')}")
+        if datos.get("banco"):
+            info = datos["banco"]
+            print(f"  Variante banco   : {info['variante']} ({info['estado']})")
         print(f"  Run ID           : {run_id}")
         print(f"{barra}\n")
 
@@ -233,6 +251,13 @@ def main(argv: list[str] | None = None) -> int:
                              "controles, final, rubrica, laboratorio, readme")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe los .tex sin invocar pdflatex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
+    parser.add_argument("--banco", default=None,
+                        help="Banco privado de preguntas (por defecto, "
+                             "evaluaciones/banco_preguntas.yaml junto al descriptor)")
+    parser.add_argument("--variante", type=int, default=None,
+                        help="Variante del banco a aplicar (por defecto, la única utilizable)")
+    parser.add_argument("--permitir-comprometida", action="store_true",
+                        help="Autoriza aplicar una variante ya publicada")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta sonora")
     args = parser.parse_args(argv)
 
@@ -243,6 +268,9 @@ def main(argv: list[str] | None = None) -> int:
         compilar=not args.sin_compilar,
         alert=not args.no_alert,
         como_json=args.json,
+        banco=Path(args.banco).resolve() if args.banco else None,
+        variante=args.variante,
+        permitir_comprometida=args.permitir_comprometida,
     )
 
 

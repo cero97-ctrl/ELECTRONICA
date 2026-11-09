@@ -3472,40 +3472,28 @@ controles:
   duracion_min: 45
   instrumento: Prueba escrita individual
   preguntas:
-  - enunciado: Explique la diferencia entre vulnerabilidad, amenaza y riesgo con un ejemplo del laboratorio.
-    puntaje: 2.5
-  - enunciado: Un compañero propone escanear el portal de la universidad para practicar. Indique qué norma se incumple y qué alternativa propone.
-    puntaje: 2.5
-  - enunciado: Explique por qué AES-GCM verifica integridad y AES-CBC no, y qué implica al cifrar un archivo.
-    puntaje: 2.5
-  - enunciado: Enumere cuatro elementos que debe contener una autorización de auditoría y justifique cada uno.
-    puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
 - fase: 2
   titulo: Control de fase dos, ofensiva controlada
   duracion_min: 45
   instrumento: Prueba escrita individual con ejercicios
   preguntas:
-  - enunciado: Explique la diferencia entre un escaneo connect y uno SYN, y qué revela cada respuesta del objetivo.
-    puntaje: 2.5
-  - enunciado: Dado un formulario vulnerable a inyección SQL, escriba el payload de prueba y explique la corrección parametrizada.
-    puntaje: 2.5
-  - enunciado: Indique tres datos que aporta el reconocimiento pasivo y dos que solo se obtienen con tráfico activo.
-    puntaje: 2.5
-  - enunciado: Clasifique tres hallazgos del laboratorio según OWASP Top 10 y justifique la categoría asignada.
-    puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
 - fase: 3
   titulo: Control de fase tres, defensa y desarrollo seguro
   duracion_min: 45
   instrumento: Prueba escrita individual con ejercicios
   preguntas:
-  - enunciado: Proponga cinco controles de endurecimiento para un servidor SSH y explique el riesgo que reduce cada uno.
-    puntaje: 2.5
-  - enunciado: Escriba una regla de firewall que permita solo el puerto de la aplicación y explique la política por defecto.
-    puntaje: 2.5
-  - enunciado: Explique por qué parametrizar la consulta elimina la inyección SQL y por qué escapar comillas no basta.
-    puntaje: 2.5
-  - enunciado: Describa cómo comprobaría que una mitigación funciona repitiendo el ataque original.
-    puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
+  - puntaje: 2.5
 evaluacion_final:
   titulo: Evaluación final práctica de alcance cerrado
   duracion_min: 240

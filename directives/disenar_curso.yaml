@@ -4,9 +4,11 @@ description: >-
   una práctica por semana, controles de fase, evaluación final, rúbrica, laboratorio
   Docker y README) a partir de un descriptor YAML que es la fuente única de verdad.
   El material es determinista: mismo descriptor -> mismo LaTeX -> mismo PDF byte a byte.
-version: 1.1  # 1.1 añade los campos opcionales de dominio (textos, apéndices,
-              # tabla de datos, fundamento/figura de práctica, rúbrica propia).
-              # Todo es aditivo: un descriptor de la v1.0 genera exactamente lo mismo.
+version: 1.2  # 1.2 saca los enunciados de los controles a un banco privado
+              # (evaluaciones/banco_preguntas.yaml, ignorado por git) porque el
+              # descriptor es público. Se aplican con --variante N. 1.1 añadió los
+              # campos opcionales de dominio. Todo es aditivo: un descriptor con
+              # enunciado inline ya NO es válido (esa era la fuga).
 
 goal: >-
   Entregar el paquete docente de un curso coherente de principio a fin, donde la
@@ -30,6 +32,9 @@ required_inputs:
       reproducible compilar hoy y compilar en un mes.
       `resultados_aprendizaje` es una lista de mapas `{id, texto}`, no de strings:
       el sílabo los numera por `id` y un string suelto falla la validación.
+      `controles[].preguntas[]` declara SOLO la posición (puntaje y, opcionalmente,
+      tema): los enunciados viven en el banco privado. Un `enunciado` en el
+      descriptor es una fuga y falla la validación con código 3.
       Los valores por defecto de los textos están escritos para un curso de
       ciberseguridad; un curso de otro dominio DEBE sobrescribirlos con `textos:`
       (ver `campos_opcionales`), o el material saldrá con vocabulario ajeno.
@@ -45,6 +50,26 @@ required_inputs:
       Subconjunto opcional de artefactos, separados por coma: silabo, plan_semanal,
       guia, practicas, controles, final, rubrica, laboratorio, readme. Vacío = todos.
       Sirve para iterar un documento sin recompilar veinte.
+
+  - name: banco
+    description: >-
+      Ruta al banco privado de preguntas. Obligatorio de facto cuando `solo`
+      incluye `controles` (la evaluación final no lleva enunciados y no lo usa).
+      Por defecto, `evaluaciones/banco_preguntas.yaml` junto al descriptor. Si no
+      existe, el generador falla con código 6: sin banco no hay examen.
+
+  - name: variante
+    description: >-
+      Número de variante del banco a aplicar. Si se omite, solo se acepta que
+      exista EXACTAMENTE una variante en estado `utilizable`; con cero o varias el
+      generador falla y pide elegir (no adivina, para que el mismo comando no
+      emita exámenes distintos en dos corridas).
+
+  - name: permitir_comprometida
+    description: >-
+      Bandera de confirmación explícita para aplicar una variante `comprometida`
+      (cuyos enunciados ya se publicaron). Sin ella, el generador se detiene. Es
+      una decisión consciente del docente, no un valor por defecto.
 
 # Campos opcionales del descriptor (v1.1). Ninguno es obligatorio y su ausencia
 # reproduce el comportamiento de la v1.0. "crudo" = se inyecta en LaTeX SIN pasar
@@ -154,9 +179,11 @@ campos_opcionales:
     omite, el generador deriva las primeras palabras del enunciado, una etiqueta
     mecánica que suele quedar telegráfica; no es una decisión del programa.
   controles[].preguntas[].enunciado: >-
-    Admite matemática en línea con `$...$` (se renderiza con `_tm`, igual que
-    `pasos` o `escenario`). Un subíndice o exponente fuera de `$...$` falla la
-    validación con el campo señalado, porque rompería la compilación.
+    PROHIBIDO en el descriptor (v1.2). El repo es público: un enunciado aquí lo lee
+    el alumno antes de rendir el control. Vive en el banco privado
+    (`evaluaciones/banco_preguntas.yaml`, ignorado por git) y `validar()` falla con
+    código 3 si aparece. Migración de los descriptores antiguos:
+    `execution/migrar_preguntas_a_banco.py --curso <yaml>`.
   grupos.rotaciones: >-
     Lista opcional de etiquetas de rotación de roles (por ejemplo
     «Semanas 1-2»): cada rotación gira los roles una posición y la tabla de la
@@ -180,6 +207,55 @@ campos_opcionales:
     omite el bloque Docker y `laboratorio/README.md` degrada a "este curso no usa
     contenedores".
 
+# ── Banco privado de preguntas (v1.2) ────────────────────────────────────────
+# Los controles son la única parte del material que el alumno no debe poder leer
+# antes de rendirla. El descriptor es público, así que el enunciado no puede
+# estar ahí: vive en este fichero, ignorado por .gitignore, y se inyecta al
+# generar. `curso.yaml` conserva lo que sí es público y verificable: cuántas
+# preguntas hay, cuánto vale cada una y (opcional) su tema.
+banco_preguntas:
+  ruta: <curso>/evaluaciones/banco_preguntas.yaml   # ignorado por git
+  esquema:
+    meta:
+      curso: <codigo del curso, igual que meta.codigo>
+      escala: <escala de la nota, p. ej. 10>
+      aviso: '<texto libre: para qué sirve y qué no se versiona>'
+    variantes:
+      - numero: <entero único>
+        estado: utilizable | borrador | comprometida
+        creada: <fecha ISO>
+        origen: <de dónde salieron los enunciados>
+        controles:
+          - fase: <id de fase, el mismo que el descriptor>
+            preguntas:
+              - enunciado: <texto; admite matemática $...$>
+                criterio: <opcional, texto de corrección>
+                puntaje: <opcional; si se declara, debe coincidir con el descriptor>
+  reglas:
+    - >-
+      El emparejamiento es por fase y por orden: la pregunta k del descriptor
+      recibe el enunciado k del banco. El conteo debe coincidir exactamente; un
+      desajuste falla en vez de rellenar (un examen que compila y miente es peor
+      que uno que no compila).
+    - >-
+      El puntaje es del descriptor (público). El banco puede repetirlo como
+      control de deriva, pero si difiere el generador falla.
+    - >-
+      `utilizable` es la única aplicable sin permiso; `borrador` nunca se aplica;
+      `comprometida` exige `--permitir-comprometida`.
+    - >-
+      La variante 1 de cada curso quedó `comprometida`: sus enunciados se
+      publicaron antes de la migración (siguen en el historial de git). Para un
+      examen nuevo: crear la variante 2 con enunciados nuevos y marcarla
+      `utilizable`; a partir de ahí el flujo la elige solo.
+  proteccion:
+    - >-
+      `git check-ignore -v cursos/<CURSO>/evaluaciones/banco_preguntas.yaml`
+      debe señalar `.gitignore`.
+    - >-
+      `execution/test_generar_material_curso.py` valida los tres `curso.yaml`
+      reales y falla si alguno vuelve a llevar un `enunciado`.
+
 steps:
   - action: describir_curso
     script: orquestador (Layer 2)
@@ -192,10 +268,15 @@ steps:
 
   - action: generar_material
     script: execution/generar_material_curso.py --curso <yaml> [--solo ...] [--sin-compilar]
+      [--banco <yaml>] [--variante N] [--permitir-comprometida]
     description: >-
       Valida el descriptor (semanas contiguas, fases sin huecos ni solapes, pesos de
       curso que suman 100, criterios de práctica que suman 10, puertos de laboratorio
-      únicos) y solo entonces escribe. Genera el LaTeX con PREAMBULO_INFOGRAFIA de
+      únicos) y solo entonces escribe. Si el subconjunto incluye `controles`, carga
+      el banco privado, elige la variante de forma determinista, compone los
+      controles (el banco aporta el texto, el descriptor el puntaje y el tema) y
+      valida la matemática de los enunciados ya compuestos. Código 6 si el banco
+      falta, está mal formado o la variante no es aplicable. Genera el LaTeX con PREAMBULO_INFOGRAFIA de
       execution/estilo_infografia.py, compila 2 pasadas en .tmp/latex_build/curso_<codigo>/
       con clean=False, y copia el PDF junto al .tex únicamente si el .log no contiene
       ninguna línea que empiece por "!". Fija SOURCE_DATE_EPOCH desde meta.fecha_iso.
@@ -221,6 +302,8 @@ expected_outputs:
   - <curso>/docs/guia_estudiante.{tex,pdf}
   - <curso>/practicas/practica_NN.{tex,pdf} y taller_NN.{tex,pdf} (uno por semana, según semana.tipo)
   - <curso>/evaluaciones/control_fase_<n>.{tex,pdf} y evaluacion_final.{tex,pdf}
+  - <curso>/evaluaciones/banco_preguntas.yaml (LOCAL, ignorado por git; los
+    controles no se pueden regenerar sin él)
   - <curso>/evaluaciones/rubrica_practica.yaml (compatible con execution/evaluar_examen.py)
   - <curso>/laboratorio/docker-compose.yml y laboratorio/README.md
   - <curso>/README.md
@@ -351,3 +434,40 @@ edge_cases:
       inventado (`galvanometer` no existe; usar `ammeter`). Comprobar el manual de
       circuitikz, ver `.agent/latex.md` entrada 20.
 
+  - caso: El generador pide el banco y no existe (código 6)
+    protocolo: >-
+      Es el comportamiento correcto: sin banco no hay enunciados y no se inventan.
+      Crear `evaluaciones/banco_preguntas.yaml` (o migrarlo desde un descriptor
+      antiguo con `execution/migrar_preguntas_a_banco.py`) o pasar `--banco`.
+      Nunca copiar el banco junto al descriptor en un directorio que se publique.
+
+  - caso: La elección automática de variante es ambigua (cero o varias `utilizable`)
+    protocolo: >-
+      Código 6. Elegir con `--variante N`. La ambigüedad no se resuelve "tomando la
+      primera": el mismo comando tiene que producir el mismo examen siempre.
+
+  - caso: La variante pedida está `comprometida` o en `borrador`
+    protocolo: >-
+      Código 6 con el motivo. `comprometida` se aplica solo con
+      `--permitir-comprometida` (decisión consciente: los enunciados ya se
+      publicaron). `borrador` no se aplica nunca: completarla en el banco y
+      marcarla `utilizable`.
+
+  - caso: El banco tiene menos/más preguntas que el descriptor, o un puntaje distinto
+    protocolo: >-
+      Código 6 con fase, índice y los dos valores. El conteo y el puntaje los fija
+      el descriptor (público); el banco solo aporta texto. Corregir el banco, no el
+      descriptor, salvo que la estructura del examen haya cambiado de verdad.
+
+  - caso: Alguien devuelve un `enunciado` al `curso.yaml`
+    protocolo: >-
+      Código 3, con la pregunta señalada. Es la fuga que esta versión cierra:
+      moverlo otra vez al banco con `execution/migrar_preguntas_a_banco.py`
+      (idempotente). El test `test_descriptores_reales_sin_enunciados` vigila los
+      tres cursos versionados.
+
+  - caso: Migrar un descriptor que ya está migrado
+    protocolo: >-
+      `migrar_preguntas_a_banco.py` detecta que no quedan enunciados y devuelve
+      `ya_migrado` sin tocar nada. Si el banco ya existe, no lo sobrescribe sin
+      `--forzar` (perdería las variantes nuevas).

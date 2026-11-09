@@ -67,6 +67,12 @@ cursos/*/evaluaciones/resultados/**
 cursos/*/evaluaciones/*.tex
 cursos/*/evaluaciones/*.pdf
 
+# Banco privado de preguntas: con los .tex ya ignorados, este era el último sitio
+# donde un enunciado podía colarse al repo. `curso.yaml` es público y solo declara
+# fase, puntaje y tema; los textos viven aquí y se inyectan al generar con
+# `flujo_disenar_curso.py --variante N`.
+cursos/*/evaluaciones/banco_preguntas.yaml
+
 # Infografías para estudiantes: material binario grande (varios MB por PNG) que
 # no se genera con ningún script y no aporta nada al clon del repositorio. Vive
 # solo en local (MEGA lo sincroniza). Se ignora todo salvo el README, que

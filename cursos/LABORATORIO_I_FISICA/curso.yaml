@@ -1500,16 +1500,12 @@ controles:
     caracter: 'Individual, sin apuntes, con calculadora y una hoja de fórmulas'
     preguntas:
       - tema: 'Error relativo y porcentual'
-        enunciado: 'Se reporta una longitud como $L = 2{,}45 \pm 0{,}03$ cm. Calcule el error relativo y el error porcentual, y explique cuántas cifras significativas tiene sentido conservar en el resultado.'
         puntaje: 2.5
       - tema: 'Media e incertidumbres de la lectura'
-        enunciado: 'Con cinco lecturas de una misma magnitud, explique el procedimiento para calcular la media, la desviación estándar de la media y la incertidumbre combinada si la apreciación del instrumento es $A = 0{,}01$ cm. Indique cuál de las dos incertidumbres domina en su ejemplo.'
         puntaje: 2.5
       - tema: 'Exactitud, precisión y tipos de error'
-        enunciado: 'Distinga exactitud de precisión y error sistemático de error aleatorio. Proponga un ejemplo de laboratorio para cada combinación y explique cómo detectaría el error sistemático.'
         puntaje: 2.5
       - tema: 'Propagación de incertidumbre en el cilindro'
-        enunciado: 'El volumen de un cilindro es $V = \pi d^2 h/4$. Deduzca la fórmula de propagación de la incertidumbre relativa y evalúela para $d = 2{,}00 \pm 0{,}01$ cm y $h = 5{,}00 \pm 0{,}02$ cm.'
         puntaje: 2.5
 
   - fase: 2
@@ -1519,16 +1515,12 @@ controles:
     caracter: 'Individual, sin apuntes, con calculadora y una hoja de fórmulas'
     preguntas:
       - tema: 'Densidad con incertidumbre'
-        enunciado: 'Un sólido tiene masa $m = 54{,}32 \pm 0{,}01$ g y volumen $V = 6{,}90 \pm 0{,}08$ cm$^3$. Calcule su densidad con incertidumbre y escriba el resultado con las cifras significativas correctas.'
         puntaje: 2.5
       - tema: 'Densidad por el principio de Arquímedes'
-        enunciado: 'Un cuerpo pesa $120{,}0$ g en el aire y $105{,}3$ g sumergido en agua. Calcule su densidad por el principio de Arquímedes y explique qué suposiciones hace sobre el fluido y sobre el cuerpo.'
         puntaje: 2.5
       - tema: 'Centro de masa de dos masas'
-        enunciado: 'Dos masas de $100$ g y $200$ g se colocan en una varilla de masa despreciable en $x_1 = 10$ cm y $x_2 = 40$ cm. Calcule el centro de masa y explique dónde habría que apoyar la varilla para que quede en equilibrio.'
         puntaje: 2.5
       - tema: 'Ley de Hooke y bondad del ajuste'
-        enunciado: 'En un ensayo de la ley de Hooke se obtiene una recta de pendiente $k = 42{,}5 \pm 1{,}2$ N/m y un coeficiente de determinación $r^2 = 0{,}998$. Interprete ambos valores y discuta si el resorte puede considerarse lineal en el rango medido.'
         puntaje: 2.5
 
 evaluacion_final:

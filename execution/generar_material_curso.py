@@ -11,7 +11,7 @@ workspace (`execution/estilo_infografia.py`).
 Uso:
     python3 execution/generar_material_curso.py --curso cursos/CYBERSEGURIDAD/curso.yaml
     python3 execution/generar_material_curso.py --curso <yaml> --solo silabo,guia --sin-compilar
-    python3 execution/generar_material_curso.py --curso <yaml> --json
+    python3 execution/generar_material_curso.py --curso <yaml> --variante 2 --json
 
 Salida (stdout, JSON):
     {"status": "ok", "curso": "...", "artefactos": [...], "compilados": N, "errores": []}
@@ -23,6 +23,10 @@ Códigos de salida:
     3 — descriptor inválido (semana faltante, pesos que no suman, etc.)
     4 — error de compilación LaTeX (se conserva el .log y se informa la línea)
     5 — error de escritura en disco
+    6 — banco de preguntas ausente, ilegible, incompatible o variante no aplicable
+
+Los enunciados de los controles NO viven en el descriptor (repo público): viven en
+`evaluaciones/banco_preguntas.yaml`, ignorado por git, y se inyectan con --variante.
 
 Por qué existe: el material de un curso son decenas de documentos que deben
 contar la misma historia. Escritos a mano divergen en la semana tres; generados
@@ -70,6 +74,20 @@ ARTEFACTOS = (
     "laboratorio",
     "readme",
 )
+
+# El descriptor de un curso es un fichero PÚBLICO (está en un repo público), así
+# que no puede llevar los enunciados de los controles: quien tenga el enlace lee
+# el examen antes de rendirlo. Los enunciados viven en un banco privado, ignorado
+# por git, y se inyectan al generar con una variante concreta.
+BANCO_PREGUNTAS = "banco_preguntas.yaml"
+
+# Ciclo de vida de una variante del banco:
+#   utilizable   → se puede aplicar (es la que se usa si no se pide otra).
+#   borrador     → incompleta; nunca se aplica (falla en vez de improvisar).
+#   comprometida → sus enunciados ya se publicaron; aplicar solo es seguro si el
+#                  docente lo confirma con --permitir-comprometida, porque un
+#                  alumno pudo haberla leído.
+ESTADOS_BANCO = ("utilizable", "borrador", "comprometida")
 
 # Fichero con el que se fija /CreationDate y /ID del PDF: sin esto, dos
 # ejecuciones del mismo descriptor producen PDFs distintos byte a byte y el
@@ -274,6 +292,255 @@ def cargar_descriptor(ruta: Path) -> dict[str, Any]:
     if not isinstance(datos, dict):
         raise ValueError(f"El descriptor debe ser un mapa YAML, no {type(datos).__name__}")
     return datos
+
+
+# ── Banco privado de preguntas ────────────────────────────────────────────────
+
+
+def cargar_banco(ruta: Path) -> dict[str, Any]:
+    """Lee el banco privado de preguntas de los controles.
+
+    El banco es la fuente de los enunciados; el descriptor solo declara las
+    posiciones (fase, puntaje, tema) que el banco rellena.
+
+    Args:
+        ruta: Ruta al fichero `banco_preguntas.yaml`.
+
+    Returns:
+        Diccionario con `meta` y `variantes`.
+
+    Raises:
+        FileNotFoundError: Si la ruta no existe.
+        ValueError: Si no es YAML, no es un mapa o no declara variantes.
+    """
+    if not ruta.exists():
+        raise FileNotFoundError(
+            f"Banco de preguntas no encontrado: {ruta}. El descriptor público no lleva "
+            "enunciados: sin banco no se puede emitir un control."
+        )
+    try:
+        banco = yaml.safe_load(ruta.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise ValueError(f"Banco ilegible como YAML ({ruta}): {exc}") from exc
+    if not isinstance(banco, dict):
+        raise ValueError(f"El banco debe ser un mapa YAML, no {type(banco).__name__}")
+    if not isinstance(banco.get("variantes"), list) or not banco["variantes"]:
+        raise ValueError(f"El banco ({ruta}) debe declarar 'variantes' como lista no vacía")
+    return banco
+
+
+def variantes_del_banco(banco: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normaliza y comprueba la lista de variantes.
+
+    Args:
+        banco: Banco cargado con `cargar_banco`.
+
+    Returns:
+        Variantes como lista de mapas con `numero` entero.
+
+    Raises:
+        ValueError: Si una variante no es un mapa o carece de `numero` entero,
+            o si dos variantes comparten número.
+    """
+    crudas = banco.get("variantes")
+    if not isinstance(crudas, list) or not crudas:
+        raise ValueError("el banco debe declarar 'variantes' como lista no vacía")
+    variantes: list[dict[str, Any]] = []
+    vistos: set[int] = set()
+    for indice, variante in enumerate(crudas, start=1):
+        if not isinstance(variante, dict):
+            raise ValueError(f"variante {indice}: debe ser un mapa, no {type(variante).__name__}")
+        numero = variante.get("numero")
+        if not isinstance(numero, int):
+            raise ValueError(f"variante {indice}: 'numero' debe ser un entero ({numero!r})")
+        if numero in vistos:
+            raise ValueError(f"variante {numero}: el número está repetido en el banco")
+        vistos.add(numero)
+        variantes.append(variante)
+    return variantes
+
+
+def seleccionar_variante(
+    banco: dict[str, Any],
+    numero: int | None = None,
+    permitir_comprometida: bool = False,
+) -> dict[str, Any]:
+    """Elige la variante del banco que se va a aplicar.
+
+    La decisión es determinista: sin `numero` solo se acepta una única variante
+    `utilizable`; si hay cero o varias, falla y pide `--variante` en vez de
+    adivinar (el mismo descriptor produciendo exámenes distintos según el orden
+    del fichero sería irreproducible).
+
+    Args:
+        banco: Banco cargado con `cargar_banco`.
+        numero: Variante pedida explícitamente, o None para la única utilizable.
+        permitir_comprometida: Autoriza aplicar una variante ya publicada.
+
+    Returns:
+        La variante elegida.
+
+    Raises:
+        ValueError: Si la variante no existe, está en borrador, está comprometida
+            sin autorización, o la elección automática es ambigua.
+    """
+    variantes = variantes_del_banco(banco)
+    numeros = [v["numero"] for v in variantes]
+
+    if numero is not None:
+        elegidas = [v for v in variantes if v["numero"] == numero]
+        if not elegidas:
+            raise ValueError(
+                f"la variante {numero} no existe en el banco; disponibles: "
+                + ", ".join(str(n) for n in numeros)
+            )
+        elegida = elegidas[0]
+    else:
+        utilizables = [v for v in variantes if v.get("estado") == "utilizable"]
+        if not utilizables:
+            raise ValueError(
+                "no hay ninguna variante 'utilizable' en el banco; elegir una con "
+                "--variante N (disponibles: " + ", ".join(str(n) for n in numeros) + ")"
+            )
+        if len(utilizables) > 1:
+            raise ValueError(
+                "hay varias variantes 'utilizable' ("
+                + ", ".join(str(v["numero"]) for v in utilizables)
+                + "): indicar cuál aplicar con --variante N"
+            )
+        elegida = utilizables[0]
+
+    estado = elegida.get("estado")
+    if estado not in ESTADOS_BANCO:
+        raise ValueError(
+            f"variante {elegida['numero']}: 'estado' debe ser uno de "
+            f"{', '.join(ESTADOS_BANCO)} ({estado!r})"
+        )
+    if estado == "borrador":
+        raise ValueError(
+            f"variante {elegida['numero']}: está en 'borrador' (incompleta); no se "
+            "aplica. Completarla y marcarla como 'utilizable' en el banco"
+        )
+    if estado == "comprometida" and not permitir_comprometida:
+        raise ValueError(
+            f"variante {elegida['numero']}: está 'comprometida' (sus enunciados ya se "
+            "publicaron y un alumno pudo leerlos). Si es una decisión consciente, "
+            "confirmarla con --permitir-comprometida; si no, usar otra variante"
+        )
+    return elegida
+
+
+def _controles_de_variante(variante: dict[str, Any]) -> dict[Any, list[dict[str, Any]]]:
+    """Indexa las preguntas de una variante por fase."""
+    por_fase: dict[Any, list[dict[str, Any]]] = {}
+    for control in variante.get("controles") or []:
+        if not isinstance(control, dict):
+            raise ValueError(
+                f"variante {variante.get('numero')}: cada control debe ser un mapa, "
+                f"no {type(control).__name__}"
+            )
+        if "fase" not in control:
+            raise ValueError(f"variante {variante.get('numero')}: un control no declara 'fase'")
+        por_fase[control["fase"]] = list(control.get("preguntas") or [])
+    return por_fase
+
+
+def componer_controles(datos: dict[str, Any], variante: dict[str, Any]) -> list[dict[str, Any]]:
+    """Inyecta los enunciados del banco en las posiciones del descriptor.
+
+    El emparejamiento es por fase y por orden: la pregunta k del descriptor
+    recibe el enunciado k del banco. El descriptor decide cuántas preguntas hay y
+    cuánto vale cada una (es público y es la fuente del puntaje); el banco decide
+    qué se pregunta. Un desajuste de conteo es un error, no un relleno: emparejar
+    enunciados con puntajes equivocados produciría un examen que compila y miente.
+
+    Args:
+        datos: Descriptor válido (sin `enunciado` en los controles).
+        variante: Variante elegida del banco.
+
+    Returns:
+        Copia de `datos["controles"]` con `enunciado` en cada pregunta.
+
+    Raises:
+        ValueError: Si una fase no existe en el banco o en el descriptor, si los
+            conteos difieren o si una pregunta del banco no trae enunciado.
+    """
+    numero = variante.get("numero")
+    por_fase = _controles_de_variante(variante)
+    fases_descriptor = [control.get("fase") for control in datos.get("controles") or []]
+
+    faltan = [f for f in fases_descriptor if f not in por_fase]
+    sobran = [f for f in por_fase if f not in fases_descriptor]
+    if faltan:
+        raise ValueError(
+            f"variante {numero}: no cubre la fase {', '.join(str(f) for f in faltan)} "
+            "que el descriptor evalúa"
+        )
+    if sobran:
+        raise ValueError(
+            f"variante {numero}: trae preguntas para la fase "
+            f"{', '.join(str(f) for f in sobran)}, que el descriptor no evalúa"
+        )
+
+    compuestos: list[dict[str, Any]] = []
+    for control in datos.get("controles") or []:
+        fase = control.get("fase")
+        slots = control.get("preguntas") or []
+        fuentes = por_fase[fase]
+        if len(slots) != len(fuentes):
+            raise ValueError(
+                f"variante {numero}, fase {fase}: el descriptor declara {len(slots)} "
+                f"preguntas y el banco trae {len(fuentes)}"
+            )
+        preguntas: list[dict[str, Any]] = []
+        for indice, (slot, fuente) in enumerate(zip(slots, fuentes), start=1):
+            if not isinstance(fuente, dict):
+                raise ValueError(
+                    f"variante {numero}, fase {fase}, pregunta {indice}: debe ser un mapa"
+                )
+            enunciado = fuente.get("enunciado")
+            if not isinstance(enunciado, str) or not enunciado.strip():
+                raise ValueError(
+                    f"variante {numero}, fase {fase}, pregunta {indice}: falta 'enunciado'"
+                )
+            if "puntaje" in fuente and abs(float(fuente["puntaje"]) - float(slot.get("puntaje", 0))) > 0.01:
+                raise ValueError(
+                    f"variante {numero}, fase {fase}, pregunta {indice}: el banco declara "
+                    f"{fuente['puntaje']} pt y el descriptor {slot.get('puntaje')} pt; el "
+                    "puntaje es del descriptor público y debe coincidir"
+                )
+            pregunta = dict(slot)
+            pregunta["enunciado"] = enunciado
+            if fuente.get("tema") and not pregunta.get("tema"):
+                pregunta["tema"] = fuente["tema"]
+            preguntas.append(pregunta)
+        compuesto = dict(control)
+        compuesto["preguntas"] = preguntas
+        compuestos.append(compuesto)
+    return compuestos
+
+
+def validar_preguntas(controles: list[dict[str, Any]]) -> list[str]:
+    """Valida los enunciados ya compuestos (los del banco, no del descriptor).
+
+    Args:
+        controles: Controles con `enunciado`, tal como los devuelve
+            `componer_controles`.
+
+    Returns:
+        Lista de problemas; vacía si todos los enunciados son válidos.
+    """
+    problemas: list[str] = []
+    for control in controles:
+        for indice, pregunta in enumerate(control.get("preguntas") or [], start=1):
+            etiqueta = f"control de fase {control.get('fase')}: pregunta {indice}"
+            if not isinstance(pregunta.get("enunciado"), str) or not pregunta["enunciado"].strip():
+                problemas.append(f"{etiqueta}: falta 'enunciado' en el banco")
+                continue
+            problemas.extend(
+                _validar_matematica(pregunta["enunciado"], f"{etiqueta}.enunciado")
+            )
+    return problemas
 
 
 _ASCII_SEGURO = set("áéíóúüñÁÉÍÓÚÜÑ")
@@ -517,12 +784,25 @@ def validar(datos: dict[str, Any]) -> list[str]:
                 "y deben cerrar en la escala declarada"
             )
         for i, pregunta in enumerate(control.get("preguntas") or [], 1):
-            problemas.extend(
-                _validar_matematica(
-                    pregunta.get("enunciado"),
-                    f"control de fase {control.get('fase')}: pregunta {i}.enunciado",
+            etiqueta = f"control de fase {control.get('fase')}: pregunta {i}"
+            # El descriptor viaja en un repo público: un enunciado aquí es una fuga.
+            if "enunciado" in pregunta:
+                problemas.append(
+                    f"{etiqueta}: el descriptor público no lleva 'enunciado' (quien tenga "
+                    "el enlace leería el examen). Moverlo al banco privado "
+                    f"(evaluaciones/{BANCO_PREGUNTAS}) con "
+                    "execution/migrar_preguntas_a_banco.py"
                 )
-            )
+            if pregunta.get("puntaje") in (None, ""):
+                problemas.append(f"{etiqueta}: falta 'puntaje'")
+            else:
+                try:
+                    if float(pregunta["puntaje"]) <= 0:
+                        problemas.append(f"{etiqueta}: 'puntaje' debe ser mayor que cero")
+                except (TypeError, ValueError):
+                    problemas.append(f"{etiqueta}: 'puntaje' no es numérico ({pregunta['puntaje']!r})")
+            if "tema" in pregunta and not isinstance(pregunta["tema"], str):
+                problemas.append(f"{etiqueta}: 'tema' debe ser texto")
 
     final = datos.get("evaluacion_final") or {}
     puntos_final = [float(s.get("puntaje", 0)) for s in final.get("secciones") or []]
@@ -1846,6 +2126,23 @@ def _parser() -> argparse.ArgumentParser:
         help="Lista de artefactos separados por coma: " + ", ".join(ARTEFACTOS),
     )
     p.add_argument("--sin-compilar", action="store_true", help="Escribe los .tex sin invocar pdflatex")
+    p.add_argument(
+        "--banco",
+        default=None,
+        help="Ruta al banco privado de preguntas (por defecto, "
+        f"evaluaciones/{BANCO_PREGUNTAS} junto al descriptor)",
+    )
+    p.add_argument(
+        "--variante",
+        type=int,
+        default=None,
+        help="Variante del banco a aplicar; sin esto se exige una única 'utilizable'",
+    )
+    p.add_argument(
+        "--permitir-comprometida",
+        action="store_true",
+        help="Autoriza aplicar una variante ya publicada (decisión consciente)",
+    )
     p.add_argument("--json", action="store_true", help="Emite un único objeto JSON por stdout")
     return p
 
@@ -1889,6 +2186,43 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[error] artefactos desconocidos: {sorted(desconocidos)}", file=sys.stderr)
         return 1
 
+    info_banco: dict[str, Any] | None = None
+    if "controles" in solo:
+        ruta_banco = (
+            Path(args.banco).resolve()
+            if args.banco
+            else ruta.parent / "evaluaciones" / BANCO_PREGUNTAS
+        )
+        try:
+            banco = cargar_banco(ruta_banco)
+            variante = seleccionar_variante(
+                banco, args.variante, args.permitir_comprometida
+            )
+            controles = componer_controles(datos, variante)
+        except (FileNotFoundError, ValueError) as exc:
+            if args.json:
+                print(json.dumps({"status": "banco_invalido", "problemas": [str(exc)]},
+                                 ensure_ascii=False, indent=2))
+            else:
+                print(f"[error] {exc}", file=sys.stderr)
+            return 6
+        problemas_banco = validar_preguntas(controles)
+        if problemas_banco:
+            if args.json:
+                print(json.dumps({"status": "banco_invalido", "problemas": problemas_banco},
+                                 ensure_ascii=False, indent=2))
+            else:
+                print("[error] Banco inválido:", file=sys.stderr)
+                for problema in problemas_banco:
+                    print(f"  - {problema}", file=sys.stderr)
+            return 6
+        datos = {**datos, "controles": controles}
+        info_banco = {
+            "ruta": str(ruta_banco),
+            "variante": variante["numero"],
+            "estado": variante.get("estado"),
+        }
+
     try:
         artefactos, errores = generar(datos, salida, solo, not args.sin_compilar)
     except OSError as exc:
@@ -1903,6 +2237,7 @@ def main(argv: list[str] | None = None) -> int:
         "artefactos": artefactos,
         "tex_escritos": sum(1 for a in artefactos if a.get("tex")),
         "compilados": compilados,
+        "banco": info_banco,
         "errores": errores,
     }
 
@@ -1910,6 +2245,8 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(salida_json, ensure_ascii=False, indent=2))
     else:
         print(f"Curso: {datos['meta']['codigo']} -> {salida}")
+        if info_banco:
+            print(f"Banco: variante {info_banco['variante']} ({info_banco['estado']})")
         print(f"Documentos LaTeX escritos: {salida_json['tex_escritos']}")
         if not args.sin_compilar:
             print(f"PDF compilados: {compilados}")
