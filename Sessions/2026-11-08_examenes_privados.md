@@ -24,6 +24,10 @@ Ocultar el PDF no servía: el texto estaba en el YAML.
    no se aplican nunca sin confirmación explícita. No se reescribe el historial una
    segunda vez.
 6. La dimensión de auditoría `examen_filtrado` queda **aplazada** para otra sesión.
+7. La variante 2 `utilizable` **no se redacta ahora**: se ofrecieron tres vías
+   (redactarlas a mano sin créditos / flujo LLM con tier `opus` y costo / dejarlo
+   pendiente) y el usuario eligió dejarlo pendiente de forma **deliberada**, no por
+   olvido; se retoma cuando se acerque un control.
 
 ## Actividades
 
@@ -85,6 +89,9 @@ estructura inválida, composición por orden (conteo/fase/puntaje), y
 - Crear la **variante 2 `utilizable`** de cada curso: hoy los tres bancos solo tienen
   la 1 `comprometida`, así que `--solo controles` sin `--variante` falla (correcto,
   pero hay que escribir los exámenes nuevos antes de usar el flujo con alumnos).
+  **Aplazado por decisión del usuario (2026-11-08)**: retomar cuando se acerque un control.
+  Requiere 4 preguntas por control (12 en ciberseguridad, 8 + 8 en los laboratorios);
+  en LAB I deben respetar los `tema:` que siguen públicos en el descriptor.
 - Dimensión `examen_filtrado` en `flujo_auditar_repo.py` (aplazada por decisión del
   usuario): detectaría enunciados en cualquier fichero versionado, no solo en el
   descriptor.
