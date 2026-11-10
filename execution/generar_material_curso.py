@@ -69,10 +69,40 @@ ARTEFACTOS = (
     "guia",
     "practicas",
     "controles",
+    "teoricas",
     "final",
     "rubrica",
     "laboratorio",
     "readme",
+)
+
+# Evaluación teórica del trabajo de grupo: una prueba por semana y por grupo,
+# sobre la tarea que ESE grupo desarrolló y reportó en su repositorio. La
+# decisión de CUÁNDO se aplica es pública y vive en el descriptor
+# (`evaluacion.teorica_semanas`); QUÉ se pregunta es privado y vive en el banco.
+# El criterio se publica (rúbrica): el alumno sabe qué se valora, no el enunciado.
+PREGUNTAS_TEORICA = 4
+CRITERIOS_TEORICA = (
+    (
+        "lectura_del_entregable",
+        2.5,
+        "Describe lo que el grupo entregó de verdad, con el vocabulario de su rol y sin inventar pasos.",
+    ),
+    (
+        "justificacion_tecnica",
+        3.0,
+        "Defiende la decisión tomada frente a una alternativa concreta y explica el criterio que usó para elegir.",
+    ),
+    (
+        "trazabilidad_con_la_evidencia",
+        2.5,
+        "Cada afirmación se ancla en una ruta, un comando o un hash del repositorio del propio grupo.",
+    ),
+    (
+        "limites_y_riesgo_residual",
+        2.0,
+        "Declara lo que no se pudo verificar y el riesgo que esa verificación pendiente deja abierto.",
+    ),
 )
 
 # El descriptor de un curso es un fichero PÚBLICO (está en un repo público), así
@@ -324,40 +354,70 @@ def cargar_banco(ruta: Path) -> dict[str, Any]:
         raise ValueError(f"Banco ilegible como YAML ({ruta}): {exc}") from exc
     if not isinstance(banco, dict):
         raise ValueError(f"El banco debe ser un mapa YAML, no {type(banco).__name__}")
-    if not isinstance(banco.get("variantes"), list) or not banco["variantes"]:
-        raise ValueError(f"El banco ({ruta}) debe declarar 'variantes' como lista no vacía")
+    if not banco.get("variantes") and not banco.get("teoricas"):
+        raise ValueError(
+            f"El banco ({ruta}) debe declarar 'variantes' (controles) o 'teoricas' "
+            "(evaluación teórica del trabajo de grupo)"
+        )
     return banco
 
 
-def variantes_del_banco(banco: dict[str, Any]) -> list[dict[str, Any]]:
-    """Normaliza y comprueba la lista de variantes.
+def _normalizar_variantes(crudas: Any, seccion: str) -> list[dict[str, Any]]:
+    """Valida la forma de una lista de variantes de cualquier sección del banco.
 
     Args:
-        banco: Banco cargado con `cargar_banco`.
+        crudas: Valor leído del YAML.
+        seccion: Nombre de la sección, solo para los mensajes de error.
 
     Returns:
         Variantes como lista de mapas con `numero` entero.
 
     Raises:
-        ValueError: Si una variante no es un mapa o carece de `numero` entero,
-            o si dos variantes comparten número.
+        ValueError: Si no es una lista no vacía, una variante no es un mapa,
+            carece de `numero` entero o repite número.
     """
-    crudas = banco.get("variantes")
     if not isinstance(crudas, list) or not crudas:
-        raise ValueError("el banco debe declarar 'variantes' como lista no vacía")
+        raise ValueError(f"el banco debe declarar '{seccion}' como lista no vacía")
     variantes: list[dict[str, Any]] = []
     vistos: set[int] = set()
     for indice, variante in enumerate(crudas, start=1):
         if not isinstance(variante, dict):
-            raise ValueError(f"variante {indice}: debe ser un mapa, no {type(variante).__name__}")
+            raise ValueError(
+                f"{seccion} {indice}: debe ser un mapa, no {type(variante).__name__}"
+            )
         numero = variante.get("numero")
         if not isinstance(numero, int):
-            raise ValueError(f"variante {indice}: 'numero' debe ser un entero ({numero!r})")
+            raise ValueError(f"{seccion} {indice}: 'numero' debe ser un entero ({numero!r})")
         if numero in vistos:
-            raise ValueError(f"variante {numero}: el número está repetido en el banco")
+            raise ValueError(f"{seccion} {numero}: el número está repetido en el banco")
         vistos.add(numero)
         variantes.append(variante)
     return variantes
+
+
+def variantes_del_banco(banco: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normaliza y comprueba la lista de variantes de los controles."""
+    return _normalizar_variantes(banco.get("variantes"), "variantes")
+
+
+def variantes_teoricas(banco: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normaliza la lista de variantes de la evaluación teórica por grupo.
+
+    Args:
+        banco: Banco cargado con `cargar_banco`.
+
+    Returns:
+        Variantes de la sección `teoricas`.
+
+    Raises:
+        ValueError: Si el banco no declara la sección o su forma es inválida.
+    """
+    if banco.get("teoricas") is None:
+        raise ValueError(
+            "el banco no declara 'teoricas': la evaluación teórica por grupo necesita "
+            "su propia sección con los enunciados, porque el descriptor es público"
+        )
+    return _normalizar_variantes(banco.get("teoricas"), "teoricas")
 
 
 def seleccionar_variante(
@@ -384,14 +444,41 @@ def seleccionar_variante(
         ValueError: Si la variante no existe, está en borrador, está comprometida
             sin autorización, o la elección automática es ambigua.
     """
-    variantes = variantes_del_banco(banco)
+    return _elegir_variante(
+        variantes_del_banco(banco), numero, permitir_comprometida, "variante", "variantes"
+    )
+
+
+def _elegir_variante(
+    variantes: list[dict[str, Any]],
+    numero: int | None,
+    permitir_comprometida: bool,
+    singular: str,
+    plural: str,
+) -> dict[str, Any]:
+    """Elige una variante aplicando el mismo ciclo de vida en toda sección.
+
+    Args:
+        variantes: Lista normalizada de variantes.
+        numero: Número pedido, o None para la única `utilizable`.
+        permitir_comprometida: Autoriza una variante ya publicada.
+        singular: Sustantivo en singular para los mensajes.
+        plural: Sustantivo en plural para el mensaje de ambigüedad.
+
+    Returns:
+        La variante elegida.
+
+    Raises:
+        ValueError: Si no existe, está en borrador, está comprometida sin
+            autorización o la elección automática es ambigua.
+    """
     numeros = [v["numero"] for v in variantes]
 
     if numero is not None:
         elegidas = [v for v in variantes if v["numero"] == numero]
         if not elegidas:
             raise ValueError(
-                f"la variante {numero} no existe en el banco; disponibles: "
+                f"la {singular} {numero} no existe en el banco; disponibles: "
                 + ", ".join(str(n) for n in numeros)
             )
         elegida = elegidas[0]
@@ -399,12 +486,12 @@ def seleccionar_variante(
         utilizables = [v for v in variantes if v.get("estado") == "utilizable"]
         if not utilizables:
             raise ValueError(
-                "no hay ninguna variante 'utilizable' en el banco; elegir una con "
+                f"no hay ninguna {singular} 'utilizable' en el banco; elegir una con "
                 "--variante N (disponibles: " + ", ".join(str(n) for n in numeros) + ")"
             )
         if len(utilizables) > 1:
             raise ValueError(
-                "hay varias variantes 'utilizable' ("
+                f"hay varias {plural} 'utilizable' ("
                 + ", ".join(str(v["numero"]) for v in utilizables)
                 + "): indicar cuál aplicar con --variante N"
             )
@@ -413,21 +500,32 @@ def seleccionar_variante(
     estado = elegida.get("estado")
     if estado not in ESTADOS_BANCO:
         raise ValueError(
-            f"variante {elegida['numero']}: 'estado' debe ser uno de "
+            f"{singular} {elegida['numero']}: 'estado' debe ser uno de "
             f"{', '.join(ESTADOS_BANCO)} ({estado!r})"
         )
     if estado == "borrador":
         raise ValueError(
-            f"variante {elegida['numero']}: está en 'borrador' (incompleta); no se "
+            f"{singular} {elegida['numero']}: está en 'borrador' (incompleta); no se "
             "aplica. Completarla y marcarla como 'utilizable' en el banco"
         )
     if estado == "comprometida" and not permitir_comprometida:
         raise ValueError(
-            f"variante {elegida['numero']}: está 'comprometida' (sus enunciados ya se "
+            f"{singular} {elegida['numero']}: está 'comprometida' (sus enunciados ya se "
             "publicaron y un alumno pudo leerlos). Si es una decisión consciente, "
             "confirmarla con --permitir-comprometida; si no, usar otra variante"
         )
     return elegida
+
+
+def seleccionar_variante_teoricas(
+    banco: dict[str, Any],
+    numero: int | None = None,
+    permitir_comprometida: bool = False,
+) -> dict[str, Any]:
+    """Elige la variante de `teoricas` con el mismo ciclo de vida que los controles."""
+    return _elegir_variante(
+        variantes_teoricas(banco), numero, permitir_comprometida, "variante teórica", "variantes teóricas"
+    )
 
 
 def _controles_de_variante(variante: dict[str, Any]) -> dict[Any, list[dict[str, Any]]]:
@@ -539,6 +637,209 @@ def validar_preguntas(controles: list[dict[str, Any]]) -> list[str]:
                 continue
             problemas.extend(
                 _validar_matematica(pregunta["enunciado"], f"{etiqueta}.enunciado")
+            )
+    return problemas
+
+
+def _cantidad_grupos(datos: dict[str, Any]) -> int:
+    """Número de grupos del curso, con respaldo en los `ejemplos` si no se declara."""
+    grupos = datos.get("grupos") or {}
+    cantidad = grupos.get("cantidad")
+    if isinstance(cantidad, int) and cantidad > 0:
+        return cantidad
+    detectados = {
+        int(ejemplo["grupo"])
+        for semana in datos.get("semanas") or []
+        for ejemplo in semana.get("ejemplos") or []
+        if isinstance(ejemplo, dict)
+        and isinstance(ejemplo.get("grupo"), int)
+        and ejemplo["grupo"] > 0
+    }
+    return len(detectados)
+
+
+def semanas_teoricas(datos: dict[str, Any]) -> list[int]:
+    """Semanas en las que el descriptor aplica la evaluación teórica por grupo.
+
+    Es un dato público a propósito: el calendario no es un secreto. Lo que no se
+    publica es el enunciado, que vive en el banco privado.
+    """
+    crudas = (datos.get("evaluacion") or {}).get("teorica_semanas") or []
+    return [int(numero) for numero in crudas]
+
+
+def _ejemplo_de_semana(semana: dict[str, Any], grupo: int) -> dict[str, Any] | None:
+    """Devuelve el ejemplo de trabajo de un grupo en una semana, si existe."""
+    for ejemplo in semana.get("ejemplos") or []:
+        if isinstance(ejemplo, dict) and int(ejemplo.get("grupo", 0)) == grupo:
+            return ejemplo
+    return None
+
+
+def _rol_de(
+    datos: dict[str, Any], semana: dict[str, Any], grupo: int
+) -> dict[str, Any] | None:
+    """Rol del grupo en la semana, con la misma rotación que las instrucciones."""
+    grupos = datos.get("grupos") or {}
+    fases_con_roles = [int(f) for f in grupos.get("fase_con_roles") or []]
+    if int(semana.get("fase", 0)) not in fases_con_roles:
+        return None
+    inicial = grupos.get("asignacion_inicial") or []
+    if not inicial or grupo < 1 or grupo > len(inicial):
+        return None
+    roles = {rol["nombre"]: rol for rol in grupos.get("roles") or []}
+    turno = (int(semana["fase"]) - 1) % len(inicial)
+    nombre = inicial[(grupo - 1 + turno) % len(inicial)]
+    return roles.get(nombre)
+
+
+def componer_teoricas(
+    datos: dict[str, Any], variante: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Inyecta los enunciados de la evaluación teórica sobre el trabajo de grupo.
+
+    El banco posee el enunciado y el puntaje; el descriptor posee el calendario
+    (`evaluacion.teorica_semanas`) y el número de grupos. La variante debe cubrir
+    exactamente el producto semanas × grupos: una prueba por grupo y por semana.
+
+    Args:
+        datos: Descriptor válido.
+        variante: Variante elegida de la sección `teoricas`.
+
+    Returns:
+        Exámenes ordenados por `(semana, grupo)`, cada uno con `rol` y `titulo`
+        derivados del ejemplo de trabajo.
+
+    Raises:
+        ValueError: Si falta la sección, el calendario, un par (semana, grupo),
+            el entregable del ejemplo, o si las preguntas no cierran en la escala.
+    """
+    numero = variante.get("numero")
+    examenes = variante.get("examenes")
+    if not isinstance(examenes, list) or not examenes:
+        raise ValueError(f"teórica {numero}: 'examenes' debe ser una lista no vacía")
+
+    semanas = {int(sem["numero"]): sem for sem in datos.get("semanas") or []}
+    escala = float((datos.get("evaluacion") or {}).get("escala", NOTA_MAXIMA))
+    cantidad = _cantidad_grupos(datos)
+    calendario = semanas_teoricas(datos)
+    if not calendario:
+        raise ValueError(
+            "el descriptor no declara 'evaluacion.teorica_semanas': la evaluación "
+            "teórica por grupo necesita saber en qué semanas se aplica"
+        )
+    esperadas = [(semana, grupo) for semana in calendario for grupo in range(1, cantidad + 1)]
+
+    compuestos: dict[tuple[int, int], dict[str, Any]] = {}
+    for indice, examen in enumerate(examenes, start=1):
+        if not isinstance(examen, dict):
+            raise ValueError(
+                f"teórica {numero}, examen {indice}: debe ser un mapa, no "
+                f"{type(examen).__name__}"
+            )
+        semana_numero = examen.get("semana")
+        grupo = examen.get("grupo")
+        if not isinstance(semana_numero, int) or not isinstance(grupo, int):
+            raise ValueError(
+                f"teórica {numero}, examen {indice}: 'semana' y 'grupo' deben ser enteros"
+            )
+        clave = (semana_numero, grupo)
+        if clave in compuestos:
+            raise ValueError(
+                f"teórica {numero}: la semana {semana_numero} y el grupo {grupo} están repetidos"
+            )
+        semana = semanas.get(semana_numero)
+        if semana is None:
+            raise ValueError(f"teórica {numero}: la semana {semana_numero} no existe")
+        if grupo < 1 or grupo > cantidad:
+            raise ValueError(
+                f"teórica {numero}: el grupo {grupo} no existe (el curso declara {cantidad})"
+            )
+        ejemplo = _ejemplo_de_semana(semana, grupo)
+        if ejemplo is None:
+            raise ValueError(
+                f"teórica {numero}: la semana {semana_numero} no tiene tarea para el grupo "
+                f"{grupo} en semanas[].ejemplos"
+            )
+        if not ejemplo.get("entregable"):
+            raise ValueError(
+                f"teórica {numero}: el ejemplo de la semana {semana_numero}, grupo {grupo} "
+                "no declara 'entregable'; sin entrega no hay trabajo que evaluar"
+            )
+        crudas = examen.get("preguntas")
+        if not isinstance(crudas, list) or len(crudas) != PREGUNTAS_TEORICA:
+            raise ValueError(
+                f"teórica {numero}, semana {semana_numero}, grupo {grupo}: debe traer "
+                f"{PREGUNTAS_TEORICA} preguntas"
+            )
+        preguntas: list[dict[str, Any]] = []
+        for posicion, pregunta in enumerate(crudas, start=1):
+            if not isinstance(pregunta, dict):
+                raise ValueError(
+                    f"teórica {numero}, semana {semana_numero}, grupo {grupo}, pregunta "
+                    f"{posicion}: debe ser un mapa"
+                )
+            enunciado = pregunta.get("enunciado")
+            if not isinstance(enunciado, str) or not enunciado.strip():
+                raise ValueError(
+                    f"teórica {numero}, semana {semana_numero}, grupo {grupo}, pregunta "
+                    f"{posicion}: falta 'enunciado'"
+                )
+            try:
+                puntaje = float(pregunta.get("puntaje"))
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"teórica {numero}, semana {semana_numero}, grupo {grupo}, pregunta "
+                    f"{posicion}: 'puntaje' debe ser numérico"
+                ) from exc
+            if puntaje <= 0:
+                raise ValueError(
+                    f"teórica {numero}, semana {semana_numero}, grupo {grupo}, pregunta "
+                    f"{posicion}: 'puntaje' debe ser positivo"
+                )
+            preguntas.append({"puntaje": puntaje, "enunciado": enunciado})
+        total = sum(p["puntaje"] for p in preguntas)
+        if abs(total - escala) > 0.01:
+            raise ValueError(
+                f"teórica {numero}, semana {semana_numero}, grupo {grupo}: los puntajes "
+                f"suman {total:.2f} y deben cerrar en la escala {escala:g}"
+            )
+        rol = _rol_de(datos, semana, grupo)
+        compuestos[clave] = {
+            "semana": semana_numero,
+            "grupo": grupo,
+            "titulo": str(ejemplo.get("titulo", "")),
+            "rol": (rol or {}).get("nombre"),
+            "preguntas": preguntas,
+        }
+
+    faltan = [clave for clave in esperadas if clave not in compuestos]
+    sobran = [clave for clave in compuestos if clave not in esperadas]
+    if faltan:
+        raise ValueError(
+            f"teórica {numero}: faltan exámenes para "
+            + ", ".join(f"semana {s} grupo {g}" for s, g in faltan)
+        )
+    if sobran:
+        raise ValueError(
+            f"teórica {numero}: trae exámenes fuera del calendario declarado en "
+            "evaluacion.teorica_semanas: "
+            + ", ".join(f"semana {s} grupo {g}" for s, g in sobran)
+        )
+    return [compuestos[clave] for clave in sorted(compuestos)]
+
+
+def validar_teoricas(examenes: list[dict[str, Any]]) -> list[str]:
+    """Valida las matemáticas de los enunciados ya compuestos de las teóricas."""
+    problemas: list[str] = []
+    for examen in examenes:
+        for indice, pregunta in enumerate(examen.get("preguntas") or [], start=1):
+            etiqueta = (
+                f"teórica semana {examen.get('semana')}, grupo {examen.get('grupo')}: "
+                f"pregunta {indice}"
+            )
+            problemas.extend(
+                _validar_matematica(pregunta.get("enunciado"), f"{etiqueta}.enunciado")
             )
     return problemas
 
@@ -721,6 +1022,39 @@ def validar(datos: dict[str, Any]) -> list[str]:
             f"los pesos de evaluación suman {sum(pesos_curso):.2f} y deben sumar "
             f"{PESO_TOTAL_CURSO:g}"
         )
+
+    teorica_semanas = (datos.get("evaluacion") or {}).get("teorica_semanas")
+    if teorica_semanas is not None:
+        if not isinstance(teorica_semanas, list) or not teorica_semanas:
+            problemas.append(
+                "evaluacion.teorica_semanas debe ser una lista no vacía de semanas"
+            )
+        else:
+            cantidad = _cantidad_grupos(datos)
+            vistas: set[int] = set()
+            for valor in teorica_semanas:
+                if not isinstance(valor, int) or isinstance(valor, bool):
+                    problemas.append(
+                        f"evaluacion.teorica_semanas: {valor!r} no es un número de semana"
+                    )
+                    continue
+                if valor in vistas:
+                    problemas.append(
+                        f"evaluacion.teorica_semanas: la semana {valor} está repetida"
+                    )
+                vistas.add(valor)
+                semana = next((s for s in semanas if s.get("numero") == valor), None)
+                if semana is None:
+                    problemas.append(
+                        f"evaluacion.teorica_semanas: la semana {valor} no existe"
+                    )
+                    continue
+                for grupo in range(1, cantidad + 1):
+                    if _ejemplo_de_semana(semana, grupo) is None:
+                        problemas.append(
+                            f"evaluacion.teorica_semanas: la semana {valor} no tiene tarea "
+                            f"para el grupo {grupo}; no se puede evaluar un trabajo inexistente"
+                        )
 
     rubrica = (datos.get("evaluacion") or {}).get("rubrica") or []
     if rubrica:
@@ -1626,6 +1960,139 @@ def tex_control(datos: dict[str, Any], control: dict[str, Any]) -> str:
     return _documento(meta, _t(control["titulo"]), "\n\n".join(partes))
 
 
+def _nombre_criterio(clave: str) -> str:
+    """Convierte `lectura_del_entregable` en «Lectura del entregable».
+
+    Se evita el guion bajo crudo en la tabla: en modo texto es un error de
+    LaTeX, y escaparlo lo vuelve ilegible en una columna estrecha.
+    """
+    return clave.replace("_", " ").strip().capitalize()
+
+
+def tex_teorica(
+    datos: dict[str, Any], semana: dict[str, Any], grupo: int, examen: dict[str, Any]
+) -> str:
+    """Genera el instrumento de la evaluación teórica sobre el trabajo del grupo.
+
+    Args:
+        datos: Descriptor del curso.
+        semana: Semana del descriptor en la que se aplica.
+        grupo: Número de grupo (1..cantidad).
+        examen: Examen compuesto por `componer_teoricas`.
+
+    Returns:
+        Documento LaTeX completo.
+    """
+    meta = datos["meta"]
+    fases = {fase["id"]: fase for fase in datos.get("fases") or []}
+    fase = fases.get(semana.get("fase")) or {}
+    total = sum(float(p["puntaje"]) for p in examen["preguntas"])
+
+    subtitulo = f'Semana {int(semana["numero"]):02d} --- Grupo {grupo}'
+    if examen.get("rol"):
+        subtitulo += f' --- rol {examen["rol"]}'
+
+    instrucciones = _texto(
+        datos,
+        "instrucciones_teorica",
+        "Responda de forma individual. Puede consultar el repositorio de su grupo, "
+        "pero no apuntes, diapositivas ni el informe de otro grupo. Cada respuesta "
+        "debe citar la ruta, el comando o el hash concreto en el que se apoya: una "
+        "afirmación sin evidencia trazable no se puntúa. Se valora la justificación "
+        "de la decisión frente a una alternativa, no la descripción del "
+        "procedimiento, y el reconocimiento explícito de lo que no se pudo verificar.",
+    )
+
+    partes: list[str] = [
+        banda_titulo(_t("Evaluación teórica del trabajo de grupo"), _t(subtitulo)),
+        _metadatos_curso(meta),
+        _tabla_datos(
+            [
+                ("Instrumento", _t("Evaluación teórica sobre la entrega de la semana")),
+                (
+                    "Semana y fase",
+                    _t(
+                        f'Semana {semana["numero"]} --- fase {fase.get("id", "?")}: '
+                        f'{fase.get("nombre", "")}'
+                    ),
+                ),
+                ("Trabajo evaluado", _t(examen.get("titulo", ""))),
+                ("Duración", _t("30 minutos")),
+                ("Puntaje total", _t(_n(total))),
+                (
+                    "Carácter",
+                    _t("Individual, con el repositorio del grupo abierto y sin apuntes"),
+                ),
+                (
+                    "Entrega",
+                    _t(
+                        "En papel al cierre de la sesión; copia digitalizada en el "
+                        "repositorio del grupo antes del corte semanal"
+                    ),
+                ),
+            ]
+        ),
+        seccion_con_icono("info-circle", "Instrucciones"),
+        "\\begin{cajaRecuerda}" + _t(instrucciones) + "\n\\end{cajaRecuerda}",
+        seccion_con_icono("question-circle", "Preguntas"),
+        _lista(
+            [
+                f'({_n(p["puntaje"])} pt) {p["enunciado"]}'
+                for p in examen["preguntas"]
+            ],
+            entorno="enumerate",
+            math=True,
+        ),
+        seccion_con_icono("clipboard-check", "Rúbrica de corrección"),
+        _t(
+            "El criterio es público y se aplica igual en todas las semanas. "
+            "La respuesta se contrasta con la entrega real del grupo en su repositorio."
+        ),
+        "\\begin{tabularx}{\\linewidth}{@{}l X r@{}}\n\\toprule\n"
+        "Criterio & Qué se valora & Peso\\\\\n\\midrule\n"
+        + "\n".join(
+            _t(_nombre_criterio(clave))
+            + " & "
+            + _t(descripcion)
+            + " & "
+            + _n(peso)
+            + r" \\"
+            for clave, peso, descripcion in CRITERIOS_TEORICA
+        )
+        + "\n\\midrule\n\\textbf{Total} & & \\textbf{"
+        + _n(sum(peso for _, peso, _ in CRITERIOS_TEORICA))
+        + "}\\\\\n\\bottomrule\n\\end{tabularx}",
+    ]
+
+    return _documento(meta, _t("Evaluación teórica del trabajo de grupo"), "\n\n".join(partes))
+
+
+def yaml_rubrica_teorica(datos: dict[str, Any]) -> str:
+    """Genera la rúbrica pública de las evaluaciones teóricas.
+
+    El criterio se publica; el enunciado no. Es la misma rúbrica que imprime cada
+    instrumento, y su formato es el que consume `evaluar_examen.py`, de modo que
+    escanear las respuestas no exige reescribirla.
+    """
+    lineas = [
+        "# Rúbrica de evaluaciones teóricas — generada desde curso.yaml.",
+        "# Pública a propósito: el criterio se conoce, el enunciado vive en el banco privado.",
+        "# Compatible con execution/evaluar_examen.py (los pesos deben sumar 10).",
+        "nombre: "
+        + json.dumps(
+            f'Rúbrica de evaluaciones teóricas de {datos["meta"]["titulo"]}',
+            ensure_ascii=False,
+        ),
+        "escala: 10",
+        "criterios:",
+    ]
+    for clave, peso, descripcion in CRITERIOS_TEORICA:
+        lineas.append(f"  {clave}:")
+        lineas.append(f"    peso: {peso}")
+        lineas.append("    descripcion: " + json.dumps(descripcion, ensure_ascii=False))
+    return "\n".join(lineas) + "\n"
+
+
 def _tema_de(enunciado: str) -> str:
     """Deriva una etiqueta corta de tema a partir del enunciado.
 
@@ -1984,14 +2451,16 @@ def generar(
     salida: Path,
     solo: set[str],
     compilar: bool,
+    grupo: int | None = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """Genera y, si se pide, compila todos los artefactos del curso.
 
     Args:
-        datos: Descriptor validado.
+        datos: Descriptor validado (con `teoricas` ya compuestas si aplica).
         salida: Directorio raíz del curso.
         solo: Subconjunto de artefactos a emitir.
         compilar: Si es False, escribe solo los `.tex` sin invocar pdflatex.
+        grupo: Si no es None, emite la evaluación teórica solo de ese grupo.
 
     Returns:
         Tupla `(artefactos, errores)`; los errores de compilación se acumulan.
@@ -2046,6 +2515,20 @@ def generar(
                     dirs["evaluaciones"] / f"{job}.tex",
                 )
             )
+    if "teoricas" in solo:
+        semanas = {int(sem["numero"]): sem for sem in datos.get("semanas") or []}
+        for examen in datos.get("teoricas") or []:
+            if grupo is not None and int(examen["grupo"]) != grupo:
+                continue
+            job = f'teorica_semana_{int(examen["semana"]):02d}_grupo_{int(examen["grupo"])}'
+            pendientes.append(
+                (
+                    "teoricas",
+                    job,
+                    tex_teorica(datos, semanas[int(examen["semana"])], int(examen["grupo"]), examen),
+                    dirs["evaluaciones"] / f"{job}.tex",
+                )
+            )
     if "final" in solo:
         pendientes.append(
             (
@@ -2087,6 +2570,12 @@ def generar(
         destino = dirs["evaluaciones"] / "rubrica_practica.yaml"
         destino.write_text(yaml_rubrica(datos), encoding="utf-8")
         artefactos.append({"artefacto": "rubrica", "tex": None, "pdf": None,
+                           "ruta": str(destino), "errores": [], "overfull": 0})
+
+    if "teoricas" in solo:
+        destino = dirs["evaluaciones"] / "rubrica_teorica.yaml"
+        destino.write_text(yaml_rubrica_teorica(datos), encoding="utf-8")
+        artefactos.append({"artefacto": "teoricas", "tex": None, "pdf": None,
                            "ruta": str(destino), "errores": [], "overfull": 0})
 
     if "laboratorio" in solo:
@@ -2143,6 +2632,12 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Autoriza aplicar una variante ya publicada (decisión consciente)",
     )
+    p.add_argument(
+        "--grupo",
+        type=int,
+        default=None,
+        help="Emite la evaluación teórica solo de ese grupo (--solo teoricas)",
+    )
     p.add_argument("--json", action="store_true", help="Emite un único objeto JSON por stdout")
     return p
 
@@ -2186,8 +2681,24 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[error] artefactos desconocidos: {sorted(desconocidos)}", file=sys.stderr)
         return 1
 
+    if args.grupo is not None:
+        if "teoricas" not in solo:
+            print(
+                "[error] --grupo solo aplica a --solo teoricas",
+                file=sys.stderr,
+            )
+            return 1
+        cantidad = _cantidad_grupos(datos)
+        if not 1 <= args.grupo <= cantidad:
+            print(
+                f"[error] --grupo {args.grupo} fuera de rango: el curso declara "
+                f"{cantidad} grupos",
+                file=sys.stderr,
+            )
+            return 1
+
     info_banco: dict[str, Any] | None = None
-    if "controles" in solo:
+    if {"controles", "teoricas"} & solo:
         ruta_banco = (
             Path(args.banco).resolve()
             if args.banco
@@ -2195,10 +2706,32 @@ def main(argv: list[str] | None = None) -> int:
         )
         try:
             banco = cargar_banco(ruta_banco)
-            variante = seleccionar_variante(
-                banco, args.variante, args.permitir_comprometida
-            )
-            controles = componer_controles(datos, variante)
+            if "controles" in solo:
+                variante = seleccionar_variante(
+                    banco, args.variante, args.permitir_comprometida
+                )
+                datos = {**datos, "controles": componer_controles(datos, variante)}
+                info_banco = {
+                    "seccion": "controles",
+                    "ruta": str(ruta_banco),
+                    "variante": variante["numero"],
+                    "estado": variante.get("estado"),
+                }
+            if "teoricas" in solo:
+                variante_t = seleccionar_variante_teoricas(
+                    banco, args.variante, args.permitir_comprometida
+                )
+                datos = {**datos, "teoricas": componer_teoricas(datos, variante_t)}
+                info_teoricas = {
+                    "seccion": "teoricas",
+                    "ruta": str(ruta_banco),
+                    "variante": variante_t["numero"],
+                    "estado": variante_t.get("estado"),
+                }
+                if info_banco is None:
+                    info_banco = info_teoricas
+                else:
+                    info_banco["teoricas"] = info_teoricas
         except (FileNotFoundError, ValueError) as exc:
             if args.json:
                 print(json.dumps({"status": "banco_invalido", "problemas": [str(exc)]},
@@ -2206,7 +2739,12 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"[error] {exc}", file=sys.stderr)
             return 6
-        problemas_banco = validar_preguntas(controles)
+
+        problemas_banco: list[str] = []
+        if "controles" in solo:
+            problemas_banco.extend(validar_preguntas(datos["controles"]))
+        if "teoricas" in solo:
+            problemas_banco.extend(validar_teoricas(datos["teoricas"]))
         if problemas_banco:
             if args.json:
                 print(json.dumps({"status": "banco_invalido", "problemas": problemas_banco},
@@ -2216,15 +2754,11 @@ def main(argv: list[str] | None = None) -> int:
                 for problema in problemas_banco:
                     print(f"  - {problema}", file=sys.stderr)
             return 6
-        datos = {**datos, "controles": controles}
-        info_banco = {
-            "ruta": str(ruta_banco),
-            "variante": variante["numero"],
-            "estado": variante.get("estado"),
-        }
 
     try:
-        artefactos, errores = generar(datos, salida, solo, not args.sin_compilar)
+        artefactos, errores = generar(
+            datos, salida, solo, not args.sin_compilar, grupo=args.grupo
+        )
     except OSError as exc:
         print(f"[error] escritura: {exc}", file=sys.stderr)
         return 5
@@ -2246,7 +2780,16 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"Curso: {datos['meta']['codigo']} -> {salida}")
         if info_banco:
-            print(f"Banco: variante {info_banco['variante']} ({info_banco['estado']})")
+            print(
+                f"Banco ({info_banco.get('seccion', 'controles')}): variante "
+                f"{info_banco['variante']} ({info_banco['estado']})"
+            )
+            if info_banco.get("teoricas"):
+                teoricas = info_banco["teoricas"]
+                print(
+                    f"Banco (teóricas): variante {teoricas['variante']} "
+                    f"({teoricas['estado']})"
+                )
         print(f"Documentos LaTeX escritos: {salida_json['tex_escritos']}")
         if not args.sin_compilar:
             print(f"PDF compilados: {compilados}")

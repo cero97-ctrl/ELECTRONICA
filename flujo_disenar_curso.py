@@ -95,6 +95,7 @@ def flujo_disenar_curso(
     banco: Path | None = None,
     variante: int | None = None,
     permitir_comprometida: bool = False,
+    grupo: int | None = None,
 ) -> int:
     """Orquesta la generación del material de un curso.
 
@@ -108,6 +109,7 @@ def flujo_disenar_curso(
         banco: Ruta al banco privado de preguntas (None = junto al descriptor).
         variante: Variante del banco a aplicar (None = la única utilizable).
         permitir_comprometida: Autoriza aplicar una variante ya publicada.
+        grupo: Si no es None, emite solo la evaluación teórica de ese grupo.
 
     Returns:
         Código de salida del flujo: 0 ok, si no el del generador.
@@ -127,6 +129,7 @@ def flujo_disenar_curso(
             "compilar": compilar,
             "variante": variante,
             "banco": str(banco) if banco else None,
+            "grupo": grupo,
         },
     }
     guardar(state)
@@ -144,6 +147,8 @@ def flujo_disenar_curso(
         cmd += ["--variante", str(variante)]
     if permitir_comprometida:
         cmd.append("--permitir-comprometida")
+    if grupo is not None:
+        cmd += ["--grupo", str(grupo)]
 
     resultado = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
     try:
@@ -224,7 +229,16 @@ def flujo_disenar_curso(
         print(f"  Salida           : {datos.get('salida')}")
         if datos.get("banco"):
             info = datos["banco"]
-            print(f"  Variante banco   : {info['variante']} ({info['estado']})")
+            print(
+                f"  Variante banco   : {info['variante']} ({info['estado']}) "
+                f"[{info.get('seccion', 'controles')}]"
+            )
+            if info.get("teoricas"):
+                teoricas = info["teoricas"]
+                print(
+                    f"  Variante teóricas: {teoricas['variante']} "
+                    f"({teoricas['estado']})"
+                )
         print(f"  Run ID           : {run_id}")
         print(f"{barra}\n")
 
@@ -248,7 +262,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--salida", default=None, help="Directorio del curso (por defecto, el del descriptor)")
     parser.add_argument("--solo", default="",
                         help="Artefactos separados por coma: silabo, plan_semanal, guia, practicas, "
-                             "controles, final, rubrica, laboratorio, readme")
+                             "controles, teoricas, final, rubrica, laboratorio, readme")
     parser.add_argument("--sin-compilar", action="store_true", help="Escribe los .tex sin invocar pdflatex")
     parser.add_argument("--json", action="store_true", help="Emite un único objeto JSON")
     parser.add_argument("--banco", default=None,
@@ -258,6 +272,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Variante del banco a aplicar (por defecto, la única utilizable)")
     parser.add_argument("--permitir-comprometida", action="store_true",
                         help="Autoriza aplicar una variante ya publicada")
+    parser.add_argument("--grupo", type=int, default=None,
+                        help="Emite la evaluación teórica solo de ese grupo (--solo teoricas)")
     parser.add_argument("--no-alert", action="store_true", help="No emitir alerta sonora")
     args = parser.parse_args(argv)
 
@@ -271,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
         banco=Path(args.banco).resolve() if args.banco else None,
         variante=args.variante,
         permitir_comprometida=args.permitir_comprometida,
+        grupo=args.grupo,
     )
 
 

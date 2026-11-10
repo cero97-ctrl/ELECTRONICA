@@ -4,11 +4,14 @@ description: >-
   una práctica por semana, controles de fase, evaluación final, rúbrica, laboratorio
   Docker y README) a partir de un descriptor YAML que es la fuente única de verdad.
   El material es determinista: mismo descriptor -> mismo LaTeX -> mismo PDF byte a byte.
-version: 1.2  # 1.2 saca los enunciados de los controles a un banco privado
-              # (evaluaciones/banco_preguntas.yaml, ignorado por git) porque el
-              # descriptor es público. Se aplican con --variante N. 1.1 añadió los
-              # campos opcionales de dominio. Todo es aditivo: un descriptor con
-              # enunciado inline ya NO es válido (esa era la fuga).
+version: 1.3  # 1.3 añade la evaluación teórica por grupo sobre el trabajo de
+              # cada semana (artefacto `teoricas`): una prueba por semana y por
+              # grupo, 30 min, individual con el repositorio abierto. El calendario
+              # es público (evaluacion.teorica_semanas) y los enunciados viven en
+              # el banco privado, sección `teoricas`. 1.2 sacó los enunciados de
+              # los controles a ese banco; 1.1 añadió los campos opcionales de
+              # dominio. Todo es aditivo: un descriptor con enunciado inline ya
+              # NO es válido (esa era la fuga).
 
 goal: >-
   Entregar el paquete docente de un curso coherente de principio a fin, donde la
@@ -48,15 +51,16 @@ required_inputs:
   - name: solo
     description: >-
       Subconjunto opcional de artefactos, separados por coma: silabo, plan_semanal,
-      guia, practicas, controles, final, rubrica, laboratorio, readme. Vacío = todos.
-      Sirve para iterar un documento sin recompilar veinte.
+      guia, practicas, controles, teoricas, final, rubrica, laboratorio, readme.
+      Vacío = todos. Sirve para iterar un documento sin recompilar veinte.
 
   - name: banco
     description: >-
       Ruta al banco privado de preguntas. Obligatorio de facto cuando `solo`
-      incluye `controles` (la evaluación final no lleva enunciados y no lo usa).
-      Por defecto, `evaluaciones/banco_preguntas.yaml` junto al descriptor. Si no
-      existe, el generador falla con código 6: sin banco no hay examen.
+      incluye `controles` o `teoricas` (la evaluación final no lleva enunciados y
+      no lo usa). Por defecto, `evaluaciones/banco_preguntas.yaml` junto al
+      descriptor. Si no existe, el generador falla con código 6: sin banco no hay
+      examen.
 
   - name: variante
     description: >-
@@ -256,6 +260,62 @@ banco_preguntas:
       `execution/test_generar_material_curso.py` valida los tres `curso.yaml`
       reales y falla si alguno vuelve a llevar un `enunciado`.
 
+# ── Evaluación teórica del trabajo de grupo (v1.3) ──────────────────────────
+# Instrumento distinto del control de fase: el control evalúa la teoría común de
+# la fase; esta prueba evalúa lo que ESE grupo desarrolló y reportó en su
+# repositorio. Por eso hay una prueba por semana y por grupo, y su enunciado
+# depende del rol (Rojo, Azul, Púrpura, Legal) y del entregable de la semana.
+evaluacion_teorica_grupo:
+  descriptor:  # público: el calendario no es un secreto
+    evaluacion.teorica_semanas: [<semanas donde se aplica>]
+  banco:  # privado: el enunciado sí es un secreto
+    teoricas:
+      - numero: <entero único>
+        estado: utilizable | borrador | comprometida
+        creada: <fecha ISO>
+        origen: <de dónde salieron los enunciados>
+        examenes:
+          - semana: <entero>
+            grupo: <entero, 1..grupos.cantidad>
+            preguntas:
+              - puntaje: <numérico; las 4 deben sumar evaluacion.escala>
+                enunciado: <texto; admite matemática $...$>
+  reglas:
+    - >-
+      La variante debe cubrir EXACTAMENTE el producto `teorica_semanas` ×
+      `grupos.cantidad`: 8 semanas × 4 grupos = 32 exámenes en el curso de
+      referencia. Faltante o sobrante falla con código 6 y nombra el par
+      (semana, grupo).
+    - >-
+      Cada par (semana, grupo) debe existir en `semanas[].ejemplos` y ese ejemplo
+      debe declarar `entregable`: sin trabajo entregado no hay nada que evaluar, y
+      el generador se niega a emitir una prueba sobre el vacío.
+    - >-
+      Son 4 preguntas por examen (`PREGUNTAS_TEORICA`) y sus puntajes deben sumar
+      la escala. El puntaje es del banco (no hay posiciones en el descriptor: 32
+      exámenes × 4 preguntas públicas sería ruido, no transparencia).
+    - >-
+      La rúbrica (`evaluaciones/rubrica_teorica.yaml`) es PÚBLICA y única para
+      todas las semanas: el criterio se conoce, el enunciado no. Sus pesos suman
+      10 y su formato lo consume `execution/evaluar_examen.py`.
+    - >-
+      El rol del grupo no se declara en el banco: se deriva de la misma rotación
+      que `grupo_<N>_<semana>` (`grupos.asignacion_inicial` + `fase_con_roles`),
+      para que el examen y la instrucción de la semana no puedan divergir.
+  salida: >-
+    <curso>/evaluaciones/teorica_semana_<NN>_grupo_<N>.{tex,pdf} y
+    <curso>/evaluaciones/rubrica_teorica.yaml. `--grupo N` emite solo los de ese
+    grupo (útil para corregir o reimprimir).
+  proteccion:
+    - >-
+      Los `.tex`/`.pdf` de las teóricas NO están en `.gitignore` solo si el curso
+      decide publicarlos; por defecto caen bajo el mismo patrón que los controles
+      (`cursos/*/evaluaciones/*.{tex,pdf}`), porque un alumno con el enlace leería
+      su prueba.
+    - >-
+      `git check-ignore -v cursos/<CURSO>/evaluaciones/banco_preguntas.yaml` debe
+      señalar `.gitignore`; la rúbrica sí se versiona (es criterio, no prueba).
+
 steps:
   - action: describir_curso
     script: orquestador (Layer 2)
@@ -303,7 +363,10 @@ expected_outputs:
   - <curso>/practicas/practica_NN.{tex,pdf} y taller_NN.{tex,pdf} (uno por semana, según semana.tipo)
   - <curso>/evaluaciones/control_fase_<n>.{tex,pdf} y evaluacion_final.{tex,pdf}
   - <curso>/evaluaciones/banco_preguntas.yaml (LOCAL, ignorado por git; los
-    controles no se pueden regenerar sin él)
+    controles y las teóricas no se pueden regenerar sin él)
+  - <curso>/evaluaciones/teorica_semana_<NN>_grupo_<N>.{tex,pdf} (si el curso
+    declara `evaluacion.teorica_semanas`)
+  - <curso>/evaluaciones/rubrica_teorica.yaml (PÚBLICA; pesos que suman 10)
   - <curso>/evaluaciones/rubrica_practica.yaml (compatible con execution/evaluar_examen.py)
   - <curso>/laboratorio/docker-compose.yml y laboratorio/README.md
   - <curso>/README.md
@@ -471,3 +534,22 @@ edge_cases:
       `migrar_preguntas_a_banco.py` detecta que no quedan enunciados y devuelve
       `ya_migrado` sin tocar nada. Si el banco ya existe, no lo sobrescribe sin
       `--forzar` (perdería las variantes nuevas).
+
+  - caso: El curso declara `evaluacion.teorica_semanas` pero el banco no tiene `teoricas`
+    protocolo: >-
+      Código 6 con el mensaje que nombra la sección ausente. El calendario sin
+      banco no genera pruebas vacías: `--solo teoricas` falla antes de escribir.
+
+  - caso: Faltan o sobran exámenes teóricos respecto a semanas × grupos
+    protocolo: >-
+      Código 6 enumerando los pares `(semana, grupo)` faltantes o sobrantes. La
+      cobertura es exacta: 8 semanas × 4 grupos = 32. El banco no rellena huecos
+      con pruebas genéricas, porque una prueba sobre una tarea que ese grupo no
+      hizo no evalúa nada.
+
+  - caso: Una semana del calendario teórico no tiene `ejemplos` para algún grupo
+    protocolo: >-
+      Código 3 al validar el descriptor (y código 6 si se llega al banco): la
+      semana no tiene tarea para ese grupo, así que no hay entregable que
+      evaluar. Corregir el calendario o completar `semanas[].ejemplos`, no
+      inventar la prueba.

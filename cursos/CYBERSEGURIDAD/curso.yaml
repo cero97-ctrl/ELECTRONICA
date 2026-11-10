@@ -99,11 +99,17 @@ grupos:
 evaluacion:
   escala: 10
   nota_minima: 5
+  # Semanas con evaluación teórica sobre el trabajo del grupo (una prueba por
+  # semana y por grupo, 30 min, individual con el repositorio abierto). El
+  # calendario es público; los enunciados viven en el banco privado.
+  teorica_semanas: [2, 3, 4, 5, 6, 7, 8, 9]
   pesos:
   - concepto: Prácticas de laboratorio (semanas 1-9)
     peso: 35
   - concepto: Controles de fase (semanas 3, 5 y 7)
-    peso: 15
+    peso: 10
+  - concepto: Evaluación teórica del trabajo de grupo (semanas 2-9)
+    peso: 5
   - concepto: Informes técnicos (semanas 5, 7 y 9)
     peso: 15
   - concepto: Evaluación final práctica (semana 10)

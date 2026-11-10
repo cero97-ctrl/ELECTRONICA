@@ -1,0 +1,18 @@
+# Rúbrica de evaluaciones teóricas — generada desde curso.yaml.
+# Pública a propósito: el criterio se conoce, el enunciado vive en el banco privado.
+# Compatible con execution/evaluar_examen.py (los pesos deben sumar 10).
+nombre: "Rúbrica de evaluaciones teóricas de Ciberseguridad Aplicada"
+escala: 10
+criterios:
+  lectura_del_entregable:
+    peso: 2.5
+    descripcion: "Describe lo que el grupo entregó de verdad, con el vocabulario de su rol y sin inventar pasos."
+  justificacion_tecnica:
+    peso: 3.0
+    descripcion: "Defiende la decisión tomada frente a una alternativa concreta y explica el criterio que usó para elegir."
+  trazabilidad_con_la_evidencia:
+    peso: 2.5
+    descripcion: "Cada afirmación se ancla en una ruta, un comando o un hash del repositorio del propio grupo."
+  limites_y_riesgo_residual:
+    peso: 2.0
+    descripcion: "Declara lo que no se pudo verificar y el riesgo que esa verificación pendiente deja abierto."

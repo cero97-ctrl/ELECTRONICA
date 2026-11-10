@@ -959,6 +959,222 @@ def test_descriptores_reales_sin_enunciados() -> None:
         comprobar(f"{nombre}: ningún control lleva enunciado", fugas == [], str(fugas))
 
 
+# ── Evaluación teórica del trabajo de grupo ─────────────────────────────────
+
+
+def descriptor_con_teoricas() -> dict:
+    """Descriptor de dos semanas con grupos, roles y calendario teórico."""
+    datos = descriptor_minimo()
+    datos["grupos"] = {
+        "cantidad": 2,
+        "asignacion_inicial": ["Rojo", "Azul"],
+        "roles": [
+            {"nombre": "Rojo", "en_la_practica": ["Lectura del entregable"]},
+            {"nombre": "Azul", "en_la_practica": ["Revisión de la evidencia"]},
+        ],
+        "fase_con_roles": [1],
+    }
+    datos["evaluacion"]["teorica_semanas"] = [1, 2]
+    for numero in (1, 2):
+        datos["semanas"][numero - 1]["ejemplos"] = [
+            {
+                "grupo": grupo,
+                "titulo": f"Tarea de la semana {numero}, grupo {grupo}",
+                "entregable": f"semana_{numero:02d}/informe.md",
+            }
+            for grupo in (1, 2)
+        ]
+    return datos
+
+
+def banco_con_teoricas() -> dict:
+    """Banco con una variante teórica completa: 2 semanas x 2 grupos."""
+    examenes = [
+        {
+            "semana": semana,
+            "grupo": grupo,
+            "preguntas": [
+                {"puntaje": 2.5, "enunciado": f"Pregunta {i} de {semana}/{grupo}."}
+                for i in range(1, 5)
+            ],
+        }
+        for semana in (1, 2)
+        for grupo in (1, 2)
+    ]
+    return {
+        "meta": {"curso": "CURSO_TEST", "escala": 10},
+        "teoricas": [
+            {
+                "numero": 1,
+                "estado": "utilizable",
+                "creada": "2026-11-09",
+                "examenes": examenes,
+            }
+        ],
+    }
+
+
+def test_teoricas_cubren_semanas_por_grupo() -> None:
+    """La cobertura es el producto exacto: una prueba por semana y por grupo."""
+    datos = descriptor_con_teoricas()
+    variante = gen.seleccionar_variante_teoricas(banco_con_teoricas())
+    examenes = gen.componer_teoricas(datos, variante)
+    comprobar(
+        "2 semanas x 2 grupos producen 4 exámenes",
+        len(examenes) == 4,
+        str(len(examenes)),
+    )
+    comprobar(
+        "los exámenes salen ordenados por semana y grupo",
+        [(e["semana"], e["grupo"]) for e in examenes] == [(1, 1), (1, 2), (2, 1), (2, 2)],
+        str([(e["semana"], e["grupo"]) for e in examenes]),
+    )
+    comprobar(
+        "el rol se deriva de la misma rotación que la instrucción de la semana",
+        [e["rol"] for e in examenes] == ["Rojo", "Azul", "Rojo", "Azul"],
+        str([e["rol"] for e in examenes]),
+    )
+    comprobar(
+        "el título del examen es el trabajo entregado por ese grupo",
+        examenes[0]["titulo"] == "Tarea de la semana 1, grupo 1",
+        examenes[0]["titulo"],
+    )
+
+
+def test_teoricas_faltante_o_sobrante_falla() -> None:
+    """Un hueco no se rellena con una prueba genérica: se nombra el par ausente."""
+    datos = descriptor_con_teoricas()
+    banco = banco_con_teoricas()
+    banco["teoricas"][0]["examenes"].pop()
+    mensaje = _error_de(
+        gen.componer_teoricas, datos, gen.seleccionar_variante_teoricas(banco)
+    )
+    comprobar(
+        "falta un examen y el error nombra semana y grupo",
+        "semana 2 grupo 2" in mensaje,
+        mensaje,
+    )
+
+    datos_uno = descriptor_con_teoricas()
+    datos_uno["evaluacion"]["teorica_semanas"] = [1]
+    mensaje = _error_de(
+        gen.componer_teoricas, datos_uno, gen.seleccionar_variante_teoricas(banco_con_teoricas())
+    )
+    comprobar(
+        "un examen fuera del calendario se rechaza en vez de emitirse",
+        "fuera del calendario" in mensaje,
+        mensaje,
+    )
+
+
+def test_teoricas_puntajes_y_forma_fallan_ruidosamente() -> None:
+    datos = descriptor_con_teoricas()
+    banco = banco_con_teoricas()
+    banco["teoricas"][0]["examenes"][0]["preguntas"][0]["puntaje"] = 3.0
+    mensaje = _error_de(
+        gen.componer_teoricas, datos, gen.seleccionar_variante_teoricas(banco)
+    )
+    comprobar(
+        "puntajes que no cierran en la escala se rechazan con la suma",
+        "suman 10.50" in mensaje,
+        mensaje,
+    )
+
+    datos = descriptor_con_teoricas()
+    banco = banco_con_teoricas()
+    banco["teoricas"][0]["examenes"][0]["preguntas"].pop()
+    mensaje = _error_de(
+        gen.componer_teoricas, datos, gen.seleccionar_variante_teoricas(banco)
+    )
+    comprobar(
+        "un examen con menos de 4 preguntas se rechaza",
+        "debe traer 4 preguntas" in mensaje,
+        mensaje,
+    )
+
+    datos = descriptor_con_teoricas()
+    del datos["semanas"][0]["ejemplos"][0]["entregable"]
+    mensaje = _error_de(
+        gen.componer_teoricas, datos, gen.seleccionar_variante_teoricas(banco_con_teoricas())
+    )
+    comprobar(
+        "un ejemplo sin entregable no genera prueba",
+        "no declara 'entregable'" in mensaje,
+        mensaje,
+    )
+
+
+def test_teoricas_calendario_publico_se_valida() -> None:
+    datos = descriptor_con_teoricas()
+    comprobar(
+        "un calendario teórico completo valida",
+        gen.validar(datos) == [],
+        str(gen.validar(datos)),
+    )
+    repetido = copy.deepcopy(datos)
+    repetido["evaluacion"]["teorica_semanas"] = [1, 1]
+    comprobar(
+        "una semana repetida en el calendario falla",
+        any("está repetida" in p for p in gen.validar(repetido)),
+        str(gen.validar(repetido)),
+    )
+    inexistente = copy.deepcopy(datos)
+    inexistente["evaluacion"]["teorica_semanas"] = [9]
+    comprobar(
+        "una semana inexistente en el calendario falla",
+        any("no existe" in p for p in gen.validar(inexistente)),
+        str(gen.validar(inexistente)),
+    )
+    sin_tarea = copy.deepcopy(datos)
+    sin_tarea["semanas"][0]["ejemplos"] = sin_tarea["semanas"][0]["ejemplos"][:1]
+    comprobar(
+        "una semana sin tarea para todos los grupos falla",
+        any("no tiene tarea para el grupo 2" in p for p in gen.validar(sin_tarea)),
+        str(gen.validar(sin_tarea)),
+    )
+
+
+def test_teoricas_latex_y_rubrica() -> None:
+    """El instrumento nombra a su grupo y la rúbrica es pública y cierra a 10."""
+    datos = descriptor_con_teoricas()
+    examen = gen.componer_teoricas(datos, gen.seleccionar_variante_teoricas(banco_con_teoricas()))[1]
+    tex = gen.tex_teorica(datos, datos["semanas"][0], 2, examen)
+    comprobar("el instrumento nombra la semana y el grupo", "Semana 01" in tex and "Grupo 2" in tex, "")
+    comprobar("el instrumento declara el rol del grupo", "Azul" in tex, "")
+    comprobar("el instrumento no filtra preguntas de otro grupo", "de 1/1" not in tex, "")
+
+    rubrica = yaml.safe_load(gen.yaml_rubrica_teorica(datos)) if yaml else {}
+    pesos = [c["peso"] for c in (rubrica.get("criterios") or {}).values()]
+    comprobar("la rúbrica teórica declara criterios", bool(pesos), str(rubrica))
+    comprobar("los pesos de la rúbrica teórica suman 10", abs(sum(pesos) - 10) < 0.001, str(pesos))
+
+    repetido = gen.tex_teorica(datos, datos["semanas"][0], 2, examen)
+    comprobar("el instrumento es determinista", tex == repetido)
+
+
+def test_teoricas_matematica_invalida_falla() -> None:
+    """Un `_` crudo fuera de `$...$` rompe pdflatex; la validación lo caza antes."""
+    datos = descriptor_con_teoricas()
+    banco = banco_con_teoricas()
+    banco["teoricas"][0]["examenes"][0]["preguntas"][0]["enunciado"] = (
+        "Explique la diferencia entre semana_02 y la carpeta entregada."
+    )
+    examenes = gen.componer_teoricas(datos, gen.seleccionar_variante_teoricas(banco))
+    problemas = gen.validar_teoricas(examenes)
+    comprobar(
+        "un guion bajo fuera de matemática se rechaza",
+        any("semana_02" in p or "_" in p for p in problemas),
+        str(problemas),
+    )
+    comprobar(
+        "matemática bien delimitada no genera falsos positivos",
+        gen.validar_teoricas(
+            gen.componer_teoricas(datos, gen.seleccionar_variante_teoricas(banco_con_teoricas()))
+        ) == [],
+        "",
+    )
+
+
 def _error_de(funcion, *args, **kwargs) -> str:
     """Devuelve el mensaje del ValueError que lanza `funcion`, o el fallo."""
     try:
@@ -1009,6 +1225,12 @@ def main() -> int:
     test_banco_con_estructura_invalida_falla()
     test_componer_controles_empareja_por_orden()
     test_descriptores_reales_sin_enunciados()
+    test_teoricas_cubren_semanas_por_grupo()
+    test_teoricas_faltante_o_sobrante_falla()
+    test_teoricas_puntajes_y_forma_fallan_ruidosamente()
+    test_teoricas_calendario_publico_se_valida()
+    test_teoricas_latex_y_rubrica()
+    test_teoricas_matematica_invalida_falla()
     test_determinismo()
 
     print()
