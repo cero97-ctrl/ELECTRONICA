@@ -67,6 +67,13 @@ cursos/*/evaluaciones/resultados/**
 cursos/*/evaluaciones/*.tex
 cursos/*/evaluaciones/*.pdf
 
+# Exportaciones web de los exámenes (HTML/PDF renderizados para publicar). Son
+# la misma prueba que los .tex/.pdf de arriba, un nivel más abajo: el glob de un
+# solo nivel NO las alcanza, así que sin esta regla un `git add -A` las
+# publicaría en el repo público. Se ignora todo el contenido; la carpeta vive
+# solo en local (MEGA la sincroniza).
+cursos/*/evaluaciones/web/**
+
 # Banco privado de preguntas: con los .tex ya ignorados, este era el último sitio
 # donde un enunciado podía colarse al repo. `curso.yaml` es público y solo declara
 # fase, puntaje y tema; los textos viven aquí y se inyectan al generar con

@@ -1,0 +1,16 @@
+{
+  "name": "cuestionarios-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Recibe entregas de cuestionarios, las califica y las archiva en un repositorio privado",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.0"
+  }
+}

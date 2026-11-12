@@ -1,0 +1,171 @@
+goal: |
+  Desplegar el Worker `cuestionarios-worker` que recibe la entrega del alumno,
+  la califica con la clave guardada como secreto y archiva el resultado en el
+  repositorio privado `cero97-ctrl/cuestionarios-resultados`.
+
+  La página publicada es estática y no puede escribir en GitHub ni calcular la
+  nota sin exponer la clave. El Worker mueve ambas cosas al servidor: la clave
+  vive en `CLAVE_JSON` y solo viaja la nota de vuelta al navegador.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_desplegar_worker_cuestionarios.py
+  worker: Proyectos/cuestionarios-worker (src/logica.js, src/index.js, wrangler.jsonc)
+  tests: cd Proyectos/cuestionarios-worker && npm test
+  input: cursos/<CURSO>/evaluaciones/web/fuentes/<CUESTIONARIO>.md (+ _respuestas.md)
+  output: |
+    Un Worker por grupo: `https://cuestionarios-worker.cero-agents.workers.dev`
+    (ROL ROJO, base) y `https://cuestionarios-worker-<grupo>.cero-agents.workers.dev`
+    (`--env azul`, `--env purpura`, `--env legal`). La clave de un grupo nunca
+    viaja al Worker de otro ni a su repositorio de resultados.
+  archivo: resultados/<cuestionario>/grupo_<NN>/<cedula>.json en el repo privado
+
+required_inputs:
+  - name: sesión OAuth de wrangler (o .env → CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID)
+    description: |
+      Ruta habitual: `wrangler login` una vez; la sesión queda en
+      `~/.config/.wrangler/config/default.toml` y caduca (verificar
+      `wrangler whoami`). El account id se puede leer de
+      `Proyectos/BMR/.wrangler/cache/wrangler-account.json` sin desplegar nada.
+      Alternativa sin navegador: `CLOUDFLARE_API_TOKEN` (`Workers Scripts: Edit`)
+      y `CLOUDFLARE_ACCOUNT_ID` en `.env`. Sin una de las dos, el flujo sale con
+      código 4 y no toca nada.
+  - name: .env → GITHUB_TOKEN_RESULTADOS
+    description: |
+      PAT fine-grained con `Contents: Read and write` **solo** en
+      `cero97-ctrl/cuestionarios-resultados`. El flujo lo sube como secreto
+      `GITHUB_TOKEN` por stdin (nunca como argumento de shell). No reutilizar el
+      `GITHUB_TOKEN` general de `.env`: ese token no debe acabar en Cloudflare.
+  - name: --fuente <cuestionario.md>
+    description: |
+      Fuente con front matter. La clave NO se escribe a mano: se lee de
+      `<fuente>_respuestas.md` con el parser de `execution/md_a_html.py`.
+  - name: --check
+    description: |
+      Valida la clave y el bundle (`wrangler deploy --dry-run`) sin cuenta ni red
+      de despliegue. Es la forma de comprobar que todo está en su sitio.
+
+contract:
+  validacion: |
+    El Worker exige `cuestionario` (slug exacto), `nombre` (3..80, solo letras,
+    espacios, punto, apóstrofo y guion), `cedula` (V/E/J + 5..9 dígitos,
+    normalizada a `V-12345678`), `grupo` (entero 1..GRUPOS) y `respuestas`
+    (exactamente 1..total, letras A..E). Cuerpo máximo 4 KiB.
+  calificacion: |
+    `nota = 10 * aciertos / total`, redondeada a 2 decimales. El total sale de la
+    clave, no de un número escrito en el Worker: una clave de 8 preguntas
+    califica sobre 8.
+  archivo: |
+    `resultados/<cuestionario>/grupo_<NN>/<cedula>.json`, con nombre, cédula,
+    grupo, respuestas, aciertos, total, nota y `enviado_en`. La ruta depende de
+    la cédula, así que un reenvío sobrescribe el mismo archivo (idempotente).
+  cors: |
+    Solo se acepta el `Origin` listado en `ORIGENES` (`https://cero97-ctrl.github.io`
+    y `http://localhost:8788`). Un origen desconocido recibe 403; una petición sin
+    `Origin` (curl) se acepta para poder probar.
+  secreto: |
+    La respuesta al alumno trae solo `nota`, `aciertos` y `total`. Nunca qué
+    preguntas falló ni la clave: un reenvío no debe servir para aprenderla.
+
+steps:
+  - paso: 1
+    script: cd Proyectos/cuestionarios-worker && npm test
+    description: |
+      Lógica pura (validación, calificación, ruta y contenido del archivo) sin
+      red ni cuenta. Debe dar 20/20.
+  - paso: 2
+    script: python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>] --check
+    description: |
+      Comprueba que la fuente y `_respuestas.md` coinciden, que el bundle
+      compila y —esto es lo que evita la avería cara— que el
+      `CUESTIONARIO_ID` de `wrangler.jsonc` es el de ESTA fuente. Sin `--env`
+      usa el Worker base (ROL ROJO). Reporta el sha256 de la clave; si cambia
+      sin haber tocado el cuestionario, algo se movió donde no debía.
+  - paso: 3
+    script: python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>]
+    description: |
+      Despliega, sube `CLAVE_JSON`, comprueba que `GITHUB_TOKEN` existe (lo sube
+      desde `.env` si falta) y llama a `/salud`. Con `--env` el despliegue y los
+      secretos van al Worker de ese entorno (`cuestionarios-worker-<grupo>`) y
+      se verifica que la URL devuelta sea la suya antes de escribir nada.
+  - paso: 4
+    script: python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>] --actualizar-fuente
+    description: |
+      Escribe `entrega_url:` en el front matter de la fuente con la URL real.
+      Sin este paso la página no muestra el botón de envío.
+  - paso: 5
+    script: python3 flujo_evaluacion_web.py --fuente <fuente> && python3 flujo_publicar_cuestionario.py --push
+    description: |
+      Regenerar el HTML (ahora con botón) y republicarlo. Verificar en el
+      navegador que el botón se habilita con los datos y las 10 respuestas.
+      El publicador recolecta todos los `*_alumno.html`, así que un cuestionario
+      nuevo entra al índice solo; no hay que tocar el índice a mano.
+  - paso: 6
+    script: |
+      curl -X POST <url> -H 'Content-Type: application/json' \
+        -d '{"cuestionario":"rol_rojo_cuestionario","nombre":"Prueba","cedula":"V-00000000","grupo":1,"respuestas":{"1":"A"}}'
+    description: |
+      Prueba de humo manual con una cédula de prueba; comprobar la nota devuelta
+      y que el JSON aparece en el repo privado. Borrar después esa entrega de
+      prueba con `gh api -X DELETE`.
+
+expected_outputs:
+  - "Worker desplegado y respondiendo `{\"ok\":true}` en `/salud`."
+  - "Secretos `CLAVE_JSON` y `GITHUB_TOKEN` presentes (`wrangler secret list`)."
+  - "`entrega_url:` escrito en la fuente y botón «Enviar mis respuestas» en el HTML del alumno."
+  - "Una entrega de prueba aparece en `resultados/<cuestionario>/grupo_<NN>/` del repo privado, con la nota calculada."
+  - "Códigos de salida: 0 ok · 1 E/S · 3 fuente/clave inválida · 4 wrangler/secretos · 5 `/salud` no responde."
+
+edge_cases:
+  - caso: "`wrangler whoami` falla"
+    respuesta: |
+      Código 4 antes de desplegar. La causa más frecuente no es la falta de
+      credenciales sino la **caducidad** de la sesión OAuth (`expiration_time` en
+      `~/.config/.wrangler/config/default.toml`): volver a ejecutar
+      `wrangler login`. Alternativa sin navegador: `CLOUDFLARE_API_TOKEN` y
+      `CLOUDFLARE_ACCOUNT_ID` en `.env`.
+  - caso: "El chequeo de `/salud` responde 403 aunque el Worker funciona"
+    respuesta: |
+      Cloudflare bloquea el `User-Agent` por defecto de urllib en dominios
+      `workers.dev` («error code: 1010»): el mismo Worker devuelve 200 con curl
+      y 403 con `urllib.request.urlopen` a pelo (verificado 2026-11-11). El flujo
+      ya envía UA de navegador en `_salud` (`USER_AGENT`, mismo criterio que
+      `execution/scrape_single_site.py`). Cualquier chequeo HTTP nuevo desde
+      Python debe repetir esas cabeceras antes de concluir que el Worker cayó.
+  - caso: "Se despliega un grupo nuevo y se rompe el que ya funcionaba"
+    respuesta: |
+      Es la avería que este flujo evita: `wrangler.jsonc` tiene un Worker base
+      (ROL ROJO) y un `env.<grupo>` por cada grupo extra, con su propio `name`,
+      `CUESTIONARIO_ID` y `GRUPOS`. En wrangler los `vars` de un `env` **no se
+      heredan**, así que hay que repetirlos. El flujo lee el archivo y compara
+      `CUESTIONARIO_ID` con el slug de la fuente ANTES de tocar la cuenta: si
+      no coinciden, sale con código 3 y no sube nada. Nunca desplegar un grupo
+      sin `--env`: eso escribiría su clave en el Worker base y dejaría a ambos
+      rechazando entregas (el base por id y el nuevo por clave).
+  - caso: "El Worker responde 500 «servicio no configurado»"
+    respuesta: |
+      Falta `CLAVE_JSON`, `CUESTIONARIO_ID` o `GRUPOS`. Repetir el paso 3: sube
+      `CLAVE_JSON` y verifica los secretos.
+  - caso: "El Worker responde 502 «no se pudo registrar la entrega»"
+    respuesta: |
+      El PAT no tiene `Contents: Read and write` sobre el repo privado, o el repo
+      no existe. Revisar el token y `gh repo view cero97-ctrl/cuestionarios-resultados`.
+  - caso: "El navegador bloquea el envío por CORS"
+    respuesta: |
+      El `Origin` no está en `ORIGENES`. Añadirlo en `wrangler.jsonc` y volver a
+      desplegar; no abrir la política a `*` (cualquier web podría enviar).
+  - caso: "Se cambia la clave del cuestionario"
+    respuesta: |
+      Editar `_respuestas.md`, repetir el paso 2 (el sha256 debe cambiar) y el
+      paso 3. Los archivos ya archivados conservan la nota que se calculó con la
+      clave vigente en su momento: no se recalculan.
+  - caso: "Un alumno reenvía"
+    respuesta: |
+      La página fija las respuestas, así que reenvía lo mismo. El archivo se
+      sobrescribe por cédula; `enviado_en` queda con la última vez.
+  - caso: "Llega spam al endpoint público"
+    respuesta: |
+      Validación estricta y cuerpo acotado reducen el daño, pero no hay rate
+      limiting (requiere KV o la función de pago). Auditar el repo privado y
+      borrar lo que no corresponda.

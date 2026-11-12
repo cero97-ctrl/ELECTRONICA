@@ -1,0 +1,160 @@
+goal: |
+  Recoger las entregas que el Worker archivó en el repo privado y convertirlas en
+  un acta legible —CSV y PDF— con la nota de cada estudiante, quién no entregó y
+  qué filas hay que revisar a mano.
+
+  Sin esto, ver los resultados significaba abrir el repo privado JSON por JSON.
+  El acta es de solo lectura sobre lo archivado: no recalifica a nadie ni borra
+  entregas, y la nota que devuelve el Worker **no se toma como verdad**: se
+  recalcula con la clave vigente y se compara. Si difieren (la clave cambió
+  después del envío, o alguien editó el JSON a mano) la fila se marca `revisar` y
+  el flujo termina en aviso, porque una nota que no se puede reproducir con la
+  clave local no es publicable tal cual.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_acta_cuestionario.py
+  scripts: execution/descargar_resultados.py, execution/test_descargar_resultados.py
+  input: repo privado `cero97-ctrl/cuestionarios-resultados` → `resultados/<cuestionario>/grupo_<NN>/<cedula>.json`
+  clave: cursos/<CURSO>/evaluaciones/web/fuentes/<CUESTIONARIO>.md (+ `_respuestas.md`)
+  output: cursos/<CURSO>/evaluaciones/resultados/acta_<cuestionario>.{csv,pdf}
+  backend: directives/entregar_respuestas_worker.yaml (quien archiva las entregas)
+  tests: python3 execution/test_descargar_resultados.py
+
+required_inputs:
+  - name: --fuente MD
+    description: |
+      Cuestionario del que salen la clave vigente, el número de preguntas, los
+      grupos declarados, el curso y el título. La clave se lee con
+      `md_a_html.cargar_clave()`, la misma función que usa el flujo de despliegue
+      del Worker: una sola definición, para que el acta y el Worker no puedan
+      calificar distinto. Por defecto, el cuestionario de Rol Rojo.
+  - name: .env → GITHUB_TOKEN_RESULTADOS
+    description: |
+      PAT con `Contents: Read and write` sobre el repo de resultados. Aquí solo se
+      usa para **leer**. Si no está, se intenta con `GITHUB_TOKEN` (funciona, pero
+      ese token ve todos los repos: preferir el acotado). Sin ninguno, código 4.
+  - name: --lista CSV|YAML
+    description: |
+      Nómina opcional con columnas `nombre`, `cedula`, `grupo` (o claves
+      `cédula`/`ci`/`documento`). Con ella el acta dice quién no entregó y
+      detecta entregas de cédulas que no están en la lista. Sin ella, la
+      cobertura no es verificable y el acta lo declara en vez de suponer que
+      entregaron todos.
+  - name: --repo / --rama
+    description: |
+      Por defecto salen de `vars.REPO_RESULTADOS` en
+      `Proyectos/cuestionarios-worker/wrangler.jsonc` y de la rama `main`. No
+      duplicar el nombre del repo en un segundo lugar: el Worker y el acta deben
+      mirar al mismo sitio.
+  - name: --sin-pdf
+    description: |
+      Solo CSV. El PDF se compila con `execution/compile_latex.py` en
+      `.tmp/latex_build/acta_<cuestionario>/` y se copia al destino; si pdflatex
+      deja líneas `!` en el log, el acta CSV sigue siendo válida y el flujo lo
+      reporta como aviso en vez de dar por bueno un PDF roto.
+
+contract:
+  recalculo: |
+    `nota = round(10 * aciertos / preguntas, 2)`, la misma fórmula que
+    `calificar()` en `Proyectos/cuestionarios-worker/src/logica.js`. Se comparan
+    además `aciertos` y `nota` archivados contra los recalculados; cualquier
+    diferencia mayor a 0.005 marca la fila `estado: revisar` y el flujo sale con
+    código 5. El acta muestra las dos notas en columnas separadas
+    (`nota`, `nota_recalculada`): decidir cuál vale es del docente, no del script.
+  normalizacion: |
+    Cédula y nombre se normalizan con las mismas reglas que el Worker
+    (`v 12.345.678` → `V-12345678`; letras, marcas, espacio, punto, apóstrofo y
+    guión en el nombre). Si cambian allá, cambian aquí: una normalización
+    divergente rompería el cruce con la nómina en silencio.
+  integridad_de_ruta: |
+    La cédula y el grupo del **contenido** deben coincidir con los de la **ruta**
+    (`resultados/<cid>/grupo_<NN>/<cedula>.json`). Un archivo movido o renombrado
+    a mano se rechaza: el acta se ordena por grupo y un JSON en la carpeta
+    equivocada inventaría un grupo.
+  privacidad: |
+    El acta lleva nombres y cédulas. Antes de escribir, la capa 3 exige que la
+    ruta de destino esté ignorada por git (`git check-ignore`); si no lo está,
+    código 3 y no escribe nada. El destino por defecto
+    (`cursos/<CURSO>/evaluaciones/resultados/`) ya está en `.gitignore`.
+  orden: |
+    Grupo ascendente, nota recalculada descendente, cédula ascendente. Mismo
+    contenido del repo → mismos bytes de acta. No hay "fecha de hoy": la fecha
+    del acta es la del último envío (`--fecha` la sobrescribe).
+
+steps:
+  - paso: 1
+    script: python3 execution/test_descargar_resultados.py
+    description: |
+      83 aserciones sobre las funciones puras, sin red. Correrlo tras cualquier
+      cambio en la normalización, el recálculo o el LaTeX del acta.
+  - paso: 2
+    script: python3 flujo_acta_cuestionario.py
+    description: |
+      Descarga y arma el acta. Con 0 entregas termina en 0 y lo dice: no es un
+      fallo, es que nadie ha enviado todavía.
+  - paso: 3
+    script: python3 flujo_acta_cuestionario.py --lista <nomina.csv>
+    description: |
+      Igual, pero con cobertura: el acta lista a los que no entregaron. Es la
+      forma de correrlo cuando la nota va a publicarse.
+  - paso: 4
+    script: revisión manual del CSV/PDF
+    description: |
+      Mirar las filas `revisar` y los avisos antes de usar las notas. El flujo
+      las imprime y termina con código 5 justamente para que no pasen desapercibidas.
+
+expected_outputs:
+  - "CSV con cabecera `grupo,cedula,nombre,aciertos,total,nota,nota_recalculada,enviado_en,estado,archivo,avisos`, una fila por entrega."
+  - "PDF infográfico (longtable, una fila por estudiante, resumen y caja de cobertura) compilado sin errores `!` ni `Overfull \\hbox`."
+  - "Resumen por consola o JSON: entregas, promedio, mejor/peor, por grupo, último envío y cuántas filas hay que revisar."
+  - "Con `--lista`: faltantes, sobrantes y cédulas cuyo grupo no coincide con la nómina."
+  - "El flujo verifica lo que la capa 3 dijo haber escrito: que el CSV existe, que sus filas coinciden con `entregas` y que el PDF existe y no es un archivo vacío."
+  - "Códigos de salida: 0 ok · 1 E/S o verificación fallida · 3 fuente/clave inválida, uso incorrecto o ruta no ignorada · 4 red/credenciales · 5 entregas inválidas o notas que no cuadran."
+
+edge_cases:
+  - caso: "Todavía no hay entregas"
+    respuesta: |
+      Código 0 con `entregas: 0` y un acta que dice «Sin entregas». No es un
+      fallo: confundirlo con un error llevaría a sospechar del Worker cuando lo
+      que pasa es que nadie envió.
+  - caso: "HTTP 401 / 403 / 404 al listar el repo"
+    respuesta: |
+      Código 4 con el motivo traducido (token inválido / sin permiso / repo o rama
+      inexistente). Comprobar el token con
+      `gh api repos/cero97-ctrl/cuestionarios-resultados` usando ese mismo PAT.
+  - caso: "El árbol del repo llega truncado"
+    respuesta: |
+      La API trunca árboles grandes. Se aborta con error en vez de generar un
+      acta incompleta que parecería completa: un acta que omite estudiantes es
+      peor que ninguna.
+  - caso: "La nota archivada no coincide con la recalculada"
+    respuesta: |
+      Fila `estado: revisar`, aviso con las dos notas y código 5. Causa típica: la
+      clave cambió después del envío (ver `entregar_respuestas_worker.yaml` →
+      «Se cambia la clave del cuestionario»). Decidir cuál vale es del docente.
+  - caso: "Cédula o grupo del contenido distintos de los de la ruta"
+    respuesta: |
+      Registro rechazado y listado en los avisos con la ruta: indica un archivo
+      movido a mano. No se incluye en el acta.
+  - caso: "Entrega de una cédula que no está en la nómina"
+    respuesta: |
+      Aparece en `sobrantes` y en los avisos, pero **sí** entra en el acta: pudo
+      escribir mal su cédula y borrar la entrega es perderla.
+  - caso: "Un estudiante declara en la nómina un grupo distinto del que envió"
+    respuesta: |
+      Se lista en `grupo_distinto`. Vale el grupo del envío (es el que el
+      estudiante eligió en la página), pero hay que mirarlo: puede ser un alumno
+      que cambió de grupo y la nómina está vieja.
+  - caso: "El PDF no compila"
+    respuesta: |
+      El CSV se conserva y el PDF se reporta como `null` con el error en los
+      avisos; el flujo lo convierte en problema de verificación (código 1). Causa
+      vista de verdad: más celdas por fila que columnas declaradas en la
+      `longtable` («Extra alignment tab»). Los tests comparan las columnas de la
+      cabecera, de las filas y de la especificación para que no vuelva a pasar.
+  - caso: "Se quiere el acta fuera de `resultados/`"
+    respuesta: |
+      Solo en rutas ignoradas por git. `--salida .tmp/acta.csv` sirve para una
+      revisión rápida; una ruta trackeable se rechaza con código 3.

@@ -59,15 +59,23 @@ Evaluación teórica semanal por grupo sobre el trabajo reportado en GitHub (CYB
 - **Redacción**: 8 correcciones gramaticales y 1 reescritura para no calcar una frase que ya está
   en el material público (`grupo_3_02.tex`); los enunciados evitan `_` fuera de `$...$`
   (`_validar_matematica` lo rechaza con código 6).
+- **Commit y push**: `c63ebad9` `feat(curso): evaluación teórica semanal por grupo sobre el trabajo
+  en GitHub` (13 ficheros, +1066/−52), empujado a `origin/master` desde `c332e4c2` con divergencia
+  previa 0/0. El banco y los 32 `.tex`/`.pdf` quedaron fuera (ignorados).
+- **Escaneo de fuga posterior al push**: se compararon las **152 preguntas** del banco (controles de
+  las dos variantes + 32 teóricas) contra todo lo versionado, tomando las 6 primeras palabras de cada
+  enunciado. Salieron 2 coincidencias con material público que el alumno ya tiene (`grupo_2_02.tex`
+  y `grupo_1_04.tex`): se reescribieron esos 2 enunciados y se regeneraron sus instrumentos
+  (`--solo teoricas --grupo 2` y `--grupo 1`) → **0 coincidencias**. Ese arreglo tocó solo ficheros
+  ignorados, así que no produjo commit; queda registrado aquí porque los exámenes no están en git y
+  ningún otro fichero lo contaría.
 
 ## Pendientes
-- **Revisión del usuario de los 32 enunciados** (el banco es editable por semana; cualquier lote
-  puede reescribirse y regenerarse con `--solo teoricas --grupo N`).
-- **Commit + push** de: `curso.yaml`, `generar_material_curso.py`, `flujo_disenar_curso.py`,
-  `directives/disenar_curso.yaml`, `test_generar_material_curso.py`, `rubrica_teorica.yaml` (nueva,
-  pública), sílabo/guía regenerados y las dos bitácoras de hoy. Solo tras el visto bueno.
+- **Commit de esta bitácora** (addendum posterior al push: registro del commit `c63ebad9` y del
+  escaneo de fuga con las 2 reescrituras). El resto del trabajo ya está empujado.
 - Carga de corrección: 32 pruebas individuales por semestre, sin automatizar. `evaluar_examen.py`
-  ya consume `rubrica_teorica.yaml` si se quiere escanear y corregir con el flujo existente.
+  ya consume `rubrica_teorica.yaml` si se quiere escanear y corregir con el flujo existente
+  (verificado: `cargar_rubrica()` la acepta igual que `rubrica_practica.yaml`).
 - Los otros dos cursos (`LABORATORIO_I_FISICA`, `LABORATORIO_II_FISICA`) no declaran
   `teorica_semanas`: el artefacto queda inactivo ahí hasta que se decida.
 - Sigue aplazada la dimensión `examen_filtrado` en `flujo_auditar_repo.py` (de sesiones anteriores).

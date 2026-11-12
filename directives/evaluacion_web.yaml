@@ -1,0 +1,171 @@
+goal: |
+  Convertir los cuestionarios de examen del curso (Markdown privado) en HTML
+  autocontenido para publicarlos a los estudiantes, sin filtrar la clave de
+  respuestas y sin depender de la red.
+
+  El repositorio es público y los exámenes son material privado: la fuente vive
+  en `cursos/<CURSO>/evaluaciones/web/fuentes/` y la salida en
+  `cursos/<CURSO>/evaluaciones/web/`, ambas rutas ignoradas por git. La variante
+  `_alumno.html` no contiene la clave; la `_docente.html` sí, y por eso lleva un
+  aviso visible y nunca debe compartirse con estudiantes.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_evaluacion_web.py
+  scripts: execution/md_a_html.py, execution/test_md_a_html.py
+  input: cursos/<CURSO>/evaluaciones/web/fuentes/*.md
+  output: cursos/<CURSO>/evaluaciones/web/<slug>_alumno.html, <slug>_docente.html, index.html
+  tests: python3 execution/test_md_a_html.py
+
+required_inputs:
+  - name: --fuente PATRÓN
+    description: |
+      Repetible. Ruta o glob al .md de origen. Si se omite, se usan todos los
+      `cursos/*/evaluaciones/web/fuentes/*.md`.
+  - name: --variantes alumno,docente
+    description: |
+      Variantes a generar. `alumno` no lleva clave; `docente` la exige y falla
+      con código 4 si no hay `clave:` en el front matter ni archivo de
+      respuestas.
+  - name: --respuestas <md>
+    description: |
+      Archivo con las respuestas (`**Answer:** X. ...`). Se valida contra la
+      fuente (mismo número de preguntas, enunciado y opciones) y de ahí sale la
+      clave de la variante docente. El orquestador lo detecta solo cuando existe
+      el hermano `<fuente>_respuestas.md` en la misma carpeta; nunca se convierte
+      ese archivo como si fuera un cuestionario.
+  - name: --check
+    description: Valida las fuentes sin escribir nada.
+  - name: --dry-run
+    description: Muestra las rutas de salida sin escribir nada.
+  - name: --json
+    description: Salida JSON por stdout.
+  - name: --no-alert
+    description: No emite la alerta audible final.
+
+contract:
+  front_matter: |
+    ---
+    curso: CYBERSEGURIDAD
+    tipo: cuestionario
+    titulo: "ROL ROJO — Cuestionario"
+    semana: 1                  # opcional
+    grupo: 1                   # opcional
+    variante: 1                # opcional
+    grupos: 4                  # opcional; nº de grupos del curso (1..20) para el selector del alumno
+    entrega_url: https://...   # opcional; URL https del Worker que recibe y califica la entrega
+    puntaje_total: 10          # opcional; por defecto, número de preguntas
+    puntos: {1: 1.5, 2: 0.5}   # opcional; debe sumar puntaje_total
+    clave: {1: B, 2: A}        # alternativa a --respuestas; si se dan las dos, deben coincidir
+    retroalimentacion: {1: "..."}  # opcional; solo se muestra en docente
+    ---
+  respuestas: |
+    Archivo hermano opcional `fuentes/<fuente>_respuestas.md` con la misma
+    estructura de preguntas y opciones, más una línea `**Answer:** X. ...` por
+    pregunta (`**Hint:**` y `**Explanation:**` se toleran y se ignoran por
+    ahora). Es la fuente recomendada de la clave: una sola copia privada, y el
+    conversor falla con código 3 si el cuestionario y sus respuestas divergen
+    (enunciado, opciones o numeración), que es como se detecta una copia
+    desactualizada antes de corregir mal.
+  preguntas: |
+    ## Question N        (o `## Pregunta N`)
+    Enunciado en una o varias líneas.
+    - A. Texto de la opción.
+    - B. ...
+    Reglas: numeración 1..N sin huecos, entre 2 y 6 opciones por pregunta,
+    letras únicas (A-F), ninguna opción vacía. El markdown inline soportado es
+    `código`, **negrita** y *cursiva*. Las fórmulas `$...$` se muestran
+    literalmente en esta versión; un examen con matemáticas requiere la fase
+    MathML antes de publicarse.
+
+steps:
+  - paso: 0
+    script: execution/dividir_cuestionario.py --canonico <md_canonico> [--dry-run]
+    description: |
+      Solo si la fuente llega en formato canónico (con `**Answer:**`, `**Hint:**`,
+      `**Explanation:**` dentro de cada bloque). El conversor NO acepta eso:
+      `cargar_clave()` lo rechaza como «archivo de respuestas» y, si se colara,
+      `_parsear_cuestionario()` pegaría las pistas al texto de la última opción.
+      El divisor escribe la fuente sin clave, deja el canónico íntegro en
+      `<fuente>_respuestas.md` y verifica la ida y vuelta antes de escribir.
+      Es idempotente en el sentido seguro: si el archivo ya no tiene
+      `**Answer:**`, falla en vez de sobrescribirlo a ciegas.
+  - paso: 1
+    script: execution/md_a_html.py --fuente <md> [--respuestas <md_respuestas>] --check
+    description: |
+      Validar el contrato antes de generar: numeración, opciones y, si hay
+      archivo de respuestas, que describa exactamente el mismo examen.
+  - paso: 2
+    script: execution/md_a_html.py --fuente <md> --variantes alumno
+    description: Generar la versión para estudiantes, sin clave.
+  - paso: 3
+    script: execution/md_a_html.py --fuente <md> [--respuestas <md_respuestas>] --variantes alumno,docente
+    description: |
+      Generar ambas variantes. La clave sale de `clave:` en el front matter o
+      del archivo de respuestas; sin ninguna de las dos, código 4.
+  - paso: 4
+    script: execution/md_a_html.py (índice)
+    description: Regenerar `index.html` con los cuestionarios disponibles.
+  - paso: 5
+    script: flujo_evaluacion_web.py [--variantes alumno,docente]
+    description: |
+      Camino recomendado: resuelve todas las fuentes, ignora los
+      `*_respuestas.md`, empareja cada cuestionario con su archivo de respuestas
+      hermano y encadena el conversor con trazabilidad.
+
+expected_outputs:
+  - "HTML autocontenido: CSS inline, sin CDN, sin `http://` ni `https://`."
+  - "`_alumno.html` sin `const CLAVE`; `_docente.html` con clave y aviso."
+  - |
+    En `_alumno.html`, la respuesta de una pregunta queda **fijada al primer
+    clic**: sus radios se deshabilitan y aparece «Respuesta fijada». No hay
+    margen para corregir. En `_docente.html` no se fija nada, porque el profesor
+    necesita cambiar respuestas para corregir.
+  - |
+    `_alumno.html` abre con un módulo **Datos del estudiante** (nombre y apellidos,
+    cédula de identidad y grupo) como campos obligatorios; no se guardan en el
+    archivo ni se envían a ningún lado, y en impresión se dibujan como líneas para
+    escribir. El grupo es un selector `1..N` cuando el front matter declara
+    `grupos: N` (1..20); sin `grupos`, es un campo numérico. **Mientras falte
+    alguno, no se puede responder**: el clic en una opción se revierte, los campos
+    vacíos se resaltan y aparece un aviso. La variante docente no lo lleva.
+  - "Con `entrega_url`, `_alumno.html` añade el botón «Enviar mis respuestas»: nace deshabilitado y se habilita solo con los datos completos y todas las preguntas respondidas; envía un POST con nombre, cédula, grupo y respuestas, y muestra la nota devuelta. Sin `entrega_url` no hay botón ni red."
+  - "`index.html` determinista, ordenado por nombre de fuente."
+  - "Código de salida 0; 3 fuente inválida; 4 falta la clave; 5 ruta rechazada."
+
+edge_cases:
+  - caso: "Falta la clave y se pidió docente"
+    respuesta: "Código 4. No se inventan respuestas: se pide la clave al usuario o el archivo de respuestas."
+  - caso: "El archivo de respuestas no coincide con el cuestionario"
+    respuesta: |
+      Código 3 con la pregunta concreta que difiere (enunciado, opciones o
+      numeración). Es el caso de la copia desactualizada: corregir con esa clave
+      calificaría otro examen. Se actualiza el archivo de respuestas, nunca se
+      relaja la comprobación.
+  - caso: "`clave:` del front matter y archivo de respuestas en desacuerdo"
+    respuesta: |
+      Código 3: dos fuentes de verdad que divergen. Se elige una (se recomienda
+      borrar `clave:` del front matter y dejar solo el archivo de respuestas).
+  - caso: "Se pasa el archivo de respuestas como --fuente"
+    respuesta: |
+      Código 3: la fuente contiene `**Answer:**`. El mensaje remite a
+      `--respuestas`. El orquestador además excluye `*_respuestas.md` del glob
+      por defecto.
+  - caso: "La fuente no tiene front matter"
+    respuesta: "El título se toma del primer `# `, el curso de la ruta y el tipo es opcional; la clave sigue siendo obligatoria para docente."
+  - caso: "Numeración con huecos o letras duplicadas"
+    respuesta: "Código 3 con la lista de problemas; no se genera nada."
+  - caso: "La salida no está ignorada por git"
+    respuesta: "Código 5. Un examen en un repo público es una fuga, no un detalle."
+  - caso: "El examen contiene `$...$`"
+    respuesta: "Se renderiza literal y se advierte; no se simula Matemáticas. La fase MathML es un trabajo aparte."
+  - caso: "Se pide sobrescribir un HTML existente"
+    respuesta: "Se sobrescribe: el HTML es derivado y regenerable; la fuente nunca se toca."
+
+security:
+  - "Solo se escribe dentro de cursos/<CURSO>/evaluaciones/web/, nunca en fuentes/."
+  - "La barrera exige que `git check-ignore` confirme que la ruta está ignorada."
+  - "La variante alumno no contiene la clave ni retroalimentación."
+  - "La variante docente advierte que la clave es visible en el código fuente."
+  - "Sin red: ningún recurso externo, ninguna fuente remota, ningún script de CDN."

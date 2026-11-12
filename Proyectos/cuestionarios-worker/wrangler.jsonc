@@ -1,0 +1,44 @@
+{
+  // Worker base: ROL ROJO. Cada grupo extra vive en `env.<nombre>` con su propio
+  // `name` (dominio propio en workers.dev) y sus propias vars: en wrangler los
+  // `vars` NO se heredan del nivel superior, hay que repetirlos.
+  "name": "cuestionarios-worker",
+  "main": "src/index.js",
+  "compatibility_date": "2025-06-01",
+  "observability": { "enabled": true },
+  "vars": {
+    "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+    "CUESTIONARIO_ID": "rol_rojo_cuestionario",
+    "GRUPOS": "4",
+    "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+  },
+  "env": {
+    "azul": {
+      "name": "cuestionarios-worker-azul",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_azul_cuestionario",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "purpura": {
+      "name": "cuestionarios-worker-purpura",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_purpura_cuestionario",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "legal": {
+      "name": "cuestionarios-worker-legal",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_legal_reporte_tecnico_cuestionario",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    }
+  }
+}

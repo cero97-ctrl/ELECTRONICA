@@ -1,0 +1,166 @@
+goal: |
+  Publicar la variante `alumno` de los cuestionarios en un repositorio público
+  separado, servido por GitHub Pages, para que los estudiantes lo abran desde
+  las PCs del laboratorio sin instalar nada.
+
+  El repositorio del curso es público y la carpeta `evaluaciones/web/` también
+  contiene `_docente.html` (con `const CLAVE`) y `fuentes/*_respuestas.md` (la
+  clave). Publicar la carpeta entera filtraría las respuestas y en GitHub
+  quedarían en el historial para siempre. Por eso se publica en un repo
+  separado y **solo** los `*_alumno.html`, con un índice propio sin enlaces al
+  docente. La clave nunca sale de la máquina.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_publicar_cuestionario.py
+  scripts: execution/publicar_cuestionario.py, execution/test_publicar_cuestionario.py
+  input: cursos/<CURSO>/evaluaciones/web/*_alumno.html
+  output: repo público `cero97-ctrl/cuestionarios` (index.html + *_alumno.html + .nojekyll)
+  url: https://cero97-ctrl.github.io/cuestionarios/
+  tests: python3 execution/test_publicar_cuestionario.py
+
+required_inputs:
+  - name: --web-dir DIR
+    description: |
+      Carpeta web del curso; debe ser exactamente `cursos/<CURSO>/evaluaciones/web`
+      (código 5 si no). Por defecto, `cursos/CYBERSEGURIDAD/evaluaciones/web`.
+  - name: --repo owner/nombre
+    description: |
+      Destino. Por defecto `<usuario-gh>/cuestionarios`. Se crea público si no
+      existe; si existe, se actualiza con `--force` (el repo es generado).
+  - name: --push
+    description: |
+      Sin este flag solo prepara el payload en `.tmp/publicacion/<nombre>/` y no
+      toca la red. Con él: crea el repo si falta, hace commit y push, habilita
+      Pages y espera a que la URL responda 200.
+  - name: --dry-run
+    description: Prepara y reporta sin publicar (equivale a no pasar `--push`).
+  - name: --visibilidad public|private
+    description: |
+      Interruptor de publicación. `private` hace que la URL pública deje de
+      responder (Pages no sirve repos privados sin plan de pago); `public` la
+      devuelve, re-habilitando Pages y esperando el 200. Se puede usar solo (sin
+      `--push`) para ocultar o mostrar sin volver a subir contenido, o junto a
+      `--push`, en cuyo caso la visibilidad se aplica al final. Es la forma de
+      tener el cuestionario subido pero invisible hasta el día del examen.
+
+contract:
+  payload: |
+    Solo entran `*_alumno.html`. Se rechaza (código 3) cualquier archivo cuyo
+    nombre contenga `docente` o `respuesta`, o cuyo contenido tenga `const CLAVE`,
+    `**Answer:**` o `Modo docente`. También se rechaza un HTML sin el módulo de
+    datos del estudiante (`id="estudiante-nombre"`): publicar una página que no
+    pide nombre, cédula y grupo incumple el propósito.
+  indice: |
+    `index.html` se genera en la capa 3 a partir del `<title>` de cada HTML; no
+    lista la variante docente ni enlaza a ella. Se añade `.nojekyll` para que
+    Pages no procese los archivos con Jekyll.
+  determinismo: |
+    El payload es byte a byte reproducible (mismo HTML de entrada → mismo
+    sha256). El commit usa autor, correo y fecha fijos, así que el mismo payload
+    produce el mismo commit; el push es `--force` porque el repo es generado.
+  visibilidad: |
+    El cambio de visibilidad va por la API REST (`gh api -X PATCH repos/<repo>
+    -F private=true|false`), no por `gh repo edit --visibility`: ese subcomando
+    pide confirmación interactiva y su flag de aceptación solo existe desde
+    gh 2.56 (esta máquina trae 2.45, donde muere imprimiendo la ayuda). Se usa
+    `-F` y no `-f` para que `true`/`false` viajen como booleanos. Tras el cambio
+    se verifica leyendo `visibility` de vuelta: si no coincide, error 4.
+    «Privado» significa **404**, no «acceso restringido»: quien tenga un plan de
+    pago podría mantener Pages activo en privado, pero no es el caso aquí.
+
+steps:
+  - paso: 1
+    script: flujo_evaluacion_web.py --variantes alumno,docente
+    description: |
+      Generar primero el HTML. La publicación no convierte nada: si el HTML está
+      desactualizado, se publica desactualizado.
+  - paso: 2
+    script: flujo_publicar_cuestionario.py --dry-run
+    description: |
+      Preparar y validar el payload. Revisar la lista de archivos y los sha256;
+      si aparece cualquier cosa que no sea `*_alumno.html`, detenerse.
+  - paso: 3
+    script: flujo_publicar_cuestionario.py --push
+    description: |
+      Publicar. Al terminar, abrir la URL y confirmar que el cuestionario carga,
+      que el módulo de datos aparece y que no hay enlaces a la variante docente.
+  - paso: 4
+    script: gh api repos/<repo>/pages
+    description: |
+      Si Pages devuelve 404 tras el push, revisar que la rama sea `main` y la
+      ruta `/`; el primer despliegue puede tardar un minuto.
+  - paso: 5
+    script: flujo_publicar_cuestionario.py --visibilidad private|public
+    description: |
+      Ocultar o mostrar sin volver a subir nada. Antes del examen: `private` (la
+      URL pasa a 404). El día del examen: `public`, que re-habilita Pages y
+      espera el 200. Verificar siempre con `curl -o /dev/null -w '%{http_code}'`
+      sobre la URL real, no con lo que reporte el flujo: el CDN puede seguir
+      sirviendo la copia cacheada unos minutos (ver caso límite).
+
+expected_outputs:
+  - "Repo público con `index.html`, los `*_alumno.html` y `.nojekyll`; sin `_docente.html` ni archivos de respuestas."
+  - "`index.html` sin enlaces ni menciones al docente."
+  - "Pages habilitado en `https://<owner>.github.io/<repo>/` y respondiendo 200."
+  - "Con `--visibilidad private`: repo privado, Pages deshabilitado y URL pública en 404 (tras el vaciado del CDN)."
+  - "Con `--visibilidad public`: repo público, Pages re-habilitado y URL respondiendo 200 con el mismo sha256 que el HTML local."
+  - "Código de salida 0; 3 payload rechazado; 4 gh/git falló (incluido el cambio de visibilidad); 5 ruta rechazada."
+
+edge_cases:
+  - caso: "El HTML del alumno contiene `const CLAVE`"
+    respuesta: |
+      Código 3 y no se publica nada. Es una regresión del conversor o se está
+      apuntando a la variante equivocada: regenerar con
+      `flujo_evaluacion_web.py --variantes alumno` antes de reintentar.
+  - caso: "Aparece un `_docente.html` en la carpeta web"
+    respuesta: |
+      No se recolecta (el glob es `*_alumno.html`) y, si se pasara por error, el
+      guardián lo rechaza por nombre. Nunca copiarlo a mano al repo público.
+  - caso: "El repo destino ya existe con otro contenido"
+    respuesta: |
+      El push es `--force` y lo reemplaza: el repo es generado, no un archivo.
+      Si se quiere conservar historial, no usar este flujo sobre un repo con
+      contenido ajeno.
+  - caso: "Pages no responde tras el push"
+    respuesta: |
+      Esperar hasta un minuto y reintentar la URL. Si sigue en 404, comprobar
+      `gh api repos/<repo>/pages` (rama `main`, ruta `/`) y que el repo sea
+      público.
+  - caso: "Se necesita recolectar y calificar las respuestas"
+    respuesta: |
+      Este flujo solo publica la página. La recolección y la nota las hace el
+      Worker descrito en `directives/entregar_respuestas_worker.yaml`; sin él, la
+      página no muestra botón de envío (no hay `entrega_url`).
+  - caso: "Ocultar el cuestionario hasta el día del examen"
+    respuesta: |
+      `flujo_publicar_cuestionario.py --visibilidad private`. El contenido se
+      queda subido y el repo pasa a privado: Pages no sirve repos privados sin
+      plan de pago, así que la URL da 404. El día del examen,
+      `--visibilidad public` lo devuelve (re-habilita Pages y espera el 200);
+      verificado el 2026-11-11 en ambos sentidos, con el mismo sha256 antes de
+      ocultar y después de mostrar.
+  - caso: "La URL sigue en 200 aunque el repo ya es privado"
+    respuesta: |
+      Es el CDN de Pages, no el repo: sirve `cache-control: max-age=600` y la
+      copia puede quedar viva en el borde hasta ~10 minutos. Comprobar el origen
+      con `gh api repos/<repo>/pages` (debe dar 404) y `gh api repos/<repo>
+      --jq .visibility` (debe decir `private`); si ambos están bien, solo queda
+      esperar el vaciado. Medido el 2026-11-11: aún respondía 200 con `age: 197`
+      dos minutos después del cambio. **Consecuencia operativa: ocultar con
+      horas de antelación, no minutos antes de la clase.**
+  - caso: "Se cree que borrando el archivo del repo público se oculta"
+    respuesta: |
+      Falso y peligroso: el blob sigue en el historial público y es alcanzable
+      por su SHA (`/cero97-ctrl/cuestionarios/blob/<sha>/...`) aunque el archivo
+      desaparezca de la rama. El único interruptor real es la visibilidad del
+      repo; reescribir historia (`filter-repo` + `push --force`) también sirve
+      pero es caro, y quien ya haya clonado conserva la copia.
+  - caso: "`gh repo edit --visibility` imprime la ayuda y no cambia nada"
+    respuesta: |
+      Versión de `gh` antigua: el flag `--accept-visibility-change-consequences`
+      llegó en gh 2.56 y esta máquina trae 2.45, donde el subcomando rechaza el
+      argumento desconocido y vuelca el usage. La capa 3 ya usa la API REST
+      (`gh api -X PATCH repos/<repo> -F private=true`), que no depende de la
+      versión; no «arreglarlo» volviendo a `gh repo edit`.
