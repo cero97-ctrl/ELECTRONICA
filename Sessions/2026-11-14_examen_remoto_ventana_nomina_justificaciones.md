@@ -29,6 +29,30 @@ examen remoto ventana nomina justificaciones
    40 caracteres.
 6. Las claves se barajan de forma determinista hasta dejar de ser degeneradas.
 
+- **Consulta al repositorio durante el examen**: permitida y prevista. La página
+  no bloquea la navegación (no hay detector de ventanas ni de foco); lo que se
+  evalúa es que citen su propia evidencia, y las consignas ya lo piden («Cita el
+  archivo de hashes de tu grupo», «Pega la línea de tu propia salida de `grep`»).
+  Los repos de grupo son **privados**, así que necesitan su sesión de GitHub en
+  la otra ventana.
+- **Protección contra cortes de luz: opción C** (aviso + `beforeunload` +
+  borrador en `localStorage`), elegida por el usuario «porque en Venezuela
+  tenemos actualmente problemas con el fluido eléctrico». Se descartaron A (solo
+  cartel) y B (cartel + aviso al salir) por no sobrevivir a un apagón.
+- **El aviso de material va solo en el examen remoto** (variante alumno con
+  `entrega_url`): en el laboratorio el docente está presente y decirlo por
+  escrito sería ruido.
+- **Se les dice que copiar y pegar queda anotado** (`pegas`), para que peguen la
+  evidencia real en vez de reescribirla de memoria y que el acta pierda valor.
+- **El borrador caduca a las 24 h** (`BORRADOR_CADUCIDAD_HORAS`): dato personal
+  en un PC que puede ser prestado.
+- **Al recargar tras enviar**: mensaje «Entrega registrada» con nombre, cédula y
+  hora, **sin** mostrar sus respuestas; el registro guardado no lleva el examen
+  resuelto.
+- **Aviso visible si la huella no coincide** (cuestionario regenerado después de
+  que un alumno ya lo abrió).
+- **E2E con Worker de pega** autorizado y ejecutado antes de publicar.
+
 ## Actividades
 - **`execution/md_a_html.py`**: marcador `**Justificación:**` (regex + captura en
   fuente y respuestas), `MIN_JUSTIFICACION = 40`, `_items_justificacion()` que
@@ -94,9 +118,61 @@ examen remoto ventana nomina justificaciones
 - Directivas actualizadas: `entregar_respuestas_worker.yaml`,
   `evaluacion_web.yaml`, `acta_cuestionario.yaml`.
 
+- **Borrador local del examen remoto** en `execution/md_a_html.py`:
+  `_huella_cuestionario()` (12 hex de SHA-256 sobre número, enunciado y
+  opciones; sin respuestas ni instrucción de justificación), `_aviso_material()`,
+  CSS `.aviso-material`/`.borrador-estado` (ocultos en `@media print`), y
+  `_js_alumno(..., huella=)` con `guardar/leerBorrador/restaurar/`
+  `marcarEntregado/guardarEntregado/hayBorrador/decirBorrador/sinAlmacen`,
+  `beforeunload`, `let inicio` y hooks de guardado en `change`/`input`/`paste`.
+  `_render_alumno` inserta el aviso y pasa la huella solo si hay `entrega_url`.
+- Tests del conversor: **117 → 168** aserciones (`test_aviso_material`,
+  `test_borrador_autoguardado`, `test_huella_determinista`). El único fallo
+  inicial era del test, no del código: `FUENTE` y `FUENTE_JUST` comparten
+  enunciado y opciones, y la huella excluye a propósito la justificación; se
+  sustituyó por el caso real (opciones barajadas → otra huella).
+- **E2E en Chrome headless real** contra un Worker de pega (`.tmp/e2e/`:
+  `stub_worker.py` con CORS y archivo de cuerpos, `build.py`, `extra.py`,
+  servidor estático en :8000, perfil persistente en `/tmp/chrome-*`), usando el
+  cuestionario real del ROL ROJO con `entrega_url` apuntando al stub:
+  - fase 1: responde 2 preguntas y una justificación → borrador escrito con la
+    clave `cuestionario.v1.rol_rojo_cuestionario.29d1575d6768`, preguntas fijadas.
+  - fase 2 (recarga): restaura datos, respuestas **y candados** (`disabled`,
+    `bloqueada`), justificación, `pegas: 1` e `inicio`; aviso «Borrador
+    restaurado (guardado a las 10:49:03 a. m.)».
+  - fase 3 (retoma y envía): el stub recibe las 10 respuestas, 2 justificaciones,
+    `duracion_s: 101` (**desde la primera carga**, no desde la recarga) y
+    `pegas: 1`; el registro guardado queda sin `respuestas` ni `justificaciones`.
+  - fase 4 (recarga tras enviar): «Entrega registrada a nombre de Ana Prueba
+    (C.I. V-12345678) el 14/11/2026, 10:50:45 a. m.», **0 controles habilitados**,
+    sin respuestas visibles.
+  - rama caducidad (borrador de 25 h): «El borrador anterior tenía más de 24
+    horas y se descartó», y desaparece de `localStorage`.
+  - rama huella distinta: «El cuestionario cambió desde tu última visita: el
+    borrador anterior no aplica».
+  - Efecto colateral comprobado: el candado sobrevive a la recarga, así que
+    recargar ya no sirve para re-responder (antes sí).
+- Regenerados los 4 `_alumno.html` con `flujo_evaluacion_web.py --variantes
+  alumno`: 4 huellas distintas (Rojo `29d1575d6768`, Azul `63a8eecbb2a9`,
+  Púrpura `767810e236b2`, Legal `e58731fcd649`), un aviso por página, 0
+  `const CLAVE`, `JUSTIFICAR` intacto ([7,10] / [4,9] / [5,10] / [3,9]).
+  `node --check` del JS extraído: válido.
+- Directivas: `evaluacion_web.yaml` (bloque `contract.borrador` y 4 casos límite
+  nuevos) y `entregar_respuestas_worker.yaml` (`duracion_s` y `pegas` se miden
+  desde la primera carga). `AGENTS.md`: 117 → 168 aserciones.
+- Verificado que el `index.html` **local** enlaza a la variante docente (carpeta
+  gitignored, es el índice del profesor) mientras que el publicado lo genera la
+  capa 3 sin docente, que es lo que cubre `test_publicar_cuestionario` (23/23).
+- Commit de la tarea anterior revisado y autorizado por el usuario; al prepararlo
+  se detectó y corrigió una fuga (cédulas reales de la nómina en fixtures y en un
+  ejemplo de la directiva) y se añadió `cursos/*/evaluaciones/alumnos_*.csv` a
+  `.gitignore`.
+
 ## Pendientes
-- **Publicar el día del examen (solo Ciberseguridad)**: el contenido nuevo ya
-  está subido y oculto (repo privado, 404). ~10:15 (25 min antes) ejecutar
+- **Volver a publicar el HTML** (`python3 flujo_publicar_cuestionario.py --push`):
+  la versión subida al repo privado es la anterior al borrador. El repo sigue
+  privado, así que publicar no lo hace visible.
+- **Publicar el día del examen (solo Ciberseguridad)**: ~10:15 (25 min antes) ejecutar
   `python3 flujo_publicar_cuestionario.py --visibilidad public`; recordar el
   `cache-control: max-age=600` del CDN y comprobar las 4 URLs en el navegador.
   **Alcance**: ese comando publica *un* curso —`--web-dir` por defecto
@@ -108,8 +184,11 @@ examen remoto ventana nomina justificaciones
   compartirlo mezclaría los cursos y ataría sus fechas de publicación.
 - Probar una entrega real de punta a punta con la ventana abierta (o abriendo la
   ventana unos minutos) y borrarla después con `gh api -X DELETE`.
-- Verificar que `ITEMS_JUSTIFICACION` del Worker coincide con el HTML publicado
-  (los dos salen de la misma fuente, pero es la única pareja que puede divergir
-  sin que nadie lo note).
+- **No re-barajar ni regenerar el cuestionario después de publicar**: cambia la
+  huella y los borradores de quien ya abrió la página se descartan (avisan, pero
+  pierden lo respondido).
+- Si se toca el JS del alumno, repetir dos comprobaciones baratas: `node --check`
+  del `<script>` extraído y el E2E de `.tmp/e2e/` (se regenera con `build.py` y
+  `extra.py`; requiere `google-chrome` y dos servidores locales).
 - No tocado (ajeno a esta sesión): material de Sara (`SARA/`, `flujo_material_sara.py`),
   anteproyecto de Héctor (`cursos/TESIS/HECTOR/`).

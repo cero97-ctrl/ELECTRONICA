@@ -662,6 +662,156 @@ def test_orquestador_ignora_archivos_de_respuestas():
     )
 
 
+def test_aviso_material():
+    """El recuadro del examen remoto: solo con `entrega_url`, solo en alumno."""
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    _, _, puntos, _ = M.validar(preguntas, META_JUST)
+    remoto = M._render_alumno(
+        "Cuestionario de prueba",
+        META_JUST,
+        preguntas,
+        puntos,
+        "https://cuestionarios-worker.example.workers.dev",
+        "cuestionario_prueba",
+    )
+    comprobar("remoto trae el aviso", 'id="aviso-material"' in remoto)
+    for frase in (
+        "otra pestaña o ventana",
+        "incógnito",
+        "guarda un borrador",
+        "no invalida",
+        "se fija al primer clic",
+    ):
+        comprobar(f"aviso dice «{frase}»", frase in remoto)
+    comprobar(
+        "el aviso anuncia la caducidad",
+        f"{M.BORRADOR_CADUCIDAD_HORAS} horas" in remoto,
+    )
+    comprobar("hay línea de estado del borrador", 'id="borrador-estado"' in remoto)
+    laboratorio = M._render_alumno("Cuestionario de prueba", META, preguntas, puntos)
+    comprobar("laboratorio sin aviso", 'id="aviso-material"' not in laboratorio)
+    comprobar("laboratorio sin borrador", "localStorage" not in laboratorio)
+    docente = M._render_docente(
+        "Cuestionario de prueba", META_JUST, preguntas, puntos, 2.0, {1: "B", 2: "A"}, None
+    )
+    comprobar("docente sin aviso", 'id="aviso-material"' not in docente)
+    comprobar(
+        "aviso sin marcas prohibidas",
+        "**Answer:**" not in remoto and "Modo docente" not in remoto,
+    )
+    comprobar("aviso no filtra la clave", "const CLAVE" not in remoto)
+
+
+def test_borrador_autoguardado():
+    """El JS del borrador: clave versionada, restauración, envío y degradación."""
+    js = M._js_alumno(
+        2,
+        "https://cuestionarios-worker.example.workers.dev",
+        "cuestionario_prueba",
+        [1],
+        huella="abc123def456",
+    )
+    comprobar("huella inyectada", 'const HUELLA = "abc123def456";' in js)
+    comprobar(
+        "versión inyectada", f"const BORRADOR_VERSION = {M.BORRADOR_VERSION};" in js
+    )
+    comprobar(
+        "caducidad inyectada",
+        f"const BORRADOR_HORAS = {M.BORRADOR_CADUCIDAD_HORAS};" in js,
+    )
+    comprobar("la clave se compone con la versión", "'cuestionario.v' + BORRADOR_VERSION" in js)
+    comprobar("la clave lleva el cuestionario", "+ CUESTIONARIO +" in js)
+    comprobar("la clave lleva la huella", "+ HUELLA;" in js)
+    for nombre in (
+        "guardar",
+        "leerBorrador",
+        "restaurar",
+        "marcarEntregado",
+        "guardarEntregado",
+        "hayBorrador",
+        "decirBorrador",
+        "sinAlmacen",
+    ):
+        comprobar(f"define {nombre}()", f"function {nombre}(" in js)
+    comprobar("escribe el borrador", "localStorage.setItem(BORRADOR_KEY" in js)
+    comprobar("lee el borrador", "localStorage.getItem(BORRADOR_KEY)" in js)
+    comprobar("avisa antes de salir", "beforeunload" in js)
+    comprobar(
+        "restaura al cargar", js.rstrip().endswith("restaurar();\nactualizar();"), js[-60:]
+    )
+    comprobar("la entrega sustituye el borrador", "guardarEntregado();" in js)
+    comprobar("compara la huella", "datos.huella !== HUELLA" in js)
+    comprobar("compara la caducidad", "BORRADOR_CADUCIDAD_MS" in js)
+    comprobar("degrada si no hay almacenamiento", "sinAlmacen()" in js)
+    comprobar("el borrador guarda las justificaciones", "justificaciones: justificaciones()," in js)
+    comprobar("el borrador guarda el inicio", "inicio: inicio," in js)
+    comprobar("el borrador guarda las respuestas", "respuestas: respuestas()," in js)
+    entrega = js[js.index("function guardarEntregado()") : js.index("function restaurar()")]
+    comprobar("el registro de entrega marca enviado", "enviado: true," in entrega)
+    comprobar("el registro de entrega no lleva respuestas", "respuestas:" not in entrega)
+    comprobar(
+        "el registro de entrega no lleva justificaciones",
+        "justificaciones:" not in entrega,
+    )
+    sin = M._js_alumno(2)
+    comprobar("sin entrega_url no hay borrador", "localStorage" not in sin)
+    comprobar("sin entrega_url guardar no hace nada", "function guardar(){}" in sin)
+
+
+def test_huella_determinista():
+    """La huella identifica el cuestionario sin revelar la clave."""
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    una = M._huella_cuestionario(preguntas)
+    comprobar(
+        "misma fuente -> misma huella",
+        una == M._huella_cuestionario(M._parsear_cuestionario(FUENTE_JUST)),
+    )
+    comprobar(
+        "huella de 12 hexadecimales",
+        len(una) == 12 and all(c in "0123456789abcdef" for c in una),
+        una,
+    )
+    cambiado = [dict(p) for p in preguntas]
+    cambiado[0] = {**cambiado[0], "enunciado": cambiado[0]["enunciado"] + " (v2)"}
+    comprobar(
+        "enunciado distinto -> huella distinta", M._huella_cuestionario(cambiado) != una
+    )
+    comprobar(
+        "otro orden -> otra huella",
+        M._huella_cuestionario([dict(preguntas[1]), dict(preguntas[0])]) != una,
+    )
+    # El caso real de huella distinta es un re-barajado: cambian las opciones, no
+    # el número ni el enunciado. La instrucción de justificación NO entra en la
+    # huella a propósito (retocar su redacción no invalida lo ya respondido).
+    barajada = [dict(p) for p in preguntas]
+    barajada[0] = {**barajada[0], "opciones": list(reversed(barajada[0]["opciones"]))}
+    comprobar(
+        "opciones barajadas -> otra huella", M._huella_cuestionario(barajada) != una
+    )
+    import copy
+
+    ajenos = copy.deepcopy(preguntas)
+    for pregunta in ajenos:
+        pregunta["respuesta"] = "B"
+        pregunta["justificacion"] = "texto de justificación irrelevante" * 3
+    comprobar(
+        "la respuesta y la justificación no cambian la huella",
+        M._huella_cuestionario(ajenos) == una,
+    )
+    _, _, puntos, _ = M.validar(preguntas, META_JUST)
+    remoto = M._render_alumno(
+        "Cuestionario de prueba",
+        META_JUST,
+        preguntas,
+        puntos,
+        "https://cuestionarios-worker.example.workers.dev",
+        "cuestionario_prueba",
+    )
+    comprobar("la huella llega al HTML", f'const HUELLA = "{una}";' in remoto)
+    laboratorio = M._render_alumno("Cuestionario de prueba", META, preguntas, puntos)
+    comprobar("sin entrega no hay huella", "const HUELLA" not in laboratorio)
+
+
 def main() -> int:
     print("Pruebas del conversor Markdown -> HTML")
     print("=" * 60)

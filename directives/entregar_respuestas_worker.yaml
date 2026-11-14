@@ -74,6 +74,10 @@ contract:
     (`{n: texto}`, solo las preguntas de `ITEMS_JUSTIFICACION`, 40..1500
     caracteres con espacios colapsados), `duracion_s` (0..7200) y `pegas`
     (0..500). Cuerpo máximo **16 KiB** (diez justificaciones caben de sobra).
+    `duracion_s` y `pegas` se miden desde la **primera** carga de la página, no
+    desde la última: el borrador local del alumno (ver `evaluacion_web.yaml` →
+    `contract.borrador`) restaura el reloj y el contador, así que un corte de luz
+    no reinicia la medición ni olvida los pegados ya contabilizados.
   barreras: |
     1. **Ventana**: fuera de `[VENTANA_INICIO, VENTANA_FIN]` → 403 antes de leer
        el cuerpo. Sin secretos la ventana está abierta; una fecha mal escrita la

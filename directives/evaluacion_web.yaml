@@ -85,6 +85,33 @@ contract:
     caracteres es `MIN_JUSTIFICACION` (40) en los dos lados. La justificación
     se compara también en el cruce fuente/respuestas: una copia desactualizada
     del archivo de respuestas se detecta antes de publicar.
+  borrador: |
+    Solo en la variante alumno con `entrega_url` (examen remoto desde casa): la
+    página guarda un borrador en `localStorage` y lo restaura al recargar, porque
+    un corte de luz o de conexión no puede costar el examen. Guarda datos del
+    estudiante, respuestas marcadas, texto de las justificaciones, `pegas` e
+    `inicio` (para que `duracion_s` se mida desde la primera carga, no desde la
+    última).
+
+    La clave del registro es `cuestionario.v<BORRADOR_VERSION>.<id>.<huella>`,
+    donde `huella` son 12 hexadecimales de SHA-256 sobre número, enunciado y
+    opciones (`_huella_cuestionario`). La huella NO incluye la respuesta ni la
+    instrucción de justificación: retocar esa redacción no invalida lo ya
+    respondido, pero un re-barajado sí cambia las opciones y el borrador se
+    descarta con un aviso visible en vez de restaurarse sobre otro examen. Caduca
+    a las `BORRADOR_CADUCIDAD_HORAS` (24) horas.
+
+    Al enviar con éxito el borrador se **sustituye** por un registro mínimo
+    (`enviado`, `enviado_en`, nombre y cédula): no queda el examen resuelto en el
+    navegador, y una recarga muestra «Entrega registrada a nombre de ... (C.I.
+    ...) el ...» con los controles deshabilitados, en vez de un examen en blanco
+    que invite a entregar otra vez (el Worker respondería 409).
+
+    Dos consecuencias deliberadas: el candado de «respuesta fijada» sobrevive a la
+    recarga, así que recargar ya no sirve para re-responder, y por eso mismo no
+    hay botón de borrar el borrador. `beforeunload` avisa al salir con respuestas
+    sin enviar. Si el navegador bloquea `localStorage`, la página degrada al
+    comportamiento anterior (sin borrador) y lo dice en la línea de estado.
   preguntas: |
     ## Question N        (o `## Pregunta N`)
     Enunciado en una o varias líneas.
@@ -179,6 +206,37 @@ edge_cases:
     respuesta: "Se renderiza literal y se advierte; no se simula Matemáticas. La fase MathML es un trabajo aparte."
   - caso: "Se pide sobrescribir un HTML existente"
     respuesta: "Se sobrescribe: el HTML es derivado y regenerable; la fuente nunca se toca."
+
+  - caso: "Se va la luz o se cae la conexión a mitad del examen"
+    respuesta: |
+      El borrador de `localStorage` está en disco y sobrevive: al reabrir la misma
+      URL en el mismo navegador y perfil, la página restaura datos, respuestas,
+      justificaciones y el reloj, y vuelve a fijar las preguntas ya contestadas.
+      Verificado el 2026-11-14 con Chrome headless contra un Worker de pega, en
+      cuatro fases: responder y guardar, recargar y restaurar, retomar y enviar,
+      recargar tras enviar (más las ramas de caducidad y de huella distinta). No
+      sobrevive en incógnito ni en otro navegador o perfil, y el aviso de la
+      página se lo dice al alumno antes de que empiece.
+  - caso: "El cuestionario se regenera después de que un alumno ya lo abrió"
+    respuesta: |
+      Cambia la `huella` y el borrador anterior se descarta con el aviso «El
+      cuestionario cambió desde tu última visita». Por eso no se re-baraja ni se
+      regenera un examen ya publicado: quien hubiera empezado perdería lo
+      respondido. Si hay que corregir una errata, se corrige y se asume que nadie
+      había entrado todavía.
+  - caso: "El navegador del alumno bloquea `localStorage`"
+    respuesta: |
+      Todo el acceso va dentro de `try/catch`: la página funciona igual que antes
+      (sin borrador) y lo dice en la línea de estado («Este navegador no permite
+      guardar el borrador: no cierres la pestaña»). No hay fallo silencioso ni se
+      bloquea la entrega.
+  - caso: "El alumno recarga después de enviar"
+    respuesta: |
+      Sale «Entrega registrada a nombre de ... (C.I. ...) el ...» con el
+      formulario deshabilitado y sin sus respuestas: el registro de entrega no
+      guarda el examen resuelto (decisión deliberada, minimiza el dato personal
+      que queda en un PC que puede ser prestado). El Worker, además, responde 409
+      a una segunda entrega con la misma cédula.
 
 security:
   - "Solo se escribe dentro de cursos/<CURSO>/evaluaciones/web/, nunca en fuentes/."

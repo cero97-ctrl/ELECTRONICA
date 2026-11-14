@@ -42,6 +42,7 @@ Códigos de salida:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import os
@@ -73,6 +74,11 @@ MARCA_RESPUESTAS = re.compile(r"^\*\*Answer:\*\*", re.MULTILINE)
 VARIANTES = ("alumno", "docente")
 MAX_OPCIONES = 6
 MIN_OPCIONES = 2
+# Borrador local del examen remoto: versión del registro guardado en el
+# navegador del alumno y horas tras las que se descarta (dato personal en un PC
+# que puede ser prestado). Cambiar la versión invalida los borradores viejos.
+BORRADOR_VERSION = 1
+BORRADOR_CADUCIDAD_HORAS = 24
 
 CSS = Template(
     """
@@ -122,6 +128,22 @@ main { max-width: 900px; margin: 0 auto; padding: 1.6rem 1.1rem 4rem; }
   border-radius: 6px;
   margin: 0 0 1.4rem;
   font-size: .92rem;
+}
+.aviso-material {
+  border-left: 5px solid var(--marca);
+  background: #f1fbf7;
+  padding: .85rem 1rem .7rem;
+  border-radius: 6px;
+  margin: 0 0 1.4rem;
+  font-size: .92rem;
+}
+.aviso-material h2 { margin: 0 0 .5rem; font-size: 1rem; color: var(--azul); }
+.aviso-material ul { margin: 0; padding-left: 1.2rem; }
+.aviso-material li { margin: 0 0 .4rem; }
+.borrador-estado {
+  margin: .65rem 0 0;
+  font-size: .85rem;
+  color: var(--texto-suave);
 }
 .pregunta {
   background: #fff;
@@ -296,7 +318,7 @@ footer {
   body { background: #fff; }
   .banda { background: #fff; color: #000; border-bottom: 2px solid #000; }
   .banda .curso, .banda .meta { color: #333; }
-  .acciones, .progreso, .resultado, .aviso { display: none; }
+  .acciones, .progreso, .resultado, .aviso, .aviso-material { display: none; }
   .pregunta { box-shadow: none; break-inside: avoid; }
   .datos { box-shadow: none; }
   .datos input, .datos select {
@@ -559,6 +581,39 @@ def _normalizar_puntos(cruda: object, total: float, numeros: list[int]) -> tuple
             f"la suma de `puntos:` es {suma:g} y `puntaje_total` es {total:g}"
         )
     return puntos, problemas
+
+
+def _huella_cuestionario(preguntas: list[dict]) -> str:
+    """Huella corta del contenido visible del cuestionario (sin respuestas).
+
+    Identifica el borrador que la página guarda en el navegador del alumno. Si el
+    examen se regenera (otro barajado, una errata corregida), la huella cambia y
+    el borrador viejo no se aplica en vez de mezclarse con preguntas distintas:
+    restaurar respuestas sobre otro enunciado sería corregir un examen que nadie
+    respondió.
+
+    Solo entran número, enunciado y opciones. La variante alumno no tiene clave y
+    la huella tampoco, así que publicar el HTML no revela nada: es un resumen de
+    lo que el alumno ya está leyendo. `sort_keys` y `separators` fijos hacen que
+    la misma fuente produzca siempre la misma huella (determinismo byte a byte).
+    """
+    canon = json.dumps(
+        [
+            {
+                "n": pregunta["numero"],
+                "e": str(pregunta.get("enunciado", "")),
+                "o": [
+                    f'{opcion["letra"]}{opcion["texto"]}'
+                    for opcion in pregunta.get("opciones", [])
+                ],
+            }
+            for pregunta in preguntas
+        ],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
 
 
 def _items_justificacion(
@@ -868,6 +923,7 @@ def _js_alumno(
     cuestionario_id: str = "",
     justificar: list[int] | None = None,
     min_justificacion: int = MIN_JUSTIFICACION,
+    huella: str = "",
 ) -> str:
     base = (
         "const total = " + str(total) + ";\n"
@@ -905,6 +961,7 @@ def _js_alumno(
         "    marcarFaltantes();\n"
         "    const vacio = camposDatos.find(c => c.value.trim() === '');\n"
         "    if (vacio) vacio.focus();\n"
+        "    guardar();\n"
         "    return;\n"
         "  }\n"
         "  if (datosCompletos()) {\n"
@@ -914,22 +971,39 @@ def _js_alumno(
         "  const sec = evento.target.closest ? evento.target.closest('.pregunta') : null;\n"
         "  fijar(sec);\n"
         "  actualizar();\n"
+        "  guardar();\n"
         "});\n"
-        "camposDatos.forEach(c => c.addEventListener('input', refrescarBoton));\n"
+        "camposDatos.forEach(c => c.addEventListener('input', () => {\n"
+        "  refrescarBoton();\n"
+        "  guardar();\n"
+        "}));\n"
     )
     if not entrega_url:
-        return base + "function refrescarBoton(){}\nactualizar();\n"
+        return (
+            base
+            + "function refrescarBoton(){}\n"
+            + "function guardar(){}\n"
+            + "actualizar();\n"
+        )
     return (
         base
         + "const ENTREGA_URL = " + json.dumps(entrega_url) + ";\n"
         + "const CUESTIONARIO = " + json.dumps(cuestionario_id) + ";\n"
         + "const JUSTIFICAR = " + json.dumps(sorted(justificar or [])) + ";\n"
         + "const MIN_JUSTIFICACION = " + str(int(min_justificacion)) + ";\n"
+        + "const HUELLA = " + json.dumps(huella) + ";\n"
+        + "const BORRADOR_VERSION = " + str(int(BORRADOR_VERSION)) + ";\n"
+        + "const BORRADOR_HORAS = " + str(int(BORRADOR_CADUCIDAD_HORAS)) + ";\n"
+        + "const BORRADOR_CADUCIDAD_MS = BORRADOR_HORAS * 3600 * 1000;\n"
+        + "const BORRADOR_KEY = 'cuestionario.v' + BORRADOR_VERSION + '.'\n"
+        + "  + CUESTIONARIO + '.' + HUELLA;\n"
         "const botonEnviar = document.getElementById('enviar');\n"
         "const estadoEntrega = document.getElementById('estado-entrega');\n"
-        "const inicio = Date.now();\n"
+        "const estadoBorrador = document.getElementById('borrador-estado');\n"
+        "let inicio = Date.now();\n"
         "let enviando = false;\n"
         "let enviado = false;\n"
+        "let sinBorrador = false;\n"
         "let pegas = 0;\n"
         "function respuestas(){\n"
         "  const r = {};\n"
@@ -967,11 +1041,156 @@ def _js_alumno(
         "function refrescarBoton(){\n"
         "  if (botonEnviar) botonEnviar.disabled = !puedeEnviar();\n"
         "}\n"
+        "function decirBorrador(texto){\n"
+        "  if (!estadoBorrador) return;\n"
+        "  estadoBorrador.textContent = texto;\n"
+        "  estadoBorrador.hidden = false;\n"
+        "}\n"
+        "function sinAlmacen(texto){\n"
+        "  sinBorrador = true;\n"
+        "  decirBorrador(texto || 'Este navegador no permite guardar el borrador: "
+        "no cierres la pestaña.');\n"
+        "}\n"
+        "function datosActuales(){\n"
+        "  const d = {};\n"
+        "  camposDatos.forEach(c => { d[c.id] = c.value; });\n"
+        "  return d;\n"
+        "}\n"
+        "function guardar(){\n"
+        "  if (sinBorrador || enviado) return;\n"
+        "  const registro = {\n"
+        "    v: BORRADOR_VERSION,\n"
+        "    id: CUESTIONARIO,\n"
+        "    huella: HUELLA,\n"
+        "    inicio: inicio,\n"
+        "    datos: datosActuales(),\n"
+        "    respuestas: respuestas(),\n"
+        "    justificaciones: justificaciones(),\n"
+        "    pegas: pegas,\n"
+        "    guardado_en: Date.now()\n"
+        "  };\n"
+        "  try {\n"
+        "    localStorage.setItem(BORRADOR_KEY, JSON.stringify(registro));\n"
+        "  } catch (e) {\n"
+        "    sinAlmacen();\n"
+        "  }\n"
+        "}\n"
+        "function leerBorrador(){\n"
+        "  let crudo = null;\n"
+        "  try {\n"
+        "    crudo = localStorage.getItem(BORRADOR_KEY);\n"
+        "  } catch (e) {\n"
+        "    sinAlmacen();\n"
+        "    return null;\n"
+        "  }\n"
+        "  if (!crudo) return null;\n"
+        "  let datos = null;\n"
+        "  try { datos = JSON.parse(crudo); } catch (e) { return null; }\n"
+        "  if (!datos || datos.v !== BORRADOR_VERSION || datos.id !== CUESTIONARIO) {\n"
+        "    return null;\n"
+        "  }\n"
+        "  if (datos.huella !== HUELLA) {\n"
+        "    decirBorrador('El cuestionario cambió desde tu última visita: "
+        "el borrador anterior no aplica.');\n"
+        "    return null;\n"
+        "  }\n"
+        "  if (typeof datos.guardado_en === 'number'\n"
+        "      && Date.now() - datos.guardado_en > BORRADOR_CADUCIDAD_MS) {\n"
+        "    try { localStorage.removeItem(BORRADOR_KEY); } catch (e) {}\n"
+        "    decirBorrador('El borrador anterior tenía más de ' + BORRADOR_HORAS\n"
+        "      + ' horas y se descartó.');\n"
+        "    return null;\n"
+        "  }\n"
+        "  return datos;\n"
+        "}\n"
+        "function marcarEntregado(datos){\n"
+        "  if (estadoEntrega) {\n"
+        "    estadoEntrega.className = 'estado-entrega ok';\n"
+        "    estadoEntrega.textContent = 'Entrega registrada'\n"
+        "      + (datos && datos.nombre ? ' a nombre de ' + datos.nombre : '')\n"
+        "      + (datos && datos.cedula ? ' (C.I. ' + datos.cedula + ')' : '')\n"
+        "      + (datos && datos.enviado_en ? ' el '\n"
+        "         + new Date(datos.enviado_en).toLocaleString('es-VE') : '')\n"
+        "      + '. No se muestra la nota: el docente la publicará en el acta.';\n"
+        "  }\n"
+        "  decirBorrador('Ya entregaste este cuestionario desde este navegador.');\n"
+        "  if (form) form.querySelectorAll('input, textarea, select').forEach(i => {\n"
+        "    i.disabled = true;\n"
+        "  });\n"
+        "  if (botonEnviar) botonEnviar.disabled = true;\n"
+        "}\n"
+        "function guardarEntregado(){\n"
+        "  const nombre = document.getElementById('estudiante-nombre');\n"
+        "  const cedula = document.getElementById('estudiante-cedula');\n"
+        "  const ahora = Date.now();\n"
+        "  const registro = {\n"
+        "    v: BORRADOR_VERSION,\n"
+        "    id: CUESTIONARIO,\n"
+        "    huella: HUELLA,\n"
+        "    enviado: true,\n"
+        "    enviado_en: ahora,\n"
+        "    guardado_en: ahora,\n"
+        "    nombre: nombre ? nombre.value.trim() : '',\n"
+        "    cedula: cedula ? cedula.value.trim() : ''\n"
+        "  };\n"
+        "  try {\n"
+        "    localStorage.setItem(BORRADOR_KEY, JSON.stringify(registro));\n"
+        "  } catch (e) {}\n"
+        "}\n"
+        "function restaurar(){\n"
+        "  const datos = leerBorrador();\n"
+        "  if (!datos) return;\n"
+        "  if (datos.enviado) {\n"
+        "    enviado = true;\n"
+        "    marcarEntregado(datos);\n"
+        "    return;\n"
+        "  }\n"
+        "  if (datos.datos) {\n"
+        "    camposDatos.forEach(c => {\n"
+        "      if (datos.datos[c.id] != null) c.value = datos.datos[c.id];\n"
+        "    });\n"
+        "  }\n"
+        "  if (datos.respuestas) {\n"
+        "    Object.keys(datos.respuestas).forEach(n => {\n"
+        "      const seccion = document.getElementById('p' + n);\n"
+        "      if (!seccion) return;\n"
+        "      const opcion = seccion.querySelector(\n"
+        "        'input[value=\"' + datos.respuestas[n] + '\"]');\n"
+        "      if (opcion) opcion.checked = true;\n"
+        "      fijar(seccion);\n"
+        "    });\n"
+        "  }\n"
+        "  if (datos.justificaciones) {\n"
+        "    JUSTIFICAR.forEach(n => {\n"
+        "      const campo = document.getElementById('j' + n);\n"
+        "      if (campo && datos.justificaciones[n]) {\n"
+        "        campo.value = datos.justificaciones[n];\n"
+        "      }\n"
+        "    });\n"
+        "  }\n"
+        "  if (typeof datos.pegas === 'number') pegas = datos.pegas;\n"
+        "  if (typeof datos.inicio === 'number') inicio = datos.inicio;\n"
+        "  marcarJustificaciones();\n"
+        "  marcarFaltantes();\n"
+        "  if (typeof datos.guardado_en === 'number') {\n"
+        "    decirBorrador('Borrador restaurado (guardado a las '\n"
+        "      + new Date(datos.guardado_en).toLocaleTimeString('es-VE') + ').');\n"
+        "  }\n"
+        "}\n"
+        "function hayBorrador(){\n"
+        "  if (Object.keys(respuestas()).length > 0) return true;\n"
+        "  return JUSTIFICAR.some(n => {\n"
+        "    const campo = document.getElementById('j' + n);\n"
+        "    return !!campo && campo.value.trim() !== '';\n"
+        "  });\n"
+        "}\n"
         "JUSTIFICAR.forEach(n => {\n"
         "  const campo = document.getElementById('j' + n);\n"
         "  if (!campo) return;\n"
-        "  campo.addEventListener('input', () => { marcarJustificaciones(); refrescarBoton(); });\n"
-        "  campo.addEventListener('paste', () => { pegas += 1; });\n"
+        "  campo.addEventListener('input', () => {\n"
+        "    marcarJustificaciones(); refrescarBoton(); guardar();\n"
+        "  });\n"
+        "  campo.addEventListener('paste', () => { pegas += 1; guardar(); });\n"
         "});\n"
         "async function enviar(){\n"
         "  if (!puedeEnviar()) return;\n"
@@ -1001,6 +1220,7 @@ def _js_alumno(
         "    try { datos = await res.json(); } catch (e) {}\n"
         "    if (!res.ok) throw new Error(datos.error || ('error ' + res.status));\n"
         "    enviado = true;\n"
+        "    guardarEntregado();\n"
         "    if (estadoEntrega) {\n"
         "      estadoEntrega.className = 'estado-entrega ok';\n"
         "      estadoEntrega.textContent = 'Entrega registrada. No se muestra la nota: '\n"
@@ -1018,6 +1238,12 @@ def _js_alumno(
         "  }\n"
         "}\n"
         "if (botonEnviar) botonEnviar.addEventListener('click', enviar);\n"
+        "window.addEventListener('beforeunload', (evento) => {\n"
+        "  if (enviado || !hayBorrador()) return;\n"
+        "  evento.preventDefault();\n"
+        "  evento.returnValue = '';\n"
+        "});\n"
+        "restaurar();\n"
         "actualizar();\n"
     )
 
@@ -1170,6 +1396,42 @@ def _datos_alumno(grupos: int | None) -> str:
     )
 
 
+def _aviso_material() -> str:
+    """Instrucciones del examen remoto: repo en otra ventana y borrador local.
+
+    Solo se emite cuando hay `entrega_url`, es decir, cuando el cuestionario se
+    rinde desde casa sin el material al lado. En el laboratorio el docente está
+    presente y esto se dice en voz alta; imprimirlo allí sería ruido.
+
+    La caducidad del borrador sale de `BORRADOR_CADUCIDAD_HORAS` (la misma
+    constante que recibe el JS), así que el texto y el comportamiento no pueden
+    divergir.
+    """
+    return (
+        '<section class="aviso-material" id="aviso-material" '
+        'aria-labelledby="aviso-material-titulo">'
+        '<h2 id="aviso-material-titulo">Antes de empezar</h2>'
+        "<ul>"
+        "<li>Abre el repositorio de tu grupo en <strong>otra pestaña o "
+        "ventana</strong>: es privado, así que necesitas tu sesión de GitHub. "
+        "No navegues fuera de esta página en la misma pestaña.</li>"
+        "<li>No uses una ventana de incógnito ni otro navegador: ahí el borrador "
+        "no sobrevive.</li>"
+        "<li>Esta página guarda un borrador en este navegador. Si se va la luz o "
+        "se cae la conexión, al volver a abrirla sigues donde ibas. El borrador "
+        "se borra cuando envías y se descarta pasadas "
+        f"{BORRADOR_CADUCIDAD_HORAS} horas.</li>"
+        "<li>Puedes copiar y pegar tu evidencia: queda anotado en el acta del "
+        "docente, pero <strong>no invalida</strong> tu entrega.</li>"
+        "<li>Consulta el repositorio <strong>antes</strong> de marcar: cada "
+        "pregunta se fija al primer clic y no se puede cambiar.</li>"
+        "</ul>"
+        '<p class="borrador-estado" id="borrador-estado" role="status" '
+        'aria-live="polite" hidden></p>'
+        "</section>\n"
+    )
+
+
 def _entrega_alumno(total: int) -> str:
     return (
         '<section class="entrega" id="entrega" aria-labelledby="entrega-titulo">'
@@ -1192,10 +1454,12 @@ def _render_alumno(
     entrega_url: str | None = None,
     cuestionario_id: str = "",
 ) -> str:
+    aviso = _aviso_material() if entrega_url else ""
     cuerpo = (
         '<div class="progreso">Respondidas: <strong><span id="contador">0</span></strong>'
         f" de {len(preguntas)}.</div>\n"
-        '<form id="cuestionario">\n'
+        + aviso
+        + '<form id="cuestionario">\n'
         + _datos_alumno(_grupos_declarados(meta))
         + _preguntas_html(preguntas, puntos, None, fijable=True)
         + "\n</form>"
@@ -1203,11 +1467,14 @@ def _render_alumno(
     if entrega_url:
         cuerpo += "\n" + _entrega_alumno(len(preguntas))
     justificar = [p["numero"] for p in preguntas if p.get("justificacion")]
+    huella = _huella_cuestionario(preguntas) if entrega_url else ""
     return _documento(
         titulo,
         meta,
         cuerpo,
-        _js_alumno(len(preguntas), entrega_url, cuestionario_id, justificar),
+        _js_alumno(
+            len(preguntas), entrega_url, cuestionario_id, justificar, huella=huella
+        ),
     )
 
 
