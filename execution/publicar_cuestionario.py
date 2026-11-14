@@ -28,6 +28,10 @@ Uso:
 
 Códigos de salida: 0 ok · 1 error de E/S · 3 payload rechazado (fuga) ·
 4 gh/git falló · 5 ruta rechazada.
+
+La mecánica de git/Pages (commit fijo, push --force, visibilidad por API REST)
+vive una única vez en `execution/publicar_github.py`; este script solo aporta
+la recolección y la barrera anti-fuga del payload.
 """
 
 from __future__ import annotations
@@ -36,27 +40,22 @@ import argparse
 import hashlib
 import html
 import json
-import os
 import re
 import shutil
-import subprocess
 import sys
-import time
-import urllib.error
-import urllib.request
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 EJECUCION = RAIZ / "execution"
 sys.path.insert(0, str(EJECUCION))
 import md_a_html as M  # noqa: E402  (reusa `_documento` y el estilo)
+import publicar_github as G  # noqa: E402  (mecánica git/Pages compartida)
 
 WEB_POR_DEFECTO = "cursos/CYBERSEGURIDAD/evaluaciones/web"
 STAGE_POR_DEFECTO = ".tmp/publicacion"
 MARCAS_FUGA = ("const CLAVE", "**Answer:**", "Modo docente")
 MARCA_DATOS = 'id="estudiante-nombre"'
 MENSAJE_COMMIT = "Publicar cuestionarios (alumno)"
-FECHA_FIJA = "2026-01-01T00:00:00+0000"
 CSS_INDICE = (
     ".indice { list-style: none; padding: 0; margin: 0; }\n"
     ".indice li { display: flex; justify-content: space-between; gap: 1rem; "
@@ -67,10 +66,6 @@ CSS_INDICE = (
     "padding: .35rem .7rem; border-radius: 6px; text-decoration: none; "
     "font-size: .85rem; }\n"
 )
-
-
-def _resultado(status: str, code: int, **extra) -> dict:
-    return {"status": status, "code": code, **extra}
 
 
 def _validar_web_dir(ruta: Path) -> Path:
@@ -162,155 +157,22 @@ def _preparar(archivos: list[Path], stage: Path) -> list[dict]:
     return publicados
 
 
-def _entorno_git() -> dict[str, str]:
-    entorno = dict(os.environ)
-    entorno.update(
-        {
-            "GIT_AUTHOR_NAME": "ELECTRONICA",
-            "GIT_AUTHOR_EMAIL": "electronica@local",
-            "GIT_COMMITTER_NAME": "ELECTRONICA",
-            "GIT_COMMITTER_EMAIL": "electronica@local",
-            "GIT_AUTHOR_DATE": FECHA_FIJA,
-            "GIT_COMMITTER_DATE": FECHA_FIJA,
-        }
-    )
-    return entorno
-
-
-def _ejecutar(cmd: list[str], cwd: Path | None = None, timeout: int = 180) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        cmd,
-        cwd=str(cwd) if cwd else None,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        env=_entorno_git(),
-    )
+_resultado = G.resultado
+_ejecutar = G.ejecutar
+_cmd_visibilidad = G.cmd_visibilidad
+_visibilidad_actual = G.visibilidad_actual
+_cambiar_visibilidad = G.cambiar_visibilidad
+_habilitar_pages = G.habilitar_pages
+_esperar_pages = G.esperar_pages
+_owner_por_defecto = G.owner_por_defecto
 
 
 def _asegurar_repo(repo: str) -> str | None:
-    vista = _ejecutar(["gh", "repo", "view", repo, "--json", "name"])
-    if vista.returncode == 0:
-        return None
-    creacion = _ejecutar(
-        [
-            "gh",
-            "repo",
-            "create",
-            repo,
-            "--public",
-            "--description",
-            "Cuestionarios del curso (variante alumno)",
-        ]
-    )
-    if creacion.returncode != 0:
-        return (creacion.stderr or creacion.stdout or "gh repo create falló")[-600:]
-    return None
+    return G.asegurar_repo(repo, "Cuestionarios del curso (variante alumno)")
 
 
 def _publicar_git(stage: Path, repo: str) -> str | None:
-    pasos = [
-        ["git", "init", "-b", "main"],
-        ["git", "add", "-A"],
-        ["git", "commit", "-m", MENSAJE_COMMIT],
-        ["git", "remote", "add", "origin", f"https://github.com/{repo}.git"],
-        [
-            "git",
-            "-c",
-            "credential.helper=",
-            "-c",
-            "credential.helper=!gh auth git-credential",
-            "push",
-            "--force",
-            "origin",
-            "main",
-        ],
-    ]
-    for cmd in pasos:
-        proc = _ejecutar(cmd, cwd=stage)
-        if proc.returncode != 0:
-            return f"{' '.join(cmd)}: {(proc.stderr or proc.stdout)[-500:]}"
-    return None
-
-
-def _cmd_visibilidad(repo: str, visibilidad: str) -> list[str]:
-    """Comando para cambiar la visibilidad del repo.
-
-    Se usa la API REST en vez de `gh repo edit --visibility`: ese subcomando pide
-    confirmación interactiva y su flag de aceptación
-    (`--accept-visibility-change-consequences`) solo existe desde gh 2.56; esta
-    máquina trae 2.45, donde el comando muere imprimiendo la ayuda. `-F` (no `-f`)
-    convierte `true`/`false` en booleanos de verdad.
-    """
-    privado = "true" if visibilidad == "private" else "false"
-    return [
-        "gh",
-        "api",
-        "-X",
-        "PATCH",
-        f"repos/{repo}",
-        "-F",
-        f"private={privado}",
-    ]
-
-
-def _visibilidad_actual(repo: str) -> str | None:
-    proc = _ejecutar(["gh", "api", f"repos/{repo}", "--jq", ".visibility"])
-    if proc.returncode == 0 and proc.stdout.strip():
-        return proc.stdout.strip()
-    return None
-
-
-def _cambiar_visibilidad(repo: str, visibilidad: str) -> str | None:
-    """None si el repo quedó en la visibilidad pedida; si no, el motivo."""
-    proc = _ejecutar(_cmd_visibilidad(repo, visibilidad))
-    if proc.returncode != 0:
-        return (proc.stderr or proc.stdout or "gh repo edit falló")[-500:]
-    actual = _visibilidad_actual(repo)
-    if actual != visibilidad:
-        return f"el repo sigue en {actual!r} después de pedir {visibilidad!r}"
-    return None
-
-
-def _habilitar_pages(repo: str) -> str | None:
-    proc = _ejecutar(
-        [
-            "gh",
-            "api",
-            "-X",
-            "POST",
-            f"repos/{repo}/pages",
-            "-f",
-            "source[branch]=main",
-            "-f",
-            "source[path]=/",
-        ]
-    )
-    if proc.returncode == 0:
-        return None
-    salida = (proc.stderr or proc.stdout).lower()
-    if "already" in salida or "409" in salida:
-        return None
-    return (proc.stderr or proc.stdout or "no se pudo habilitar Pages")[-500:]
-
-
-def _esperar_pages(url: str, intentos: int = 18, espera: float = 5.0) -> bool:
-    for _ in range(intentos):
-        try:
-            with urllib.request.urlopen(url, timeout=10) as resp:
-                if resp.status == 200:
-                    return True
-        except (urllib.error.URLError, OSError):
-            pass
-        time.sleep(espera)
-    return False
-
-
-def _owner_por_defecto() -> str:
-    proc = _ejecutar(["gh", "api", "user", "--jq", ".login"])
-    if proc.returncode == 0 and proc.stdout.strip():
-        return proc.stdout.strip()
-    return "cero97-ctrl"
+    return G.publicar_git(stage, repo, MENSAJE_COMMIT)
 
 
 def main() -> int:
@@ -410,7 +272,13 @@ def main() -> int:
     error = _asegurar_repo(repo)
     if error is None:
         error = _publicar_git(stage, repo)
-    if error is None:
+    # Pages no se puede habilitar en un repo privado sin plan de pago (HTTP 422
+    # «Your current plan does not support GitHub Pages»), y el contenido se puede
+    # publicar igual: se sube ahora, oculto, y `--visibilidad public` habilita
+    # Pages el día del examen. Intentarlo aquí convertiría un repo oculto en un
+    # fallo de publicación.
+    privado = (_visibilidad_actual(repo) == "private") or args.visibilidad == "private"
+    if error is None and not privado:
         error = _habilitar_pages(repo)
     if error is not None:
         salida = _resultado("error", 4, repo=repo, message=error)
@@ -424,7 +292,7 @@ def main() -> int:
             print(json.dumps(salida) if args.json else f"error: {error}", file=None if args.json else sys.stderr)
             return 4
 
-    oculto = args.visibilidad == "private"
+    oculto = privado
     visible = False if oculto else _esperar_pages(url)
     salida = _resultado(
         "ok", 0, repo=repo, url=url, stage=str(stage), archivos=publicados,

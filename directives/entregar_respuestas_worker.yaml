@@ -5,7 +5,13 @@ goal: |
 
   La página publicada es estática y no puede escribir en GitHub ni calcular la
   nota sin exponer la clave. El Worker mueve ambas cosas al servidor: la clave
-  vive en `CLAVE_JSON` y solo viaja la nota de vuelta al navegador.
+  vive en `CLAVE_JSON` y el navegador solo recibe `{recibido: true}`.
+
+  El examen se rinde a distancia: el Worker aplica además tres barreras que la
+  página no puede imponer — ventana horaria, nómina de inscritos y un único
+  intento — y archiva las justificaciones de evidencia que el alumno escribe
+  para dos preguntas, que son lo que el docente revisa para detectar trabajo
+  con IA.
 
 layer: orchestration
 
@@ -37,6 +43,19 @@ required_inputs:
       `cero97-ctrl/cuestionarios-resultados`. El flujo lo sube como secreto
       `GITHUB_TOKEN` por stdin (nunca como argumento de shell). No reutilizar el
       `GITHUB_TOKEN` general de `.env`: ese token no debe acabar en Cloudflare.
+  - name: --nomina <alumnos.csv>
+    description: |
+      Nómina con la cédula en la primera columna (TSV del sistema de la
+      universidad, CSV o una cédula por línea). El flujo la normaliza igual que
+      el Worker (`V-12345678`) y la sube como **secreto** `CEDULAS`: va como
+      secreto, no como `vars`, porque `wrangler.jsonc` se commitea en un repo
+      público y la lista de alumnos no debe viajar en él.
+  - name: --inicio / --fin
+    description: |
+      Ventana del examen en ISO 8601 UTC (`2026-11-16T14:40:00Z`). Se suben como
+      secretos `VENTANA_INICIO` / `VENTANA_FIN`, así se cambia la hora sin
+      redesplegar. Sin ellas la ventana queda abierta (los secretos persisten
+      entre despliegues: para cerrar de nuevo hay que sobreescribirlos).
   - name: --fuente <cuestionario.md>
     description: |
       Fuente con front matter. La clave NO se escribe a mano: se lee de
@@ -51,7 +70,21 @@ contract:
     El Worker exige `cuestionario` (slug exacto), `nombre` (3..80, solo letras,
     espacios, punto, apóstrofo y guion), `cedula` (V/E/J + 5..9 dígitos,
     normalizada a `V-12345678`), `grupo` (entero 1..GRUPOS) y `respuestas`
-    (exactamente 1..total, letras A..E). Cuerpo máximo 4 KiB.
+    (exactamente 1..total, letras A..E). Opcionales: `justificaciones`
+    (`{n: texto}`, solo las preguntas de `ITEMS_JUSTIFICACION`, 40..1500
+    caracteres con espacios colapsados), `duracion_s` (0..7200) y `pegas`
+    (0..500). Cuerpo máximo **16 KiB** (diez justificaciones caben de sobra).
+  barreras: |
+    1. **Ventana**: fuera de `[VENTANA_INICIO, VENTANA_FIN]` → 403 antes de leer
+       el cuerpo. Sin secretos la ventana está abierta; una fecha mal escrita la
+       deja cerrada con el motivo (`/salud` lo publica).
+    2. **Nómina**: una cédula que no está en `CEDULAS` → 403 «no estás
+       inscrito». La nómina completa va en los cuatro Workers: el grupo lo
+       declara el alumno y el archivo se archiva en `grupo_<NN>`, que es donde
+       el docente detecta un grupo incoherente.
+    3. **Un intento**: si el archivo de esa cédula ya existe → 409 «ya
+       registraste una entrega». El repo es la fuente de verdad, así que la
+       barrera sobrevive a un redespliegue.
   calificacion: |
     `nota = 10 * aciertos / total`, redondeada a 2 decimales. El total sale de la
     clave, no de un número escrito en el Worker: una clave de 8 preguntas
@@ -65,15 +98,17 @@ contract:
     y `http://localhost:8788`). Un origen desconocido recibe 403; una petición sin
     `Origin` (curl) se acepta para poder probar.
   secreto: |
-    La respuesta al alumno trae solo `nota`, `aciertos` y `total`. Nunca qué
-    preguntas falló ni la clave: un reenvío no debe servir para aprenderla.
+    La respuesta al alumno es `{"recibido": true}`. Ni nota, ni aciertos, ni qué
+    preguntas falló: con la entrega remota y un solo intento, devolver la nota
+    convertiría la página en un oráculo para probar respuestas. El alumno ve
+    «Entrega registrada» y la nota se publica en el acta.
 
 steps:
   - paso: 1
     script: cd Proyectos/cuestionarios-worker && npm test
     description: |
-      Lógica pura (validación, calificación, ruta y contenido del archivo) sin
-      red ni cuenta. Debe dar 20/20.
+      Lógica pura (validación, calificación, ventana, nómina, justificaciones,
+      ruta y contenido del archivo) sin red ni cuenta. Debe dar 32/32.
   - paso: 2
     script: python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>] --check
     description: |
@@ -83,10 +118,14 @@ steps:
       usa el Worker base (ROL ROJO). Reporta el sha256 de la clave; si cambia
       sin haber tocado el cuestionario, algo se movió donde no debía.
   - paso: 3
-    script: python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>]
+    script: |
+      python3 flujo_desplegar_worker_cuestionarios.py [--env <grupo>] \
+        --nomina <alumnos.csv> --inicio <ISO> --fin <ISO>
     description: |
-      Despliega, sube `CLAVE_JSON`, comprueba que `GITHUB_TOKEN` existe (lo sube
-      desde `.env` si falta) y llama a `/salud`. Con `--env` el despliegue y los
+      Despliega, sube `CLAVE_JSON`, `CEDULAS`, `ITEMS_JUSTIFICACION`,
+      `VENTANA_INICIO`, `VENTANA_FIN` y `MIN_JUSTIFICACION`, comprueba que
+      `GITHUB_TOKEN` existe (lo sube desde `.env` si falta) y llama a `/salud`,
+      que debe devolver `{ok, ventana, inscritas}` con el número de la nómina. Con `--env` el despliegue y los
       secretos van al Worker de ese entorno (`cuestionarios-worker-<grupo>`) y
       se verifica que la URL devuelta sea la suya antes de escribir nada.
   - paso: 4
@@ -104,15 +143,17 @@ steps:
   - paso: 6
     script: |
       curl -X POST <url> -H 'Content-Type: application/json' \
-        -d '{"cuestionario":"rol_rojo_cuestionario","nombre":"Prueba","cedula":"V-00000000","grupo":1,"respuestas":{"1":"A"}}'
+        -d '{"cuestionario":"rol_rojo_cuestionario","nombre":"Prueba Eme","cedula":"V-12345678","grupo":1,"respuestas":{"1":"A"},"justificaciones":{"7":"<40+ caracteres>"}}'
     description: |
-      Prueba de humo manual con una cédula de prueba; comprobar la nota devuelta
-      y que el JSON aparece en el repo privado. Borrar después esa entrega de
-      prueba con `gh api -X DELETE`.
+      Prueba de humo con una cédula REAL de la nómina (una inventada da 403).
+      Con la ventana puesta, fuera de horario da 403 «fuera de la ventana»: es
+      la comprobación más rápida de que la ventana está activa. `nombre` no
+      admite dígitos («Prueba E2E» da `nombre inválido`). Borrar después la
+      entrega de prueba con `gh api -X DELETE`.
 
 expected_outputs:
-  - "Worker desplegado y respondiendo `{\"ok\":true}` en `/salud`."
-  - "Secretos `CLAVE_JSON` y `GITHUB_TOKEN` presentes (`wrangler secret list`)."
+  - "Worker desplegado y respondiendo `{\"ok\":true,\"ventana\":{…},\"inscritas\":N}` en `/salud`."
+  - "Secretos `CLAVE_JSON`, `GITHUB_TOKEN`, `CEDULAS`, `ITEMS_JUSTIFICACION`, `VENTANA_INICIO`, `VENTANA_FIN` y `MIN_JUSTIFICACION` presentes (`wrangler secret list`)."
   - "`entrega_url:` escrito en la fuente y botón «Enviar mis respuestas» en el HTML del alumno."
   - "Una entrega de prueba aparece en `resultados/<cuestionario>/grupo_<NN>/` del repo privado, con la nota calculada."
   - "Códigos de salida: 0 ok · 1 E/S · 3 fuente/clave inválida · 4 wrangler/secretos · 5 `/salud` no responde."
@@ -162,8 +203,21 @@ edge_cases:
       clave vigente en su momento: no se recalculan.
   - caso: "Un alumno reenvía"
     respuesta: |
-      La página fija las respuestas, así que reenvía lo mismo. El archivo se
-      sobrescribe por cédula; `enviado_en` queda con la última vez.
+      La página fija las respuestas y el Worker responde 409: el archivo ya
+      existe. Para corregir una entrega legítima (se equivocó de grupo, el
+      navegador se cayó a mitad) hay que borrar el archivo del repo privado con
+      `gh api -X DELETE` y avisar al alumno; no hay endpoint de reemplazo a
+      propósito.
+  - caso: "La ventana sigue cerrada el día del examen"
+    respuesta: |
+      Mirar `/salud`: publica `{abierta, motivo}`. Si dice «VENTANA_INICIO
+      inválida», el secreto se subió con otro formato (se espera ISO 8601 UTC);
+      corregirlo con el paso 3, que no requiere cambiar el código.
+  - caso: "Un alumno entrega desde el Worker de otro grupo"
+    respuesta: |
+      Se acepta: la nómina está en los cuatro Workers y el grupo lo declara el
+      alumno. La incoherencia se ve en el acta (el archivo queda en
+      `grupo_<NN>` según lo declarado) y se corrige a mano en el registro.
   - caso: "Llega spam al endpoint público"
     respuesta: |
       Validación estricta y cuerpo acotado reducen el daño, pero no hay rate

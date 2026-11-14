@@ -41,6 +41,7 @@ import base64
 import binascii
 import contextlib
 import csv
+import difflib
 import io
 import json
 import os
@@ -86,6 +87,9 @@ CABECERA_CSV = [
     "estado",
     "archivo",
     "avisos",
+    "justificaciones",
+    "duracion_s",
+    "pegas",
 ]
 
 EXIT_OK = 0
@@ -178,6 +182,64 @@ def recalcular(respuestas: dict[str, str], clave: dict[int, str]) -> tuple[int, 
     return aciertos, total, round(10 * aciertos * 100 / total) / 100
 
 
+def normalizar_justificaciones(
+    valor: Any, items: tuple[int, ...] | list[int], minimo: int = 40
+) -> tuple[dict[str, str], list[str]]:
+    """Valida las justificaciones exigidas y devuelve `{n: texto}` limpio."""
+    if not items:
+        return {}, []
+    if not isinstance(valor, dict):
+        return {}, [f"faltan las justificaciones exigidas ({len(items)} preguntas)"]
+    problemas: list[str] = []
+    salida: dict[str, str] = {}
+    for n in items:
+        texto = valor.get(str(n))
+        if not isinstance(texto, str) or not texto.strip():
+            problemas.append(f"falta la justificación de la pregunta {n}")
+            continue
+        limpio = " ".join(texto.split())
+        if len(limpio) < minimo:
+            problemas.append(
+                f"la justificación de la pregunta {n} tiene {len(limpio)} caracteres "
+                f"(mínimo {minimo})"
+            )
+            continue
+        salida[str(n)] = limpio
+    return salida, problemas
+
+
+def marcar_copias(
+    registros: list[dict], items: tuple[int, ...] | list[int], umbral: float = 0.85
+) -> int:
+    """Marca pares de justificaciones casi idénticas entre alumnos distintos.
+
+    Compara por pregunta con `difflib`; un par con similitud >= `umbral` pasa
+    ambas filas a `revisar`. Devuelve cuántos pares se detectaron.
+    """
+    pares = 0
+    for n in items:
+        clave = str(n)
+        textos = [
+            (r, r.get("justificaciones", {}).get(clave, ""))
+            for r in registros
+            if len(r.get("justificaciones", {}).get(clave, "")) >= 40
+        ]
+        for i in range(len(textos)):
+            for j in range(i + 1, len(textos)):
+                ra, ta = textos[i]
+                rb, tb = textos[j]
+                if ta == tb or difflib.SequenceMatcher(None, ta, tb).ratio() >= umbral:
+                    pares += 1
+                    for propio, ajeno in ((ra, rb), (rb, ra)):
+                        propio["estado"] = "revisar"
+                        propio["justif_estado"] = "copiada"
+                        propio["avisos"].append(
+                            f"la justificación de la pregunta {n} es casi idéntica "
+                            f"a la de {ajeno['cedula']}"
+                        )
+    return pares
+
+
 def validar_registro(
     datos: Any,
     *,
@@ -186,6 +248,8 @@ def validar_registro(
     grupos: int,
     clave: dict[int, str],
     archivo: str,
+    justificacion_items: tuple[int, ...] | list[int] = (),
+    min_justificacion: int = 40,
 ) -> tuple[list[str], dict | None]:
     """Valida un JSON archivado contra el contrato del Worker y la clave vigente."""
     if not isinstance(datos, dict):
@@ -211,6 +275,19 @@ def validar_registro(
     if respuestas is None:
         problemas.append(f"respuestas incompletas o fuera de 1..{total}")
 
+    justificaciones, problemas_justif = normalizar_justificaciones(
+        datos.get("justificaciones"), justificacion_items, min_justificacion
+    )
+    if not justificacion_items:
+        justif_estado = "n/a"
+    elif problemas_justif:
+        justif_estado = "falta"
+    else:
+        justif_estado = "ok"
+
+    duracion_s = _entero(datos.get("duracion_s"))
+    pegas = _entero(datos.get("pegas"))
+
     # Coherencia con la ruta: el archivo vive en grupo_<NN>/<cedula>.json
     m = RUTA_ARCHIVO.match(archivo)
     if m is None:
@@ -227,6 +304,11 @@ def validar_registro(
 
     if problemas:
         return problemas, None
+
+    # Una justificación ausente o corta no anula la entrega: la nota es válida y
+    # la fila se marca `revisar`. Solo un defecto del archivo (grupo, cédula,
+    # respuestas, nota incoherente) impide publicar la fila.
+    problemas.extend(problemas_justif)
 
     aciertos, total_clave, nota = recalcular(respuestas, clave)
     nota_archivada = _numero(datos.get("nota"))
@@ -261,6 +343,10 @@ def validar_registro(
         "archivo": archivo,
         "avisos": list(problemas),
         "estado": "revisar" if problemas else "ok",
+        "justificaciones": justificaciones,
+        "justif_estado": justif_estado,
+        "duracion_s": duracion_s,
+        "pegas": pegas,
     }
     return problemas, registro
 
@@ -291,6 +377,9 @@ def csv_texto(registros: list[dict]) -> str:
                 "estado": r["estado"],
                 "archivo": r["archivo"],
                 "avisos": "; ".join(r["avisos"]),
+                "justificaciones": r.get("justif_estado", "n/a"),
+                "duracion_s": "" if r.get("duracion_s") is None else r["duracion_s"],
+                "pegas": "" if r.get("pegas") is None else r["pegas"],
             }
         )
     return salida.getvalue()
@@ -457,6 +546,17 @@ def _tex(texto: Any) -> str:
     return crudo
 
 
+def _icono_justificacion(registro: dict) -> str:
+    estado = registro.get("justif_estado", "n/a")
+    if estado == "ok":
+        return r"\textcolor{verdeSignal}{\faIcon{check}}"
+    if estado == "falta":
+        return r"\textcolor{rojoAlerta}{\faIcon{times}}"
+    if estado == "copiada":
+        return r"\textcolor{naranjaVivo}{\faIcon{clone}}"
+    return "--"
+
+
 def latex_acta(
     registros: list[dict],
     *,
@@ -485,12 +585,13 @@ def latex_acta(
                     _tex(r["nombre"]),
                     f"{r['aciertos']}/{r['total']}",
                     f"{float(r['nota_recalculada']):.2f}",
+                    _icono_justificacion(r),
                     estado,
                 ]
             )
             + r" \\"
         )
-    tabla = "\n".join(filas) if filas else r"\multicolumn{6}{c}{\textit{Sin entregas}} \\"
+    tabla = "\n".join(filas) if filas else r"\multicolumn{7}{c}{\textit{Sin entregas}} \\"
 
     cobertura_tex = ""
     if cobertura is None:
@@ -558,9 +659,9 @@ def latex_acta(
         + r"""
 
 \section*{Resultados por grupo}
-\begin{longtable}{@{}c l p{5.8cm} r r c@{}}
+\begin{longtable}{@{}c l p{5.0cm} r r c c@{}}
 \toprule
-\textbf{G} & \textbf{Cédula} & \textbf{Nombre} & \textbf{Aciertos} & \textbf{Nota} & \textbf{Estado} \\
+\textbf{G} & \textbf{Cédula} & \textbf{Nombre} & \textbf{Aciertos} & \textbf{Nota} & \textbf{J} & \textbf{Estado} \\
 \midrule
 \endhead
 """
@@ -868,12 +969,15 @@ def main() -> int:
             grupos=grupos,
             clave=clave,
             archivo=ruta,
+            justificacion_items=datos_fuente["justificacion_items"],
+            min_justificacion=int(datos_fuente["meta"].get("min_justificacion") or 40),
         )
         if registro is None:
             invalidos.append({"archivo": ruta, "avisos": problemas})
             continue
         registros.append(registro)
 
+    copias = marcar_copias(registros, datos_fuente["justificacion_items"])
     registros = ordenar(registros)
     avisos: list[str] = []
     for r in registros:

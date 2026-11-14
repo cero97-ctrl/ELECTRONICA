@@ -84,11 +84,13 @@ def _wrangler(explicito: str | None) -> str:
     )
 
 
-def _leer_clave(fuente: Path, respuestas: Path) -> tuple[dict[str, str], int]:
+def _leer_clave(
+    fuente: Path, respuestas: Path
+) -> tuple[dict[str, str], int, list[int]]:
     datos = md_a_html.cargar_clave(fuente, respuestas)
     clave = datos["clave"]
     ordenada = {str(n): clave[n] for n in sorted(clave)}
-    return ordenada, datos["n_preguntas"]
+    return ordenada, datos["n_preguntas"], list(datos["justificacion_items"])
 
 
 def _escribir_clave(clave: dict[str, str], cuestionario: str) -> Path:
@@ -121,6 +123,34 @@ def _entorno() -> dict[str, str]:
 def _token_resultados() -> str | None:
     valor = _entorno().get("GITHUB_TOKEN_RESULTADOS", "").strip()
     return valor or None
+
+
+def _leer_nomina(ruta: Path) -> tuple[str, int]:
+    """Devuelve `("V-12345678 V-...", n)` desde la primera columna de la nómina.
+
+    Acepta TSV (lo que exporta el sistema de la universidad), CSV o una cédula
+    por línea. Se normaliza igual que `normalizarCedula` del Worker para que el
+    conjunto comparado sea el mismo: prefijo por defecto `V`, sin puntos ni
+    espacios. Las líneas sin cédula legible se ignoran (encabezados).
+    """
+    texto = ruta.read_text(encoding="utf-8")
+    cedulas: list[str] = []
+    for linea in texto.splitlines():
+        if not linea.strip():
+            continue
+        campo = re.split(r"[\t,;]", linea)[0].strip()
+        limpio = re.sub(r"[.\s]", "", campo).upper()
+        match = re.fullmatch(r"([VEJ])?-?(\d{5,9})", limpio)
+        if not match:
+            continue
+        cedulas.append((match.group(1) or "V") + "-" + match.group(2))
+    unicas = list(dict.fromkeys(cedulas))
+    if not unicas:
+        raise ValueError(
+            "la nómina no tiene cédulas legibles en la primera columna "
+            f"({ruta})"
+        )
+    return " ".join(unicas), len(unicas)
 
 
 def _ejecutar(
@@ -160,7 +190,16 @@ def _secretos(wrangler: str, cwd: Path, entorno: str | None = None) -> dict[str,
             pass
     if not nombres:
         nombres = set(re.findall(r'"name"\s*:\s*"([A-Z_]+)"', proc.stdout or ""))
-    return {"CLAVE_JSON": "CLAVE_JSON" in nombres, "GITHUB_TOKEN": "GITHUB_TOKEN" in nombres}
+    nombres_requeridos = [
+        "CLAVE_JSON",
+        "GITHUB_TOKEN",
+        "CEDULAS",
+        "ITEMS_JUSTIFICACION",
+        "VENTANA_INICIO",
+        "VENTANA_FIN",
+        "MIN_JUSTIFICACION",
+    ]
+    return {nombre: nombre in nombres for nombre in nombres_requeridos}
 
 
 def _config_entorno(worker_dir: Path, entorno: str | None) -> tuple[str, dict]:
@@ -251,6 +290,27 @@ def main() -> int:
     )
     parser.add_argument("--check", action="store_true", help="Valida sin desplegar (sin cuenta).")
     parser.add_argument("--actualizar-fuente", action="store_true", help="Escribe entrega_url en el .md.")
+    parser.add_argument(
+        "--nomina",
+        default=None,
+        help="Nómina (TSV/CSV) con la cédula en la primera columna; se sube como secreto CEDULAS.",
+    )
+    parser.add_argument(
+        "--inicio",
+        default=None,
+        help="Inicio de la ventana del examen en ISO 8601 UTC (ej. 2026-11-16T14:40:00Z).",
+    )
+    parser.add_argument(
+        "--fin",
+        default=None,
+        help="Fin de la ventana del examen en ISO 8601 UTC (ej. 2026-11-16T15:30:00Z).",
+    )
+    parser.add_argument(
+        "--min-justificacion",
+        type=int,
+        default=40,
+        help="Mínimo de caracteres por justificación (por defecto 40).",
+    )
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
     parser.add_argument("--no-alert", action="store_true", help="Sin alerta audible.")
     args = parser.parse_args()
@@ -323,15 +383,25 @@ def main() -> int:
             "error",
         )
     try:
-        clave, preguntas = _leer_clave(fuente, respuestas)
+        clave, preguntas, justificar = _leer_clave(fuente, respuestas)
     except (OSError, ValueError) as exc:
         return terminar({"status": "error", "code": 3, "message": str(exc)}, 3, "error")
+
+    nomina = None
+    if args.nomina:
+        try:
+            nomina, n_nomina = _leer_nomina(Path(args.nomina).resolve())
+        except (OSError, ValueError) as exc:
+            return terminar({"status": "error", "code": 3, "message": str(exc)}, 3, "error")
 
     resumen = {
         "cuestionario": cuestionario,
         "env": args.env,
         "worker": nombre_worker,
         "preguntas": preguntas,
+        "justificacion_items": justificar,
+        "nomina": n_nomina if nomina else 0,
+        "ventana": {"inicio": args.inicio, "fin": args.fin},
         "clave_sha256": hashlib.sha256(
             json.dumps(clave, sort_keys=True).encode("utf-8")
         ).hexdigest(),
@@ -423,6 +493,41 @@ def main() -> int:
             "error",
         )
 
+    extras = [
+        (
+            "ITEMS_JUSTIFICACION",
+            ",".join(str(n) for n in justificar) if justificar else None,
+        ),
+        ("CEDULAS", nomina),
+        ("VENTANA_INICIO", args.inicio),
+        ("VENTANA_FIN", args.fin),
+        ("MIN_JUSTIFICACION", str(args.min_justificacion) if args.min_justificacion else None),
+    ]
+    for nombre, valor in extras:
+        if not valor:
+            continue
+        alta = _ejecutar(
+            [wrangler, "secret", "put", nombre]
+            + (["--env", args.env] if args.env else []),
+            worker_dir,
+            entrada=valor,
+            timeout=180,
+        )
+        if alta.returncode != 0:
+            return terminar(
+                {
+                    "status": "error",
+                    "code": 4,
+                    "message": (
+                        f"no se pudo fijar {nombre}:\n" + (alta.stderr or "")[-500:]
+                    ),
+                    "url": url,
+                    **resumen,
+                },
+                4,
+                "error",
+            )
+
     presentes = _secretos(wrangler, worker_dir, args.env)
     if not presentes["GITHUB_TOKEN"]:
         token = _token_resultados()
@@ -435,7 +540,42 @@ def main() -> int:
                 timeout=180,
             )
             if alta.returncode == 0:
-                presentes = _secretos(wrangler, worker_dir, args.env)
+                extras = [
+        (
+            "ITEMS_JUSTIFICACION",
+            ",".join(str(n) for n in justificar) if justificar else None,
+        ),
+        ("CEDULAS", nomina),
+        ("VENTANA_INICIO", args.inicio),
+        ("VENTANA_FIN", args.fin),
+        ("MIN_JUSTIFICACION", str(args.min_justificacion) if args.min_justificacion else None),
+    ]
+    for nombre, valor in extras:
+        if not valor:
+            continue
+        alta = _ejecutar(
+            [wrangler, "secret", "put", nombre]
+            + (["--env", args.env] if args.env else []),
+            worker_dir,
+            entrada=valor,
+            timeout=180,
+        )
+        if alta.returncode != 0:
+            return terminar(
+                {
+                    "status": "error",
+                    "code": 4,
+                    "message": (
+                        f"no se pudo fijar {nombre}:\n" + (alta.stderr or "")[-500:]
+                    ),
+                    "url": url,
+                    **resumen,
+                },
+                4,
+                "error",
+            )
+
+    presentes = _secretos(wrangler, worker_dir, args.env)
     if not presentes["GITHUB_TOKEN"]:
         return terminar(
             {

@@ -153,6 +153,85 @@ def test_recalcular() -> None:
     comprobar("clave vacía", D.recalcular({}, {}) == (0, 0, 0.0))
 
 
+def test_justificaciones() -> None:
+    print("\n-- Justificaciones: se validan y se detectan copias")
+    larga = "Cité el archivo logica.js línea 42 y la salida de grep, que muestra el patrón."
+    comprobar(
+        "sin ítems no se exige nada",
+        D.normalizar_justificaciones(None, ()) == ({}, []),
+    )
+    texto, problemas = D.normalizar_justificaciones({}, (7, 10))
+    comprobar(
+        "faltan las dos justificaciones",
+        texto == {} and len(problemas) == 2,
+        str(problemas),
+    )
+    texto, problemas = D.normalizar_justificaciones({"7": larga, "10": larga}, (7, 10))
+    comprobar("completas", texto == {"7": larga, "10": larga} and problemas == [], str(problemas))
+    texto, problemas = D.normalizar_justificaciones({"7": "corto", "10": larga}, (7, 10))
+    comprobar(
+        "demasiado corta se rechaza",
+        "7" not in texto and any("pregunta 7" in p for p in problemas),
+        str(problemas),
+    )
+    texto, _ = D.normalizar_justificaciones({"7": "  con   espacios\n y salto " + "x" * 40}, (7,))
+    comprobar("colapsa espacios", "  " not in texto["7"] and "\n" not in texto["7"])
+    comprobar(
+        "no dict -> falta",
+        D.normalizar_justificaciones("texto", (7,))[1] != [],
+    )
+
+    _, reg = D.validar_registro(
+        registro_base(justificaciones={"7": larga, "10": larga}),
+        cuestionario="rol_rojo_cuestionario", total=TOTAL, grupos=GRUPOS,
+        clave=CLAVE, archivo=RUTA_OK, justificacion_items=(7, 10),
+    )
+    comprobar("con justificaciones -> ok", reg is not None and reg["justif_estado"] == "ok")
+
+    _, reg = D.validar_registro(
+        registro_base(),
+        cuestionario="rol_rojo_cuestionario", total=TOTAL, grupos=GRUPOS,
+        clave=CLAVE, archivo=RUTA_OK, justificacion_items=(7, 10),
+    )
+    comprobar(
+        "sin justificaciones -> revisar",
+        reg is not None and reg["estado"] == "revisar" and reg["justif_estado"] == "falta",
+    )
+
+    _, reg = D.validar_registro(
+        registro_base(),
+        cuestionario="rol_rojo_cuestionario", total=TOTAL, grupos=GRUPOS,
+        clave=CLAVE, archivo=RUTA_OK,
+    )
+    comprobar("sin ítems declarados -> n/a", reg is not None and reg["justif_estado"] == "n/a")
+
+    a = {
+        "cedula": "V-11111111", "justificaciones": {"7": larga},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    b = {
+        "cedula": "V-22222222", "justificaciones": {"7": larga},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    c = {
+        "cedula": "V-33333333",
+        "justificaciones": {"7": "Otro texto completamente distinto sobre el commit y el diff del repositorio."},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    pares = D.marcar_copias([a, b, c], (7,))
+    comprobar("un par copiado", pares == 1, str(pares))
+    comprobar(
+        "ambas filas a revisar",
+        a["estado"] == "revisar" and b["estado"] == "revisar" and a["justif_estado"] == "copiada",
+    )
+    comprobar("la distinta no se toca", c["estado"] == "ok" and c["avisos"] == [])
+    comprobar(
+        "el aviso nombra a la otra cédula",
+        any("V-22222222" in av for av in a["avisos"]),
+        str(a["avisos"]),
+    )
+
+
 def test_validar_registro() -> None:
     print("\n-- Validación del archivo archivado")
     problemas, reg = D.validar_registro(
@@ -467,6 +546,7 @@ def main() -> int:
     test_grupo()
     test_respuestas()
     test_recalcular()
+    test_justificaciones()
     test_validar_registro()
     test_orden_y_csv()
     test_cobertura()

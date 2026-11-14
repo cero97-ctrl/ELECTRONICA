@@ -103,15 +103,18 @@ def validar_preguntas(preguntas: list[dict]) -> list[str]:
     return problemas
 
 
-def _front_matter(titulo: str, curso: str, grupos: int) -> str:
-    return (
-        "---\n"
-        f"curso: {curso}\n"
-        "tipo: cuestionario\n"
-        f"titulo: {json.dumps(titulo, ensure_ascii=False)}\n"
-        f"grupos: {grupos}\n"
-        "---\n"
-    )
+def _front_matter(titulo: str, curso: str, grupos: int, justificar: list[int]) -> str:
+    lineas = [
+        "---",
+        f"curso: {curso}",
+        "tipo: cuestionario",
+        f"titulo: {json.dumps(titulo, ensure_ascii=False)}",
+        f"grupos: {grupos}",
+    ]
+    if justificar:
+        lineas.append(f"justificacion_items: {json.dumps(sorted(justificar))}")
+    lineas.append("---")
+    return "\n".join(lineas) + "\n"
 
 
 def _cuerpo_alumno(titulo: str, preguntas: list[dict]) -> str:
@@ -123,6 +126,9 @@ def _cuerpo_alumno(titulo: str, preguntas: list[dict]) -> str:
         partes.append("")
         for opcion in pregunta["opciones"]:
             partes.append(f"- {opcion['letra']}. {opcion['texto']}")
+            partes.append("")
+        if pregunta.get("justificacion"):
+            partes.append(f"**Justificación:** {pregunta['justificacion']}")
             partes.append("")
         partes.append("---")
         partes.append("")
@@ -148,7 +154,12 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
         raise ValueError("; ".join(problemas))
 
     clave = {p["numero"]: p["respuesta"] for p in preguntas}
-    fuente = _front_matter(titulo, curso, grupos) + "\n" + _cuerpo_alumno(titulo, preguntas)
+    justificar = [p["numero"] for p in preguntas if p.get("justificacion")]
+    fuente = (
+        _front_matter(titulo, curso, grupos, justificar)
+        + "\n"
+        + _cuerpo_alumno(titulo, preguntas)
+    )
     return {
         "fuente": fuente,
         "respuestas": canonico if canonico.endswith("\n") else canonico + "\n",

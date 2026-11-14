@@ -4,11 +4,14 @@
 import {
   MAX_CUERPO,
   calificar,
+  cedulaInscrita,
+  cedulasInscritas,
   contenidoResultado,
   rutaResultado,
   validarClave,
   validarCuestionario,
   validarEntrega,
+  ventana,
 } from "./logica.js";
 
 const CABECERAS_JSON = { "Content-Type": "application/json; charset=utf-8" };
@@ -53,10 +56,12 @@ async function guardarEnRepo(env, ruta, contenido, mensaje) {
     "X-GitHub-Api-Version": "2022-11-28",
   };
   let sha;
+  let existia = false;
   const actual = await fetch(url, { headers: cabeceras });
   if (actual.status === 200) {
     const datos = await actual.json();
     sha = datos.sha;
+    existia = true;
   } else if (actual.status !== 404) {
     throw new Error(`no se pudo leer el archivo existente (${actual.status})`);
   }
@@ -77,6 +82,7 @@ async function guardarEnRepo(env, ruta, contenido, mensaje) {
   if (!escritura.ok) {
     throw new Error(`no se pudo archivar la entrega (${escritura.status})`);
   }
+  return { existia };
 }
 
 export default {
@@ -94,11 +100,35 @@ export default {
 
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/salud") {
-      return responder({ ok: true }, 200, cabeceras);
+      return responder(
+        {
+          ok: true,
+          ventana: ventana(new Date(), env.VENTANA_INICIO, env.VENTANA_FIN),
+          inscritas: cedulasInscritas(env.CEDULAS).length,
+        },
+        200,
+        cabeceras
+      );
     }
 
     if (request.method !== "POST") {
       return responder({ error: "método no permitido" }, 405, cabeceras);
+    }
+
+    const estadoVentana = ventana(
+      new Date(),
+      env.VENTANA_INICIO,
+      env.VENTANA_FIN
+    );
+    if (!estadoVentana.abierta) {
+      return responder(
+        {
+          error: "fuera de la ventana del examen",
+          detalle: estadoVentana.motivo,
+        },
+        403,
+        cabeceras
+      );
     }
 
     const clave = validarClave(
@@ -132,6 +162,12 @@ export default {
       grupos,
       total: Object.keys(clave).length,
       cuestionario,
+      justificacionItems: String(env.ITEMS_JUSTIFICACION || "")
+        .split(/[\s,;]+/)
+        .filter(Boolean)
+        .map(Number)
+        .filter(Number.isInteger),
+      minJustificacion: Number(env.MIN_JUSTIFICACION || 40),
     });
     if (!revision.ok) {
       return responder(
@@ -142,6 +178,13 @@ export default {
     }
 
     const entrega = revision.entrega;
+    if (!cedulaInscrita(entrega.cedula, env.CEDULAS)) {
+      return responder(
+        { error: "cédula no inscrita en este examen" },
+        403,
+        cabeceras
+      );
+    }
     const calculo = calificar(entrega.respuestas, clave);
     const ruta = rutaResultado(entrega);
     const contenido = contenidoResultado(
@@ -150,12 +193,22 @@ export default {
       new Date().toISOString()
     );
     try {
-      await guardarEnRepo(
+      const archivo = await guardarEnRepo(
         env,
         ruta,
         contenido,
         `entrega ${entrega.cuestionario} ${entrega.cedula}`
       );
+      if (archivo.existia) {
+        return responder(
+          {
+            error:
+              "ya registraste una entrega; no se puede reenviar ni cambiar",
+          },
+          409,
+          cabeceras
+        );
+      }
     } catch (error) {
       console.error("fallo al archivar:", error.message);
       return responder(
@@ -165,10 +218,6 @@ export default {
       );
     }
 
-    return responder(
-      { nota: calculo.nota, aciertos: calculo.aciertos, total: calculo.total },
-      200,
-      cabeceras
-    );
+    return responder({ recibido: true }, 200, cabeceras);
   },
 };

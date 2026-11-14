@@ -58,6 +58,7 @@ contract:
     puntaje_total: 10          # opcional; por defecto, número de preguntas
     puntos: {1: 1.5, 2: 0.5}   # opcional; debe sumar puntaje_total
     clave: {1: B, 2: A}        # alternativa a --respuestas; si se dan las dos, deben coincidir
+    justificacion_items: [7, 10]  # opcional; preguntas que exigen justificación de evidencia
     retroalimentacion: {1: "..."}  # opcional; solo se muestra en docente
     ---
   respuestas: |
@@ -68,6 +69,22 @@ contract:
     conversor falla con código 3 si el cuestionario y sus respuestas divergen
     (enunciado, opciones o numeración), que es como se detecta una copia
     desactualizada antes de corregir mal.
+  justificaciones: |
+    Dos preguntas por cuestionario exigen que el alumno escriba una
+    justificación con evidencia de su propio repositorio (archivo, línea, hash,
+    salida de `grep`/`diff`). El marcador va en el canónico, después de las
+    opciones:
+
+        **Justificación:** Cita el archivo y la línea de tu repositorio que ...
+
+    `justificacion_items` del front matter es la única fuente de verdad de qué
+    preguntas la exigen: si el marcador y la lista no coinciden (falta, sobra,
+    se repite o menciona una pregunta inexistente), `validar()` falla con código
+    3 en vez de elegir en silencio cuál manda. La lista viaja al HTML
+    (`const JUSTIFICAR`) y al Worker (`ITEMS_JUSTIFICACION`), y el mínimo de
+    caracteres es `MIN_JUSTIFICACION` (40) en los dos lados. La justificación
+    se compara también en el cruce fuente/respuestas: una copia desactualizada
+    del archivo de respuestas se detecta antes de publicar.
   preguntas: |
     ## Question N        (o `## Pregunta N`)
     Enunciado en una o varias líneas.

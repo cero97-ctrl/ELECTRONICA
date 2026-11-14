@@ -74,6 +74,12 @@ cursos/*/evaluaciones/*.pdf
 # solo en local (MEGA la sincroniza).
 cursos/*/evaluaciones/web/**
 
+# Nómina de inscritos (cédula + apellidos + nombres): dato personal de
+# estudiantes y el repo es PÚBLICO. Es una entrada del flujo, no un entregable:
+# vive solo en local (MEGA la sincroniza) y se pasa con `--nomina`. Sin esta
+# regla, el `git add -A` de `update_repo.sh` la publicaría.
+cursos/*/evaluaciones/alumnos_*.csv
+
 # Banco privado de preguntas: con los .tex ya ignorados, este era el último sitio
 # donde un enunciado podía colarse al repo. `curso.yaml` es público y solo declara
 # fase, puntaje y tema; los textos viven aquí y se inyectan al generar con

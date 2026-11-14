@@ -3,9 +3,13 @@ import assert from "node:assert/strict";
 
 import {
   MAX_CUERPO,
+  MIN_JUSTIFICACION,
   calificar,
+  cedulaInscrita,
+  cedulasInscritas,
   contenidoResultado,
   normalizarCedula,
+  normalizarJustificaciones,
   normalizarGrupo,
   normalizarNombre,
   normalizarRespuestas,
@@ -13,6 +17,7 @@ import {
   validarClave,
   validarCuestionario,
   validarEntrega,
+  ventana,
 } from "../src/logica.js";
 
 const CLAVE = { 1: "A", 2: "B", 3: "C", 4: "D", 5: "E", 6: "A", 7: "B", 8: "C", 9: "D", 10: "E" };
@@ -220,7 +225,148 @@ test("cuestionario: solo minúsculas, dígitos y guion bajo", () => {
   assert.equal(validarCuestionario("ab"), null);
 });
 
-test("límite de cuerpo: 4 KiB es suficiente para una entrega", () => {
-  const texto = JSON.stringify(entregaValida());
+const JUSTIFICAR = [7, 10];
+const TEXTO_JUSTO = "x".repeat(MIN_JUSTIFICACION);
+const JUSTIFICACIONES = { 7: TEXTO_JUSTO, 10: TEXTO_JUSTO };
+
+function entregaConJustificacion(extra = {}) {
+  return entregaValida({ justificaciones: { ...JUSTIFICACIONES }, ...extra });
+}
+
+test("justificaciones: exige cada pregunta declarada y el mínimo", () => {
+  assert.deepEqual(normalizarJustificaciones(JUSTIFICACIONES, JUSTIFICAR), JUSTIFICACIONES);
+  assert.equal(normalizarJustificaciones({ 7: TEXTO_JUSTO }, JUSTIFICAR), null);
+  assert.equal(
+    normalizarJustificaciones({ 7: TEXTO_JUSTO, 10: "corta" }, JUSTIFICAR),
+    null
+  );
+  assert.equal(
+    normalizarJustificaciones({ 7: TEXTO_JUSTO, 10: "y".repeat(1501) }, JUSTIFICAR),
+    null
+  );
+});
+
+test("justificaciones: rechaza campos de más y tipos que no son texto", () => {
+  assert.equal(
+    normalizarJustificaciones({ ...JUSTIFICACIONES, 9: TEXTO_JUSTO }, JUSTIFICAR),
+    null
+  );
+  assert.equal(
+    normalizarJustificaciones({ 7: 12345, 10: TEXTO_JUSTO }, JUSTIFICAR),
+    null
+  );
+  assert.equal(normalizarJustificaciones(null, JUSTIFICAR), null);
+  assert.equal(normalizarJustificaciones([], JUSTIFICAR), null);
+});
+
+test("justificaciones: colapsa espacios y recorta extremos", () => {
+  const salida = normalizarJustificaciones(
+    { 7: "  " + TEXTO_JUSTO + "  ", 10: "a    b" + "c".repeat(40) },
+    JUSTIFICAR
+  );
+  assert.equal(salida[7], TEXTO_JUSTO);
+  assert.equal(salida[10].includes("  "), false);
+});
+
+test("justificaciones: sin preguntas declaradas no se exige nada", () => {
+  assert.deepEqual(normalizarJustificaciones(undefined, []), {});
+  assert.deepEqual(normalizarJustificaciones({}, []), {});
+});
+
+test("validarEntrega: archiva justificaciones, duración y pegados", () => {
+  const revision = validarEntrega(
+    entregaConJustificacion({ duracion_s: 640, pegas: 2 }),
+    {
+      grupos: 4,
+      total: TOTAL,
+      cuestionario: "rol_rojo_cuestionario",
+      justificacionItems: JUSTIFICAR,
+    }
+  );
+  assert.equal(revision.ok, true);
+  assert.deepEqual(revision.entrega.justificaciones, JUSTIFICACIONES);
+  assert.equal(revision.entrega.duracion_s, 640);
+  assert.equal(revision.entrega.pegas, 2);
+});
+
+test("validarEntrega: sin justificaciones falla si el examen las exige", () => {
+  const revision = validarEntrega(entregaValida(), {
+    grupos: 4,
+    total: TOTAL,
+    cuestionario: "rol_rojo_cuestionario",
+    justificacionItems: JUSTIFICAR,
+  });
+  assert.equal(revision.ok, false);
+  assert.equal(revision.problemas.length, 1);
+  assert.match(revision.problemas[0], /justificaciones/);
+});
+
+test("validarEntrega: duración y pegados fuera de rango se rechazan", () => {
+  const revision = validarEntrega(
+    entregaConJustificacion({ duracion_s: 99999, pegas: -1 }),
+    {
+      grupos: 4,
+      total: TOTAL,
+      cuestionario: "rol_rojo_cuestionario",
+      justificacionItems: JUSTIFICAR,
+    }
+  );
+  assert.equal(revision.ok, false);
+  assert.equal(revision.problemas.length, 2);
+});
+
+test("ventana: sin límites está siempre abierta", () => {
+  assert.deepEqual(ventana("2026-11-16T12:00:00Z", undefined, undefined), {
+    abierta: true,
+    motivo: "",
+  });
+});
+
+test("ventana: dentro, antes y después del intervalo", () => {
+  const inicio = "2026-11-16T14:40:00Z";
+  const fin = "2026-11-16T15:30:00Z";
+  assert.equal(ventana("2026-11-16T14:40:00Z", inicio, fin).abierta, true);
+  assert.equal(ventana("2026-11-16T15:30:00Z", inicio, fin).abierta, true);
+  const antes = ventana("2026-11-16T14:39:59Z", inicio, fin);
+  assert.equal(antes.abierta, false);
+  assert.equal(antes.motivo, "todavía no empieza");
+  const despues = ventana("2026-11-16T15:30:01Z", inicio, fin);
+  assert.equal(despues.abierta, false);
+  assert.equal(despues.motivo, "ya terminó");
+});
+
+test("ventana: una fecha mal escrita no se interpreta como abierta", () => {
+  const estado = ventana("2026-11-16T12:00:00Z", "16/11/2026", undefined);
+  assert.equal(estado.abierta, false);
+  assert.match(estado.motivo, /VENTANA_INICIO/);
+});
+
+test("cédula inscrita: normaliza prefijos y separadores", () => {
+  const lista = "11111111, V-22222222; 33333333";
+  assert.deepEqual(cedulasInscritas(lista), ["V-11111111", "V-22222222", "V-33333333"]);
+  assert.equal(cedulaInscrita("V-11111111", lista), true);
+  assert.equal(cedulaInscrita("V-99999999", lista), false);
+  assert.equal(cedulaInscrita("V-99999999", ""), true);
+});
+
+test("contenido: guarda las justificaciones y nunca la clave", () => {
+  const revision = validarEntrega(entregaConJustificacion({ duracion_s: 600 }), {
+    grupos: 4,
+    total: TOTAL,
+    cuestionario: "rol_rojo_cuestionario",
+    justificacionItems: JUSTIFICAR,
+  });
+  const calculo = calificar(revision.entrega.respuestas, CLAVE);
+  const texto = contenidoResultado(revision.entrega, calculo, "2026-11-16T15:00:00Z");
+  const datos = JSON.parse(texto);
+  assert.deepEqual(datos.justificaciones, JUSTIFICACIONES);
+  assert.equal(datos.duracion_s, 600);
+  assert.equal(texto.includes('"clave"'), false);
+});
+
+test("límite de cuerpo: 16 KiB cubre dos justificaciones de 1500", () => {
+  const texto = JSON.stringify(
+    entregaConJustificacion({ justificaciones: { 7: "x".repeat(1500), 10: "y".repeat(1500) } })
+  );
   assert.equal(texto.length < MAX_CUERPO, true);
 });

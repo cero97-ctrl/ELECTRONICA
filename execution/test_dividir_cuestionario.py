@@ -123,6 +123,47 @@ def test_division_basica() -> None:
     )
 
 
+def test_justificaciones() -> None:
+    con_just = CANONICO.replace(
+        "- B. Segunda opción\n  con continuación.",
+        "- B. Segunda opción\n  con continuación.\n\n"
+        "**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran "
+        "la respuesta, con la salida del comando que ejecutaste.",
+    )
+    r = dividir_mod.dividir(con_just, "CYBERSEGURIDAD", 4)
+    comprobar(
+        "la fuente declara la pregunta que exige justificación",
+        "justificacion_items: [1]" in r["fuente"],
+        r["fuente"][:400],
+    )
+    comprobar(
+        "la fuente lleva la instrucción",
+        "**Justificación:** Cita el archivo" in r["fuente"],
+    )
+    comprobar(
+        "la instrucción sobrevive a la división",
+        "**Justificación:** Cita el archivo" in r["respuestas"],
+    )
+    comprobar("sin justificaciones no se declara nada", "justificacion_items" not in dividir_mod.dividir(CANONICO, "C", 4)["fuente"])
+
+    # La instrucción no debe pegarse a la última opción ni romper el parser.
+    import importlib.util as iu
+    spec = iu.spec_from_file_location("mdh", RAIZ / "execution/md_a_html.py")
+    mdh = iu.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(mdh)
+    preguntas = mdh._parsear_cuestionario(r["fuente"])
+    comprobar(
+        "la opción no absorbe la instrucción",
+        "Justificación" not in preguntas[0]["opciones"][-1]["texto"],
+        preguntas[0]["opciones"][-1]["texto"],
+    )
+    comprobar(
+        "la fuente dividida valida con su meta",
+        mdh.validar(preguntas, mdh._leer_front_matter(r["fuente"])[0])[0] == [],
+    )
+
+
 def test_ida_y_vuelta() -> None:
     r = dividir_mod.dividir(CANONICO, "CYBERSEGURIDAD", 4)
     try:
@@ -288,6 +329,7 @@ def test_cli() -> None:
 def main() -> int:
     print("test_dividir_cuestionario")
     test_division_basica()
+    test_justificaciones()
     test_ida_y_vuelta()
     test_canonicos_invalidos()
     test_ya_dividido()

@@ -67,6 +67,8 @@ SEPARADOR = re.compile(r"^\s*---\s*$")
 RESPUESTA = re.compile(r"^\*\*Answer:\*\*\s*([A-Za-z])\b")
 PISTA = re.compile(r"^\*\*Hint:\*\*\s*(.*)$")
 EXPLICACION = re.compile(r"^\*\*Explanation:\*\*\s*$")
+JUSTIFICACION = re.compile(r"^\*\*Justificaci[oó]n:\*\*\s*(.*)$")
+MIN_JUSTIFICACION = 40
 MARCA_RESPUESTAS = re.compile(r"^\*\*Answer:\*\*", re.MULTILINE)
 VARIANTES = ("alumno", "docente")
 MAX_OPCIONES = 6
@@ -176,6 +178,27 @@ fieldset { border: 0; margin: 0; padding: 0; }
 .pregunta.bloqueada .opcion:hover { border-color: var(--linea); background: transparent; }
 .pregunta.bloqueada .opcion input { cursor: default; }
 .fijada { margin: .6rem 0 0; font-size: .85rem; color: var(--texto-suave); }
+.justificacion {
+  margin: .9rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.justificacion label { font-size: .9rem; font-weight: 600; color: var(--texto-suave); }
+.justificacion textarea {
+  font: inherit;
+  padding: .55rem .65rem;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 5.5rem;
+}
+.justificacion textarea:focus {
+  outline: 2px solid var(--azul-medio);
+  outline-offset: 1px;
+}
+.justificacion textarea.falta { border-color: #c2410c; background: #fffaf5; }
+.justificacion .ayuda { margin: 0; font-size: .8rem; color: var(--texto-suave); }
 .progreso, .resultado {
   background: #fff;
   border: 1px solid var(--linea);
@@ -332,11 +355,20 @@ def _parsear_cuestionario(texto: str) -> list[dict]:
         if match:
             if actual is not None:
                 preguntas.append(actual)
-            actual = {"numero": int(match.group(1)), "enunciado": [], "opciones": []}
+            actual = {
+                "numero": int(match.group(1)),
+                "enunciado": [],
+                "opciones": [],
+                "justificacion": "",
+            }
             continue
         if actual is None:
             continue
         if SEPARADOR.match(linea) or not linea.strip():
+            continue
+        justificacion = JUSTIFICACION.match(linea)
+        if justificacion:
+            actual["justificacion"] = justificacion.group(1).strip()
             continue
         opcion = OPCION.match(linea)
         if opcion:
@@ -380,6 +412,7 @@ def _parsear_respuestas(texto: str) -> list[dict]:
                 "enunciado": [],
                 "opciones": [],
                 "respuesta": None,
+                "justificacion": "",
             }
             estado = "pregunta"
             continue
@@ -388,6 +421,11 @@ def _parsear_respuestas(texto: str) -> list[dict]:
         if SEPARADOR.match(linea) or not linea.strip():
             continue
         if estado == "pregunta":
+            justificacion = JUSTIFICACION.match(linea)
+            if justificacion:
+                actual["justificacion"] = justificacion.group(1).strip()
+                estado = "meta"
+                continue
             respuesta = RESPUESTA.match(linea)
             if respuesta:
                 actual["respuesta"] = respuesta.group(1).upper()
@@ -410,6 +448,10 @@ def _parsear_respuestas(texto: str) -> list[dict]:
                 actual["enunciado"].append(linea.strip())
             continue
         if estado == "meta":
+            justificacion = JUSTIFICACION.match(linea)
+            if justificacion:
+                actual["justificacion"] = justificacion.group(1).strip()
+                continue
             respuesta = RESPUESTA.match(linea)
             if respuesta:
                 actual["respuesta"] = respuesta.group(1).upper()
@@ -455,6 +497,12 @@ def _cruzar(preguntas: list[dict], respuestas: list[dict]) -> tuple[list[str], d
         opciones_resp = [(o["letra"], _normalizar_texto(o["texto"])) for o in resp["opciones"]]
         if opciones_fuente != opciones_resp:
             problemas.append(f"pregunta {numero}: las opciones difieren entre los dos archivos")
+        if _normalizar_texto(fuente.get("justificacion", "")) != _normalizar_texto(
+            resp.get("justificacion", "")
+        ):
+            problemas.append(
+                f"pregunta {numero}: la justificación difiere entre los dos archivos"
+            )
         letra = resp.get("respuesta")
         if not letra:
             problemas.append(f"pregunta {numero}: el archivo de respuestas no trae `**Answer:**`")
@@ -513,6 +561,65 @@ def _normalizar_puntos(cruda: object, total: float, numeros: list[int]) -> tuple
     return puntos, problemas
 
 
+def _items_justificacion(
+    meta: dict, preguntas: list[dict]
+) -> tuple[list[int], list[str]]:
+    """Valida `justificacion_items` contra las preguntas que traen instrucción.
+
+    La lista del front matter es la única fuente de verdad de qué preguntas
+    exigen justificación: el cliente y el Worker la reciben de aquí. Si una
+    pregunta trae `**Justificación:**` y no está en la lista (o al revés), se
+    falla en vez de elegir en silencio cuál de las dos manda.
+    """
+    problemas: list[str] = []
+    numeros = {p["numero"] for p in preguntas}
+    con_texto = {
+        p["numero"] for p in preguntas if str(p.get("justificacion", "")).strip()
+    }
+    cruda = meta.get("justificacion_items")
+    items: list[int] = []
+    if cruda is None:
+        pass
+    elif not isinstance(cruda, list):
+        problemas.append(f"`justificacion_items` debe ser una lista de números: {cruda!r}")
+    else:
+        for valor in cruda:
+            if isinstance(valor, bool) or not isinstance(valor, int):
+                problemas.append(
+                    f"`justificacion_items` tiene un valor no entero: {valor!r}"
+                )
+                continue
+            items.append(valor)
+        if len(set(items)) != len(items):
+            problemas.append(f"`justificacion_items` repite preguntas: {items}")
+        fuera = [n for n in items if n not in numeros]
+        if fuera:
+            problemas.append(
+                f"`justificacion_items` menciona preguntas inexistentes: {fuera}"
+            )
+    faltan = sorted(set(items) - con_texto)
+    if faltan:
+        problemas.append(
+            "estas preguntas exigen justificación pero no traen la instrucción "
+            f"`**Justificación:**`: {faltan}"
+        )
+    sobran = sorted(con_texto - set(items))
+    if sobran:
+        problemas.append(
+            "estas preguntas traen `**Justificación:**` sin estar en "
+            f"`justificacion_items`: {sobran}"
+        )
+    for numero in sorted(set(items) & con_texto):
+        pregunta = next(p for p in preguntas if p["numero"] == numero)
+        largo = len(_normalizar_texto(pregunta["justificacion"]))
+        if largo < 10:
+            problemas.append(
+                f"pregunta {numero}: la instrucción de justificación es demasiado "
+                f"corta ({largo} caracteres)"
+            )
+    return sorted(set(items)), problemas
+
+
 def validar(preguntas: list[dict], meta: dict) -> tuple[list[str], dict[int, str], dict[int, float], float]:
     problemas: list[str] = []
     if not preguntas:
@@ -540,6 +647,9 @@ def validar(preguntas: list[dict], meta: dict) -> tuple[list[str], dict[int, str
         for opcion in opciones:
             if not opcion["texto"]:
                 problemas.append(f"pregunta {numero}: la opción {opcion['letra']} está vacía")
+
+    _, problemas_justificacion = _items_justificacion(meta, preguntas)
+    problemas.extend(problemas_justificacion)
 
     clave, problemas_clave = _normalizar_clave(meta.get("clave"))
     problemas.extend(problemas_clave)
@@ -652,6 +762,7 @@ def cargar_clave(fuente: Path | str, respuestas: Path | str | None = None) -> di
         "puntaje_total": total,
         "n_preguntas": len(preguntas),
         "grupos": _grupos_declarados(meta),
+        "justificacion_items": _items_justificacion(meta, preguntas)[0],
     }
 
 
@@ -722,6 +833,18 @@ def _preguntas_html(
             if fijable
             else ""
         )
+        justificacion_html = ""
+        if pregunta.get("justificacion"):
+            justificacion_html = (
+                '<div class="justificacion">'
+                f'<label for="j{numero}">{_inline(pregunta["justificacion"])}</label>'
+                f'<textarea id="j{numero}" name="j{numero}" rows="4" '
+                f'minlength="{MIN_JUSTIFICACION}" maxlength="1500" required '
+                'placeholder="Archivo, línea o hash de tu propia evidencia…"></textarea>'
+                f'<p class="ayuda">Mínimo {MIN_JUSTIFICACION} caracteres. Cita tu propio '
+                "trabajo; una respuesta genérica no cuenta.</p>"
+                "</div>"
+            )
         bloques.append(
             f'<section class="pregunta" id="p{numero}" data-numero="{numero}">'
             f'<h2><span class="num">{numero}</span> Pregunta {numero}'
@@ -731,6 +854,7 @@ def _preguntas_html(
             f'<legend class="sr-only">Opciones de la pregunta {numero}</legend>'
             f"{_opciones_html(pregunta)}"
             "</fieldset>"
+            f"{justificacion_html}"
             f"{fijada_html}"
             f"{retro_html}"
             "</section>"
@@ -742,6 +866,8 @@ def _js_alumno(
     total: int,
     entrega_url: str | None = None,
     cuestionario_id: str = "",
+    justificar: list[int] | None = None,
+    min_justificacion: int = MIN_JUSTIFICACION,
 ) -> str:
     base = (
         "const total = " + str(total) + ";\n"
@@ -797,10 +923,14 @@ def _js_alumno(
         base
         + "const ENTREGA_URL = " + json.dumps(entrega_url) + ";\n"
         + "const CUESTIONARIO = " + json.dumps(cuestionario_id) + ";\n"
+        + "const JUSTIFICAR = " + json.dumps(sorted(justificar or [])) + ";\n"
+        + "const MIN_JUSTIFICACION = " + str(int(min_justificacion)) + ";\n"
         "const botonEnviar = document.getElementById('enviar');\n"
         "const estadoEntrega = document.getElementById('estado-entrega');\n"
+        "const inicio = Date.now();\n"
         "let enviando = false;\n"
         "let enviado = false;\n"
+        "let pegas = 0;\n"
         "function respuestas(){\n"
         "  const r = {};\n"
         "  form.querySelectorAll('input:checked').forEach(i => {\n"
@@ -808,13 +938,41 @@ def _js_alumno(
         "  });\n"
         "  return r;\n"
         "}\n"
+        "function justificaciones(){\n"
+        "  const r = {};\n"
+        "  JUSTIFICAR.forEach(n => {\n"
+        "    const campo = document.getElementById('j' + n);\n"
+        "    r[n] = campo ? campo.value.trim().replace(/\\s+/g, ' ') : '';\n"
+        "  });\n"
+        "  return r;\n"
+        "}\n"
+        "function justificacionesOk(){\n"
+        "  return JUSTIFICAR.every(n => {\n"
+        "    const campo = document.getElementById('j' + n);\n"
+        "    return !!campo && campo.value.trim().length >= MIN_JUSTIFICACION;\n"
+        "  });\n"
+        "}\n"
+        "function marcarJustificaciones(){\n"
+        "  JUSTIFICAR.forEach(n => {\n"
+        "    const campo = document.getElementById('j' + n);\n"
+        "    if (campo) campo.classList.toggle('falta',\n"
+        "      campo.value.trim().length < MIN_JUSTIFICACION);\n"
+        "  });\n"
+        "}\n"
         "function puedeEnviar(){\n"
         "  return !!botonEnviar && !enviando && !enviado && datosCompletos()\n"
-        "    && Object.keys(respuestas()).length === total;\n"
+        "    && Object.keys(respuestas()).length === total\n"
+        "    && justificacionesOk();\n"
         "}\n"
         "function refrescarBoton(){\n"
         "  if (botonEnviar) botonEnviar.disabled = !puedeEnviar();\n"
         "}\n"
+        "JUSTIFICAR.forEach(n => {\n"
+        "  const campo = document.getElementById('j' + n);\n"
+        "  if (!campo) return;\n"
+        "  campo.addEventListener('input', () => { marcarJustificaciones(); refrescarBoton(); });\n"
+        "  campo.addEventListener('paste', () => { pegas += 1; });\n"
+        "});\n"
         "async function enviar(){\n"
         "  if (!puedeEnviar()) return;\n"
         "  enviando = true;\n"
@@ -828,7 +986,10 @@ def _js_alumno(
         "    nombre: document.getElementById('estudiante-nombre').value.trim(),\n"
         "    cedula: document.getElementById('estudiante-cedula').value.trim(),\n"
         "    grupo: Number(document.getElementById('estudiante-grupo').value),\n"
-        "    respuestas: respuestas()\n"
+        "    respuestas: respuestas(),\n"
+        "    justificaciones: justificaciones(),\n"
+        "    duracion_s: Math.round((Date.now() - inicio) / 1000),\n"
+        "    pegas: pegas\n"
         "  };\n"
         "  try {\n"
         "    const res = await fetch(ENTREGA_URL, {\n"
@@ -842,9 +1003,8 @@ def _js_alumno(
         "    enviado = true;\n"
         "    if (estadoEntrega) {\n"
         "      estadoEntrega.className = 'estado-entrega ok';\n"
-        "      estadoEntrega.textContent = 'Entrega registrada. Nota: '\n"
-        "        + Number(datos.nota).toFixed(2).replace('.', ',') + ' / 10 · '\n"
-        "        + datos.aciertos + ' de ' + datos.total + ' correctas.';\n"
+        "      estadoEntrega.textContent = 'Entrega registrada. No se muestra la nota: '\n"
+        "        + 'el docente la publicará en el acta.';\n"
         "    }\n"
         "  } catch (e) {\n"
         "    if (estadoEntrega) {\n"
@@ -1015,6 +1175,7 @@ def _entrega_alumno(total: int) -> str:
         '<section class="entrega" id="entrega" aria-labelledby="entrega-titulo">'
         '<h2 id="entrega-titulo">Enviar mis respuestas</h2>'
         f"<p>Cuando hayas respondido las {total} preguntas podrás enviar. "
+        "Las preguntas con «Justificación» exigen citar tu propia evidencia. "
         "La entrega es definitiva: las respuestas quedan fijadas.</p>"
         '<button type="button" id="enviar" disabled>Enviar mis respuestas</button>'
         '<div class="estado-entrega" id="estado-entrega" role="status" '
@@ -1041,8 +1202,12 @@ def _render_alumno(
     )
     if entrega_url:
         cuerpo += "\n" + _entrega_alumno(len(preguntas))
+    justificar = [p["numero"] for p in preguntas if p.get("justificacion")]
     return _documento(
-        titulo, meta, cuerpo, _js_alumno(len(preguntas), entrega_url, cuestionario_id)
+        titulo,
+        meta,
+        cuerpo,
+        _js_alumno(len(preguntas), entrega_url, cuestionario_id, justificar),
     )
 
 

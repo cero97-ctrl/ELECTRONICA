@@ -68,6 +68,18 @@ contract:
     (`v 12.345.678` → `V-12345678`; letras, marcas, espacio, punto, apóstrofo y
     guión en el nombre). Si cambian allá, cambian aquí: una normalización
     divergente rompería el cruce con la nómina en silencio.
+  justificaciones: |
+    Cada fila trae además `justificaciones` (`ok` / `falta` / `copiada` /
+    `n/a`), `duracion_s` y `pegas` (cambios de pestaña o salidas de pantalla que
+    la página cuenta). `falta` significa que el archivo no trae la justificación
+    de una pregunta declarada en `justificacion_items` o que tiene menos de 40
+    caracteres: la nota sigue siendo válida y la fila se marca `revisar`, porque
+    el defecto está en la evidencia, no en las respuestas.
+    `copiada` lo decide `marcar_copias()`: dos justificaciones de la misma
+    pregunta con similitud >= 0.85 (`difflib`) entre alumnos distintos marcan
+    **ambas** filas y dejan el aviso con la cédula de la otra. Es una señal para
+    leerlas a mano, no una acusación: dos alumnos pueden citar el mismo archivo
+    del repositorio compartido y describirlo con palabras parecidas.
   integridad_de_ruta: |
     La cédula y el grupo del **contenido** deben coincidir con los de la **ruta**
     (`resultados/<cid>/grupo_<NN>/<cedula>.json`). Un archivo movido o renombrado
@@ -106,8 +118,8 @@ steps:
       las imprime y termina con código 5 justamente para que no pasen desapercibidas.
 
 expected_outputs:
-  - "CSV con cabecera `grupo,cedula,nombre,aciertos,total,nota,nota_recalculada,enviado_en,estado,archivo,avisos`, una fila por entrega."
-  - "PDF infográfico (longtable, una fila por estudiante, resumen y caja de cobertura) compilado sin errores `!` ni `Overfull \\hbox`."
+  - "CSV con cabecera `grupo,cedula,nombre,aciertos,total,nota,nota_recalculada,enviado_en,estado,archivo,avisos,justificaciones,duracion_s,pegas`, una fila por entrega."
+  - "PDF infográfico (longtable de 7 columnas —incluye `J` de justificación—, una fila por estudiante, resumen y caja de cobertura) compilado sin errores `!` ni `Overfull \\hbox`."
   - "Resumen por consola o JSON: entregas, promedio, mejor/peor, por grupo, último envío y cuántas filas hay que revisar."
   - "Con `--lista`: faltantes, sobrantes y cédulas cuyo grupo no coincide con la nómina."
   - "El flujo verifica lo que la capa 3 dijo haber escrito: que el CSV existe, que sus filas coinciden con `entregas` y que el PDF existe y no es un archivo vacío."

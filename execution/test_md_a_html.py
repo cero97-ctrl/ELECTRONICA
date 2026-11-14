@@ -105,6 +105,70 @@ Segunda pregunta.
 **Answer:** A. Sí.
 """
 
+FUENTE_JUST = """---
+curso: CYBERSEGURIDAD
+tipo: cuestionario
+titulo: Cuestionario de prueba
+puntaje_total: 2
+clave:
+  1: B
+  2: A
+justificacion_items: [1]
+---
+
+# Cuestionario de prueba
+
+## Pregunta 1
+
+¿Cuál es la respuesta correcta?
+
+- A. Incorrecta.
+- B. Correcta con `código`.
+- C. Otra incorrecta.
+- D. La última.
+
+**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran la respuesta, con la salida del comando que ejecutaste.
+
+## Pregunta 2
+
+Segunda pregunta.
+
+- A. Sí.
+- B. No.
+"""
+
+META_JUST = {**META, "justificacion_items": [1]}
+
+RESPUESTAS_JUST = """# Cuestionario de prueba
+
+## pregunta 1
+
+¿Cuál es la respuesta correcta?
+
+- A. Incorrecta.
+- B. Correcta con `código`.
+- C. Otra incorrecta.
+- D. La última.
+
+**Answer:** B. Correcta con `código`.
+
+**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran la respuesta, con la salida del comando que ejecutaste.
+
+**Explanation:**
+
+- A ✗ No.
+- B ✓ Sí.
+
+## pregunta 2
+
+Segunda pregunta.
+
+- A. Sí.
+- B. No.
+
+**Answer:** A. Sí.
+"""
+
 
 def _ejecutar_main(argv: list[str]) -> tuple[int, dict]:
     anterior = sys.argv
@@ -292,6 +356,126 @@ def test_docente_con_clave():
         "docente no pide datos del estudiante",
         'id="estudiante-nombre"' not in uno and "Datos del estudiante" not in uno,
     )
+
+
+def test_justificaciones_parser():
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    comprobar(
+        "parser captura la instrucción de justificación",
+        "Cita el archivo y la línea" in preguntas[0].get("justificacion", ""),
+    )
+    comprobar(
+        "la pregunta sin marcador no tiene justificación",
+        not preguntas[1].get("justificacion"),
+    )
+    parseadas = M._parsear_respuestas(RESPUESTAS_JUST)
+    comprobar(
+        "respuestas capturan la justificación",
+        "Cita el archivo y la línea" in parseadas[0].get("justificacion", ""),
+    )
+    just = parseadas[0].get("justificacion", "")
+    comprobar(
+        "la justificación no se come la explicación",
+        "✓" not in just and "✗" not in just and "Explanation" not in just,
+        just,
+    )
+
+
+def test_justificacion_items_validacion():
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    problemas, _, _, _ = M.validar(preguntas, META_JUST)
+    comprobar("declaración coherente no falla", problemas == [], str(problemas))
+    items, _ = M._items_justificacion(META_JUST, preguntas)
+    comprobar("la lista declarada se devuelve", items == [1], str(items))
+
+    casos = [
+        ("pregunta sin instrucción", {**META_JUST, "justificacion_items": [2]}, "exigen justificación"),
+        ("instrucción sin declarar", META, "sin estar en"),
+        ("repetida", {**META_JUST, "justificacion_items": [1, 1]}, "repite"),
+        ("inexistente", {**META_JUST, "justificacion_items": [9]}, "inexistentes"),
+        ("no lista", {**META_JUST, "justificacion_items": "1"}, "lista de números"),
+        ("no entero", {**META_JUST, "justificacion_items": ["1"]}, "no entero"),
+        ("booleano", {**META_JUST, "justificacion_items": [True]}, "no entero"),
+    ]
+    for nombre, meta, esperado in casos:
+        problemas, _, _, _ = M.validar(preguntas, meta)
+        comprobar(
+            f"justificacion_items {nombre} falla",
+            any(esperado in p for p in problemas),
+            str(problemas),
+        )
+
+    problemas, _, _, _ = M.validar(preguntas, {**META_JUST, "justificacion_items": []})
+    comprobar(
+        "declarar lista vacía con instrucción presente falla",
+        any("sin estar en" in p for p in problemas),
+        str(problemas),
+    )
+
+
+def test_cruce_justificacion():
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    sin = M._parsear_respuestas(RESPUESTAS_JUST.replace("**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran la respuesta, con la salida del comando que ejecutaste.\n\n", ""))
+    problemas, _ = M._cruzar(preguntas, sin)
+    comprobar(
+        "el cruce detecta la justificación ausente en respuestas",
+        any("justificación" in p.lower() for p in problemas),
+        str(problemas),
+    )
+    distinta = M._parsear_respuestas(RESPUESTAS_JUST.replace("Cita el archivo", "Menciona otro archivo"))
+    problemas, _ = M._cruzar(preguntas, distinta)
+    comprobar(
+        "el cruce detecta la justificación distinta",
+        any("justificación" in p.lower() for p in problemas),
+        str(problemas),
+    )
+    iguales = M._parsear_respuestas(RESPUESTAS_JUST)
+    problemas, _ = M._cruzar(preguntas, iguales)
+    comprobar("justificaciones iguales no fallan", problemas == [], str(problemas))
+
+
+def test_alumno_con_justificacion():
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    _, _, puntos, _ = M.validar(preguntas, META_JUST)
+    html = M._render_alumno(
+        "Cuestionario de prueba",
+        META_JUST,
+        preguntas,
+        puntos,
+        "https://cuestionarios-worker.example.workers.dev",
+        "cuestionario_prueba",
+    )
+    comprobar("alumno pide la justificación", 'id="j1"' in html)
+    comprobar("solo la pregunta declarada", 'id="j2"' not in html)
+    comprobar("la lista llega al cliente", "const JUSTIFICAR = [1]" in html)
+    comprobar("el mínimo llega al cliente", f"const MIN_JUSTIFICACION = {M.MIN_JUSTIFICACION}" in html)
+    comprobar("el textarea exige mínimo", 'minlength="40"' in html)
+    comprobar("el textarea exige contenido", "required" in html)
+    comprobar("el textarea tiene tope", 'maxlength="1500"' in html)
+    comprobar("la instrucción se muestra", "Cita el archivo y la línea" in html)
+    comprobar("alumno sigue sin clave", "const CLAVE" not in html)
+    sin = M._render_alumno("Cuestionario de prueba", META, M._parsear_cuestionario(FUENTE), puntos)
+    comprobar("sin declarar no hay textarea", 'class="justificacion"' not in sin)
+
+
+def test_cargar_clave_justificacion():
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        fuente = Path(tmp) / "c.md"
+        respuestas = Path(tmp) / "c_respuestas.md"
+        fuente.write_text(FUENTE_JUST, encoding="utf-8")
+        respuestas.write_text(RESPUESTAS_JUST, encoding="utf-8")
+        datos = M.cargar_clave(fuente, respuestas)
+        comprobar("cargar_clave devuelve justificacion_items", datos["justificacion_items"] == [1], str(datos["justificacion_items"]))
+        comprobar("cargar_clave sigue dando la clave", datos["clave"] == {1: "B", 2: "A"}, str(datos["clave"]))
+        respuestas.write_text(RESPUESTAS_JUST.replace("**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran la respuesta, con la salida del comando que ejecutaste.\n\n", ""), encoding="utf-8")
+        try:
+            M.cargar_clave(fuente, respuestas)
+        except ValueError as exc:
+            comprobar("cargar_clave falla si la clave no trae la justificación", "justificación" in str(exc).lower(), str(exc))
+        else:
+            comprobar("cargar_clave falla si la clave no trae la justificación", False, "no lanzó")
 
 
 def test_barrera_de_rutas():
