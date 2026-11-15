@@ -135,8 +135,7 @@ alumnos.
   ventana 09:00–09:45, ocultar a las 09:45, 4 actas de recuperación y fusión.
 - **Hora del 17 fijada**: 09:00–09:45 local (13:00–13:45Z), decidida por el
   usuario; es un `--inicio/--fin`, no un cambio de código.
-- Sin commitear todavía: `execution/publicar_cuestionario.py`,
-  `execution/test_publicar_cuestionario.py`, `execution/fusionar_actas.py`,
-  `execution/test_fusionar_actas.py`, `flujo_fusionar_actas.py`, las tres
-  directivas y esta bitácora. `execution/publicar_material_sara.py` sigue
-  untracked (sesión de Sara).
+- **Commiteado** en `c4df32ea` (10 archivos: publicador, fusionador, tres
+  directivas, `AGENTS.md` y esta bitácora). Quedan fuera, a propósito, `SARA/`,
+  `cursos/TESIS/HECTOR/`, `publicar_material_sara.py` y las bitácoras del
+  11-12/11-13 (otras sesiones). Sin push.
