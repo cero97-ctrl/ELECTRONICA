@@ -112,6 +112,14 @@ steps:
       sobre la URL real, no con lo que reporte el flujo: el CDN puede seguir
       sirviendo la copia cacheada unos minutos (ver caso límite).
 
+      **Rutina medida para el día del examen** (2026-11-15): el flip
+      `private → public` tardó **43 s** en un repo que nunca había sido público
+      y **50 s** en uno con el 404 ya cacheado por el borde; el flujo espera
+      hasta 90 s, así que no hace falta reintentar antes de ese plazo. Orden:
+      10:40 `--visibilidad public`; a los 60 s `curl` de las 4 URLs; 11:35
+      `--visibilidad private` (el contenido deja de servirse en cuanto expira el
+      `max-age`, hasta ~10 min después).
+
 expected_outputs:
   - "Repo público con `index.html`, los `*_alumno.html` y `.nojekyll`; sin `_docente.html` ni archivos de respuestas."
   - "`index.html` sin enlaces ni menciones al docente."
@@ -180,6 +188,14 @@ edge_cases:
       esperar el vaciado. Medido el 2026-11-11: aún respondía 200 con `age: 197`
       dos minutos después del cambio. **Consecuencia operativa: ocultar con
       horas de antelación, no minutos antes de la clase.**
+  - caso: "La URL sigue en 404 después de poner el repo público (el 404 quedó cacheado)"
+    respuesta: |
+      No se queda pegado: medido el 2026-11-15 en un repo desechable, con tres
+      404 previos ya servidos por el borde, `--visibilidad public` respondió 200
+      en 50 s (43 s en un repo sin 404 previo). El flujo espera hasta 90 s
+      (`esperar_pages`: 18 × 5 s), así que el margen cubre la propagación. Aun
+      así, conviene comprobar con `curl` y UA de navegador a los 60 s y, si
+      sigue en 404, mirar `gh api repos/<repo>/pages`.
   - caso: "Se cree que borrando el archivo del repo público se oculta"
     respuesta: |
       Falso y peligroso: el blob sigue en el historial público y es alcanzable

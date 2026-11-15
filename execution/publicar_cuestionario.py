@@ -167,6 +167,39 @@ _esperar_pages = G.esperar_pages
 _owner_por_defecto = G.owner_por_defecto
 
 
+def _transicion_visibilidad(
+    repo: str,
+    pedida: str | None,
+    *,
+    cambiar=_cambiar_visibilidad,
+    habilitar=_habilitar_pages,
+    actual=_visibilidad_actual,
+) -> tuple[str | None, bool]:
+    """Deja `repo` en `pedida` (o como esté, si es None) y, si queda público,
+    habilita Pages DESPUÉS del cambio. Devuelve (error, quedó_privado).
+
+    El orden no es cosmético. Pages rechaza los repos privados sin plan de pago
+    (HTTP 422 «Your current plan does not support GitHub Pages»), así que no se
+    puede habilitar antes; y si el repo acaba de pasar a público y no se habilita
+    después, la URL sigue en 404 y el flujo reporta `pages_visible` falso. Antes
+    de unificar aquí, la rama `--push` calculaba `privado` con el estado viejo y
+    se saltaba Pages al pasar a público: `--push --visibilidad public` dejaba el
+    repo público y sin servir.
+    """
+    if pedida:
+        error = cambiar(repo, pedida)
+        if error is not None:
+            return error, pedida == "private"
+        privado = pedida == "private"
+    else:
+        privado = actual(repo) == "private"
+    if not privado:
+        error = habilitar(repo)
+        if error is not None:
+            return error, privado
+    return None, privado
+
+
 def _asegurar_repo(repo: str) -> str | None:
     return G.asegurar_repo(repo, "Cuestionarios del curso (variante alumno)")
 
@@ -202,15 +235,12 @@ def main() -> int:
     url = f"https://{owner}.github.io/{nombre}/"
 
     if args.visibilidad and not args.push:
-        error = _cambiar_visibilidad(repo, args.visibilidad)
+        error, privado = _transicion_visibilidad(repo, args.visibilidad)
         if error is not None:
             salida = _resultado("error", 4, repo=repo, message=error)
             print(json.dumps(salida) if args.json else f"error: {error}", file=None if args.json else sys.stderr)
             return 4
-        visible = False
-        if args.visibilidad == "public":
-            _habilitar_pages(repo)
-            visible = _esperar_pages(url)
+        visible = False if privado else _esperar_pages(url)
         salida = _resultado(
             "ok", 0, repo=repo, url=url, visibilidad=args.visibilidad,
             publicado=False, pages_visible=visible,
@@ -272,25 +302,17 @@ def main() -> int:
     error = _asegurar_repo(repo)
     if error is None:
         error = _publicar_git(stage, repo)
-    # Pages no se puede habilitar en un repo privado sin plan de pago (HTTP 422
-    # «Your current plan does not support GitHub Pages»), y el contenido se puede
-    # publicar igual: se sube ahora, oculto, y `--visibilidad public` habilita
-    # Pages el día del examen. Intentarlo aquí convertiría un repo oculto en un
-    # fallo de publicación.
-    privado = (_visibilidad_actual(repo) == "private") or args.visibilidad == "private"
-    if error is None and not privado:
-        error = _habilitar_pages(repo)
+    # Visibilidad y Pages en una sola transición (ver _transicion_visibilidad):
+    # el contenido se puede subir a un repo privado, donde Pages no existe
+    # todavía, y `--visibilidad public` es quien lo habilita el día del examen.
+    if error is None:
+        error, privado = _transicion_visibilidad(repo, args.visibilidad)
+    else:
+        privado = True
     if error is not None:
         salida = _resultado("error", 4, repo=repo, message=error)
         print(json.dumps(salida) if args.json else f"error: {error}", file=None if args.json else sys.stderr)
         return 4
-
-    if args.visibilidad:
-        error = _cambiar_visibilidad(repo, args.visibilidad)
-        if error is not None:
-            salida = _resultado("error", 4, repo=repo, url=url, message=error)
-            print(json.dumps(salida) if args.json else f"error: {error}", file=None if args.json else sys.stderr)
-            return 4
 
     oculto = privado
     visible = False if oculto else _esperar_pages(url)

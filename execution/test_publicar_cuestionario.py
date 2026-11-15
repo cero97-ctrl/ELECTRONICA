@@ -178,6 +178,99 @@ def test_visibilidad():
     )
 
 
+def test_transicion_visibilidad():
+    """El orden importa: público primero, Pages después (bug del `--push`)."""
+    llamadas: list[tuple[str, str | None]] = []
+
+    def cambiar(repo, visibilidad):
+        llamadas.append(("cambiar", visibilidad))
+        return None
+
+    def habilitar(repo):
+        llamadas.append(("habilitar", None))
+        return None
+
+    def actual(repo):
+        llamadas.append(("actual", None))
+        return "private"
+
+    def actual_publico(repo):
+        llamadas.append(("actual", None))
+        return "public"
+
+    error, privado = P._transicion_visibilidad(
+        "o/r", "public", cambiar=cambiar, habilitar=habilitar, actual=actual
+    )
+    comprobar(
+        "public sobre repo privado: cambia la visibilidad y LUEGO habilita Pages",
+        llamadas == [("cambiar", "public"), ("habilitar", None)],
+        str(llamadas),
+    )
+    comprobar("public deja de estar privado", privado is False)
+    comprobar("public sin error", error is None)
+
+    llamadas.clear()
+    error, privado = P._transicion_visibilidad(
+        "o/r", "private", cambiar=cambiar, habilitar=habilitar, actual=actual_publico
+    )
+    comprobar(
+        "private no toca Pages",
+        llamadas == [("cambiar", "private")],
+        str(llamadas),
+    )
+    comprobar("private deja privado", privado is True)
+
+    llamadas.clear()
+    error, privado = P._transicion_visibilidad(
+        "o/r", None, cambiar=cambiar, habilitar=habilitar, actual=actual
+    )
+    comprobar(
+        "sin pedido y repo privado: no habilita Pages",
+        llamadas == [("actual", None)],
+        str(llamadas),
+    )
+    comprobar("sin pedido y repo privado: sigue privado", privado is True)
+
+    llamadas.clear()
+    error, privado = P._transicion_visibilidad(
+        "o/r", None, cambiar=cambiar, habilitar=habilitar, actual=actual_publico
+    )
+    comprobar(
+        "sin pedido y repo público: habilita Pages",
+        llamadas == [("actual", None), ("habilitar", None)],
+        str(llamadas),
+    )
+    comprobar("sin pedido y repo público: no está privado", privado is False)
+
+    llamadas.clear()
+
+    def cambiar_falla(repo, visibilidad):
+        llamadas.append(("cambiar", visibilidad))
+        return "gh api falló"
+
+    error, privado = P._transicion_visibilidad(
+        "o/r", "public", cambiar=cambiar_falla, habilitar=habilitar, actual=actual
+    )
+    comprobar(
+        "si el cambio de visibilidad falla, no se habilita Pages",
+        llamadas == [("cambiar", "public")],
+        str(llamadas),
+    )
+    comprobar("propaga el error del cambio", error == "gh api falló")
+
+    llamadas.clear()
+
+    def habilitar_falla(repo):
+        llamadas.append(("habilitar", None))
+        return "Pages no disponible"
+
+    error, privado = P._transicion_visibilidad(
+        "o/r", "public", cambiar=cambiar, habilitar=habilitar_falla, actual=actual
+    )
+    comprobar("propaga el error de Pages", error == "Pages no disponible")
+    comprobar("reporta que quedó público aunque Pages falle", privado is False)
+
+
 def main() -> int:
     print("Pruebas de la barrera de publicación")
     print("=" * 60)
