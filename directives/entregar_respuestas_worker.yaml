@@ -52,10 +52,19 @@ required_inputs:
       público y la lista de alumnos no debe viajar en él.
   - name: --inicio / --fin
     description: |
-      Ventana del examen en ISO 8601 UTC (`2026-11-16T14:40:00Z`). Se suben como
-      secretos `VENTANA_INICIO` / `VENTANA_FIN`, así se cambia la hora sin
-      redesplegar. Sin ellas la ventana queda abierta (los secretos persisten
-      entre despliegues: para cerrar de nuevo hay que sobreescribirlos).
+      Ventana del examen en ISO 8601 UTC (`2026-11-16T14:40:00Z` /
+      `2026-11-16T15:35:00Z`). Se suben como secretos `VENTANA_INICIO` /
+      `VENTANA_FIN`, así se cambia la hora sin redesplegar. Sin ellas la ventana
+      queda abierta (los secretos persisten entre despliegues: para cerrar de
+      nuevo hay que sobreescribirlos).
+
+      El fin lleva **5 minutos de margen** sobre la duración real del examen
+      (45 min de trabajo + 5 de holgura): el día del examen la página se abre a
+      las 10:40 y Pages puede tardar ~1 minuto en servirla, así que la holgura
+      es lo que garantiza los 45 minutos completos a quien entre en cuanto
+      aparezca. El cierre es **común para todos** (11:35) y no se mueve por
+      retrasos: un cierre distinto por alumno exigiría un endpoint de inicio y
+      no existe (el Worker solo ve el POST).
   - name: --fuente <cuestionario.md>
     description: |
       Fuente con front matter. La clave NO se escribe a mano: se lee de
@@ -227,3 +236,179 @@ edge_cases:
       Validación estricta y cuerpo acotado reducen el daño, pero no hay rate
       limiting (requiere KV o la función de pago). Auditar el repo privado y
       borrar lo que no corresponda.
+
+contingencia:
+  disparador: |
+    Un alumno no pudo presentar el examen remoto por un **corte eléctrico** (no
+    por falta de internet: eso lo resuelve el propio alumno con datos móviles).
+    El alumno avisa por WhatsApp; el docente verifica y, solo si el corte se
+    solapa con la ventana del examen, le da un **examen nuevo al día siguiente**.
+
+    Un examen de recuperación no es «reabrir la ventana»: las preguntas ya se
+    conocieron y, sobre todo, el acta recalcula las notas con la clave vigente de
+    su fuente. Si la recuperación compartiera `cuestionario_id` con el examen
+    regular, el acta reprocesaría las entregas regulares contra la clave nueva y
+    cambiaría notas ya publicadas. Por eso cada recuperación tiene su propia
+    fuente, su propio Worker y su propia acta; la fusión las une después.
+
+  protocolo_verificacion:
+    evidencia: |
+      El alumno envía la captura o el PDF del **reporte de la app** que registra
+      el inicio y el fin del **corte eléctrico** (no del internet). La app no
+      prueba que se haya quedado sin datos, así que además se le pregunta si
+      tenía datos móviles disponibles; si los tenía y no los usó, no hay
+      contingencia que aplicar.
+    criterio: |
+      El intervalo reportado debe **solaparse con la ventana del examen**
+      (10:40–11:35 local del 16-nov). Un corte a las 07:00 no explica una
+      ausencia a las 11:00.
+    registro: |
+      Las cédulas verificadas se anotan en `.tmp/verificados_<grupo>.csv` con
+      cabecera `cedula,nombre,grupo` (la misma nómina reducida que se sube como
+      secreto `CEDULAS` al Worker de recuperación y que se pasa a `--lista` en el
+      acta). Esa lista es la que hace cumplir la regla: un alumno no verificado
+      recibe 403 «no inscrita» aunque tenga el enlace.
+
+  examen_de_recuperacion:
+    alcance: |
+      **Un examen por grupo** (hasta 4), porque cada grupo rindió preguntas
+      distintas y la recuperación debe cubrir el mismo contenido. Si un grupo no
+      tuvo afectados, no se genera examen para ese grupo.
+    cuando: |
+      **Al día siguiente (17-nov), por la mañana.** Ventana fijada
+      09:00–09:45 local (`2026-11-17T13:00:00Z`–`2026-11-17T13:45:00Z`); se
+      cambia con `--inicio/--fin`, sin tocar código. La misma duración de 45 min
+      y el mismo cierre común para todos.
+    sitio: |
+      El **mismo sitio de GitHub Pages** del examen regular. Los HTML regulares
+      se archivan en local antes de publicar los de recuperación, y al cerrar se
+      vuelve a ocultar el repo (`--visibilidad private`).
+    preguntas: |
+      Las escribe el docente, **distintas** a las del examen regular. Formato
+      canónico de siempre (fuente + `_respuestas.md` hermano), y se procesan con
+      `barajar_cuestionario.py` y `dividir_cuestionario.py` igual que los
+      regulares: nada de HTML escrito a mano.
+    nombres: |
+      Fuente `ROL_<GRUPO>_RECUPERACION_Cuestionario.md` (para Legal,
+      `ROL_LEGAL_REPORTE_TECNICO_RECUPERACION_Cuestionario.md`) → slug
+      `rol_<grupo>_recuperacion_cuestionario`. Worker
+      `cuestionarios-worker-<grupo>-recuperacion`; entorno de wrangler
+      `<grupo>_recuperacion` (incluido Rojo, que es el Worker base y por eso
+      también necesita su `env.rojo_recuperacion`). HTML
+      `rol_<grupo>_recuperacion_cuestionario_alumno.html`.
+
+  pipeline_por_grupo:
+    - name: preparar el entorno de wrangler
+      run: |
+        Añadir a `Proyectos/cuestionarios-worker/wrangler.jsonc` un bloque
+        `env.<grupo>_recuperacion` con `name`, `REPO_RESULTADOS`,
+        `CUESTIONARIO_ID` (el slug de la fuente de recuperación), `GRUPOS: "4"`
+        y `ORIGENES`. Los `vars` no se heredan: hay que repetirlos. Sin este
+        bloque el flujo se niega a desplegar (código 3).
+    - name: desplegar el Worker cerrado
+      run: |
+        python3 flujo_desplegar_worker_cuestionarios.py \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --env <grupo>_recuperacion \
+          --nomina .tmp/verificados_<grupo>.csv \
+          --inicio 2026-11-17T13:00:00Z --fin 2026-11-17T13:45:00Z \
+          --actualizar-fuente
+      description: |
+        Se despliega el 16-nov por la tarde, con la ventana del 17: queda cerrado
+        hasta entonces y `/salud` lo confirma (`abierta: false`, `inscritas` = los
+        verificados). `--actualizar-fuente` escribe `entrega_url` en la fuente;
+        el HTML se genera **después**, o el botón saldría sin destino.
+    - name: archivar los HTML del examen regular
+      run: |
+        mkdir -p cursos/CYBERSEGURIDAD/evaluaciones/web/archivo/regular_2026-11-16
+        find cursos/CYBERSEGURIDAD/evaluaciones/web -maxdepth 1 \
+          -name '*_alumno.html' ! -name '*_recuperacion_*' \
+          -exec mv {} cursos/CYBERSEGURIDAD/evaluaciones/web/archivo/regular_2026-11-16/ \;
+      description: |
+        Se guardan en local (la carpeta `web/` está ignorada por git) para poder
+        reutilizarlos si hiciera falta otra recuperación. El `find` excluye los
+        de recuperación a propósito: el glob `rol_*_cuestionario_alumno.html`
+        también los capturaría.
+    - name: generar el HTML de recuperación
+      run: |
+        python3 flujo_evaluacion_web.py \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --variantes alumno
+      description: |
+        Escribe `web/rol_<grupo>_recuperacion_cuestionario_alumno.html`. Se
+        genera con el mismo conversor determinista: sin CDN, con datos
+        obligatorios, bloqueo al primer clic y borrador local.
+    - name: publicar y abrir
+      run: |
+        python3 flujo_publicar_cuestionario.py --push --visibilidad public
+      description: |
+        Con los HTML regulares archivados, el publicador solo ve los de
+        recuperación. El flip tarda 40–50 s medidos; por eso se publica a las
+        08:50, diez minutos antes de la ventana, y se comprueba con un `curl` a
+        los 60 s. Un 404 cacheado del día anterior no se queda pegado.
+    - name: cerrar
+      run: python3 flujo_publicar_cuestionario.py --visibilidad private
+      description: |
+        A las 09:45, igual que el examen regular. Ocultar no es instantáneo (el
+        CDN puede seguir sirviendo 200 hasta ~10 min), así que el cierre efectivo
+        lo marca el Worker: fuera de la ventana responde 403.
+    - name: acta por grupo
+      run: |
+        python3 flujo_acta_cuestionario.py \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --lista .tmp/verificados_<grupo>.csv --sin-pdf
+      description: |
+        Genera `resultados/acta_rol_<grupo>_recuperacion_cuestionario.csv`. La
+        clave es la de la fuente de recuperación, no la del examen regular.
+    - name: fusionar
+      run: |
+        python3 flujo_fusionar_actas.py \
+          --acta cursos/CYBERSEGURIDAD/evaluaciones/resultados/acta_rol_rojo_cuestionario.csv \
+          --recuperacion cursos/CYBERSEGURIDAD/evaluaciones/resultados/acta_rol_<grupo>_recuperacion_cuestionario.csv \
+          --lista cursos/CYBERSEGURIDAD/evaluaciones/alumnos_cyberseguridad.csv \
+          --salida cursos/CYBERSEGURIDAD/evaluaciones/resultados/acta_fusionada.csv
+      description: |
+        Una sola acta con todas las entregas y la columna `origen`. La invariante
+        que verifica el orquestador es `filas == regular + recuperación`: si no
+        cuadra, se perdió o duplicó una entrega y falla. Una cédula en las dos
+        actas es conflicto (código 3): se resuelve a mano, no se elige una.
+
+  edge_cases:
+    - caso: "Un alumno no verificado intenta entregar la recuperación"
+      respuesta: |
+        El Worker de recuperación tiene `CEDULAS` = solo los verificados, así que
+        responde 403 «no inscrita». Es la barrera: el enlace puede circular, la
+        nómina no.
+    - caso: "No hubo ningún afectado"
+      respuesta: |
+        No se despliega nada y el acta regular es la definitiva. No generar
+        exámenes ni actas de recuperación vacíos: un acta sin filas no es un
+        resultado, es una entrada que no se leyó.
+    - caso: "La misma cédula aparece en el acta regular y en la de recuperación"
+      respuesta: |
+        `flujo_fusionar_actas.py` sale con código 3 y dice en qué actas aparece.
+        Puede ser que la entrega regular llegara tarde (el Worker la archivó
+        después del cierre) o un archivo cruzado. Revisar a mano: si la entrega
+        regular es posterior al corte, la válida es la de recuperación; el script
+        no decide eso por ti.
+    - caso: "El corte fue durante el envío, después de las 11:35"
+      respuesta: |
+        Antes de dar recuperación, mirar el repo privado: si el archivo existe,
+        la entrega llegó y no hay nada que recuperar. Si no existe, el caso es el
+        mismo que un corte durante el examen. El 409 del Worker solo protege
+        contra reenvíos, no contra un envío que nunca llegó.
+    - caso: "El alumno dice que se le cortó la luz pero la app no lo respalda"
+      respuesta: |
+        No hay recuperación. El reporte de la app es la evidencia; sin él, la
+        regla se vuelve «el que avisa se lleva otro examen», que no es
+        verificable ni justo con el resto.
+    - caso: "El sitio no carga el 17 a las 09:00"
+      respuesta: |
+        Misma rutina que el examen regular: `--visibilidad private` y luego
+        `--visibilidad public`; el flip tarda 40–50 s. Si el repo quedó en 404
+        por caché, el reintento lo resuelve. Verificar con `curl` a los 60 s.
+    - caso: "Se quiere reutilizar el HTML del examen regular"
+      respuesta: |
+        Está en `web/archivo/regular_2026-11-16/`. Copiarlo de vuelta a `web/`
+        solo si se va a publicar el mismo examen; para una recuperación nueva,
+        generar el HTML de la fuente nueva (las preguntas deben ser distintas).

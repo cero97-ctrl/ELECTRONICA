@@ -1,0 +1,135 @@
+goal: |
+  Fusionar el acta del examen regular con las actas de recuperación en una sola
+  acta, sin perder ni duplicar entregas, para que el docente tenga una única
+  fuente de notas después de un examen de recuperación.
+
+  El acta solo contiene entregas: quien no entregó no es una fila, es una
+  ausencia en la cobertura. Por eso el acta regular no tiene fila para el
+  afectado y la de recuperación sí; fusionar es **unir por cédula**, no pisar
+  filas. Una cédula que aparece en las dos actas es un conflicto (entregó dos
+  veces o hay un archivo cruzado) y el flujo se detiene en vez de elegir una en
+  silencio: una nota que no se puede explicar no es publicable.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_fusionar_actas.py
+  scripts: execution/fusionar_actas.py, execution/test_fusionar_actas.py
+  acta_regular: cursos/<CURSO>/evaluaciones/resultados/acta_<cuestionario>.csv
+  actas_recuperacion: .tmp/acta_recup_<grupo>.csv (una por grupo con recuperación)
+  nomina: cursos/<CURSO>/evaluaciones/alumnos_cyberseguridad.csv (TSV sin cabecera)
+  output: .tmp/acta_fusionada.csv (o una ruta ignorada por git)
+  backend: directives/acta_cuestionario.yaml (quien produce cada acta)
+  recuperacion: directives/entregar_respuestas_worker.yaml → "Contingencia"
+  tests: python3 execution/test_fusionar_actas.py
+
+required_inputs:
+  - name: --acta CSV
+    description: |
+      Acta del examen regular, tal como la dejó `flujo_acta_cuestionario.py`. Es
+      la referencia de cabecera: las actas de recuperación deben traer las mismas
+      columnas. Si no traen `grupo`, `cedula`, `nombre` y `nota_recalculada`, no
+      se consideran actas y el flujo falla (código 3).
+  - name: --recuperacion CSV (repetible)
+    description: |
+      Una por grupo que rindió recuperación. Se puede repetir tantas veces como
+      grupos haya. La cabecera debe coincidir exactamente con la del acta regular;
+      si no, es una señal de actas de versiones distintas y se rechaza en vez de
+      mezclar formatos.
+  - name: --lista TSV|CSV
+    description: |
+      Nómina opcional para reportar quién sigue sin entrega después de la
+      recuperación. Acepta la exportación de la universidad (TSV sin cabecera,
+      cédula en la primera columna), CSV con cabecera o una cédula por línea. Se
+      normaliza con `normalizar_cedula`, la misma regla del Worker. Las entregas
+      de cédulas que no están en la nómina se reportan como aviso, no como fallo.
+  - name: --salida CSV
+    description: |
+      Destino del acta fusionada. Por defecto `.tmp/acta_fusionada.csv`. El acta
+      lleva nombres y cédulas, así que solo se escribe en rutas que git ignora
+      (`.tmp/` o `cursos/<CURSO>/evaluaciones/resultados/`); cualquier otra ruta
+      se rechaza con código 3.
+
+contract:
+  union: |
+    Cada entrega conserva todas sus columnas y gana `origen` al final:
+    `regular` si vino del acta del examen, `recuperacion` si vino de una de
+    recuperación. La fusión no recalcula notas: cada acta ya trae su
+    `nota_recalculada` con la clave que le corresponde. El acta fusionada es una
+    vista, no una recalificación.
+  conflicto: |
+    Una cédula en el acta regular y en una de recuperación es un conflicto. No se
+    resuelve automáticamente: el flujo sale con código 3 y dice en qué actas
+    aparece. Tampoco se permite una cédula repetida dentro de un mismo archivo.
+  normalizacion: |
+    Las cédulas se normalizan con `descargar_resultados.normalizar_cedula`
+    (prefijo `V` por defecto, sin puntos ni espacios), la misma función que usa el
+    acta y la misma regla que el Worker. No se reimplementa: dos normalizaciones
+    distintas harían que la misma persona contara dos veces.
+  orden: |
+    Las filas se ordenan por `(grupo, cédula)`. Es determinista y no depende del
+    orden en que se pasen las actas.
+  cobertura: |
+    `faltantes` = cédulas de la nómina que no aparecen en la fusión (siguen sin
+    entregar). `sobrantes` = cédulas fusionadas que no están en la nómina (aviso:
+    puede ser un alumno de otro curso o un error de la nómina).
+
+steps:
+  - name: validar entradas
+    run: |
+      El orquestador comprueba que el acta regular y cada `--recuperacion` existen
+      antes de invocar la capa 3. Una ruta inexistente es código 3, no un acta
+      vacía.
+  - name: fusionar
+    run: python3 execution/fusionar_actas.py --acta <regular.csv> --recuperacion <recup_1.csv> ... --lista <nomina> --salida <salida.csv> --json
+    description: |
+      Lee las actas, normaliza cédulas, detecta duplicados y conflictos, y escribe
+      el CSV con la columna `origen`. No toca las actas de entrada.
+  - name: verificar
+    run: |
+      El orquestador comprueba que el archivo de salida existe, que su cabecera
+      termina en `origen`, que no contiene la columna interna `_cedula` y que el
+      número de filas es exactamente `regular + recuperacion`. Esa igualdad es la
+      invariante de la unión: si no cuadra, se perdió o se duplicó una entrega y
+      el flujo falla aunque la capa 3 haya dicho "ok".
+  - name: reportar
+    run: |
+      Imprime el resumen (filas, cuántas regulares y cuántas de recuperación, quién
+      sigue sin entrega, avisos). Con `--json` la salida es un objeto JSON.
+
+expected_outputs:
+  - .tmp/acta_fusionada.csv con todas las entregas y la columna `origen`
+  - resumen en stdout: filas, regular, recuperación, faltantes, sobrantes, avisos
+
+edge_cases:
+  - case: la misma cédula está en el acta regular y en una de recuperación
+    protocol: |
+      Código 3 con el mensaje "o entregó dos veces o hay un archivo cruzado".
+      Revisar a mano: puede ser un reenvío que el Worker no bloqueó (archivo
+      distinto) o un error al descargar el acta. No se elige una fila en silencio.
+  - case: el acta de recuperación tiene otra cabecera
+    protocol: |
+      Código 3. Casi siempre significa que una de las dos actas se generó con una
+      versión distinta del script o que el archivo no es un acta. Regenerar la
+      acta con el mismo flujo antes de fusionar.
+  - case: no hay ninguna entrega que fusionar
+    protocol: |
+      Código 3. Un acta fusionada vacía no es un resultado: es una entrada que no
+      se leyó. Revisar las rutas y que las actas tengan filas.
+  - case: la salida está fuera de .tmp/ y de resultados/
+    protocol: |
+      Código 3. El acta lleva nombres y cédulas y el repo es público; solo se
+      escribe donde git la ignora. Mover la salida a `.tmp/`.
+  - case: una cédula fusionada no está en la nómina
+    protocol: |
+      Aviso, no fallo. Se reporta en `sobrantes` para que el docente decida si es
+      un alumno de otro curso o un error de la nómina; la nota no se descarta.
+  - case: el docente solo recuperó a algunos grupos
+    protocol: |
+      Pasar solo las actas de los grupos que rindieron recuperación. Los grupos
+      sin recuperación no necesitan acta: sus entregas ya están en la regular.
+
+exit_codes:
+  0: acta fusionada y verificada
+  1: error de E/S al escribir la salida
+  3: datos inconsistentes (conflicto, cabecera distinta, cédula inválida, acta vacía, ruta no ignorada) o uso incorrecto
