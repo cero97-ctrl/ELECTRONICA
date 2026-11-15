@@ -44,6 +44,10 @@ alumnos.
    3 capas, en vez de editar el CSV a mano.
 10. **Archivar los HTML regulares en local** antes de publicar la recuperación,
     para poder reutilizarlos si hiciera falta.
+11. **Avisar por WhatsApp el 15-nov, sin enlace** (la URL da 404 hasta el lunes
+    10:40): si se va la luz antes de empezar, usar los datos móviles del
+    celular; si solo se cae el internet, compartir datos al mismo equipo
+    (hotspot) para no perder el borrador.
 
 ## Actividades
 - **Bug del `--push` corregido** en `execution/publicar_cuestionario.py`: las dos
@@ -112,6 +116,29 @@ alumnos.
 >
 > Cuando terminen, pulsen «Enviar mis respuestas» y esperen el mensaje de
 > confirmación. La nota no se muestra: se publica en el acta.
+
+## Mensaje de aviso previo (enviado el 15-nov, sin enlace)
+
+Sin enlace a propósito: el repo sigue privado y la URL devuelve **404** hasta
+el lunes a las 10:40. El aviso sirve para que decidan con qué equipo y con qué
+conexión presentarse.
+
+> Buenos días. Un aviso antes del cuestionario del lunes.
+>
+> Si antes de empezar se les va la luz, no esperen a que vuelva: pueden
+> presentarlo desde el celular con sus **datos móviles**. El examen funciona
+> igual.
+>
+> Dos cosas importantes:
+>
+> - Si se les va **el internet** (el router) pero la computadora sigue
+>   encendida, compartan datos desde el celular (**hotspot**) y sigan en la
+>   misma computadora: así no pierden el borrador.
+> - El borrador queda guardado **en el navegador donde empezaron**. Si tienen
+>   que pasarse al celular, el borrador no viaja: tendrían que responder de
+>   nuevo, y el cierre sigue siendo a las **11:35**.
+>
+> El enlace se los mando el lunes a las 10:40.
 
 ## Pendientes
 - **Lunes 10:40**: `python3 flujo_publicar_cuestionario.py --visibilidad public`;
