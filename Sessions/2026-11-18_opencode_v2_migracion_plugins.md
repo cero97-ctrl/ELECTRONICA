@@ -63,10 +63,36 @@ opencode_v2_migracion_plugins
 - Los `git status` del repo arrastraban trabajo previo del usuario (SARA, actas, AGENTS.md,
   etc.); esta sesión solo toca los dos plugins, la bitácora y las dos viñetas de `AGENTS.md`.
 
+## Aclaración de los «dos detalles» (verificada, no supuesta)
+
+El usuario preguntó si hacía falta resolverlos. Se comprobó en vez de razonar:
+
+**1. Orden del PATH (`nvm/bin` antes de `elect_env/bin`) — NO hay nada que resolver.**
+`ls /home/cero/anaconda3/envs/elect_env/bin | grep -E '^node(js)?$|^npm$|^npx$'` → sin
+resultados. No hay solapamiento de binarios: cada herramienta tiene un único proveedor y el
+orden relativo es irrelevante. Forzar un orden exigiría acoplar los dos plugins (uno tendría
+que conocer al otro), lo que añade fragilidad a cambio de cero efecto.
+
+**2. Pin de `@opencode/plugin` — el diagnóstico inicial era FALSO.** Se creía que hacía
+falta `node_modules` local con el paquete en la versión del runtime. Sonda decisiva:
+se movió `.opencode/node_modules` fuera y se creó `.opencode/plugins/zz-sonda.js` que importa
+`@opencode/plugin` → **cargó sin error** (`loading plugin` + `watcher started`, ningún
+`failed to load plugin`). Control negativo con `import … from "este-paquete-no-existe-xyz"`
+con `node_modules` igualmente ausente → **sí falló** (`Cannot find package …`), lo que prueba
+que la resolución no venía del `node_modules` local y que la sonda era capaz de fallar.
+Conclusión: **el runtime v2 provee el módulo**; el `package.json` + `node_modules` local
+(434 MB) solo aporta tipos al editor y es opcional.
+Corregido en `AGENTS.md`: la viñeta de `conda-env` (ya no menciona el pin como requisito),
+la fila «Deps de los plugins locales» de la tabla de migración y el paso 5 del checklist.
+
 ## Pendientes
-- Si se actualiza OpenCode, subir el pin `@opencode/plugin` de `.opencode/package.json` a la
-  misma versión y re-ejecutar `npm install` en `.opencode/`; confirmar en el log que no
-  aparezca `failed to load plugin` y que las variables sigan presentes en una shell nueva.
+- **Decisión del usuario (resuelta):** `.opencode/node_modules/` (434 MB, gitignored) se
+  **borró**; los plugins siguen cargando (verificado en el log tras el borrado: `loading
+  plugin` para ambos sin fallo posterior, y `python`/`node` siguen resolviendo al env y a
+  nvm). Se conservan `.opencode/package.json` y `package-lock.json` (128 KB) para poder
+  reinstalar con `npm install` si algún día se quieren tipos en el editor.
+- `AGENTS.md` **no** se commiteó: el archivo traía cambios previos del usuario sin commitear
+  (conteos de tests, flujo de Sara) y no corresponde mezclarlos en un commit de plugins.
 - La bitácora de 2026-08-21 y la de 2026-08-26 describen el contrato V1 (`shell.env`,
   reinicio obligatorio). Se dejan como registro histórico; la fuente vigente es `AGENTS.md`
   y el propio código de los plugins.
