@@ -1,0 +1,48 @@
+materia: fisica
+titulo: "Movimiento rectilíneo uniforme"
+orden: 1
+objetivo: "Calcular distancia, velocidad o tiempo en un movimiento con velocidad constante."
+idea_clave: "En el movimiento rectilíneo uniforme la velocidad no cambia: en tiempos iguales se recorren distancias iguales."
+pasos:
+  - "Escribe los datos con sus unidades."
+  - "Convierte a unidades compatibles: metros con segundos, o kilómetros con horas."
+  - "Elige la fórmula: d = v·t, v = d/t o t = d/v."
+  - "Sustituye los valores y calcula."
+  - "Escribe el resultado con la unidad correcta."
+ejemplo:
+  titulo: "Calcular la distancia"
+  pasos:
+    - "Datos: v = 20 m/s y t = 5 s."
+    - "La velocidad está en m/s y el tiempo en s. Son compatibles."
+    - "Fórmula: d = v·t."
+    - "Sustituye: d = 20 m/s · 5 s."
+    - "Calcula: d = 100 m."
+  resultado: "La distancia recorrida es 100 metros."
+esquema:
+  tipo: tabla
+  titulo: "Magnitudes del movimiento"
+  columnas: ["Magnitud", "Símbolo", "Unidad"]
+  filas:
+    - ["Distancia", "d", "metro (m)"]
+    - ["Velocidad", "v", "metro por segundo (m/s)"]
+    - ["Tiempo", "t", "segundo (s)"]
+practica:
+  - pregunta: "Un carro recorre 150 m en 10 s. ¿Cuál es su velocidad?"
+    opciones:
+      - "15 m/s"
+      - "150 m/s"
+      - "1,5 m/s"
+    correcta: 0
+    explicacion: "v = d/t = 150 m / 10 s = 15 m/s."
+  - pregunta: "Si un objeto se mueve a 4 m/s durante 12 s, ¿qué distancia recorre?"
+    opciones:
+      - "48 m"
+      - "3 m"
+      - "16 m"
+    correcta: 0
+    explicacion: "d = v·t = 4 m/s · 12 s = 48 m."
+recordar:
+  - "La velocidad se mide en distancia dividida entre tiempo: m/s o km/h."
+  - "Para pasar de km/h a m/s, divide entre 3,6."
+  - "En el movimiento rectilíneo uniforme la trayectoria es una línea recta."
+nota: "Si el problema mezcla metros con horas, primero convierte las unidades. No mezcles m/s con horas."

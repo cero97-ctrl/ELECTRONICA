@@ -1,0 +1,156 @@
+goal: |
+  Publicar el sitio de estudio generado en `SARA/` en un repositorio público
+  separado, servido por GitHub Pages, para que Sara pueda abrirlo desde el
+  colegio sin instalar nada y sin depender de esta máquina.
+
+  A diferencia de los cuestionarios del curso (carpeta plana, una clave que
+  proteger), aquí el riesgo es doble: publicar algo que no es del sitio
+  (la fuente YAML privada) y romper los enlaces al servir el árbol en un
+  subdirectorio de `github.io`. Por eso se publica en un repo separado, solo
+  los `.html` generados, con todos sus enlaces verificados contra el propio
+  payload antes de subir nada.
+
+  Privacidad: la versión publicada lleva marca neutra («Material de estudio ·
+  3.º año de bachillerato»), sin el nombre de Sara. Es una menor y GitHub Pages
+  público es indexable por buscadores. El nombre solo aparece en rutas locales
+  (`SARA/`, nombre del repo), nunca en el contenido servido.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_publicar_material_sara.py
+  scripts: execution/publicar_material_sara.py, execution/test_publicar_material_sara.py
+  mecanica_compartida: execution/publicar_github.py
+  generador: execution/generar_material_sara.py (directives/material_didactico_sara.yaml)
+  input: SARA/**/*.html (sitio generado; la fuente es SARA/contenido/*.yaml y NO viaja)
+  output: repo público `cero97-ctrl/material-sara` (árbol de .html + .nojekyll)
+  url: https://cero97-ctrl.github.io/material-sara/
+  tests: python3 execution/test_publicar_material_sara.py
+
+required_inputs:
+  - name: --origen DIR
+    description: |
+      Carpeta del sitio generado. Debe ser exactamente `SARA/` (código 5 cualquier
+      otra ruta, incluidos subdirectorios): lo que se publica es la salida del
+      generador, nunca otra cosa.
+  - name: --repo owner/nombre
+    description: |
+      Destino. Por defecto `<usuario-gh>/material-sara`. Se crea público si no
+      existe; si existe, se actualiza con `--force` (el repo es generado).
+  - name: --push
+    description: |
+      Sin este flag solo prepara el payload en `.tmp/publicacion_sara/<nombre>/`
+      y no toca la red. Con él: crea el repo si falta, hace commit y push,
+      habilita Pages y espera a que la URL responda 200.
+  - name: --dry-run
+    description: Prepara y reporta sin publicar (equivale a no pasar `--push`).
+  - name: --visibilidad public|private
+    description: |
+      Interruptor de publicación. `private` hace que la URL pública deje de
+      responder (Pages no sirve repos privados sin plan de pago); `public` la
+      devuelve. Se puede usar solo (sin `--push`) para ocultar o mostrar sin
+      volver a subir contenido.
+
+contract:
+  payload: |
+    Solo entran archivos `.html` de `SARA/`. Se rechaza (código 3):
+      - symlinks (punteros fuera del sitio que se copiarían como contenido);
+      - recursos externos: `http://`, `https://`, `<link`, `src=`, `@import`
+        (el sitio debe funcionar offline, también en el Wi-Fi del colegio);
+      - href con esquema externo (`http:`, `mailto:`, `javascript:`, `//`);
+      - href absolutos (`/...`): Pages sirve el sitio en un subdirectorio;
+      - href que escapen de la raíz del sitio (`../../...`);
+      - href que no resuelvan a un archivo del propio payload (enlace roto);
+      - referencias a `contenido/` o `*.yaml` (la fuente privada nunca viaja).
+    Además se exige `index.html` en la raíz.
+  arbol: |
+    El stage preserva las rutas relativas (`matematicas/01-....html`, etc.)
+    porque los `href` del generador ya son relativos; así el árbol funciona
+    igual en disco y bajo `https://<owner>.github.io/<repo>/`. Se añade
+    `.nojekyll` para que Pages no procese los archivos con Jekyll.
+  determinismo: |
+    El payload es byte a byte reproducible (mismo sitio generado → mismos
+    sha256). El commit usa autor, correo y fecha fijos desde
+    `execution/publicar_github.py`, así que el mismo payload produce el mismo
+    commit; el push es `--force` porque el repo es generado.
+  privacidad: |
+    El contenido servido no menciona a Sara (lo fija el generador con marca
+    neutra y lo verifica `test_publicar_material_sara.py`). Cambiar la marca a
+    algo con nombre exige decisión explícita del usuario: es un dato personal
+    de una menor en una página indexable.
+  visibilidad: |
+    Idéntica a la de los cuestionarios: API REST (`gh api -X PATCH
+    repos/<repo> -F private=true|false`), no `gh repo edit --visibility`
+    (gh 2.45 no tiene el flag de aceptación). «Privado» significa 404, y el CDN
+    de Pages puede tardar hasta ~10 minutos en vaciar la copia cacheada.
+
+steps:
+  - paso: 1
+    script: python3 flujo_material_sara.py
+    description: |
+      Regenerar el sitio antes de publicar. La publicación no genera nada: si
+      el HTML está desactualizado, se publica desactualizado.
+  - paso: 2
+    script: python3 execution/test_publicar_material_sara.py
+    description: |
+      La barrera debe estar en verde antes de tocar la red; incluye la
+      comprobación de que el sitio real pasa la validación y no menciona a Sara.
+  - paso: 3
+    script: flujo_publicar_material_sara.py --dry-run
+    description: |
+      Preparar y validar el payload. Revisar la lista de 14 páginas y los
+      sha256; si aparece cualquier cosa que no sea `.html`, detenerse.
+  - paso: 4
+    script: flujo_publicar_material_sara.py --push
+    description: |
+      Publicar. Al terminar, abrir la URL y confirmar que la portada carga y
+      que la navegación entre materias y temas funciona desde el subdirectorio.
+  - paso: 5
+    script: curl -s -o /dev/null -w '%{http_code}' <url de una página anidada>
+    description: |
+      Verificar al menos una página anidada
+      (`.../material-sara/matematicas/index.html`): es la que rompe primero si
+      un enlace o una ruta relativa está mal. Comparar el sha256 servido con el
+      del stage.
+
+expected_outputs:
+  - "Repo público con el árbol de `.html` de `SARA/` y `.nojekyll`; sin `contenido/*.yaml` ni symlinks."
+  - "Pages habilitado en `https://<owner>.github.io/<repo>/` y respondiendo 200, incluidas las páginas anidadas."
+  - "Contenido servido sin el nombre de Sara y sin recursos externos."
+  - "Con `--visibilidad private`: repo privado y URL pública en 404 (tras el vaciado del CDN)."
+  - "Código de salida 0; 3 payload rechazado; 4 gh/git falló; 5 origen rechazado."
+
+edge_cases:
+  - caso: "Se intenta publicar desde otra carpeta (`--origen docs`)"
+    respuesta: "Código 5: el único origen válido es `SARA/`, la salida del generador."
+  - caso: "Aparece un enlace roto tras editar un tema"
+    respuesta: |
+      Código 3 con el archivo y el `href` culpables. Corregir el YAML o el
+      generador y regenerar; nunca arreglar el `.html` a mano (es salida).
+  - caso: "El sitio referencia `contenido/*.yaml`"
+    respuesta: "Código 3: la fuente privada no viaja. Solo se publican `.html`."
+  - caso: "El repo destino ya existe con otro contenido"
+    respuesta: |
+      El push es `--force` y lo reemplaza: el repo es generado. No usar este
+      flujo sobre un repo con contenido ajeno.
+  - caso: "Pages no responde tras el push"
+    respuesta: |
+      Esperar hasta un minuto y reintentar. Si sigue en 404, comprobar
+      `gh api repos/<repo>/pages` (rama `main`, ruta `/`) y que el repo sea
+      público.
+  - caso: "Las páginas anidadas dan 404 pero la portada no"
+    respuesta: |
+      Un `href` absoluto o un stage sin subcarpetas. La barrera rechaza href
+      absolutos (código 3) y `_preparar` preserva rutas; si ocurriera, revisar
+      ambos antes de re-publicar.
+  - caso: "Se quiere ocultar el sitio (vacaciones, cambio de curso)"
+    respuesta: |
+      `flujo_publicar_material_sara.py --visibilidad private`: el contenido
+      queda subido y la URL pasa a 404. Para devolverlo, `--visibilidad public`.
+      Recordar el vaciado del CDN (~10 min) antes de dar por oculto algo.
+  - caso: "Alguien pide poner el nombre de Sara en la página pública"
+    respuesta: |
+      Decisión del usuario, no del flujo: es un dato personal de una menor en
+      una página indexable. Si se aprueba, cambiar la marca en
+      `execution/generar_material_sara.py`, regenerar y quitar la aserción de
+      anonimato del test con esa decisión registrada en la bitácora.

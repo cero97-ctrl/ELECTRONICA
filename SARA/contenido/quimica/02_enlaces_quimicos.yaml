@@ -1,0 +1,48 @@
+materia: quimica
+titulo: "Enlaces químicos"
+orden: 2
+objetivo: "Distinguir los enlaces iónico, covalente y metálico."
+idea_clave: "Los átomos se unen para ganar estabilidad. El tipo de enlace depende de si transfieren o comparten electrones."
+pasos:
+  - "Ubica los elementos en la tabla periódica."
+  - "Metal con no metal: normalmente enlace iónico."
+  - "No metal con no metal: normalmente enlace covalente."
+  - "Metal con metal: enlace metálico."
+  - "Revisa las propiedades para confirmar el tipo de enlace."
+ejemplo:
+  titulo: "El cloruro de sodio"
+  pasos:
+    - "El sodio, Na, es un metal."
+    - "El cloro, Cl, es un no metal."
+    - "El sodio transfiere un electrón al cloro."
+    - "Se forman iones Na⁺ y Cl⁻."
+    - "La atracción entre los iones forma el enlace iónico."
+  resultado: "El NaCl tiene enlace iónico."
+esquema:
+  tipo: tabla
+  titulo: "Tipos de enlace"
+  columnas: ["Enlace", "Entre", "Qué ocurre"]
+  filas:
+    - ["Iónico", "Metal y no metal", "Se transfieren electrones"]
+    - ["Covalente", "No metal y no metal", "Se comparten electrones"]
+    - ["Metálico", "Metal y metal", "Los electrones se mueven entre los átomos"]
+practica:
+  - pregunta: "¿Qué tipo de enlace forma el NaCl?"
+    opciones:
+      - "Iónico"
+      - "Covalente"
+      - "Metálico"
+    correcta: 0
+    explicacion: "El Na es un metal y el Cl es un no metal. El sodio transfiere un electrón al cloro."
+  - pregunta: "Dos no metales comparten electrones. ¿Qué enlace forman?"
+    opciones:
+      - "Covalente"
+      - "Iónico"
+      - "Metálico"
+    correcta: 0
+    explicacion: "Cuando dos no metales comparten electrones, el enlace es covalente."
+recordar:
+  - "Iónico: transferencia de electrones."
+  - "Covalente: compartición de electrones."
+  - "Metálico: los electrones se mueven libremente entre los átomos."
+nota: "La tabla periódica da una tendencia general. Existen casos que no siguen la regla simple, por eso también se revisan las propiedades."
