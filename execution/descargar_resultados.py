@@ -209,15 +209,26 @@ def normalizar_justificaciones(
 
 
 def marcar_copias(
-    registros: list[dict], items: tuple[int, ...] | list[int], umbral: float = 0.85
+    registros: list[dict],
+    items: tuple[int, ...] | list[int],
+    umbral: float = 0.85,
+    evidencia: tuple[int, ...] | list[int] = (),
 ) -> int:
     """Marca pares de justificaciones casi idénticas entre alumnos distintos.
 
     Compara por pregunta con `difflib`; un par con similitud >= `umbral` pasa
     ambas filas a `revisar`. Devuelve cuántos pares se detectaron.
+
+    `evidencia` son los ítems cuya justificación es un artefacto literal que se
+    pide pegar (el árbol del repositorio, una línea de `grep`). Compañeros del
+    mismo grupo entregan el mismo artefacto sin haber copiado, así que esos
+    ítems quedan fuera de la comparación.
     """
+    exentos = {int(n) for n in evidencia}
     pares = 0
     for n in items:
+        if n in exentos:
+            continue
         clave = str(n)
         textos = [
             (r, r.get("justificaciones", {}).get(clave, ""))
@@ -619,6 +630,40 @@ def latex_acta(
                 f"\nEntregaron los {cobertura['esperados']} de la nómina.\n\\end{{tcolorbox}}"
             )
 
+    revisables = [r for r in registros if r.get("estado") != "ok"]
+    remision_tex = (
+        r" El motivo de cada una está en la caja «A revisar a mano»."
+        if revisables
+        else ""
+    )
+    revision_tex = ""
+    if revisables:
+        motivos_tex = []
+        for r in revisables:
+            avisos = r.get("avisos") or []
+            if isinstance(avisos, str):
+                avisos = [a.strip() for a in avisos.split(";") if a.strip()]
+            motivos = [a for a in avisos if a]
+            if not motivos:
+                justif = r.get("justif_estado")
+                if justif == "copiada":
+                    motivos = ["justificación marcada como copiada"]
+                elif justif == "falta":
+                    motivos = ["justificación incompleta"]
+                else:
+                    motivos = ["la nota o los aciertos no cuadran con la clave vigente"]
+            motivos_tex.append(
+                "\\item \\texttt{" + _tex(r["cedula"]) + "} "
+                + _tex(r.get("nombre") or "(sin nombre)") + ": "
+                + _tex("; ".join(motivos))
+            )
+        revision_tex = (
+            "\n\n"
+            r"\begin{tcolorbox}[cajaContenido, title={A revisar a mano}]"
+            f"\n{len(revisables)} fila(s) no publicables tal cual:\n"
+            "\\begin{itemize}\n" + "\n".join(motivos_tex) + "\n\\end{itemize}\n\\end{tcolorbox}"
+        )
+
     promedio = "--" if datos["promedio"] is None else f"{datos['promedio']:.2f}"
     mejor = "--" if datos["mejor"] is None else f"{datos['mejor']:.2f}"
     peor = "--" if datos["peor"] is None else f"{datos['peor']:.2f}"
@@ -656,6 +701,7 @@ def latex_acta(
 
 """
         + cobertura_tex
+        + revision_tex
         + r"""
 
 \section*{Resultados por grupo}
@@ -673,8 +719,11 @@ def latex_acta(
 \smallskip
 {\footnotesize Nota recalculada con la clave vigente en el momento de generar el
 acta ($10\cdot\text{aciertos}/\text{preguntas}$). Las filas marcadas con
-\textcolor{rojoAlerta}{\faIcon{exclamation-triangle}} difieren de la nota que
-devolvió el Worker y hay que revisarlas a mano. Grupos declarados: """
+\textcolor{rojoAlerta}{\faIcon{exclamation-triangle}} \textbf{no son publicables
+tal cual}: la nota o los \texttt{aciertos} no cuadran con la clave vigente, o la
+justificación está incompleta o coincide con la de otro alumno."""
+        + remision_tex
+        + r""" Grupos declarados: """
         + str(grupos)
         + r""".}
 
@@ -977,7 +1026,11 @@ def main() -> int:
             continue
         registros.append(registro)
 
-    copias = marcar_copias(registros, datos_fuente["justificacion_items"])
+    copias = marcar_copias(
+        registros,
+        datos_fuente["justificacion_items"],
+        evidencia=datos_fuente.get("justificacion_evidencia", ()),
+    )
     registros = ordenar(registros)
     avisos: list[str] = []
     for r in registros:

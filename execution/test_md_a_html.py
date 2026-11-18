@@ -413,6 +413,58 @@ def test_justificacion_items_validacion():
     )
 
 
+def test_justificacion_evidencia():
+    preguntas = M._parsear_cuestionario(FUENTE_JUST)
+    meta = {**META_JUST, "justificacion_evidencia": [1]}
+    problemas, _, _, _ = M.validar(preguntas, meta)
+    comprobar("ítem de evidencia válido no falla", problemas == [], str(problemas))
+    items, errs = M._items_evidencia(meta, preguntas, [1])
+    comprobar("la evidencia declarada se devuelve", items == [1] and errs == [], str((items, errs)))
+    comprobar(
+        "sin declarar no hay ítems exentos",
+        M._items_evidencia(META_JUST, preguntas, [1])[0] == [],
+    )
+
+    casos = [
+        ("no lista", "1", "lista de números"),
+        ("no entero", ["1"], "no entero"),
+        ("booleano", [True], "no entero"),
+        ("repetida", [1, 1], "repite"),
+        ("inexistente", [9], "inexistentes"),
+        ("sin justificación", [2], "no exigen justificación"),
+    ]
+    for nombre, crudo, esperado in casos:
+        problemas, _, _, _ = M.validar(preguntas, {**meta, "justificacion_evidencia": crudo})
+        comprobar(
+            f"justificacion_evidencia {nombre} falla",
+            any(esperado in p for p in problemas),
+            str(problemas),
+        )
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        fuente = Path(tmp) / "c.md"
+        respuestas = Path(tmp) / "c_respuestas.md"
+        fuente.write_text(FUENTE_JUST.replace("justificacion_items: [1]", "justificacion_items: [1]\njustificacion_evidencia: [1]"), encoding="utf-8")
+        respuestas.write_text(RESPUESTAS_JUST, encoding="utf-8")
+        datos = M.cargar_clave(fuente, respuestas)
+        comprobar(
+            "cargar_clave devuelve justificacion_evidencia",
+            datos["justificacion_evidencia"] == [1],
+            str(datos["justificacion_evidencia"]),
+        )
+
+    titulo = "Cuestionario de prueba"
+    puntos = M.validar(preguntas, meta)[2]
+    sin = M._render_alumno(titulo, META_JUST, preguntas, puntos)
+    con = M._render_alumno(titulo, meta, preguntas, puntos)
+    comprobar(
+        "la evidencia no se embebe en el HTML del alumno",
+        sin == con and "justificacion_evidencia" not in con,
+    )
+
+
 def test_cruce_justificacion():
     preguntas = M._parsear_cuestionario(FUENTE_JUST)
     sin = M._parsear_respuestas(RESPUESTAS_JUST.replace("**Justificación:** Cita el archivo y la línea de tu repositorio que demuestran la respuesta, con la salida del comando que ejecutaste.\n\n", ""))

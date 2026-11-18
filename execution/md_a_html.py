@@ -675,6 +675,50 @@ def _items_justificacion(
     return sorted(set(items)), problemas
 
 
+def _items_evidencia(
+    meta: dict, preguntas: list[dict], items_justificacion: list[int]
+) -> tuple[list[int], list[str]]:
+    """Valida `justificacion_evidencia`: ítems cuya justificación es un artefacto.
+
+    Algunas preguntas piden pegar algo literal (el árbol del repositorio, una
+    línea de `grep`, una fila de tabla). Dos alumnos del mismo grupo producen
+    textos idénticos sin haber copiado, así que `marcar_copias` los exime: el
+    campo declara qué ítems son de ese tipo. Solo aplica a preguntas que ya
+    exigen justificación; si no, la exención no tendría sentido.
+    """
+    problemas: list[str] = []
+    cruda = meta.get("justificacion_evidencia")
+    if cruda is None:
+        return [], problemas
+    if not isinstance(cruda, list):
+        return [], [
+            f"`justificacion_evidencia` debe ser una lista de números: {cruda!r}"
+        ]
+    numeros = {p["numero"] for p in preguntas}
+    items: list[int] = []
+    for valor in cruda:
+        if isinstance(valor, bool) or not isinstance(valor, int):
+            problemas.append(
+                f"`justificacion_evidencia` tiene un valor no entero: {valor!r}"
+            )
+            continue
+        items.append(valor)
+    if len(set(items)) != len(items):
+        problemas.append(f"`justificacion_evidencia` repite preguntas: {items}")
+    fuera = [n for n in items if n not in numeros]
+    if fuera:
+        problemas.append(
+            f"`justificacion_evidencia` menciona preguntas inexistentes: {fuera}"
+        )
+    sin_justificar = sorted(set(items) - set(items_justificacion))
+    if sin_justificar:
+        problemas.append(
+            "`justificacion_evidencia` exime de copia preguntas que no exigen "
+            f"justificación: {sin_justificar}"
+        )
+    return sorted(set(items)), problemas
+
+
 def validar(preguntas: list[dict], meta: dict) -> tuple[list[str], dict[int, str], dict[int, float], float]:
     problemas: list[str] = []
     if not preguntas:
@@ -703,8 +747,10 @@ def validar(preguntas: list[dict], meta: dict) -> tuple[list[str], dict[int, str
             if not opcion["texto"]:
                 problemas.append(f"pregunta {numero}: la opción {opcion['letra']} está vacía")
 
-    _, problemas_justificacion = _items_justificacion(meta, preguntas)
+    items_justificacion, problemas_justificacion = _items_justificacion(meta, preguntas)
     problemas.extend(problemas_justificacion)
+    _, problemas_evidencia = _items_evidencia(meta, preguntas, items_justificacion)
+    problemas.extend(problemas_evidencia)
 
     clave, problemas_clave = _normalizar_clave(meta.get("clave"))
     problemas.extend(problemas_clave)
@@ -818,6 +864,9 @@ def cargar_clave(fuente: Path | str, respuestas: Path | str | None = None) -> di
         "n_preguntas": len(preguntas),
         "grupos": _grupos_declarados(meta),
         "justificacion_items": _items_justificacion(meta, preguntas)[0],
+        "justificacion_evidencia": _items_evidencia(
+            meta, preguntas, _items_justificacion(meta, preguntas)[0]
+        )[0],
     }
 
 

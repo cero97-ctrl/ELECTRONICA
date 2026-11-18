@@ -80,6 +80,12 @@ cursos/*/evaluaciones/web/**
 # regla, el `git add -A` de `update_repo.sh` la publicaría.
 cursos/*/evaluaciones/alumnos_*.csv
 
+# Listado oficial de inscritos que imprime el sistema de la universidad
+# (cédula, apellidos, nombres y correos). Mismo motivo que la nómina: dato
+# personal en un repo PÚBLICO. Es la fuente con la que se reconstruye
+# `alumnos_*.csv`; vive solo en local.
+cursos/*/listado_*.pdf
+
 # Banco privado de preguntas: con los .tex ya ignorados, este era el último sitio
 # donde un enunciado podía colarse al repo. `curso.yaml` es público y solo declara
 # fase, puntaje y tema; los textos viven aquí y se inyectan al generar con

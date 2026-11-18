@@ -146,6 +146,30 @@ def test_justificaciones() -> None:
     )
     comprobar("sin justificaciones no se declara nada", "justificacion_items" not in dividir_mod.dividir(CANONICO, "C", 4)["fuente"])
 
+    canon_ev = "---\ncurso: CYBERSEGURIDAD\njustificacion_evidencia: [1]\n---\n\n" + con_just
+    r2 = dividir_mod.dividir(canon_ev, "CYBERSEGURIDAD", 4)
+    comprobar(
+        "la evidencia sobrevive a la división",
+        "justificacion_evidencia: [1]" in r2["fuente"],
+        r2["fuente"][:300],
+    )
+    comprobar("la evidencia se reporta", r2["justificacion_evidencia"] == [1])
+    dividir_mod._verificar(
+        r2["fuente"], r2["respuestas"], r2["clave"], r2["justificacion_evidencia"]
+    )
+    try:
+        dividir_mod.dividir(
+            "---\njustificacion_evidencia: [1]\n---\n\n" + CANONICO, "C", 4
+        )
+    except ValueError as exc:
+        comprobar(
+            "evidencia sin justificación falla",
+            "no exigen justificación" in str(exc),
+            str(exc),
+        )
+    else:
+        comprobar("evidencia sin justificación falla", False, "no lanzó")
+
     # La instrucción no debe pegarse a la última opción ni romper el parser.
     import importlib.util as iu
     spec = iu.spec_from_file_location("mdh", RAIZ / "execution/md_a_html.py")
