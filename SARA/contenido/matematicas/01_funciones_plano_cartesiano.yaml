@@ -1,0 +1,46 @@
+materia: matematicas
+titulo: "Funciones y plano cartesiano"
+orden: 1
+objetivo: "Reconocer una función y ubicar puntos (x, y) en el plano cartesiano."
+idea_clave: "Una función es una regla que a cada valor de x le asigna un único valor de y."
+pasos:
+  - "Identifica la entrada: el valor de x."
+  - "Aplica la regla de la función."
+  - "Obtén la salida: el valor de y."
+  - "Escribe el par ordenado (x, y)."
+  - "Ubícalo en el plano: primero x en horizontal, después y en vertical."
+ejemplo:
+  titulo: "Evaluar f(x) = 2x + 1"
+  pasos:
+    - "Para x = 0: f(0) = 2·0 + 1 = 1. Par ordenado: (0, 1)."
+    - "Para x = 1: f(1) = 2·1 + 1 = 3. Par ordenado: (1, 3)."
+    - "Para x = 2: f(2) = 2·2 + 1 = 5. Par ordenado: (2, 5)."
+  resultado: "Los puntos (0, 1), (1, 3) y (2, 5) pertenecen a la función."
+esquema:
+  tipo: tabla
+  titulo: "Tabla de valores de f(x) = 2x + 1"
+  columnas: ["x", "Regla 2x + 1", "y"]
+  filas:
+    - ["0", "2·0 + 1", "1"]
+    - ["1", "2·1 + 1", "3"]
+    - ["2", "2·2 + 1", "5"]
+practica:
+  - pregunta: "Si f(x) = 3x − 2, ¿cuánto vale f(4)?"
+    opciones:
+      - "10"
+      - "12"
+      - "14"
+    correcta: 0
+    explicacion: "Se sustituye x por 4: 3·4 − 2 = 12 − 2 = 10."
+  - pregunta: "¿Qué par ordenado corresponde a x = 2 en f(x) = x + 5?"
+    opciones:
+      - "(2, 7)"
+      - "(7, 2)"
+      - "(2, 5)"
+    correcta: 0
+    explicacion: "La entrada es x = 2. La salida es 2 + 5 = 7. El par es (2, 7)."
+recordar:
+  - "f(x) se lee f de x. No significa multiplicar f por x."
+  - "En el par (x, y), el primer número es la entrada y el segundo es la salida."
+  - "El eje horizontal es x. El eje vertical es y."
+nota: "Si un mismo valor de x tiene dos valores distintos de y, la regla no es una función."

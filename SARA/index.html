@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Material de estudio · 3.º año de bachillerato</title>
+<style>
+
+:root {
+  --fondo: #fbfaf7;
+  --texto: #1e2a33;
+  --suave: #4a5a66;
+  --linea: #d5dde3;
+  --papel: #ffffff;
+  --materia: #2f4a5f;
+  --tinte: #eef2f5;
+  --base: 18px;
+  --radio: 14px;
+  --ancho: 920px;
+}
+html { -webkit-text-size-adjust: 100%; }
+html[data-texto="p"] { --base: 16px; }
+html[data-texto="g"] { --base: 21px; }
+html[data-texto="xg"] { --base: 24px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Atkinson Hyperlegible", "Source Sans Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: var(--base);
+  line-height: 1.65;
+}
+.matematicas { --materia: #2f6f8f; --tinte: #e9f2f6; }
+.fisica { --materia: #6b4fa3; --tinte: #efeaf7; }
+.quimica { --materia: #2f7d5d; --tinte: #e7f3ed; }
+a { color: #1b5f86; }
+a:focus-visible, button:focus-visible, label:focus-within {
+  outline: 3px solid #17557a;
+  outline-offset: 2px;
+}
+.saltar {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: #ffffff;
+  color: #000000;
+  padding: .7rem 1rem;
+  z-index: 20;
+  border-radius: 0 0 8px 0;
+}
+.saltar:focus { left: 0; }
+.contenedor {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0 1.1rem;
+}
+.barra {
+  background: #22313f;
+  color: #ffffff;
+  padding: .7rem 0 0;
+}
+.barra-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.marca {
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: .55rem;
+}
+.marca-sara {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+.marca-sub {
+  font-size: .82rem;
+  color: #c9d8e4;
+}
+.ajustes { display: flex; gap: .4rem; }
+.ajuste {
+  min-width: 46px;
+  min-height: 44px;
+  padding: .35rem .65rem;
+  border: 1px solid #8fa6b8;
+  border-radius: 9px;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  font-size: .95rem;
+  cursor: pointer;
+}
+.ajuste:hover { background: #33495c; }
+.ajuste[aria-pressed="true"] {
+  background: #ffffff;
+  color: #22313f;
+  border-color: #ffffff;
+}
+.migas {
+  padding-top: .55rem;
+  padding-bottom: .65rem;
+  font-size: .9rem;
+  color: #c9d8e4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+.migas a { color: #ffffff; }
+.migas .sep { color: #8fa6b8; }
+.portada {
+  background: var(--tinte);
+  border-bottom: 1px solid var(--linea);
+  padding: 2.2rem 0 1.9rem;
+}
+.portada h1 { margin: .15rem 0 .5rem; }
+.etiqueta {
+  margin: 0;
+  color: var(--materia);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: .78rem;
+}
+h1, h2, h3 { line-height: 1.25; }
+h1 {
+  font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+  font-weight: 800;
+  margin: .2rem 0 .6rem;
+}
+h2 {
+  font-size: 1.28rem;
+  margin: 0 0 .8rem;
+  padding-bottom: .35rem;
+  border-bottom: 2px solid var(--linea);
+}
+h2::before {
+  content: "";
+  display: inline-block;
+  width: .55rem;
+  height: 1.05em;
+  background: var(--materia);
+  border-radius: 3px;
+  margin-right: .55rem;
+  vertical-align: -.14em;
+}
+h3 { font-size: 1.06rem; margin: .2rem 0 .7rem; }
+p { margin: .55rem 0; }
+.entrada {
+  font-size: 1.08rem;
+  max-width: 62ch;
+  color: var(--suave);
+  margin: 0;
+}
+.seccion { margin: 2.1rem 0; }
+.objetivo {
+  background: var(--tinte);
+  border-radius: var(--radio);
+  padding: .9rem 1.1rem;
+  margin: 0;
+  font-weight: 600;
+}
+.idea {
+  background: #fff7d6;
+  border-left: 6px solid #c79a1e;
+  border-radius: 0 var(--radio) var(--radio) 0;
+  padding: 1rem 1.15rem;
+  margin: 0;
+  font-size: 1.06em;
+  font-weight: 600;
+}
+ol.pasos {
+  counter-reset: paso;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+ol.pasos li {
+  counter-increment: paso;
+  position: relative;
+  padding: .5rem 0 .5rem 2.7rem;
+}
+ol.pasos li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0;
+  top: .45rem;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+  background: var(--materia);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .95rem;
+}
+.ejemplo {
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 1rem 1.2rem;
+}
+.ejemplo ol { margin: .2rem 0 .8rem; padding-left: 1.3rem; }
+.ejemplo li { margin: .3rem 0; }
+.resultado {
+  margin: .9rem 0 0;
+  background: var(--tinte);
+  border-radius: 9px;
+  padding: .75rem .9rem;
+  font-weight: 700;
+}
+.flujo { list-style: none; padding: 0; margin: 0; }
+.flujo li {
+  background: var(--papel);
+  border: 2px solid var(--materia);
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  text-align: center;
+  font-weight: 600;
+}
+.flujo .flecha {
+  border: 0;
+  background: none;
+  padding: .15rem 0;
+  color: var(--materia);
+  font-size: 1.3rem;
+  line-height: 1;
+  font-weight: 700;
+}
+.tabla-caja { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+}
+caption {
+  text-align: left;
+  font-weight: 700;
+  padding: 0 0 .5rem;
+}
+th, td {
+  padding: .6rem .7rem;
+  border-bottom: 1px solid var(--linea);
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: var(--materia);
+  color: #ffffff;
+  font-size: .96rem;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:nth-child(even) { background: var(--tinte); }
+ul.lista-esquema { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+ul.lista-esquema li {
+  background: var(--papel);
+  border-left: 5px solid var(--materia);
+  border-radius: 0 9px 9px 0;
+  padding: .6rem .9rem;
+}
+ul.recordar { margin: 0; padding-left: 1.2rem; }
+ul.recordar li { margin: .35rem 0; }
+ul.recordar li::marker { color: var(--materia); }
+.titulo-esquema {
+  margin: 0 0 .6rem;
+  font-weight: 700;
+  color: var(--materia);
+}
+.ayuda { color: var(--suave); margin-top: -.2rem; }
+.ejercicio {
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+.ejercicio legend {
+  font-weight: 700;
+  padding: 0 .4rem;
+}
+.opciones { display: grid; gap: .5rem; margin: .75rem 0; }
+.opciones label {
+  display: flex;
+  gap: .7rem;
+  align-items: flex-start;
+  padding: .6rem .75rem;
+  min-height: 44px;
+  border: 1px solid var(--linea);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.opciones label:hover { border-color: var(--materia); }
+.opciones input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: .15rem 0 0;
+  accent-color: var(--materia);
+}
+.opciones label:has(input:checked) {
+  border-color: var(--materia);
+  background: var(--tinte);
+}
+.comprobar, .boton {
+  display: inline-block;
+  min-height: 44px;
+  padding: .65rem 1.15rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--materia);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.comprobar:hover, .boton:hover { filter: brightness(1.12); }
+.boton-suave {
+  background: transparent;
+  color: var(--materia);
+  border: 2px solid var(--materia);
+}
+.feedback {
+  margin: .8rem 0 0;
+  padding: .75rem .95rem;
+  border-radius: 9px;
+  font-weight: 600;
+}
+.feedback:empty { display: none; }
+.feedback.bien {
+  background: #e6f4ea;
+  color: #14532d;
+  border: 1px solid #9ed3ae;
+}
+.feedback.intenta {
+  background: #fff4dc;
+  color: #6b4a00;
+  border: 1px solid #e7c26a;
+}
+.feedback.aviso {
+  background: var(--tinte);
+  color: var(--texto);
+  border: 1px solid var(--linea);
+}
+.nota {
+  background: #fff1f0;
+  border: 1px solid #e8b4ae;
+  border-left: 6px solid #b5534a;
+  border-radius: 0 var(--radio) var(--radio) 0;
+  padding: .9rem 1.05rem;
+}
+.calma {
+  background: #eef6f1;
+  border: 1px solid #b9d8c6;
+  border-left: 6px solid #2f7d5d;
+  border-radius: 0 var(--radio) var(--radio) 0;
+  padding: .9rem 1.05rem;
+}
+.nota h2 { border-bottom: 0; font-size: 1.1rem; }
+.nota h2::before { background: #b5534a; }
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: 1rem;
+}
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-top: 6px solid var(--materia);
+  border-radius: var(--radio);
+  padding: 1.1rem;
+  text-decoration: none;
+  color: var(--texto);
+}
+.tarjeta:hover { border-color: var(--materia); }
+.tarjeta:focus-visible { outline-offset: 3px; }
+.insignia {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--materia);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: .3rem;
+}
+.tarjeta-nombre { font-size: 1.16rem; font-weight: 800; }
+.tarjeta-desc { color: var(--suave); font-size: .97rem; }
+.tarjeta-meta { margin-top: .35rem; font-size: .86rem; font-weight: 700; color: var(--materia); }
+ol.temas { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
+ol.temas a {
+  display: block;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-left: 6px solid var(--materia);
+  border-radius: 0 var(--radio) var(--radio) 0;
+  padding: .9rem 1.05rem;
+  text-decoration: none;
+  color: var(--texto);
+}
+ol.temas a:hover { border-color: var(--materia); }
+.tema-num {
+  display: block;
+  font-size: .8rem;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--materia);
+}
+.tema-titulo { display: block; font-size: 1.1rem; font-weight: 700; }
+.tema-desc { display: block; color: var(--suave); font-size: .96rem; }
+.nav-tema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  justify-content: space-between;
+  margin: 2.6rem 0 0;
+}
+.pie {
+  border-top: 1px solid var(--linea);
+  margin-top: 3.5rem;
+  padding: 1.4rem 0 2rem;
+  color: var(--suave);
+  font-size: .9rem;
+}
+.pie p { margin: .2rem 0; }
+html[data-contraste="alto"] {
+  --fondo: #ffffff;
+  --texto: #000000;
+  --suave: #111111;
+  --linea: #000000;
+  --papel: #ffffff;
+  --tinte: #ffffff;
+}
+html[data-contraste="alto"] .barra { background: #000000; }
+html[data-contraste="alto"] .matematicas,
+html[data-contraste="alto"] .fisica,
+html[data-contraste="alto"] .quimica {
+  --tinte: #ffffff;
+}
+html[data-contraste="alto"] .objetivo,
+html[data-contraste="alto"] .resultado {
+  background: #ffffff;
+  border: 1px solid #000000;
+}
+html[data-contraste="alto"] .flujo li { border-color: #000000; }
+html[data-contraste="alto"] .flujo .flecha { color: #000000; }
+html[data-contraste="alto"] .idea,
+html[data-contraste="alto"] .nota,
+html[data-contraste="alto"] .feedback.bien,
+html[data-contraste="alto"] .feedback.intenta {
+  background: #ffffff;
+  color: #000000;
+  border-color: #000000;
+}
+html[data-contraste="alto"] .tarjeta,
+html[data-contraste="alto"] .ejemplo,
+html[data-contraste="alto"] .ejercicio,
+html[data-contraste="alto"] .opciones label,
+html[data-contraste="alto"] .calma,
+html[data-contraste="alto"] table {
+  background: #ffffff;
+  border-color: #000000;
+}
+html[data-contraste="alto"] th { background: #000000; color: #ffffff; }
+html[data-contraste="alto"] tbody tr:nth-child(even) { background: #ffffff; }
+@media (max-width: 620px) {
+  .barra-fila { align-items: flex-start; }
+  .marca-sub { display: none; }
+  .nav-tema { flex-direction: column; }
+  .nav-tema .boton { text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .barra, .ajustes, .nav-tema, .saltar, .comprobar, .feedback { display: none !important; }
+  body { background: #ffffff; font-size: 12pt; }
+  .portada { background: #ffffff; border-bottom: 1px solid #000000; }
+  .seccion, .ejercicio, .ejemplo { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="barra">
+<div class="contenedor barra-fila">
+<a class="marca" href="index.html"><span class="marca-sara">Material de estudio</span><span class="marca-sub">3.º año de bachillerato</span></a>
+<div class="ajustes" role="group" aria-label="Ajustes de lectura">
+<button type="button" class="ajuste" data-accion="menos" aria-label="Reducir el tamaño del texto">A−</button>
+<button type="button" class="ajuste" data-accion="mas" aria-label="Aumentar el tamaño del texto">A+</button>
+<button type="button" class="ajuste" data-accion="contraste" aria-pressed="false">Contraste</button>
+</div>
+</div>
+<nav class="migas contenedor" aria-label="Ubicación"><span aria-current="page">Inicio</span></nav>
+</header>
+
+<main id="contenido">
+<section class="portada"><div class="contenedor">
+<p class="etiqueta">3.º año de bachillerato</p>
+<h1>Material de estudio</h1>
+<p class="entrada">Explicaciones paso a paso, esquemas y práctica de Matemáticas, Física y Química.</p>
+</div></section>
+<div class="contenedor">
+<section class="seccion">
+<h2>Cómo usar esta página</h2>
+<ol class="flujo">
+<li>Elige una materia.</li>
+<li class="flecha" aria-hidden="true">↓</li>
+<li>Lee la idea clave y el paso a paso.</li>
+<li class="flecha" aria-hidden="true">↓</li>
+<li>Practica y comprueba tu respuesta.</li>
+</ol>
+</section>
+<section class="seccion">
+<h2>Elige una materia</h2>
+<div class="rejilla">
+<a class="tarjeta matematicas" href="matematicas/index.html"><span class="insignia" aria-hidden="true">M</span><span class="tarjeta-nombre">Matemáticas</span><span class="tarjeta-desc">Funciones, ecuaciones y sistemas.</span><span class="tarjeta-meta">4 temas</span></a>
+<a class="tarjeta fisica" href="fisica/index.html"><span class="insignia" aria-hidden="true">F</span><span class="tarjeta-nombre">Física</span><span class="tarjeta-desc">Movimiento, fuerzas y circuitos.</span><span class="tarjeta-meta">3 temas</span></a>
+<a class="tarjeta quimica" href="quimica/index.html"><span class="insignia" aria-hidden="true">Q</span><span class="tarjeta-nombre">Química</span><span class="tarjeta-desc">Átomo, enlaces y cantidad de sustancia.</span><span class="tarjeta-meta">3 temas</span></a>
+</div>
+</section>
+<p class="calma seccion"><strong>No hay tiempo límite.</strong> Puedes repetir un tema las veces que necesites. La página no guarda notas ni envía nada a internet.</p>
+</div>
+</main><footer class="pie">
+<div class="contenedor">
+<p>Material de estudio · 3.º año de bachillerato</p>
+<p>Se puede leer sin prisa y repetir las veces que haga falta.</p>
+</div>
+</footer>
+
+<script>
+
+(function () {
+  var raiz = document.documentElement;
+  var niveles = ["p", "", "g", "xg"];
+  function aplicar(k, v) {
+    if (v) { raiz.setAttribute(k, v); } else { raiz.removeAttribute(k); }
+  }
+  function guardar(k, v) {
+    try {
+      if (v) { localStorage.setItem(k, v); } else { localStorage.removeItem(k); }
+    } catch (e) {}
+  }
+  function nivelActual() {
+    var v = raiz.getAttribute("data-texto") || "";
+    var i = niveles.indexOf(v);
+    return i < 0 ? 1 : i;
+  }
+  function pintarContraste() {
+    var b = document.querySelector('[data-accion="contraste"]');
+    if (b) {
+      b.setAttribute("aria-pressed", raiz.getAttribute("data-contraste") === "alto" ? "true" : "false");
+    }
+  }
+  try {
+    aplicar("data-texto", localStorage.getItem("sara-texto"));
+    aplicar("data-contraste", localStorage.getItem("sara-contraste"));
+  } catch (e) {}
+  pintarContraste();
+  Array.prototype.forEach.call(document.querySelectorAll("[data-accion]"), function (b) {
+    b.addEventListener("click", function () {
+      var accion = b.getAttribute("data-accion");
+      if (accion === "menos" || accion === "mas") {
+        var delta = accion === "mas" ? 1 : -1;
+        var i = Math.min(niveles.length - 1, Math.max(0, nivelActual() + delta));
+        aplicar("data-texto", niveles[i]);
+        guardar("sara-texto", niveles[i]);
+      } else if (accion === "contraste") {
+        var alto = raiz.getAttribute("data-contraste") === "alto";
+        aplicar("data-contraste", alto ? "" : "alto");
+        guardar("sara-contraste", alto ? "" : "alto");
+        pintarContraste();
+      }
+    });
+  });
+})();
+
+</script>
+</body>
+</html>

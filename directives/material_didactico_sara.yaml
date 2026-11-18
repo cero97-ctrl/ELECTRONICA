@@ -1,0 +1,135 @@
+goal: |
+  Generar y mantener el sitio de estudio de Sara, una estudiante de 3.º año de
+  bachillerato dentro del espectro autista. El sitio reúne Matemáticas, Física
+  y Química en páginas HTML autocontenidas, offline y de baja estimulación.
+
+  La prioridad no es "cubrir el programa", sino que cada tema sea predecible y
+  fácil de leer: una idea por sección, el mismo orden en todas las páginas,
+  lenguaje literal, sin tiempos límite, sin sonidos y sin puntajes que generen
+  presión. El material se puede repetir las veces que haga falta.
+
+  El contenido vive en YAML (dato), el renderizado vive en un script
+  determinista (código) y este documento define el contrato (SOP). Editar el
+  YAML no requiere tocar HTML.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_material_sara.py
+  script: execution/generar_material_sara.py
+  test: execution/test_generar_material_sara.py
+  contenido: SARA/contenido/<materia>/*.yaml
+  salida: SARA/index.html, SARA/<materia>/index.html, SARA/<materia>/<orden>-<slug>.html
+  publicacion: directives/publicar_material_sara.yaml (GitHub Pages en repo público aparte, con marca neutra)
+
+required_inputs:
+  - name: --contenido DIR
+    description: |
+      Carpeta con los temas en YAML. Por defecto `SARA/contenido/`.
+      Se leen todos los `*.yaml` de forma recursiva y se ordenan por
+      `materia` y por `orden`.
+  - name: --salida DIR
+    description: |
+      Carpeta del sitio. Debe estar dentro de `SARA/`; cualquier otra ruta
+      se rechaza con código 5 para no escribir fuera del proyecto de Sara.
+  - name: --check
+    description: Valida el contenido y no escribe nada.
+  - name: --dry-run
+    description: Valida y muestra las rutas que se generarían, sin escribir.
+  - name: --json
+    description: Salida legible por máquina (resumen, archivos, errores).
+
+contract:
+  materias: [matematicas, fisica, quimica]
+  campos_obligatorios:
+    materia: "matematicas | fisica | quimica"
+    titulo: "texto no vacío; define el nombre del archivo (slug)"
+    orden: "entero >= 1, único dentro de la materia"
+    objetivo: "qué va a aprender, en una frase"
+    idea_clave: "la única idea que debe quedar si olvida el resto"
+    pasos: "lista de al menos 2 textos, en orden"
+    ejemplo:
+      titulo: "texto no vacío"
+      pasos: "lista de al menos 2 textos"
+      resultado: "texto no vacío"
+    esquema:
+      tipo: "tabla | flujo | lista"
+      titulo: "texto no vacío"
+      tabla: "columnas (>=2) y filas con el mismo número de celdas"
+      flujo: "pasos (>=2); se dibuja como secuencia vertical con flechas"
+      lista: "items (>=1)"
+    practica: |
+      Lista no vacía. Cada ejercicio tiene:
+        pregunta: texto no vacío
+        opciones: entre 2 y 6 textos no vacíos
+        correcta: índice entero dentro de las opciones
+        explicacion: texto que se muestra al comprobar
+    recordar: "lista de al menos 1 texto"
+  campos_opcionales:
+    nota: "texto de advertencia o excepción; se muestra al final"
+  reglas:
+    - "Sin enlaces http/https: el sitio debe funcionar sin internet."
+    - "El orden y el título no pueden repetirse dentro de una materia."
+    - "Un tema inválido impide generar TODOS los temas (código 3): nunca se publica contenido a medias."
+
+steps:
+  - id: validar
+    action: "python3 flujo_material_sara.py --check"
+    expect: "código 0 y 'Contenido válido'; si hay errores, corregir el YAML."
+  - id: previsualizar
+    action: "python3 flujo_material_sara.py --dry-run"
+    expect: "lista de páginas sin escribir nada."
+  - id: generar
+    action: "python3 flujo_material_sara.py"
+    expect: "código 0 y archivos .html en SARA/."
+  - id: verificar
+    action: "python3 execution/test_generar_material_sara.py"
+    expect: "todas las aserciones OK; en particular, cero recursos externos."
+  - id: abrir
+    action: "abrir SARA/index.html en el navegador"
+    expect: "portada con las tres materias y navegación completa."
+
+expected_outputs:
+  - "SARA/index.html: portada con las tres materias y cómo usar la página."
+  - "SARA/<materia>/index.html: lista ordenada de temas."
+  - "SARA/<materia>/<orden>-<slug>.html: tema con objetivo, idea clave, pasos, ejemplo, esquema, práctica y recordatorio."
+  - "Cada página es autocontenida: CSS y JS inline, sin CDN ni imágenes externas."
+
+accesibilidad:
+  principios:
+    - "Estructura idéntica en todos los temas: el orden de las secciones no cambia."
+    - "Una idea por sección; frases cortas; sin metáforas ni modismos."
+    - "Sin animaciones, sin sonidos, sin cuentas regresivas y sin puntajes."
+    - "Los ejercicios se pueden repetir; el error se explica, no se castiga."
+    - "El resultado nunca depende solo del color: el texto dice 'Correcto' o 'Todavía no'."
+    - "Botones de al menos 44 px, foco visible y enlace para saltar al contenido."
+    - "Ajustes de lectura persistentes: tamaño de texto (A−/A+) y alto contraste."
+    - "Diseño imprimible: se ocultan controles y navegación al imprimir."
+  notas:
+    - "No añadir gamificación, rankings ni cronómetros sin consultar al usuario."
+    - "Evitar fondos con gradientes fuertes, parpadeos o cambios automáticos."
+
+para_agregar_un_tema:
+  - "Crear un .yaml en SARA/contenido/<materia>/ con un `orden` libre."
+  - "Ejecutar --check; corregir los mensajes hasta que valide."
+  - "Ejecutar sin flags y verificar la página nueva y la navegación anterior/siguiente."
+  - "El nombre del archivo se deriva de `titulo`; no se escribe a mano."
+
+edge_cases:
+  - caso: "Falta un campo o un tipo no coincide"
+    respuesta: "El generador devuelve código 3 con la lista de problemas y no escribe nada."
+  - caso: "Dos temas comparten orden o generan el mismo nombre de archivo"
+    respuesta: "Se rechaza con el nombre de ambos archivos; cambiar `orden` o `titulo`."
+  - caso: "El contenido incluye un enlace externo"
+    respuesta: "Se rechaza: el sitio debe funcionar sin internet."
+  - caso: "Se intenta escribir fuera de SARA/"
+    respuesta: "Se rechaza con código 5; la barrera no se salta con --salida."
+  - caso: "Se agrega una materia nueva"
+    respuesta: "Añadirla a MATERIAS en execution/generar_material_sara.py, a este contrato y al test."
+  - caso: "Se cambia el diseño"
+    respuesta: "Editar el CSS del generador, regenerar y volver a ejecutar el test; no editar los .html a mano."
+
+notes:
+  - "Los .html se regeneran: son salida, no fuente. La fuente es SARA/contenido/."
+  - "El material no vive en ESTE repositorio (es público): se publica aparte, en un repo propio con marca neutra y sin el nombre de Sara, vía directives/publicar_material_sara.yaml."
+  - "Este flujo no llama a ningún LLM ni consume créditos de OpenRouter: es 100 % determinista."

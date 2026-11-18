@@ -1,0 +1,84 @@
+materia: matematicas
+titulo: "Conversión entre decimal, binario y hexadecimal"
+orden: 4
+objetivo: "Convertir números entre decimal, binario y hexadecimal usando divisiones y grupos de cuatro bits."
+idea_clave: "Cada sistema usa una base distinta: decimal 10, binario 2 y hexadecimal 16. El valor del número no cambia; solo cambia la forma de escribirlo."
+pasos:
+  - "Identifica la base: decimal 10, binario 2, hexadecimal 16."
+  - "Para pasar de decimal a otra base, divide entre esa base y guarda cada resto."
+  - "Lee los restos desde el último hasta el primero."
+  - "Para pasar de binario o hexadecimal a decimal, multiplica cada cifra por la potencia de su base."
+  - "Para pasar entre binario y hexadecimal, agrupa los bits de cuatro en cuatro."
+ejemplo:
+  titulo: "Convertir 45 decimal a binario y a hexadecimal"
+  pasos:
+    - "45 ÷ 2 = 22, resto 1."
+    - "22 ÷ 2 = 11, resto 0."
+    - "11 ÷ 2 = 5, resto 1."
+    - "5 ÷ 2 = 2, resto 1."
+    - "2 ÷ 2 = 1, resto 0."
+    - "1 ÷ 2 = 0, resto 1."
+    - "Leo los restos de abajo hacia arriba: 101101."
+    - "Compruebo: 32 + 8 + 4 + 1 = 45."
+    - "Agrupo 101101 en bloques de cuatro desde la derecha: 0010 1101."
+    - "0010 vale 2 y 1101 vale 13, que se escribe D. Entonces, 45 = 2D en hexadecimal."
+  resultado: "45 decimal = 101101 binario = 2D hexadecimal."
+esquema:
+  tipo: tabla
+  titulo: "Equivalencias básicas"
+  columnas:
+    - "Hexadecimal"
+    - "Decimal"
+    - "Binario (4 bits)"
+  filas:
+    - ["0", "0", "0000"]
+    - ["1", "1", "0001"]
+    - ["2", "2", "0010"]
+    - ["3", "3", "0011"]
+    - ["4", "4", "0100"]
+    - ["5", "5", "0101"]
+    - ["6", "6", "0110"]
+    - ["7", "7", "0111"]
+    - ["8", "8", "1000"]
+    - ["9", "9", "1001"]
+    - ["A", "10", "1010"]
+    - ["B", "11", "1011"]
+    - ["C", "12", "1100"]
+    - ["D", "13", "1101"]
+    - ["E", "14", "1110"]
+    - ["F", "15", "1111"]
+practica:
+  - pregunta: "¿Cómo se escribe 13 en binario?"
+    opciones:
+      - "1101"
+      - "1011"
+      - "1110"
+    correcta: 0
+    explicacion: "13 = 8 + 4 + 1. Esos lugares son 1 y los demás son 0: 1101."
+  - pregunta: "¿Cómo se escribe 10 en hexadecimal?"
+    opciones:
+      - "A"
+      - "10"
+      - "F"
+    correcta: 0
+    explicacion: "En hexadecimal, la letra A representa el valor 10."
+  - pregunta: "¿Cuánto vale 1010 en decimal?"
+    opciones:
+      - "10"
+      - "8"
+      - "12"
+    correcta: 0
+    explicacion: "1010 = 8 + 0 + 2 + 0 = 10."
+  - pregunta: "¿Qué cifra hexadecimal corresponde a 1111 en binario?"
+    opciones:
+      - "F"
+      - "E"
+      - "15"
+    correcta: 0
+    explicacion: "1111 vale 15 en decimal, y 15 se escribe F en hexadecimal."
+recordar:
+  - "En binario solo se usan 0 y 1. En hexadecimal se usan 0 a 9 y las letras A a F."
+  - "A = 10, B = 11, C = 12, D = 13, E = 14 y F = 15."
+  - "Al dividir, los restos se leen de abajo hacia arriba."
+  - "Cada cifra hexadecimal equivale exactamente a cuatro bits."
+nota: "Si un número no indica su base, se entiende que es decimal. Por eso conviene escribir '101101 en binario' o '2D en hexadecimal' cuando haya duda."

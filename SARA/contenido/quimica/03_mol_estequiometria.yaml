@@ -1,0 +1,48 @@
+materia: quimica
+titulo: "Mol y estequiometría"
+orden: 3
+objetivo: "Usar el mol y la masa molar en cálculos de cantidad de sustancia."
+idea_clave: "Un mol contiene 6,022 × 10²³ partículas. La masa de un mol en gramos es la masa molar."
+pasos:
+  - "Identifica la sustancia y escribe su fórmula."
+  - "Suma las masas atómicas para obtener la masa molar en g/mol."
+  - "Usa n = m / M para calcular moles."
+  - "Usa m = n · M para calcular masa."
+  - "En una reacción, usa la proporción de la ecuación balanceada."
+ejemplo:
+  titulo: "Moles en 36 gramos de agua"
+  pasos:
+    - "La fórmula del agua es H₂O."
+    - "Masa molar: 2·1 + 16 = 18 g/mol."
+    - "Datos: m = 36 g y M = 18 g/mol."
+    - "Fórmula: n = m / M."
+    - "Sustituye: n = 36 g / 18 g/mol = 2 mol."
+  resultado: "Hay 2 moles de agua en 36 gramos."
+esquema:
+  tipo: tabla
+  titulo: "Magnitudes y unidades"
+  columnas: ["Magnitud", "Símbolo", "Unidad"]
+  filas:
+    - ["Masa", "m", "gramo (g)"]
+    - ["Masa molar", "M", "gramo por mol (g/mol)"]
+    - ["Cantidad de sustancia", "n", "mol"]
+practica:
+  - pregunta: "¿Cuál es la masa molar del CO₂? Usa C = 12 g/mol y O = 16 g/mol."
+    opciones:
+      - "44 g/mol"
+      - "28 g/mol"
+      - "32 g/mol"
+    correcta: 0
+    explicacion: "CO₂ tiene 1 carbono y 2 oxígenos: 12 + 2·16 = 12 + 32 = 44 g/mol."
+  - pregunta: "¿Cuántos moles hay en 36 g de agua si su masa molar es 18 g/mol?"
+    opciones:
+      - "2 mol"
+      - "0,5 mol"
+      - "18 mol"
+    correcta: 0
+    explicacion: "n = m / M = 36 g / 18 g/mol = 2 mol."
+recordar:
+  - "n = m / M."
+  - "La ecuación química debe estar balanceada antes de usar proporciones."
+  - "El número de Avogadro es 6,022 × 10²³ partículas por mol."
+nota: "Antes de comparar sustancias en una reacción, verifica que la ecuación esté balanceada. Sin balanceo, las proporciones no son válidas."

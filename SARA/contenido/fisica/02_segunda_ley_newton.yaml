@@ -1,0 +1,48 @@
+materia: fisica
+titulo: "Segunda ley de Newton"
+orden: 2
+objetivo: "Aplicar la relación entre fuerza, masa y aceleración."
+idea_clave: "La aceleración aumenta cuando aumenta la fuerza y disminuye cuando aumenta la masa."
+pasos:
+  - "Identifica la fuerza neta que actúa sobre el objeto."
+  - "Escribe la masa en kilogramos."
+  - "Usa F = m·a, a = F/m o m = F/a."
+  - "Sustituye los valores y calcula."
+  - "Escribe el resultado con la unidad correcta."
+ejemplo:
+  titulo: "Calcular la fuerza"
+  pasos:
+    - "Datos: m = 4 kg y a = 3 m/s²."
+    - "Fórmula: F = m·a."
+    - "Sustituye: F = 4 kg · 3 m/s²."
+    - "Calcula: F = 12 kg·m/s²."
+    - "Un kg·m/s² se llama newton (N)."
+  resultado: "La fuerza neta es 12 N."
+esquema:
+  tipo: tabla
+  titulo: "Las tres formas de la segunda ley"
+  columnas: ["Si buscas", "Usa", "Unidad"]
+  filas:
+    - ["Fuerza", "F = m·a", "newton (N)"]
+    - ["Aceleración", "a = F/m", "m/s²"]
+    - ["Masa", "m = F/a", "kilogramo (kg)"]
+practica:
+  - pregunta: "Una fuerza de 20 N actúa sobre una masa de 5 kg. ¿Cuál es la aceleración?"
+    opciones:
+      - "4 m/s²"
+      - "100 m/s²"
+      - "0,25 m/s²"
+    correcta: 0
+    explicacion: "a = F/m = 20 N / 5 kg = 4 m/s²."
+  - pregunta: "Una masa de 2 kg acelera a 6 m/s². ¿Cuál es la fuerza neta?"
+    opciones:
+      - "12 N"
+      - "3 N"
+      - "8 N"
+    correcta: 0
+    explicacion: "F = m·a = 2 kg · 6 m/s² = 12 N."
+recordar:
+  - "Un newton es la fuerza que produce una aceleración de 1 m/s² sobre 1 kg."
+  - "La fuerza neta es la suma de las fuerzas en la misma dirección. Si se oponen, se restan."
+  - "Si la fuerza neta es cero, la aceleración es cero."
+nota: "La masa se escribe en kilogramos. Si el problema da gramos, divide entre 1000 antes de calcular."

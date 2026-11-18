@@ -1,0 +1,49 @@
+materia: matematicas
+titulo: "Ecuación cuadrática"
+orden: 2
+objetivo: "Resolver ecuaciones de la forma ax² + bx + c = 0 con la fórmula general."
+idea_clave: "La fórmula general usa los valores a, b y c para encontrar hasta dos soluciones de x."
+pasos:
+  - "Escribe la ecuación en la forma ax² + bx + c = 0."
+  - "Identifica a, b y c con sus signos."
+  - "Calcula el discriminante D = b² − 4ac."
+  - "Si D es mayor o igual que cero, aplica x = (−b ± √D) / (2a)."
+  - "Calcula una solución con + y otra con −."
+ejemplo:
+  titulo: "Resolver x² − 5x + 6 = 0"
+  pasos:
+    - "a = 1, b = −5, c = 6."
+    - "D = (−5)² − 4·1·6 = 25 − 24 = 1."
+    - "x = (5 ± √1) / 2 = (5 ± 1) / 2."
+    - "Con +: x = 6 / 2 = 3."
+    - "Con −: x = 4 / 2 = 2."
+  resultado: "Las soluciones son x = 3 y x = 2."
+esquema:
+  tipo: flujo
+  titulo: "Pasos para resolver con la fórmula general"
+  pasos:
+    - "Forma ax² + bx + c = 0"
+    - "Identifica a, b, c"
+    - "Calcula D = b² − 4ac"
+    - "Aplica x = (−b ± √D) / (2a)"
+    - "Escribe las dos soluciones"
+practica:
+  - pregunta: "En x² + 3x − 4 = 0, ¿cuánto vale el discriminante?"
+    opciones:
+      - "25"
+      - "7"
+      - "−7"
+    correcta: 0
+    explicacion: "a = 1, b = 3, c = −4. D = 3² − 4·1·(−4) = 9 + 16 = 25."
+  - pregunta: "Si el discriminante es cero, ¿cuántas soluciones reales hay?"
+    opciones:
+      - "Una solución"
+      - "Dos soluciones"
+      - "Ninguna solución"
+    correcta: 0
+    explicacion: "El término ±√0 vale 0, así que las dos expresiones dan el mismo número."
+recordar:
+  - "± significa hacer dos cálculos: uno con suma y otro con resta."
+  - "b² es b por b. El signo de b también se eleva al cuadrado."
+  - "Si D es negativo, no hay soluciones reales."
+nota: "Antes de usar la fórmula, pasa todos los términos a un mismo lado para que la ecuación quede igualada a cero."

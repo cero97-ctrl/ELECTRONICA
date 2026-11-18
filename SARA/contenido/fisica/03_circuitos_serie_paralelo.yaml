@@ -1,0 +1,47 @@
+materia: fisica
+titulo: "Circuitos en serie y en paralelo"
+orden: 3
+objetivo: "Calcular la resistencia equivalente y la corriente en circuitos simples."
+idea_clave: "En serie la corriente es la misma en todos los elementos. En paralelo el voltaje es el mismo en todos."
+pasos:
+  - "Identifica si el circuito es en serie o en paralelo."
+  - "Calcula la resistencia equivalente."
+  - "En serie: R = R1 + R2 + ..."
+  - "En paralelo: 1/R = 1/R1 + 1/R2 + ..."
+  - "Usa la ley de Ohm, V = I·R, para hallar lo que falta."
+ejemplo:
+  titulo: "Dos resistencias en serie"
+  pasos:
+    - "Datos: R1 = 2 Ω, R2 = 3 Ω, V = 10 V."
+    - "Están en serie, así que R = 2 Ω + 3 Ω = 5 Ω."
+    - "Ley de Ohm: I = V/R."
+    - "Sustituye: I = 10 V / 5 Ω."
+    - "Calcula: I = 2 A."
+  resultado: "La resistencia equivalente es 5 Ω y la corriente es 2 A."
+esquema:
+  tipo: tabla
+  titulo: "Reglas de los circuitos"
+  columnas: ["Conexión", "Resistencia equivalente", "Qué se mantiene"]
+  filas:
+    - ["Serie", "R = R1 + R2", "La corriente"]
+    - ["Paralelo", "1/R = 1/R1 + 1/R2", "El voltaje"]
+practica:
+  - pregunta: "Dos resistencias de 4 Ω están en serie. ¿Cuál es la resistencia equivalente?"
+    opciones:
+      - "8 Ω"
+      - "4 Ω"
+      - "2 Ω"
+    correcta: 0
+    explicacion: "En serie se suman: 4 Ω + 4 Ω = 8 Ω."
+  - pregunta: "Dos resistencias de 6 Ω están en paralelo. ¿Cuál es la resistencia equivalente?"
+    opciones:
+      - "3 Ω"
+      - "12 Ω"
+      - "6 Ω"
+    correcta: 0
+    explicacion: "1/R = 1/6 + 1/6 = 2/6. Entonces R = 6/2 = 3 Ω."
+recordar:
+  - "La ley de Ohm se escribe V = I·R."
+  - "En paralelo, la resistencia equivalente es menor que la resistencia más pequeña."
+  - "La unidad de resistencia es el ohm, que se escribe Ω."
+nota: "En un circuito en paralelo, la corriente se reparte entre las ramas. En serie, la corriente es la misma en todo el circuito."

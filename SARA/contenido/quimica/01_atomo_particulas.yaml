@@ -1,0 +1,48 @@
+materia: quimica
+titulo: "El átomo y sus partículas"
+orden: 1
+objetivo: "Identificar protones, neutrones y electrones, y usar los números Z y A."
+idea_clave: "Z es el número de protones. A es la suma de protones y neutrones."
+pasos:
+  - "Busca el número atómico Z en la tabla periódica."
+  - "En un átomo neutro, protones = electrones = Z."
+  - "Calcula los neutrones con n = A − Z."
+  - "Reparte los electrones en niveles: 2, 8, 18, y así sucesivamente."
+  - "Escribe cuántas partículas hay de cada tipo."
+ejemplo:
+  titulo: "El átomo de carbono"
+  pasos:
+    - "El carbono tiene Z = 6 y A = 12."
+    - "Protones: 6."
+    - "Electrones: 6, porque el átomo es neutro."
+    - "Neutrones: n = 12 − 6 = 6."
+    - "Niveles de electrones: 2 en el primero y 4 en el segundo."
+  resultado: "El carbono tiene 6 protones, 6 neutrones y 6 electrones."
+esquema:
+  tipo: tabla
+  titulo: "Partículas del átomo"
+  columnas: ["Partícula", "Carga", "Ubicación"]
+  filas:
+    - ["Protón", "+1", "Núcleo"]
+    - ["Neutrón", "0", "Núcleo"]
+    - ["Electrón", "−1", "Alrededor del núcleo"]
+practica:
+  - pregunta: "Un átomo tiene Z = 11 y A = 23. ¿Cuántos neutrones tiene?"
+    opciones:
+      - "12"
+      - "11"
+      - "23"
+    correcta: 0
+    explicacion: "n = A − Z = 23 − 11 = 12."
+  - pregunta: "¿Cuántos electrones tiene un átomo neutro con Z = 8?"
+    opciones:
+      - "8"
+      - "16"
+      - "0"
+    correcta: 0
+    explicacion: "En un átomo neutro, el número de electrones es igual al número de protones, que es Z = 8."
+recordar:
+  - "El protón tiene carga positiva. El electrón tiene carga negativa. El neutrón no tiene carga."
+  - "Los protones y los neutrones están en el núcleo."
+  - "Los electrones se encuentran en niveles de energía alrededor del núcleo."
+nota: "Un ion tiene carga porque ganó o perdió electrones. El número de protones no cambia cuando se forma un ion."

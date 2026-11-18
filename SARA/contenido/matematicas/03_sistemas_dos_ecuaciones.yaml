@@ -1,0 +1,48 @@
+materia: matematicas
+titulo: "Sistemas de dos ecuaciones"
+orden: 3
+objetivo: "Resolver dos ecuaciones con dos incógnitas usando sustitución."
+idea_clave: "La solución de un sistema es el par (x, y) que cumple las dos ecuaciones al mismo tiempo."
+pasos:
+  - "Despeja una incógnita en una de las ecuaciones."
+  - "Sustituye esa expresión en la otra ecuación."
+  - "Resuelve la ecuación que queda con una sola incógnita."
+  - "Sustituye el valor encontrado para hallar la otra incógnita."
+  - "Verifica el par en las dos ecuaciones originales."
+ejemplo:
+  titulo: "Resolver x + y = 7 y x − y = 1"
+  pasos:
+    - "De la primera ecuación: x = 7 − y."
+    - "Sustituye en la segunda: (7 − y) − y = 1."
+    - "Resuelve: 7 − 2y = 1, entonces 2y = 6, entonces y = 3."
+    - "Calcula x: x = 7 − 3 = 4."
+    - "Verifica: 4 + 3 = 7 y 4 − 3 = 1."
+  resultado: "La solución es (4, 3)."
+esquema:
+  tipo: flujo
+  titulo: "Método de sustitución"
+  pasos:
+    - "Despeja una incógnita"
+    - "Sustituye en la otra ecuación"
+    - "Resuelve la incógnita que queda"
+    - "Calcula la otra incógnita"
+    - "Verifica en las dos ecuaciones"
+practica:
+  - pregunta: "Si x + y = 10 y x = 6, ¿cuánto vale y?"
+    opciones:
+      - "4"
+      - "6"
+      - "16"
+    correcta: 0
+    explicacion: "Se sustituye x: 6 + y = 10. Entonces y = 10 − 6 = 4."
+  - pregunta: "¿Qué par cumple x + y = 5 y x − y = 1?"
+    opciones:
+      - "(3, 2)"
+      - "(2, 3)"
+      - "(5, 0)"
+    correcta: 0
+    explicacion: "3 + 2 = 5 y 3 − 2 = 1. El par (3, 2) cumple las dos ecuaciones."
+recordar:
+  - "Siempre verifica el par en las dos ecuaciones."
+  - "El orden del par importa: (x, y) no es lo mismo que (y, x)."
+nota: "Si al sustituir desaparecen las dos incógnitas, el sistema puede tener infinitas soluciones o ninguna."
