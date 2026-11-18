@@ -79,7 +79,10 @@ contract:
     pregunta con similitud >= 0.85 (`difflib`) entre alumnos distintos marcan
     **ambas** filas y dejan el aviso con la cédula de la otra. Es una señal para
     leerlas a mano, no una acusación: dos alumnos pueden citar el mismo archivo
-    del repositorio compartido y describirlo con palabras parecidas.
+    del repositorio compartido y describirlo con palabras parecidas. Por eso la
+    fuente puede declarar `justificacion_evidencia`: los ítems que piden pegar
+    un artefacto literal (el árbol del repositorio, una salida de consola) quedan
+    exentos de la comparación, porque ahí el texto idéntico es lo esperado.
   integridad_de_ruta: |
     La cédula y el grupo del **contenido** deben coincidir con los de la **ruta**
     (`resultados/<cid>/grupo_<NN>/<cedula>.json`). Un archivo movido o renombrado
@@ -119,7 +122,7 @@ steps:
 
 expected_outputs:
   - "CSV con cabecera `grupo,cedula,nombre,aciertos,total,nota,nota_recalculada,enviado_en,estado,archivo,avisos,justificaciones,duracion_s,pegas`, una fila por entrega."
-  - "PDF infográfico (longtable de 7 columnas —incluye `J` de justificación—, una fila por estudiante, resumen y caja de cobertura) compilado sin errores `!` ni `Overfull \\hbox`."
+  - "PDF infográfico (longtable de 7 columnas —incluye `J` de justificación—, una fila por estudiante, resumen, caja de cobertura y, si hay filas `revisar`, caja «A revisar a mano» con el motivo de cada una) compilado sin errores `!` ni `Overfull \\hbox`."
   - "Resumen por consola o JSON: entregas, promedio, mejor/peor, por grupo, último envío y cuántas filas hay que revisar."
   - "Con `--lista`: faltantes, sobrantes y cédulas cuyo grupo no coincide con la nómina."
   - "El flujo verifica lo que la capa 3 dijo haber escrito: que el CSV existe, que sus filas coinciden con `entregas` y que el PDF existe y no es un archivo vacío."
@@ -170,3 +173,79 @@ edge_cases:
     respuesta: |
       Solo en rutas ignoradas por git. `--salida .tmp/acta.csv` sirve para una
       revisión rápida; una ruta trackeable se rechaza con código 3.
+
+consolidar_semana:
+  goal: |
+    Unir las actas por grupo de una semana en **un solo** documento `(tex, pdf)`
+    archivable en `evaluaciones/resultados/SEMANA_NN/`. El acta por rol responde
+    «cómo le fue a este grupo»; esta responde «cómo le fue a la semana», en una
+    sola tabla donde cada fila conserva su grupo y los faltantes se ven juntos.
+
+  layer: orchestration
+  references:
+    orchestrator: flujo_acta_cuestionario.py --consolidar
+    scripts: execution/acta_semana.py, execution/test_acta_semana.py
+    input: cursos/<CURSO>/evaluaciones/resultados/acta_*.csv (uno por grupo)
+    nominas: .tmp/grupo_<N>.csv con cabecera `grupo,cedula,nombre`
+    output: cursos/<CURSO>/evaluaciones/resultados/SEMANA_<NN>/acta_semana_<NN>.{tex,pdf}
+    tests: python3 execution/test_acta_semana.py
+
+  required_inputs:
+    - name: --semana N
+      description: "Semana a consolidar (entero >= 1). Fija la carpeta `SEMANA_NN` y el nombre base."
+    - name: --listas-dir DIR
+      description: |
+        Carpeta con `grupo_1.csv` … `grupo_N.csv` (misma cabecera que el `--lista`
+        del acta). **Sin nómina no se inventan faltantes**: el documento sale con
+        «Cobertura no verificable» en vez de decir que todos entregaron.
+    - name: --salida-dir DIR
+      description: "Destino explícito; por defecto `<resultados>/SEMANA_<NN>`."
+    - name: --actas-dir DIR
+      description: "Default `cursos/CYBERSEGURIDAD/evaluaciones/resultados`."
+
+  steps:
+    - paso: 1
+      script: python3 execution/test_acta_semana.py
+      description: |
+        54 aserciones sin red ni pdflatex: unión por cédula normalizada, orden
+        estable, columnas de la tabla (7), faltantes desde la nómina, la caja
+        «A revisar a mano» con su motivo, el pie sin remisiones muertas y el
+        escapado.
+    - paso: 2
+      script: python3 flujo_acta_cuestionario.py --consolidar --semana 1 --listas-dir .tmp
+      description: |
+        Genera el `.tex`, compila el `.pdf`, y verifica que ambos existen, que el
+        `.tex` cierra con `\end{document}` y que el PDF no está vacío.
+    - paso: 3
+      script: python3 execution/verificar_pdf.py --pdf <pdf> --log .tmp/latex_build/<job>/<job>.log
+      description: |
+        Confirmar 0 errores `!` y 0 `Overfull \hbox`. El consolidador ya falla
+        con `!`, pero el log es la única fuente de verdad del overfull.
+
+  expected_outputs:
+    - "Un `.tex` y un `.pdf` por semana, con resumen (entregas, promedio, mejor/peor, a revisar) y tabla de 7 columnas: G, cédula, nombre, aciertos, nota, J, estado."
+    - "Caja de cobertura con los faltantes de **toda** la semana, con su grupo."
+    - "Fecha del acta = último envío real de la semana (no la del reloj)."
+    - "JSON con `entregas`, `por_grupo`, `faltantes`, `a_revisar`, `overfull`."
+    - "Códigos: 0 ok (overfull solo informa) · 1 E/S o pdflatex sin PDF válido · 3 datos inválidos."
+
+  edge_cases:
+    - caso: "Una cédula aparece en dos actas"
+      respuesta: |
+        Código 3 y no se escribe nada. Es la señal de un alumno que entregó dos
+        veces con el mismo `cuestionario_id` o de dos actas generadas con la
+        misma nómina; elegir una en silencio perdería la otra entrega.
+    - caso: "Se consolidan actas de semanas distintas"
+      respuesta: |
+        La selección es `acta_*.csv` de **una** carpeta y no lee fechas para
+        filtrar. Si la carpeta mezcla semanas, el documento lo dice con la fecha
+        del último envío: archivar cada semana en su `SEMANA_NN/` evita el cruce.
+    - caso: "Nómina incompleta"
+      respuesta: |
+        Los faltantes salen de la nómina que se pasa. Si `--listas-dir` trae solo
+        dos grupos, los otros dos no figuran como «sin entrega»: se declara la
+        cobertura que se verificó, no la que se supone.
+    - caso: "El PDF sale con Overfull \\hbox"
+      respuesta: |
+        Se informa y no falla (cosmético). Si el texto se sale del margen, mirar
+        el nombre más largo de la columna `p{5.0cm}` antes de tocar la tabla.

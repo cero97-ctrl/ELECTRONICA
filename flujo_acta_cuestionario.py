@@ -33,6 +33,7 @@ RAIZ = Path(__file__).resolve().parent
 EJECUCION = RAIZ / "execution"
 PYTHON = sys.executable
 DESCARGADOR = EJECUCION / "descargar_resultados.py"
+CONSOLIDADOR = EJECUCION / "acta_semana.py"
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
 FUENTE_POR_DEFECTO = (
@@ -152,6 +153,85 @@ def _verificar(resultado: dict, sin_pdf: bool) -> list[str]:
     return problemas
 
 
+def _consolidar(args: argparse.Namespace) -> int:
+    """Une los acta_*.csv de una semana en un solo (tex, pdf) y lo verifica."""
+    if not args.semana:
+        print("FALLA (3): --consolidar exige --semana N", file=sys.stderr)
+        return 3
+    cmd = [PYTHON, str(CONSOLIDADOR), "--semana", str(args.semana), "--json"]
+    if args.salida_dir:
+        cmd.extend(["--salida", args.salida_dir])
+    if args.curso:
+        cmd.extend(["--curso", args.curso])
+    if args.listas_dir:
+        listas = sorted(Path(args.listas_dir).glob("grupo_*.csv"))
+        if not listas:
+            print(f"FALLA (3): no hay grupo_*.csv en {args.listas_dir}", file=sys.stderr)
+            return 3
+        for lista in listas:
+            cmd.extend(["--lista", str(lista)])
+    try:
+        proc = subprocess.run(cmd, cwd=RAIZ, capture_output=True, text=True, timeout=900)
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(f"FALLA (1): no se pudo ejecutar el consolidador: {exc}", file=sys.stderr)
+        return 1
+    try:
+        resultado = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        print(f"FALLA ({proc.returncode or 1}): {(proc.stdout or proc.stderr)[-800:]}",
+              file=sys.stderr)
+        return proc.returncode or 1
+    codigo = int(resultado.get("code", proc.returncode or 1))
+
+    problemas: list[str] = []
+    if codigo == 0:
+        ruta_tex = Path(str(resultado.get("acta_tex") or ""))
+        if not ruta_tex.is_file() or ruta_tex.stat().st_size < 512:
+            problemas.append(f"el .tex no existe o está vacío: {ruta_tex}")
+        elif "\\end{document}" not in ruta_tex.read_text(encoding="utf-8", errors="ignore"):
+            problemas.append(f"el .tex está truncado (sin \\end{{document}}): {ruta_tex}")
+        ruta_pdf = resultado.get("acta_pdf")
+        if not ruta_pdf:
+            problemas.append("el consolidador no reportó `acta_pdf`")
+        elif not Path(ruta_pdf).is_file():
+            problemas.append(f"el PDF no existe: {ruta_pdf}")
+        elif Path(ruta_pdf).stat().st_size < 2048:
+            problemas.append(f"el PDF es sospechosamente pequeño: {ruta_pdf}")
+        if not isinstance(resultado.get("entregas"), int) or resultado["entregas"] < 1:
+            problemas.append("el consolidador no reportó `entregas`")
+        if problemas:
+            codigo = 1
+
+    if args.json:
+        if problemas:
+            resultado["problemas_verificacion"] = problemas
+        resultado["diagnostico"] = DIAGNOSTICO.get(codigo, "desconocido")
+        print(json.dumps(resultado, ensure_ascii=False, indent=2))
+    elif codigo == 0:
+        print(
+            f"Acta de la semana {resultado.get('semana'):02d} — "
+            f"{resultado.get('entregas')} entrega(s)"
+        )
+        print(f"  TEX: {resultado.get('acta_tex')}")
+        print(f"  PDF: {resultado.get('acta_pdf')}")
+        for grupo, n in (resultado.get("por_grupo") or {}).items():
+            print(f"  G{grupo}: {n}")
+        faltantes = resultado.get("faltantes") or []
+        if faltantes:
+            print(f"  sin entrega: {len(faltantes)}")
+            for falta in faltantes:
+                print(f"    G{falta.get('grupo') or '?'} {falta['cedula']} {falta['nombre']}")
+        if resultado.get("a_revisar"):
+            print(f"  AVISO: {resultado['a_revisar']} fila(s) marcadas `revisar`.")
+        if resultado.get("overfull"):
+            print(f"  aviso: {resultado['overfull']} Overfull \\hbox (cosmético)")
+    else:
+        print(f"FALLA ({codigo}): {resultado.get('message', 'error')}", file=sys.stderr)
+        for problema in problemas:
+            print(f"  - {problema}", file=sys.stderr)
+    return codigo
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Descarga las entregas del cuestionario y genera el acta."
@@ -167,9 +247,20 @@ def main() -> int:
     parser.add_argument("--sin-pdf", action="store_true", help="No generar el PDF.")
     parser.add_argument("--fecha", default=None, help="Fecha del acta (por defecto, el último envío).")
     parser.add_argument("--token-env", default=None, help="Variable con el token de lectura.")
+    parser.add_argument("--consolidar", action="store_true",
+                        help="Une los acta_*.csv de la semana en un solo (tex,pdf).")
+    parser.add_argument("--semana", type=int, default=None,
+                        help="Semana a consolidar (>= 1); exige --consolidar.")
+    parser.add_argument("--listas-dir", default=None,
+                        help="Carpeta con grupo_N.csv para listar faltantes.")
+    parser.add_argument("--salida-dir", default=None,
+                        help="Carpeta destino del acta consolidada.")
+    parser.add_argument("--curso", default=None, help="Curso en el acta consolidada.")
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
     parser.add_argument("--no-alert", action="store_true", help="Sin alerta audible.")
     args = parser.parse_args()
+    if args.consolidar:
+        return _consolidar(args)
 
     run_id = run_state.run_id_de_la_corrida("acta-cuestionario")
     ruta_estado = run_state.ruta_vista(run_id)
