@@ -91,8 +91,35 @@ la fila «Deps de los plugins locales» de la tabla de migración y el paso 5 de
   plugin` para ambos sin fallo posterior, y `python`/`node` siguen resolviendo al env y a
   nvm). Se conservan `.opencode/package.json` y `package-lock.json` (128 KB) para poder
   reinstalar con `npm install` si algún día se quieren tipos en el editor.
-- `AGENTS.md` **no** se commiteó: el archivo traía cambios previos del usuario sin commitear
-  (conteos de tests, flujo de Sara) y no corresponde mezclarlos en un commit de plugins.
+- `AGENTS.md` **no** se commiteó en su momento: el archivo traía cambios previos del usuario
+  sin commitear (conteos de tests, flujo de Sara) y no correspondía mezclarlos en un commit
+  de plugins. Quedó commiteado después, en el barrido previo al reset de OpenCode.
+
+## Barrido de commits previo al reset de OpenCode
+
+El usuario anunció que iba a resetear OpenCode y pidió commitear el trabajo pendiente. El
+árbol tenía 13 archivos modificados y ~20 sin trackear, así que se agrupó por tema en vez de
+un `git add -A`:
+
+| Commit | Contenido |
+|---|---|
+| `7fd2ee26` | `feat(sara)`: material didáctico HTML + publicador con barrera anti-fuga |
+| `fe39f4fd` | `feat(examenes)`: `justificacion_evidencia` de punta a punta + `listado_*.pdf` al `.gitignore` |
+| `da92c654` | `feat(actas)`: consolidado semanal (`--consolidar`) |
+| `9af0b7d7` | `docs(agentes)`: plugins v2, comandos nuevos, conteos de tests |
+| `84b12d9b` | `feat(tesis)`: informe del anteproyecto Movilnet + documento del alumno |
+
+**Excepción registrada (decisión consciente del usuario):** antes de commitear se alertó de
+que `cursos/TESIS/HECTOR/` contiene el anteproyecto de un **tercero** (Héctor Alejandro
+Saldivia Jiménez) con su nombre completo, la empresa (Movilnet) y la ubicación de la radio
+base, y de que el repo es **público** (`gh repo view` → `visibility: PUBLIC`), el mismo
+criterio con el que ese día se añadió `cursos/*/listado_*.pdf` al `.gitignore`. Se ofrecieron
+tres salidas (ignorar la carpeta, commitear solo el informe, commitear todo). El usuario
+eligió **commitear todo**; se procedió y el mensaje del commit deja constancia de que el
+documento del alumno se incluye por decisión expresa suya. Si más adelante hay que retirarlo,
+implica `git filter-repo` + `push --force` sobre historia ya publicada.
+
+**Estado:** árbol limpio; **10 commits pendientes de push** respecto de `origin/master`.
 - La bitácora de 2026-08-21 y la de 2026-08-26 describen el contrato V1 (`shell.env`,
   reinicio obligatorio). Se dejan como registro histórico; la fuente vigente es `AGENTS.md`
   y el propio código de los plugins.
