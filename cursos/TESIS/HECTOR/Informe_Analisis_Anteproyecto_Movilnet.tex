@@ -1,0 +1,889 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Codificación, fuentes y lenguaje ───────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[default,scale=0.95]{sourcesanspro}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+
+% ── Geometría y espaciado ─────────────────────────────────────────────────────
+\usepackage[top=2.2cm, bottom=2.5cm, left=2.2cm, right=2.2cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.18}
+\usepackage{parskip}
+
+% ── Matemáticas y unidades ────────────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+
+% ── Circuitos ─────────────────────────────────────────────────────────────────
+\usepackage[european, straightvoltages]{circuitikz}
+
+% ── Tablas ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{needspace}
+\usepackage{colortbl}
+\usepackage{enumitem}
+
+% ── Colores, cajas e iconos ───────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+
+% ── Listados de código (dark-mode infográfico) ────────────────────────────────
+%   Estilo base: fondo oscuro con números de línea. Los bloques lstlisting se
+%   envuelven automáticamente en una caja tcolorbox redondeada.
+\usepackage{listings}
+
+% ── Secciones con barra de color (infografía) ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries\color{azulNoche}}
+  {\colorbox{cyanNeon}{\color{fondoOscuro}\thesection}}{0.7em}{}
+  [\vspace{2pt}\color{cyanNeon}\rule{\linewidth}{1.8pt}]
+\titlespacing*{\section}{0pt}{24pt}{10pt}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsection}}{0.7em}{}
+  [\vspace{1pt}\color{grisLinea}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{azulNoche}}
+  {\textcolor{cyanNeon}{\thesubsubsection}}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Cabeceras y pies de página ────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{%
+  \begin{minipage}{\linewidth}
+    \vspace{2pt}
+    \color{cyanNeon}\rule{\linewidth}{1.2pt}\\[2pt]
+    \centering\color{grisTexto}\footnotesize
+    Página \thepage\ de \pageref{LastPage}
+  \end{minipage}%
+}
+
+% ── Hiperenlaces ──────────────────────────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=azulNoche, urlcolor=cyanNeon]{hyperref}
+\sloppy
+\emergencystretch 3em
+
+% ── Paleta de colores — tecnológico dark-mode ──────────────────────────────────
+\definecolor{fondoOscuro}{HTML}{0D1B2A}%             Dark navy — fondo banda título
+\definecolor{verdeTurquesa}{HTML}{004D40}%           Verde turquesa — bandas de marca
+\definecolor{azulNoche}{HTML}{1B3A6B}%               Midnight blue — secciones, marcos
+\definecolor{azulMedio}{HTML}{2A5298}%               Azul medio — variante de acento
+\definecolor{cyanNeon}{HTML}{00C8E0}%                Cyan eléctrico — acentos primarios
+\definecolor{verdeSignal}{HTML}{00B887}%             Verde señal — fortalezas, éxito
+\definecolor{naranjaVivo}{HTML}{FF7043}%             Naranja vivo — mejoras, advertencias
+\definecolor{rojoAlerta}{HTML}{E53935}%              Rojo alerta — errores
+\definecolor{grisPapel}{HTML}{F4F6FA}%               Fondo tarjetas claras
+\definecolor{grisLinea}{HTML}{C8D0E0}%               Bordes sutiles
+\definecolor{grisTexto}{HTML}{6B7A99}%               Texto secundario
+\definecolor{amarilloNota}{HTML}{FFB300}%            Notas / advertencias doradas
+\definecolor{codigoFondo}{HTML}{1E2D3D}%             Fondo del bloque de código
+\definecolor{codigoComentario}{HTML}{7A8FA6}%        Comentarios
+\definecolor{codigoCadena}{HTML}{FF9D5C}%            Cadenas / strings
+\definecolor{codigoKeyword}{HTML}{00C8E0}%           Palabras clave
+\definecolor{codigoNumero}{HTML}{00E5A0}%            Números
+
+% ── Banda de título: portada infográfica ──────────────────────────────────────
+%   Diseño en 2 capas: banda de color (por defecto fondo oscuro) + franja de
+%   acento cyan abajo. Uso: \bandaTitulo[color]{título}{subtítulo}.
+%   El icono se puede cambiar con \renewcommand{\iconoBanda}{...} (FontAwesome).
+\newcommand{\iconoBanda}{microchip}
+\newcommand{\bandaTitulo}[3][fondoOscuro]{%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=#1, colframe=#1,
+    boxrule=0pt, arc=8pt, outer arc=8pt,
+    width=\linewidth,
+    top=18pt, bottom=6pt, left=14pt, right=14pt,
+    borderline south={3.5pt}{0pt}{cyanNeon},
+  ]
+    \begin{minipage}[c]{0.07\linewidth}
+      \centering
+      \textcolor{cyanNeon}{\fontsize{30}{30}\selectfont\faIcon{\iconoBanda}}
+    \end{minipage}%
+    \hspace{8pt}%
+    \begin{minipage}[c]{0.88\linewidth}
+      {\fontsize{20}{24}\selectfont\bfseries\color{white}#2}\par\vspace{5pt}%
+      \textcolor{cyanNeon!80!white}{\small\faIcon{angle-right}~#3}%
+    \end{minipage}
+    \vspace{4pt}
+  \end{tcolorbox}%
+  \vspace{8pt}%
+}
+
+% ── Tarjetas de datos (infografía) ────────────────────────────────────────────
+\tcbset{
+  tarjetaDato/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries\small, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!30!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  tarjetaIcono/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=white, colframe=grisLinea, boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    borderline west={3pt}{0pt}{cyanNeon},
+    drop fuzzy shadow=azulNoche!25!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaTitulo/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel, colframe=azulNoche,
+    boxrule=1pt,
+    fonttitle=\bfseries, coltitle=white,
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={
+      colback=azulNoche, colframe=azulNoche,
+      arc=4pt, boxrule=0pt,
+    },
+    drop fuzzy shadow=azulNoche!25!white,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+  },
+  cajaContenido/.style={
+    enhanced, breakable,
+    arc=5pt, outer arc=5pt,
+    colback=grisPapel, colframe=grisLinea,
+    boxrule=0.8pt,
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaFortaleza/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white, colframe=verdeSignal,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small, coltitle=verdeSignal!70!black,
+    drop fuzzy shadow=verdeSignal!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaMejora/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!8!white, colframe=naranjaVivo,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small, coltitle=naranjaVivo!80!black,
+    drop fuzzy shadow=naranjaVivo!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+  cajaRecomendacion/.style={
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!6!white, colframe=cyanNeon!60!azulNoche,
+    boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small, coltitle=azulNoche,
+    drop fuzzy shadow=azulNoche!20!white,
+    top=6pt, bottom=6pt, left=10pt, right=10pt,
+  },
+}
+
+% ── Ícono + texto (encabezados de sección y elementos) ────────────────────────
+\newcommand{\iconotexto}[2]{\textcolor{cyanNeon}{\faIcon{#1}}~#2}
+
+% ── Listados de código: estilo dark + auto-envoltura ─────────────────────────
+\lstdefinestyle{estiloCodigo}{
+    backgroundcolor=\color{codigoFondo},
+    basicstyle=\ttfamily\small\color{white},
+    commentstyle=\color{codigoComentario}\itshape,
+    stringstyle=\color{codigoCadena},
+    keywordstyle=\color{codigoKeyword}\bfseries,
+    numberstyle=\tiny\color{codigoComentario},
+    numbers=left,
+    numbersep=10pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=none,
+    captionpos=b,
+    aboveskip=6pt,
+    belowskip=4pt,
+    xleftmargin=14pt,
+    framexleftmargin=14pt,
+    literate=
+      {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+      {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+      {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+      {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstdefinestyle{estiloPython}{
+    style=estiloCodigo,
+    language=Python,
+}
+\lstset{style=estiloCodigo}
+\BeforeBeginEnvironment{lstlisting}{%
+  \begin{tcolorbox}[
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=codigoFondo, colframe=azulNoche,
+    boxrule=1pt,
+    drop fuzzy shadow=azulNoche!25!white,
+    top=2pt, bottom=2pt, left=0pt, right=0pt,
+  ]%
+}
+\AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
+
+% ── Cajas de contenido temáticas ──────────────────────────────────────────────
+\newtcolorbox{cajaRecuerda}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulNoche!10!grisPapel,
+    colframe=azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{info-circle}~Recuerda},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulNoche, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!25!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaConcepto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=verdeSignal!8!white,
+    colframe=verdeSignal, boxrule=1pt,
+    borderline west={4pt}{0pt}{verdeSignal},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{lightbulb}~Concepto clave},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=verdeSignal!80!black, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=verdeSignal!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjemplo}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=cyanNeon!5!white,
+    colframe=cyanNeon!70!azulNoche, boxrule=1pt,
+    borderline west={4pt}{0pt}{cyanNeon},
+    fonttitle=\bfseries\small\color{fondoOscuro},
+    title={\faIcon{code}~Ejemplo},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=cyanNeon, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaEjercicio}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=azulMedio!7!white,
+    colframe=azulMedio, boxrule=1pt,
+    borderline west={4pt}{0pt}{azulMedio},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{pencil-alt}~Ejercicio},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=azulMedio, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=azulNoche!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+\newtcolorbox{cajaReto}{
+    enhanced, breakable,
+    arc=6pt, outer arc=6pt,
+    colback=naranjaVivo!6!white,
+    colframe=naranjaVivo, boxrule=1pt,
+    borderline west={4pt}{0pt}{naranjaVivo},
+    fonttitle=\bfseries\small\color{white},
+    title={\faIcon{fire}~Reto},
+    attach boxed title to top left={yshift=-3mm, xshift=6mm},
+    boxed title style={colback=naranjaVivo, arc=4pt, boxrule=0pt},
+    drop fuzzy shadow=naranjaVivo!20!white,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+}
+
+% ── Indicadores de dificultad ─────────────────────────────────────────────────
+\newcommand{\facil}{\textcolor{verdeSignal}{\faIcon{circle}\,\textbf{Fácil}}}
+\newcommand{\intermedio}{\textcolor{naranjaVivo}{\faIcon{circle}\,\textbf{Intermedio}}}
+\newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ── Cabecera específica del documento ────────────────────────────────────────
+\hypersetup{
+    pdftitle={Informe de análisis crítico del anteproyecto Movilnet},
+    pdfauthor={Revisión técnica},
+    pdfsubject={Evaluación de anteproyecto de trabajo de grado},
+}
+
+\begin{document}
+
+\bandaTitulo{Informe de análisis crítico del anteproyecto}{Prototipo de control energético con Arduino/ESP32 para la radio base Movilnet de San José de Aerocuar}
+
+\begin{center}
+\small\color{grisTexto}
+Documento evaluado: \texttt{Anteproyecto\_Movilnet.pdf} \quad$\cdot$\quad
+28 páginas \quad$\cdot$\quad
+Revisión del 13 de noviembre de 2026
+\end{center}
+
+\vspace{4pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Ficha del documento y alcance de esta revisión}
+
+\begin{tcolorbox}[cajaContenido]
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.8cm}X@{}}
+\toprule
+Título & \emph{Prototipo de control energético basado en tecnología Arduino orientado a la disminución del consumo de combustible y las emisiones de gases de efecto invernadero provenientes del motor generador de la empresa ``Telecomunicaciones Movilnet'' en San José de Aerocuar, Estado Sucre.} \\
+Autor & Br. Héctor Alejandro Saldivia Jiménez \\
+Institución & Universidad de Oriente, Núcleo Sucre, Escuela de Ciencias, Departamento de Informática \\
+Modalidad & Proyecto de Trabajo de Grado (Pasantía de Grado) \\
+Fecha & Cumaná, abril de 2026 \\
+Caso de estudio & Radio base Movilnet, municipio Andrés Mata, San José de Aerocuar, estado Sucre \\
+Plataforma propuesta & Arduino UNO + módulo ESP32, sensor MQ-135, módulo relé e interfaz web local \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\subsection*{Qué evalúa este informe}
+
+Este informe evalúa la \textbf{calidad técnica y metodológica del anteproyecto}, no el desempeño del autor ni la redacción como ejercicio literario. Se examina si el problema está bien delimitado, si los objetivos son verificables, si la metodología puede responderlos y si la solución electrónica propuesta es capaz de producir las magnitudes que el título promete reducir.
+
+\begin{cajaRecuerda}
+\textbf{Base del análisis.} El PDF se procesó extrayendo su capa de texto (28 páginas, 6.899 palabras). El documento no contiene figuras, tablas, diagramas ni fotografías, salvo el escudo institucional de la portada; por tanto, no se evalúan esquemas eléctricos, diagramas de arquitectura ni resultados gráficos porque \textbf{no existen en el documento}. Tampoco se evalúa bibliografía: \textbf{no hay lista de referencias}.
+\end{cajaRecuerda}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Resumen ejecutivo y veredicto}
+
+El anteproyecto aborda un problema real, pertinente y bien contextualizado: la operación indiscriminada de motores generadores diésel en radiobases de telecomunicaciones, con efectos medibles en costo operativo, emisiones y ruido. La delimitación geográfica e institucional es concreta, el acceso a la información operativa es verosímil y la propuesta de automatizar el arranque con base en el estado del banco de baterías es una línea de trabajo válida y de bajo costo.
+
+Sin embargo, el documento presenta \textbf{brechas que impiden ejecutarlo tal como está escrito}. Las tres más graves son:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{La magnitud que el título promete reducir no se mide en el montaje propuesto.} El prototipo se validará con una fuente de 12~V y un motor de baja potencia, pero no se define ningún instrumento ni procedimiento para cuantificar litros de diésel ni emisiones. La hipótesis, tal como está formulada, no es contrastable con los datos que el proyecto producirá.
+  \item \textbf{El sensor MQ-135 no mide lo que el documento afirma que mide.} No es un sensor de CO$_2$ ni cuantifica CO o NO$_x$ en concentración; es un sensor semiconductor de resistencia variable, poco selectivo y dependiente de calibración. Con él no se puede sostener una afirmación sobre gases de efecto invernadero.
+  \item \textbf{Un módulo relé no es una interfaz de arranque de generador.} Un grupo electrógeno exige contacto de arranque, precalentamiento, solenoide de combustible, sensado de alternador, presión de aceite, parada de emergencia y, sobre todo, transferencia con enclavamiento para evitar retroalimentación a la red. Nada de esto aparece en el alcance.
+\end{enumerate}
+
+\subsection*{Veredicto por dimensión}
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.3cm} >{\centering\arraybackslash}p{2.3cm} >{\raggedright\arraybackslash}p{9.0cm}@{}}
+\toprule
+\textbf{Dimensión} & \textbf{Estado} & \textbf{Observación sintética} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Dimensión} & \textbf{Estado} & \textbf{Observación sintética} \\
+\midrule
+\endhead
+Pertinencia del problema & \cellcolor{verdeSignal!30}Adecuada & Problema real, costo social y ambiental verificable, caso delimitado. \\
+Claridad del objetivo general & \cellcolor{verdeSignal!30}Adecuada & Bien redactado; el título y el alcance usan ``Arduino'' y ``ESP32'' de forma intercambiable. \\
+Objetivos específicos (SMART) & \cellcolor{amarilloNota!35}Parcial & Verbos correctos, pero sin indicadores, metas ni criterios de aceptación. \\
+Coherencia metodológica & \cellcolor{amarilloNota!35}Parcial & Paradigma positivista con enfoque mixto sin instrumentos cualitativos; pre-experimento sin protocolo de medición. \\
+Viabilidad técnica del montaje & \cellcolor{amarilloNota!35}Parcial & Arquitectura redundante (Arduino + ESP32), divisor resistivo insuficiente para estimar carga, actuación sobresimplificada. \\
+Validez de la medición ambiental & \cellcolor{rojoAlerta!25}Insuficiente & No hay método para medir combustible ni emisiones; el sensor elegido no discrimina GEI. \\
+Seguridad y confiabilidad & \cellcolor{rojoAlerta!25}Insuficiente & Sin análisis de fallos, sin enclavamiento, sin arranque seguro ni ciberseguridad del lazo de control. \\
+Rigor documental & \cellcolor{rojoAlerta!25}Insuficiente & Cero referencias bibliográficas; citas incompletas y una fuente secundaria mal citada. \\
+Forma y consistencia & \cellcolor{amarilloNota!35}Parcial & Índice incompleto, numeración de secciones inconsistente, topónimo escrito de dos maneras. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{tcolorbox}[tarjetaDato, title={Veredicto global}]
+\textbf{VIABLE EN CONCEPTO, NO EJECUTABLE SIN CORRECCIONES MAYORES.} La idea central se sostiene y merece desarrollo; el diseño experimental, la instrumentación y la arquitectura de control deben rehacerse antes de construir. Las correcciones de prioridad 1 (sección~\ref{sec:plan}) son condición necesaria para que el trabajo pueda defender resultados en lugar de solo describir un montaje.
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Inventario del documento: qué hay y qué falta}
+
+El anteproyecto se organiza en introducción, planteamiento del problema, objetivos, justificación, alcance, limitaciones, antecedentes y marco metodológico. Es una estructura razonable para un anteproyecto, pero \textbf{incompleta respecto de lo que el propio documento promete}. El índice, además, no refleja el contenido real: enumera siete entradas y omite limitaciones, antecedentes y todo el marco metodológico.
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.6cm} >{\centering\arraybackslash}p{1.7cm} >{\raggedright\arraybackslash}p{9.0cm}@{}}
+\toprule
+\textbf{Componente} & \textbf{¿Presente?} & \textbf{Observación} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Componente} & \textbf{¿Presente?} & \textbf{Observación} \\
+\midrule
+\endhead
+Introducción & Sí & Motiva el problema; anuncia una hipótesis que luego no se operacionaliza. \\
+Planteamiento del problema & Sí & Extenso y documentado en lo ambiental; el cierre técnico es genérico. \\
+Objetivo general y específicos & Sí & Cuatro objetivos; ninguno declara indicador ni umbral de logro. \\
+Justificación & Sí & Social y económica bien argumentadas; la técnica es la más débil. \\
+Alcance y limitaciones & Sí & El alcance define capacidades; las limitaciones reconocen la simulación, pero no sus consecuencias sobre la validez. \\
+Antecedentes & Sí & Tres trabajos; uno de ellos no es internacional y otro es de otra disciplina. \\
+Marco teórico / referencial & \textbf{No} & No hay desarrollo conceptual de baterías, grupos electrógenos, calidad de aire ni normas. \\
+Operacionalización de variables & \textbf{No} & No hay cuadro de variables, dimensiones, indicadores ni instrumentos. \\
+Hipótesis formal & \textbf{Parcial} & Solo se enuncia en la introducción, en prosa y sin variables medibles. \\
+Metodología & Sí & Paradigma, enfoque, tipo, nivel, modalidad, diseño y RUP; con tensiones internas. \\
+Cronograma & \textbf{No} & Imprescindible en un trabajo de grado con fase de construcción. \\
+Presupuesto / BOM & \textbf{No} & Se afirma ``bajo costo'' sin lista de materiales ni cotización. \\
+Referencias bibliográficas & \textbf{No} & Cero entradas. Las citas en el texto no son localizables. \\
+Anexos & \textbf{No} & No hay instrumentos, ni cartas de autorización, ni protocolos de prueba. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{tcolorbox}[cajaMejora]
+\textbf{Dato que conviene tener presente:} el documento tiene 28 páginas y 6.899 palabras, pero \textbf{ninguna figura y ninguna tabla}. Para un anteproyecto de ingeniería electrónica eso es una ausencia estructural, no un detalle de estilo: no hay diagrama de bloques, ni esquema de conexiones, ni curva de descarga de la batería, ni máquina de estados del controlador, ni matriz de riesgos. Todos ellos son entregables esperables y, además, son la mejor defensa contra las observaciones técnicas de este informe.
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Fortalezas que deben preservarse}
+
+\begin{tcolorbox}[cajaFortaleza, colbacktitle=verdeSignal!70!black, coltitle=white, title={Lo que está bien y no debería perderse en la corrección}]
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt]
+  \item \textbf{Problema auténtico y localizado.} No es un tema de laboratorio: hay una radiobase concreta, un municipio concreto y una afectación concreta (ruido y emisiones frente a la Plaza Bolívar).
+  \item \textbf{Delimitación institucional verificable.} Se identifican 56 radiobases en el estado Sucre y su reparto operativo (24 en el COM Cumaná y 32 en el COM Carúpano), lo que da una base realista para estimar escalabilidad.
+  \item \textbf{Enfoque de bajo costo y código abierto.} La elección de hardware libre es coherente con el contexto y con la posibilidad de replicación.
+  \item \textbf{Prudencia en el alcance.} Se reconoce que no se intervendrá la instalación real y que se trabajará en simulación. Esa honestidad es un activo y debe mantenerse.
+  \item \textbf{Justificación social bien argumentada.} El vínculo entre contaminación sónica, uso del espacio público y salud comunitaria está bien expuesto.
+  \item \textbf{Conciencia del trade-off ambiental.} El texto menciona que paneles y litio también tienen costo ecológico; esa mirada evita el discurso ingenuo de ``energía limpia sin externalidades''.
+\end{itemize}
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Coherencia interna: seis rupturas que hay que resolver}
+
+Un anteproyecto se sostiene si el título, el objetivo, el alcance, la hipótesis y el diseño experimental dicen lo mismo. En este documento no lo dicen. Las rupturas no son de redacción: cambian lo que se puede concluir al final.
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{5.8cm}@{}}
+\toprule
+\textbf{Afirmación A} & \textbf{Afirmación B} & \textbf{Qué hay que decidir} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Afirmación A} & \textbf{Afirmación B} & \textbf{Qué hay que decidir} \\
+\midrule
+\endhead
+El título y el objetivo general hablan de ``tecnología Arduino''. & El alcance y la metodología describen un ESP32 con Arduino UNO como acompañante. & Si el núcleo es el ESP32, el título debe decirlo; si conviven ambos, hay que justificar la redundancia o eliminarla. \\
+La hipótesis promete reducir ``significativamente'' combustible y emisiones de GEI. & El montaje sustituye el banco por 12~V y el generador por un motor de baja potencia, sin instrumento de combustible ni de gases. & La hipótesis debe reformularse sobre variables medibles en el banco (horas de operación, arranques, energía ciclada) o el alcance debe incluir la instrumentación. \\
+Se declara un paradigma positivista, cuantitativo. & Se declara un enfoque mixto, pero no hay un solo instrumento cualitativo definido. & O se justifica y se instrumenta la parte cualitativa (entrevistas, observación), o se asume un enfoque cuantitativo puro. \\
+El banco de baterías real es de hasta 24~V. & La simulación usa una fuente de 12~V. & El divisor, la curva de estado de carga, las corrientes y la protección cambian por completo. Hay que simular a la tensión real o justificar el escalamiento. \\
+El alcance promete ``sin modificaciones estructurales''. & Controlar un generador exige transferencia automática y enclavamiento; eso es una modificación estructural y eléctrica. & Reconocerlo explícitamente y dimensionar el alcance a una interfaz de arranque supervisada, no a la conmutación de potencia. \\
+La justificación se apoya en el ruido frente a la Plaza Bolívar. & El control propuesto solo reduce horas de funcionamiento; no reduce el nivel sonoro cuando el motor sí opera. & Añadir una línea de mitigación acústica (encapsulado, reubicación) o reducir el peso del argumento sonoro. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Objetivos: evaluación y reformulación verificable}
+
+Los cuatro objetivos específicos usan verbos adecuados (diagnosticar, analizar, diseñar, construir) y guardan un orden lógico. El problema es que \textbf{ninguno declara con qué se sabrá que se cumplió}. Un objetivo sin indicador no se puede evaluar en la defensa; se convierte en una lista de actividades.
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{6.0cm}@{}}
+\toprule
+\textbf{Objetivo actual} & \textbf{Debilidad} & \textbf{Reformulación sugerida (con indicador)} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Objetivo actual} & \textbf{Debilidad} & \textbf{Reformulación sugerida (con indicador)} \\
+\midrule
+\endhead
+1. Diagnosticar el impacto social y ambiental del encendido de los motores diésel por fallas eléctricas. & ``Diagnosticar'' no define universo, periodo ni instrumento. & Caracterizar el perfil de operación de la radiobase en una ventana de 30 días: eventos de corte, horas de operación del generador, arranques por día y consumo estimado. \emph{Indicador:} línea base con al menos 95\,\% de días completos. \\
+2. Analizar la eficiencia del sistema de respaldo considerando consumo y emisiones. & No define ``eficiencia'' ni la unidad de comparación. & Cuantificar el costo energético por kWh de cada fuente (batería y diésel) y el consumo específico del grupo (L/kWh) en función de la carga. \emph{Indicador:} modelo de costo con análisis de sensibilidad. \\
+3. Diseñar una solución tecnológica integral con automatización y monitoreo remoto. & Se solapa con el 4; ``integral'' no es verificable. & Especificar la arquitectura de control (sensado, actuación, comunicaciones y seguridad) con diagrama eléctrico, lista de materiales y análisis de modos de fallo. \emph{Indicador:} revisión de diseño contra lista de verificación y FMEA cerrado. \\
+4. Construir el prototipo integrado a una aplicación web. & No define escenarios de prueba ni criterio de aceptación. & Implementar el prototipo y validarlo en cinco escenarios (corte breve, corte prolongado, batería baja, falla de red y falla de sensor). \emph{Indicador:} 5/5 escenarios aprobados, con latencia y falsos arranques registrados. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{tcolorbox}[cajaRecomendacion]
+\textbf{Regla práctica para la defensa:} cada objetivo específico debe poder responderse con una tabla de resultados que el jurado pueda leer sin preguntar ``¿y cómo supo eso?''. Si el indicador no cabe en una columna de tabla, el objetivo todavía no está listo.
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Observaciones técnicas}
+
+\subsection{Arquitectura de hardware: dos cerebros para un solo lazo}
+
+El documento propone ``un prototipo basado en el microcontrolador ARDUINO junto con un módulo ESP32''. Un ESP32 ya integra ADC, temporizadores, Wi-Fi y Bluetooth; añadir un Arduino UNO aporta un segundo reloj, un segundo regulador, una segunda etapa de alimentación y un enlace serie entre ambos, sin añadir ninguna capacidad que el proyecto necesite.
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.7cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+\textbf{Criterio} & \textbf{Arduino UNO + ESP32 (propuesto)} & \textbf{ESP32 único (alternativa mínima)} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterio} & \textbf{Arduino UNO + ESP32 (propuesto)} & \textbf{ESP32 único (alternativa mínima)} \\
+\midrule
+\endhead
+Costo y BOM & Dos placas, dos fuentes, cableado adicional. & Una placa; menor costo y menor punto de falla. \\
+Confiabilidad & Dos firmwares que sincronizar; el enlace serie es un modo de fallo nuevo. & Un solo lazo de control, un solo watchdog. \\
+ADC & 10 bits en el UNO; el ESP32 entrega la lectura. & 12 bits, aunque no lineal; se recomienda ADC externo de 16 bits. \\
+Conectividad & Wi-Fi en el ESP32. & Wi-Fi integrado. \\
+Justificación didáctica & Separar adquisición y comunicaciones. & Válida, pero debe declararse como decisión pedagógica, no técnica. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{tcolorbox}[cajaMejora]
+Si la decisión de usar dos placas es deliberada (por ejemplo, para separar la adquisición de la publicación y evitar que un reinicio del Wi-Fi afecte el control), \textbf{hay que escribir esa justificación y añadir el protocolo del enlace serie con timeout y recuperación}. Si no lo es, la arquitectura debe simplificarse: menos componentes es más confiabilidad, y en un equipo que arranca un generador la confiabilidad es el requisito principal.
+\end{tcolorbox}
+
+\subsection{Estimación del estado de carga: un divisor resistivo no alcanza}
+
+El alcance propone medir el banco ``mediante un mapeo de voltaje diseñado mediante resistencias''. El divisor es correcto como acondicionamiento de señal, pero \textbf{medir tensión no es medir estado de carga}. En un banco de litio, y especialmente en LiFePO$_4$, la curva de tensión en reposo es muy plana en la zona de operación: pequeñas variaciones de tensión corresponden a grandes cambios de carga. A eso se suman tres errores:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=2pt]
+  \item \textbf{Error del ADC.} El ADC del ESP32 es no lineal (del orden de varios por ciento) y ruidoso. Un error de $\pm$0,2~V sobre un banco 8S puede equivaler a más de 10 puntos porcentuales de estado de carga.
+  \item \textbf{Caída por carga.} Con corriente circulando, la tensión medida incluye la caída interna del banco y del cableado; la lectura no representa la carga disponible.
+  \item \textbf{Histéresis y temperatura.} La tensión de reposo depende de la temperatura y del historial de carga; sin compensación, los umbrales se desplazan.
+\end{itemize}
+
+\begin{tcolorbox}[cajaRecomendacion]
+\textbf{Qué hacer en su lugar.} Medir tensión \emph{y} corriente con un sensor de efecto Hall o con un INA226/INA219, estimar la carga por conteo de coulombios y \textbf{resincronizar} con una carga completa periódica. Añadir histéresis, tiempo mínimo de marcha y tiempo mínimo de reposo para evitar ciclado corto. El umbral de arranque debe expresarse como estado de carga, no como voltaje, y debe declararse la profundidad de descarga máxima permitida.
+\end{tcolorbox}
+
+\subsection{Actuación sobre el generador: el relé es la punta del iceberg}
+
+Un módulo relé puede cerrar un contacto, pero un grupo electrógeno no arranca con un contacto. La siguiente tabla resume las señales que una interfaz de arranque real necesita; ninguna aparece en el documento.
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{5.4cm} >{\raggedright\arraybackslash}p{6.6cm}@{}}
+\toprule
+\textbf{Señal / función} & \textbf{Para qué sirve} & \textbf{Consecuencia de omitirla} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Señal / función} & \textbf{Para qué sirve} & \textbf{Consecuencia de omitirla} \\
+\midrule
+\endhead
+Contacto de arranque y parada & Ordenar el ciclo de arranque y detención. & El relé no puede distinguir arrancar de detener. \\
+Precalentamiento (cuando aplique) & Facilitar el encendido en frío. & Arranques fallidos y desgaste del motor de arranque. \\
+Solenoide de combustible & Cortar el suministro en parada y emergencia. & El motor no se detiene o no arranca. \\
+Presión de aceite y temperatura & Proteger el motor. & Operación en seco; daño irreversible. \\
+Detección de alternador & Confirmar que el motor está generando. & Arranques repetidos sobre un motor ya en marcha. \\
+Parada de emergencia & Cortar todo ante falla. & Riesgo eléctrico y mecánico. \\
+Transferencia con enclavamiento & Conmutar carga entre red y generador. & Retroalimentación a la red: riesgo eléctrico grave. \\
+Detección de presencia de red & Decidir si hace falta el generador. & El sistema no sabe cuándo debe actuar. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{cajaRecuerda}
+\textbf{Seguridad primero.} La transferencia entre red y generador debe impedir que ambas fuentes se acoplen. Eso exige un interruptor de transferencia automática con enclavamiento mecánico o eléctrico. Un relé de propósito general no lo garantiza y no debe presentarse como solución. Las normas de referencia para el diseño son el Código Eléctrico Nacional (COVENIN 200), NFPA~110 para sistemas de energía de emergencia e ISO~8528 para grupos electrógenos; deben citarse en el marco teórico.
+\end{cajaRecuerda}
+
+Además, el montaje debe considerar el entorno electromagnético: el motor de arranque y el alternador producen transitorios que reinician microcontroladores. Hacen falta optoacoplamiento en las entradas, supresores de transitorios, apantallamiento, separación de la alimentación de control y un watchdog con estado seguro definido.
+
+\subsection{Sensor MQ-135: qué mide realmente}
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{6.0cm}@{}}
+\toprule
+\textbf{El documento afirma} & \textbf{Realidad del MQ-135} & \textbf{Qué se puede afirmar con rigor} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{El documento afirma} & \textbf{Realidad del MQ-135} & \textbf{Qué se puede afirmar con rigor} \\
+\midrule
+\endhead
+Detecta CO$_2$, CO, amoníaco, humo y otros compuestos. & Sensor semiconductor de óxido de estaño (SnO$_2$): responde a muchos gases reductores sin discriminar entre ellos. & Solo un índice relativo de calidad de aire, no concentraciones por gas. \\
+Permite analizar el impacto ambiental del sistema. & La salida depende de humedad, temperatura, envejecimiento y del resistor de carga; requiere quemado y calibración con patrones. & Es útil como indicador de tendencia, no como instrumento de cumplimiento ambiental. \\
+Los datos se usan para evaluar emisiones de GEI. & El GEI dominante de la combustión diésel es el CO$_2$ (con trazas de CH$_4$ y N$_2$O), y el MQ-135 no lo cuantifica de forma fiable. & Los GEI se calculan desde el combustible consumido, no desde este sensor. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{tcolorbox}[cajaRecomendacion]
+\textbf{Dos caminos válidos.} (a) Mantener el MQ-135 y renombrar la variable como \emph{índice de calidad de aire} (resistencia relativa), declarando su falta de selectividad y su calibración; o (b) sustituirlo por un sensor NDIR para CO$_2$ (por ejemplo, familia MH-Z19) y un electroquímico para CO, si el objetivo es medir concentración. Para NO$_x$ se requiere otra tecnología; conviene no prometerlo.
+\end{tcolorbox}
+
+\subsection{Conectividad, disponibilidad y ciberseguridad}
+
+El alcance promete una interfaz accesible ``desde cualquier navegador dentro de la red''. Eso supone una red Wi-Fi estable, pero la propia sección de limitaciones reconoce que el sistema depende de ella. En una radiobase remota, la conectividad no es una constante: si el enlace cae, el sistema debe seguir controlando localmente y almacenar datos para sincronizar después.
+
+\begin{cajaReto}
+La lógica de arranque y parada debe vivir en el microcontrolador, con el servidor web como \emph{observador} y no como parte del lazo. Si el sitio pierde Wi-Fi y el control se detiene, el respaldo energético falla justo cuando más se necesita. Se requiere almacenamiento local (tarjeta SD o memoria flash), marca de tiempo y reintento de sincronización.
+\end{cajaReto}
+
+En materia de seguridad informática, el documento no menciona autenticación, cifrado ni control de acceso. Un ESP32 que puede arrancar un generador es un actuador sobre infraestructura crítica: debe tener credenciales, sesiones con expiración, registro de acciones, límites de tasa y, preferiblemente, segmentación de red o VPN. Nunca un panel de control abierto en la red local sin contraseña.
+
+\subsection{El ahorro de combustible no es automático}
+
+Esta es, técnicamente, la observación más importante del informe y conviene tratarla como concepto central del marco teórico.
+
+Retrasar el arranque del generador solo ahorra combustible si la energía usada por la carga durante ese retraso \textbf{no tuvo que ser producida antes por el propio generador}. Hay dos casos distintos:
+
+\begin{enumerate}[leftmargin=1.4em, itemsep=3pt]
+  \item \textbf{La batería llegó cargada desde la red.} Si el corte ocurre con el banco a plena carga, usar esa energía almacenada evita quemar diésel. El ahorro es real y directo.
+  \item \textbf{La batería se recarga con el propio generador.} Durante un corte prolongado, cada kWh que la batería entrega a la carga tuvo que generarse antes, con pérdidas de carga y descarga (típicamente 10--15\,\% en el ciclo completo). En ese caso el ciclo batería no ahorra energía por sí mismo; el ahorro proviene de otro efecto: evitar que el generador opere a baja carga, donde su consumo específico se dispara.
+\end{enumerate}
+
+\begin{cajaConcepto}
+\textbf{Reformulación correcta del objetivo técnico.} El sistema no debe ``usar la batería antes que el generador'' sin más: debe \textbf{consolidar la operación del generador en bloques de carga alta}, con tiempo mínimo de marcha, y usar la batería como amortiguador. Un grupo diésel a 20\,\% de carga puede consumir dos o tres veces más combustible por kWh que a 70--80\,\%. Ese es el ahorro que hay que modelar, y es medible con horas de operación y curva del fabricante.
+\end{cajaConcepto}
+
+Este matiz también protege al autor en la defensa: si el jurado pregunta ``¿y si la batería se carga con el mismo generador?'', el anteproyecto debe tener respuesta y no un silencio.
+
+\subsection{Emisiones: separar GEI de contaminantes locales}
+
+El documento mezcla dos familias distintas de sustancias. El CO$_2$ es el gas de efecto invernadero relevante de la combustión diésel. El CO, los NO$_x$, el NH$_3$ y el material particulado son contaminantes locales con efectos sobre la salud, pero no son GEI en el sentido del inventario. El sensor MQ-135 tampoco permite cuantificar ninguno de ellos con trazabilidad. La consecuencia práctica es que \textbf{las emisiones de GEI deben calcularse desde el combustible}, con un factor de emisión, y no medirse con un sensor de calidad de aire.
+
+\begin{cajaEjemplo}
+\textbf{Cálculo reproducible.} El factor de emisión por defecto del gasóleo es aproximadamente \SI{74.1}{\kilo\gram\per\giga\joule} (IPCC, 2006). Con un poder calorífico inferior de unos \SI{43.0}{\mega\joule\per\kilo\gram} y una densidad de \SI{0.84}{\kilo\gram\per\liter}, resulta:
+\[
+\SI{74.1}{\kilo\gram\per\giga\joule}\times \SI{0.0361}{\giga\joule\per\liter} \approx \SI{2.68}{\kilo\gram\per\liter}.
+\]
+Es decir, cada litro de diésel evita o emite unos \SI{2.68}{\kilo\gram} de CO$_2$. Con ese número, el ahorro de emisiones es una multiplicación del ahorro de combustible y no requiere sensor alguno.
+\end{cajaEjemplo}
+
+La tabla siguiente es una estimación aritmética de sensibilidad, no una medición. Sirve para dimensionar el problema y para fijar metas realistas.
+
+\begingroup\small
+\begin{longtable}{@{}cccccc@{}}
+\toprule
+\textbf{Consumo (L/h)} & \textbf{Horas/día} & \textbf{L/mes} & \textbf{kg CO$_2$/mes} & \textbf{USD/mes a 0.5} & \textbf{USD/mes a 1.5} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Consumo (L/h)} & \textbf{Horas/día} & \textbf{L/mes} & \textbf{kg CO$_2$/mes} & \textbf{USD/mes a 0.5} & \textbf{USD/mes a 1.5} \\
+\midrule
+\endhead
+1.0 & 4  & 120 & 322  & 60   & 180 \\
+1.0 & 8  & 240 & 643  & 120  & 360 \\
+1.0 & 12 & 360 & 965  & 180  & 540 \\
+1.5 & 4  & 180 & 482  & 90   & 270 \\
+1.5 & 8  & 360 & 965  & 180  & 540 \\
+1.5 & 12 & 540 & 1447 & 270  & 810 \\
+2.5 & 4  & 300 & 804  & 150  & 450 \\
+2.5 & 8  & 600 & 1608 & 300  & 900 \\
+2.5 & 12 & 900 & 2412 & 450  & 1350 \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\begin{cajaRecuerda}
+\textbf{Escenario ilustrativo, no proyección.} Si una radiobase de \SI{1.5}{\liter\per\hour} opera 8~h/día y el control reduce esas horas en un 25\,\%, el ahorro sería de unos \SI{90}{\liter} al mes, equivalentes a \SI{241}{\kilo\gram} de CO$_2$ y entre 45 y 135~USD mensuales. Extrapolado linealmente a 56 radiobases daría del orden de \SI{5}{\cubic\meter} de diésel y \SI{13.5}{\tonne} de CO$_2$ al mes. Son cifras plausibles, pero \textbf{no son un resultado}: dependen de que todas las bases tengan el mismo régimen, cosa que el propio documento no demuestra. Úsense como justificación de magnitud, nunca como conclusión.
+\end{cajaRecuerda}
+
+\subsection{Ruido y emplazamiento: el argumento más fuerte queda sin atender}
+
+La justificación social se apoya en el ruido del generador frente a la Plaza Bolívar. El control propuesto reduce las horas de funcionamiento, lo cual es valioso, pero no reduce el nivel sonoro cuando el equipo sí opera. Si la afectación principal es sónica, la solución técnica debería incluir al menos una de estas líneas: encapsulado acústico del grupo, aislamiento de vibraciones, reubicación del equipo o pantalla acústica. Presentar solo el control de arranque como respuesta al ruido es una promesa que el prototipo no puede cumplir por sí mismo.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Metodología y validez}
+
+\subsection{Tensiones en el diseño declarado}
+
+El marco metodológico declara paradigma positivista (cuantitativo, empírico-analítico) y, acto seguido, enfoque mixto. La combinación es legítima, pero exige instrumentos cualitativos explícitos: entrevistas al personal de mantenimiento, observación del sitio, análisis documental de registros. Sin ellos, la parte cualitativa no existe y el enfoque es simplemente cuantitativo. La cita de Hernández, Fernández y Baptista es correcta en el fondo, pero describe los diseños mixtos en general, no la decisión de este proyecto.
+
+El tipo (aplicada y tecnológica) y el nivel (aplicativo) son coherentes entre sí y con el producto esperado. La modalidad de campo y documental también es defendible, aunque conviene precisar que el ``campo'' aporta la línea base y el laboratorio aporta la validación; el documento no separa ambas contribuciones.
+
+\subsection{RUP para un prototipo de hardware}
+
+RUP es un proceso de ingeniería de software. El proyecto tiene una parte de software (firmware y aplicación web), pero también una parte electrónica y mecánica que RUP no gobierna. Usar RUP como metodología única deja sin proceso el diseño del circuito, la selección de componentes, el análisis de modos de fallo y las pruebas ambientales. La recomendación es declarar dos marcos articulados: RUP para el software y un proceso de desarrollo de hardware con compuertas de revisión (requisitos, arquitectura, diseño detallado, prototipo, validación), o bien adoptar un modelo en V para todo el sistema.
+
+\subsection{Diseño pre-experimental y qué se puede concluir}
+
+Un diseño de un solo grupo con pre-test y post-test, sin grupo control, es aceptable para validación funcional de un prototipo, siempre que no se pretenda inferencia estadística. Con una sola unidad experimental no hay significancia posible. La hipótesis debe reformularse con criterios de aceptación de ingeniería, por ejemplo:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=2pt]
+  \item reducción de al menos un 20\,\% en horas de operación del generador respecto de la línea base simulada;
+  \item cero arranques falsos en 72 horas de prueba continua;
+  \item tiempo de conmutación inferior a 5~s desde que se alcanza el umbral;
+  \item recuperación automática tras reinicio sin intervención manual.
+\end{itemize}
+
+Además, deben definirse repeticiones (al menos tres por escenario), duración de cada corrida y criterio de descarte de datos.
+
+\subsection{Variables: el cuadro que falta}
+
+\begingroup\footnotesize
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{5.0cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Tipo} & \textbf{Indicador} & \textbf{Instrumento} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Variable} & \textbf{Tipo} & \textbf{Indicador} & \textbf{Instrumento} \\
+\midrule
+\endhead
+Horas de operación del generador & Dependiente & Horas acumuladas por día y por mes & Horómetro o registro del propio controlador \\
+Combustible consumido & Dependiente & Litros por día; L/kWh & Caudalímetro (piloto) o curva del fabricante con horas medidas \\
+Emisiones de CO$_2$ & Dependiente & kg CO$_2$/mes & Cálculo: litros $\times$ 2.68 kg/L \\
+Calidad de aire local & Dependiente & Índice relativo (Rs/R0) & MQ-135 calibrado, con registro de humedad y temperatura \\
+Estado de carga del banco & Independiente & Porcentaje de carga & Tensión + corriente (conteo de coulombios) \\
+Presencia de red & Independiente & Booleano & Detector de tensión de red con optoacoplador \\
+Demanda de la carga & Independiente & Potencia media y pico & Medición de tensión y corriente en la carga \\
+Arranques y paradas & Dependiente & Eventos por día; arranques fallidos & Registro de eventos con marca de tiempo \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Rigor documental y forma}
+
+\subsection{Bibliografía: la ausencia más costosa}
+
+El documento cita a Fontaines, Heinemann, Arias, Ricoy, Hernández y otros, pero \textbf{no incluye una sola referencia completa}. En un trabajo de grado eso es un defecto de fondo, no de estilo: sin lista de referencias no se puede verificar ninguna cita, y el jurado no puede distinguir una paráfrasis legítima de una atribución incorrecta. Hay además casos que conviene revisar:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=2pt]
+  \item ``Peter landau (2025)'' aparece con minúscula y sin inicial; la cita interna ``(Parr 2)'' no corresponde al formato APA (debería ser párrafo o página, según la fuente).
+  \item ``Hernández, Fernández y Baptista (2003)'' se usa con número de página, pero no hay edición ni editorial en la referencia.
+  \item La misma experiencia de Barahona y Vera se narra tres veces (introducción del problema, antecedentes y cierre), lo que infla la evidencia disponible sin añadir fuentes.
+  \item Moya (2024) se presenta bajo el rótulo ``antecedentes internacionales'', pero la Universidad Politécnica Territorial de Paria es venezolana. Además, su objeto son vibraciones mecánicas, no gestión energética, por lo que no cubre el vacío que el propio texto declara.
+\end{itemize}
+
+\subsection{Consistencia formal}
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{8.0cm}@{}}
+\toprule
+\textbf{Hallazgo} & \textbf{Ubicación} & \textbf{Corrección} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Hallazgo} & \textbf{Ubicación} & \textbf{Corrección} \\
+\midrule
+\endhead
+Topónimo escrito de dos formas & 5 apariciones de ``Aereocuar'' & Unificar en ``Aerocuar'', que es la forma usada en el título y en la mayoría del texto. \\
+Índice incompleto & Portada del documento & Incluir limitaciones, antecedentes, marco metodológico y anexos, con paginación real. \\
+Numeración inconsistente & ``3.1'' y ``3.2'' sin secciones 1 y 2 & Numerar todas las secciones o ninguna; no mezclar. \\
+``loT'' por ``IoT'' & Marco metodológico & Corregir la sigla. \\
+``Unified Modeling Languaje'' & Marco metodológico & ``Language''. \\
+``se diseñara'' & Nivel de investigación & ``se diseñará''. \\
+``una de la modalidad'' & Modalidad & ``una de las modalidades''. \\
+``Aunque el diseño de una interfaz amigable'' & Limitaciones & Falta el verbo: ``Aunque se diseñe una interfaz amigable''. \\
+``por ultimo'' & Justificación y problema & ``por último''. \\
+``Así'' en medio de la oración & Planteamiento & Minúscula. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Estructura recomendada para la versión final}
+
+\begingroup\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.0cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{9.0cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Sección} & \textbf{Contenido mínimo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Sección} & \textbf{Contenido mínimo} \\
+\midrule
+\endhead
+1 & Introducción & Problema, propósito, hipótesis operacionalizada y estructura del trabajo. \\
+2 & Planteamiento del problema & Situación, evidencia, delimitación y cierre técnico. \\
+3 & Objetivos & General y específicos, cada uno con indicador. \\
+4 & Justificación & Social, económica, técnica y ambiental, con fuentes. \\
+5 & Marco teórico & Baterías y estado de carga, grupos electrógenos, transferencia, calidad de aire, normas. \\
+6 & Antecedentes & Solo trabajos directamente comparables; separar nacionales e internacionales. \\
+7 & Marco metodológico & Paradigma, enfoque, tipo, nivel, modalidad, diseño, variables, instrumentos y procedimiento. \\
+8 & Cronograma & Fases, actividades, duración y entregables. \\
+9 & Presupuesto & BOM, costos unitarios y total. \\
+10 & Análisis de riesgos & Técnicos, eléctricos, de seguridad y de disponibilidad. \\
+11 & Referencias & APA 7, todas las citas en el texto. \\
+12 & Anexos & Protocolos, instrumentos, cartas de autorización, esquemas. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Plan de corrección priorizado}
+\label{sec:plan}
+
+\begingroup\small
+\begin{longtable}{@{}>{\centering\arraybackslash}p{1.0cm} >{\raggedright\arraybackslash}p{6.0cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{3.4cm}@{}}
+\toprule
+\textbf{Prior.} & \textbf{Acción} & \textbf{Impacto} & \textbf{Esfuerzo} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Prior.} & \textbf{Acción} & \textbf{Impacto} & \textbf{Esfuerzo} \\
+\midrule
+\endhead
+P1 & Reformular la hipótesis y los objetivos con variables medibles en el banco (horas, arranques, energía ciclada, CO$_2$ calculado). & Hace defendible el trabajo. & Medio \\
+P1 & Definir el instrumento de consumo: horómetro y curva del fabricante; caudalímetro en fase piloto. & Permite cuantificar el ahorro. & Bajo \\
+P1 & Sustituir la actuación por una interfaz de arranque compatible con el grupo y documentar la transferencia con enclavamiento. & Seguridad y viabilidad real. & Alto \\
+P1 & Añadir la lista de referencias completa y corregir las citas. & Requisito académico no negociable. & Bajo \\
+P2 & Rehacer la estimación de estado de carga con corriente y conteo de coulombios; declarar histéresis y tiempos mínimos. & Evita falsos arranques y daño al banco. & Medio \\
+P2 & Reescribir la variable de calidad de aire como índice y justificar el sensor, o cambiarlo. & Coherencia entre promesa y medición. & Bajo \\
+P2 & Definir la máquina de estados y los escenarios de prueba con criterios de aceptación. & Convierte el prototipo en algo verificable. & Medio \\
+P2 & Añadir cronograma, presupuesto y análisis de riesgos. & Completitud del anteproyecto. & Bajo \\
+P3 & Incorporar el trade-off batería/diésel (costo por kWh y ciclado) al marco teórico. & Eleva la calidad del análisis. & Medio \\
+P3 & Añadir una línea de mitigación acústica o matizar la justificación sonora. & Honestidad argumental. & Bajo \\
+P3 & Corregir índice, numeración, topónimo y erratas. & Presentación profesional. & Bajo \\
+P3 & Simplificar la arquitectura (ESP32 único) o justificar la redundancia. & Confiabilidad y costo. & Bajo \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Preguntas previsibles en la defensa}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=3pt]
+  \item Si el banco se recarga con el mismo generador, ¿de dónde sale exactamente el ahorro de combustible? ¿Puede demostrarlo con un balance energético?
+  \item ¿Cómo mide los litros consumidos? Si no los mide, ¿cómo sostiene la palabra ``disminución'' del título?
+  \item ¿Qué mide el MQ-135 y con qué curva de calibración convierte una resistencia en concentración?
+  \item ¿Cómo evita que la transferencia entre red y generador retroalimente la red?
+  \item ¿Qué ocurre si el ESP32 se reinicia durante el arranque? ¿Cuál es el estado seguro?
+  \item ¿Cuántos puntos porcentuales de estado de carga puede distinguir con su divisor y su ADC?
+  \item ¿Por qué Arduino UNO y ESP32 a la vez? ¿Qué capacidad aporta el UNO que el ESP32 no tenga?
+  \item ¿Cómo se autentica un usuario que puede arrancar el generador desde el navegador?
+  \item ¿Qué pasa con los datos si el Wi-Fi del sitio falla durante una semana?
+  \item ¿Cómo se protege el banco de una descarga profunda si el sensor de tensión falla?
+  \item ¿Cuál es su línea base y en cuántos días de operación se sustenta?
+  \item ¿Qué norma aplicó para dimensionar la instalación eléctrica y la protección del personal?
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\needspace{8\baselineskip}
+\section{Conclusión}
+
+El anteproyecto identifica un problema legítimo y propone una dirección razonable. Su valor está en el vínculo entre una necesidad comunitaria concreta y una solución de bajo costo basada en hardware libre. Ese núcleo debe preservarse.
+
+Lo que debe cambiar es la cadena que va del título a los datos. Hoy el título promete reducir combustible y gases de efecto invernadero, el montaje no mide ninguno de los dos, el sensor elegido no distingue GEI y la actuación propuesta no cubre las exigencias de un grupo electrógeno. Corregir esos cuatro puntos no debilita el trabajo: lo convierte en un proyecto evaluable, con resultados que se pueden defender y replicar.
+
+\begin{tcolorbox}[tarjetaDato, title={Recomendación final}]
+\textbf{No construir todavía.} Primero cerrar las cuatro acciones de prioridad~1: hipótesis y objetivos medibles, instrumento de consumo, interfaz de arranque segura con transferencia enclavada y bibliografía completa. Con eso resuelto, el prototipo tiene sentido y el trabajo puede aspirar a resultados, no solo a una demostración.
+\end{tcolorbox}
+
+\vspace{6pt}
+
+\begin{tcolorbox}[cajaContenido]
+\textbf{Nota sobre las fuentes normativas sugeridas.} Este informe recomienda incorporar al marco teórico, con sus referencias completas, las siguientes familias de normas y guías: Código Eléctrico Nacional (COVENIN~200); NFPA~110 (energía de emergencia); ISO~8528 (grupos electrógenos); IEC~60364 (instalaciones de baja tensión); IEEE~446 (respaldo de energía); directrices de la OMS sobre calidad del aire (2021) y sobre ruido ambiental (2018); y las directrices del IPCC (2006) para factores de emisión. No se incluyen datos bibliográficos completos porque deben ser verificados y citados por el autor en su lista de referencias.
+\end{tcolorbox}
+
+\end{document}
