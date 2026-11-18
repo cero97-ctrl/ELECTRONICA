@@ -103,7 +103,9 @@ def validar_preguntas(preguntas: list[dict]) -> list[str]:
     return problemas
 
 
-def _front_matter(titulo: str, curso: str, grupos: int, justificar: list[int]) -> str:
+def _front_matter(
+    titulo: str, curso: str, grupos: int, justificar: list[int], evidencia: list[int] = ()
+) -> str:
     lineas = [
         "---",
         f"curso: {curso}",
@@ -113,8 +115,41 @@ def _front_matter(titulo: str, curso: str, grupos: int, justificar: list[int]) -
     ]
     if justificar:
         lineas.append(f"justificacion_items: {json.dumps(sorted(justificar))}")
+    if evidencia:
+        lineas.append(f"justificacion_evidencia: {json.dumps(sorted(evidencia))}")
     lineas.append("---")
     return "\n".join(lineas) + "\n"
+
+
+def _evidencia_canonica(meta: dict, justificar: list[int]) -> list[int]:
+    """Lee `justificacion_evidencia` del canónico y la valida contra las preguntas.
+
+    Se declara en el canónico para que sobreviva a una nueva división; si nombra
+    una pregunta que no exige justificación, el canónico está mal y se falla.
+    """
+    cruda = meta.get("justificacion_evidencia")
+    if cruda is None:
+        return []
+    if not isinstance(cruda, list):
+        raise ValueError(
+            f"`justificacion_evidencia` debe ser una lista de números: {cruda!r}"
+        )
+    items: list[int] = []
+    for valor in cruda:
+        if isinstance(valor, bool) or not isinstance(valor, int):
+            raise ValueError(
+                f"`justificacion_evidencia` tiene un valor no entero: {valor!r}"
+            )
+        items.append(valor)
+    if len(set(items)) != len(items):
+        raise ValueError(f"`justificacion_evidencia` repite preguntas: {items}")
+    sin_justificar = sorted(set(items) - set(justificar))
+    if sin_justificar:
+        raise ValueError(
+            "`justificacion_evidencia` exime de copia preguntas que no exigen "
+            f"justificación: {sin_justificar}"
+        )
+    return sorted(set(items))
 
 
 def _cuerpo_alumno(titulo: str, preguntas: list[dict]) -> str:
@@ -144,7 +179,7 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
             "archivo completo (no se sobrescribe a ciegas)"
         )
 
-    _, cuerpo = md_a_html._leer_front_matter(canonico)
+    meta, cuerpo = md_a_html._leer_front_matter(canonico)
     titulo = _titulo(cuerpo)
     if not titulo:
         raise ValueError("el canónico no tiene un título `# ...`")
@@ -155,8 +190,9 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
 
     clave = {p["numero"]: p["respuesta"] for p in preguntas}
     justificar = [p["numero"] for p in preguntas if p.get("justificacion")]
+    evidencia = _evidencia_canonica(meta, justificar)
     fuente = (
-        _front_matter(titulo, curso, grupos, justificar)
+        _front_matter(titulo, curso, grupos, justificar, evidencia)
         + "\n"
         + _cuerpo_alumno(titulo, preguntas)
     )
@@ -166,11 +202,17 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
         "clave": clave,
         "titulo": titulo,
         "n_preguntas": len(preguntas),
+        "justificacion_evidencia": evidencia,
         "normalizaciones": normalizaciones,
     }
 
 
-def _verificar(fuente: str, respuestas: str, clave: dict[int, str]) -> None:
+def _verificar(
+    fuente: str,
+    respuestas: str,
+    clave: dict[int, str],
+    evidencia: list[int] | None = None,
+) -> None:
     """El canónico se reconstruye desde lo escrito, no desde lo leído."""
     if md_a_html.MARCA_RESPUESTAS.search(fuente):
         raise ValueError("la fuente generada contiene `**Answer:**` (fuga)")
@@ -187,6 +229,12 @@ def _verificar(fuente: str, respuestas: str, clave: dict[int, str]) -> None:
         raise ValueError(f"ida y vuelta rota: clave {clave_resp} != {clave}")
     if meta.get("titulo") is None or meta.get("grupos") is None:
         raise ValueError("la fuente generada perdió titulo/grupos del front matter")
+    if evidencia is not None:
+        leida = meta.get("justificacion_evidencia") or []
+        if leida != sorted(evidencia):
+            raise ValueError(
+                f"ida y vuelta rota: evidencia {leida} != {sorted(evidencia)}"
+            )
 
 
 def main() -> int:
@@ -223,7 +271,12 @@ def main() -> int:
 
     try:
         resultado = dividir(texto, args.curso, args.grupos)
-        _verificar(resultado["fuente"], resultado["respuestas"], resultado["clave"])
+        _verificar(
+            resultado["fuente"],
+            resultado["respuestas"],
+            resultado["clave"],
+            resultado["justificacion_evidencia"],
+        )
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 3
@@ -249,6 +302,7 @@ def main() -> int:
         "titulo": resultado["titulo"],
         "n_preguntas": resultado["n_preguntas"],
         "clave": " ".join(resultado["clave"][n] for n in sorted(resultado["clave"])),
+        "justificacion_evidencia": resultado["justificacion_evidencia"],
         "normalizaciones": resultado["normalizaciones"],
         "dry_run": args.dry_run,
     }

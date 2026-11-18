@@ -231,6 +231,44 @@ def test_justificaciones() -> None:
         str(a["avisos"]),
     )
 
+    d = {
+        "cedula": "V-44444444", "justificaciones": {"10": larga},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    e = {
+        "cedula": "V-55555555", "justificaciones": {"10": larga},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    pares = D.marcar_copias([d, e], (7, 10), evidencia=(10,))
+    comprobar("un ítem de evidencia idéntico no marca copia", pares == 0, str(pares))
+    comprobar(
+        "las filas de evidencia quedan ok",
+        d["estado"] == "ok" and e["estado"] == "ok"
+        and d["avisos"] == [] and e["avisos"] == [],
+    )
+
+    f = {
+        "cedula": "V-66666666", "justificaciones": {"10": larga + " Algo propio."},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    g = {
+        "cedula": "V-77777777", "justificaciones": {"10": larga + " Algo distinto."},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    pares = D.marcar_copias([f, g], (10,), umbral=0.85, evidencia=(10,))
+    comprobar("un ítem de evidencia casi idéntico tampoco marca", pares == 0, str(pares))
+
+    f2 = {
+        "cedula": "V-88888888", "justificaciones": {"7": larga + " Algo propio."},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    g2 = {
+        "cedula": "V-99999999", "justificaciones": {"7": larga + " Algo distinto."},
+        "avisos": [], "estado": "ok", "justif_estado": "ok",
+    }
+    pares = D.marcar_copias([f2, g2], (7,), umbral=0.85, evidencia=(10,))
+    comprobar("sin exención el mismo texto sí marca", pares == 1, str(pares))
+
 
 def test_validar_registro() -> None:
     print("\n-- Validación del archivo archivado")

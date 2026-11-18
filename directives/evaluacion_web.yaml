@@ -59,6 +59,7 @@ contract:
     puntos: {1: 1.5, 2: 0.5}   # opcional; debe sumar puntaje_total
     clave: {1: B, 2: A}        # alternativa a --respuestas; si se dan las dos, deben coincidir
     justificacion_items: [7, 10]  # opcional; preguntas que exigen justificación de evidencia
+    justificacion_evidencia: [10]  # opcional; subconjunto de justificacion_items que pide pegar un artefacto literal
     retroalimentacion: {1: "..."}  # opcional; solo se muestra en docente
     ---
   respuestas: |
@@ -85,6 +86,16 @@ contract:
     caracteres es `MIN_JUSTIFICACION` (40) en los dos lados. La justificación
     se compara también en el cruce fuente/respuestas: una copia desactualizada
     del archivo de respuestas se detecta antes de publicar.
+
+    `justificacion_evidencia` declara, dentro de `justificacion_items`, las
+    preguntas cuya respuesta es un artefacto literal que se pide pegar (el árbol
+    del repositorio, una línea de `grep`, una fila de tabla). No cambia la
+    exigencia ni el mínimo de caracteres; solo evita que el acta marque como
+    copia un texto idéntico que dos compañeros del mismo grupo producen sin
+    copiar. Debe ser un subconjunto de `justificacion_items`: eximir una pregunta
+    que no exige justificación es un error (código 3). El divisor la conserva
+    desde el canónico al generar la fuente, y no se embebe en el HTML (la huella
+    depende solo de las preguntas).
   borrador: |
     Solo en la variante alumno con `entrega_url` (examen remoto desde casa): la
     página guarda un borrador en `localStorage` y lo restaura al recargar, porque

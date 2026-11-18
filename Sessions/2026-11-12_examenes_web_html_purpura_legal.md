@@ -44,11 +44,16 @@ los cuatro roles del curso en GitHub Pages con recolección por Worker.
   `b08ab406…` Legal) y 0 `const CLAVE`; 4 `_docente.html` 404.
 - `AGENTS.md` actualizado (test del divisor 50 aserciones y los entornos
   `purpura`/`legal`). `verificar_texto.py` sin hallazgos.
+- **Commit y push** autorizados: `7fe95c03` (28 archivos, +7408/−7) y `2422181c`
+  para quitar el export de NotebookLM que el `git add -A` de `update_repo.sh` metió
+  de más. Divergencia con `origin/master` 0/0 en ambos, árbol limpio al final.
+- **Cuestionarios ocultos** a pedido del usuario: `--visibilidad private` → repo
+  privado, `has_pages: false`, índice y las cuatro páginas 404 (el CDN soltó el
+  contenido de inmediato esta vez).
 
 ## Pendientes
-- **Commit sin autorizar**: ~26 archivos (4 flujos, 5 scripts de `execution/` y sus
-  tests, 4 directivas, `Proyectos/cuestionarios-worker/`, `.gitignore`, `AGENTS.md`
-  y las dos bitácoras). Comprobar divergencia con `origin/master` antes de usar
-  `update_repo.sh` (hace `pull --rebase` antes del commit y falla con árbol sucio).
+- **Re-habilitar la página el día del examen**: `python3 flujo_publicar_cuestionario.py
+  --visibilidad public` (sin `--push`). Hacerlo con horas de antelación: el CDN de
+  Pages puede seguir sirviendo el 404 hasta ~10 min (`max-age=600`).
 - **Claves degeneradas**: Púrpura `A B A A A A A A A A` y Legal
   `A A A A A A A A A A`. Si se usan en clase, repartir las respuestas antes.
