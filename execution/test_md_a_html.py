@@ -3,8 +3,10 @@
 
 Fija el contrato que hace que un examen pueda publicarse sin filtrar la clave:
 la variante alumno no debe contener la clave, la docente sí, y el HTML no debe
-depender de la red. También fija el determinismo (mismo .md -> mismos bytes) y
-la barrera de rutas (nunca fuera de `cursos/<CURSO>/evaluaciones/web/`).
+depender de la red **salvo MathJax**, que es la única URL externa permitida
+(sin él la matemática de los cuestionarios de física se lee en crudo).
+También fija el determinismo (mismo .md -> mismos bytes) y la barrera de rutas
+(nunca fuera de `cursos/<CURSO>/evaluaciones/web/`).
 
 Ejecutar: python3 execution/test_md_a_html.py
 """
@@ -45,6 +47,17 @@ def _cargar():
 
 
 M = _cargar()
+
+CDN_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+
+
+def _red_externa(html: str) -> list[str]:
+    """URLs externas del HTML salvo el CDN de MathJax (única excepción)."""
+    return [
+        linea.strip()
+        for linea in html.splitlines()
+        if ("http://" in linea or "https://" in linea) and CDN_MATHJAX not in linea
+    ]
 
 FUENTE = """# Cuestionario de prueba
 
@@ -273,7 +286,8 @@ def test_alumno_sin_clave_y_determinista():
     dos = M._render_alumno("Cuestionario de prueba", META, preguntas, puntos)
     comprobar("alumno determinista", uno == dos)
     comprobar("alumno no expone CLAVE", "const CLAVE" not in uno)
-    comprobar("alumno no usa red", "http://" not in uno and "https://" not in uno)
+    comprobar("alumno no usa red salvo MathJax", not _red_externa(uno), str(_red_externa(uno))[:200])
+    comprobar("alumno incluye MathJax", CDN_MATHJAX in uno)
     comprobar("alumno incluye las preguntas", uno.count('class="pregunta"') == 2)
     comprobar("alumno fija la respuesta al primer clic", "i.disabled = true" in uno)
     comprobar("alumno avisa de la respuesta fijada", "Respuesta fijada" in uno)
@@ -321,7 +335,7 @@ def test_entrega_remota():
     )
     sin = M._render_alumno("Cuestionario de prueba", META, preguntas, puntos)
     comprobar("sin entrega no hay botón", 'id="enviar"' not in sin)
-    comprobar("sin entrega no hay red", "https://" not in sin)
+    comprobar("sin entrega no hay red salvo MathJax", not _red_externa(sin), str(_red_externa(sin))[:200])
     problemas, _, _, _ = M.validar(_preguntas(), dict(META, entrega_url="http://x"))
     comprobar(
         "`entrega_url` http falla",
@@ -346,7 +360,7 @@ def test_docente_con_clave():
     uno = M._render_docente("Cuestionario de prueba", META, preguntas, puntos, total, clave, None)
     comprobar("docente incluye CLAVE", "const CLAVE" in uno)
     comprobar("docente incluye la respuesta", '"1":"B"' in uno, uno[:200])
-    comprobar("docente no usa red", "http://" not in uno and "https://" not in uno)
+    comprobar("docente no usa red salvo MathJax", not _red_externa(uno), str(_red_externa(uno))[:200])
     comprobar("docente avisa del modo", "Modo docente" in uno)
     comprobar(
         "docente no fija respuestas (debe poder corregir)",

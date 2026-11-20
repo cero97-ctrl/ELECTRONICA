@@ -1,7 +1,13 @@
 goal: |
   Convertir los cuestionarios de examen del curso (Markdown privado) en HTML
   autocontenido para publicarlos a los estudiantes, sin filtrar la clave de
-  respuestas y sin depender de la red.
+  respuestas y sin depender de la red **salvo MathJax**.
+
+  MathJax se carga desde su CDN (`cdn.jsdelivr.net`) y es la **única** URL
+  externa admitida: los cuestionarios de física llevan matemática y sin él se
+  leería `$R = V/I$` en crudo. El alumno ya necesita internet para entregar en
+  el Worker, así que el CDN no añade un requisito nuevo. Auto-hospedar ~1,5 MB
+  de fuentes se descartó por peso y porque obliga a tocar también el publicador.
 
   El repositorio es público y los exámenes son material privado: la fuente vive
   en `cursos/<CURSO>/evaluaciones/web/fuentes/` y la salida en
@@ -170,7 +176,7 @@ steps:
       hermano y encadena el conversor con trazabilidad.
 
 expected_outputs:
-  - "HTML autocontenido: CSS inline, sin CDN, sin `http://` ni `https://`."
+  - "HTML autocontenido: CSS inline; la única URL externa es el CDN de MathJax."
   - "`_alumno.html` sin `const CLAVE`; `_docente.html` con clave y aviso."
   - |
     En `_alumno.html`, la respuesta de una pregunta queda **fijada al primer
@@ -185,7 +191,7 @@ expected_outputs:
     `grupos: N` (1..20); sin `grupos`, es un campo numérico. **Mientras falte
     alguno, no se puede responder**: el clic en una opción se revierte, los campos
     vacíos se resaltan y aparece un aviso. La variante docente no lo lleva.
-  - "Con `entrega_url`, `_alumno.html` añade el botón «Enviar mis respuestas»: nace deshabilitado y se habilita solo con los datos completos y todas las preguntas respondidas; envía un POST con nombre, cédula, grupo y respuestas, y muestra la nota devuelta. Sin `entrega_url` no hay botón ni red."
+  - "Con `entrega_url`, `_alumno.html` añade el botón «Enviar mis respuestas»: nace deshabilitado y se habilita solo con los datos completos y todas las preguntas respondidas; envía un POST con nombre, cédula, grupo y respuestas, y muestra la nota devuelta. Sin `entrega_url` no hay botón ni peticiones de entrega (MathJax sigue siendo la única URL externa)."
   - "`index.html` determinista, ordenado por nombre de fuente."
   - "Código de salida 0; 3 fuente inválida; 4 falta la clave; 5 ruta rechazada."
 
@@ -254,4 +260,4 @@ security:
   - "La barrera exige que `git check-ignore` confirme que la ruta está ignorada."
   - "La variante alumno no contiene la clave ni retroalimentación."
   - "La variante docente advierte que la clave es visible en el código fuente."
-  - "Sin red: ningún recurso externo, ninguna fuente remota, ningún script de CDN."
+  - "Sin red salvo MathJax: ningún otro recurso externo, ninguna fuente remota, ningún script de CDN."

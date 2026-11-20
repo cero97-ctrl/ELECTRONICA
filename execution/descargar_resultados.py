@@ -60,6 +60,7 @@ sys.path.insert(0, str(RAIZ))
 sys.path.insert(0, str(RAIZ / "execution"))
 
 import md_a_html  # noqa: E402  (capa 3: formato del cuestionario y su clave)
+import token_resultados  # noqa: E402  (capa 3: nombre del token por repo, compartido con el despliegue)
 
 API = "https://api.github.com"
 API_VERSION = "2022-11-28"
@@ -477,6 +478,19 @@ def resumen(registros: list[dict]) -> dict:
 # --------------------------------------------------------------------------- #
 # Red
 # --------------------------------------------------------------------------- #
+def _variable_token(repo: str, explicita: str | None = None) -> str:
+    """Variable de `.env` con el token de lectura para `repo`.
+
+    `--token-env` manda. Si no se pasa, el nombre sale del sufijo del repo
+    (`...-lab2` → `GITHUB_TOKEN_RESULTADOS_LAB2`) con la misma regla que usa el
+    despliegue del Worker (`execution/token_resultados.py`); sin sufijo, el
+    genérico. Así el mismo curso no despliega con un token y lee con otro.
+    """
+    if explicita:
+        return explicita
+    return token_resultados.variable(token_resultados.sufijo_de_repo(repo))
+
+
 def _token(nombre_env: str) -> str | None:
     valor = os.environ.get(nombre_env, "").strip()
     if valor:
@@ -880,8 +894,12 @@ def main() -> int:
     parser.add_argument("--fecha", default=None, help="Fecha del acta (por defecto, el último envío).")
     parser.add_argument(
         "--token-env",
-        default="GITHUB_TOKEN_RESULTADOS",
-        help="Variable de entorno/.env con el token de lectura.",
+        default=None,
+        help=(
+            "Variable de entorno/.env con el token de lectura. Por defecto se "
+            "deriva del repo: `...-lab2` → GITHUB_TOKEN_RESULTADOS_LAB2, el repo "
+            "base → GITHUB_TOKEN_RESULTADOS."
+        ),
     )
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
     args = parser.parse_args()
@@ -942,14 +960,15 @@ def main() -> int:
             EXIT_DATOS,
         )
 
-    token = _token(args.token_env) or _token("GITHUB_TOKEN")
+    variable = _variable_token(repo, args.token_env)
+    token = _token(variable) or _token("GITHUB_TOKEN")
     if not token:
         return terminar(
             _resultado(
                 "error",
                 EXIT_RED,
                 message=(
-                    f"sin token de lectura: añadir {args.token_env}=<PAT> a .env "
+                    f"sin token de lectura: añadir {variable}=<PAT> a .env "
                     "(Contents: Read and write sobre el repo de resultados)"
                 ),
             ),

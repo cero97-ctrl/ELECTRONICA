@@ -12,8 +12,14 @@ Contrato:
   - El archivo de respuestas se valida contra la fuente (mismo número de
     preguntas, mismo enunciado y mismas opciones) antes de usar su clave, así
     que una copia desactualizada falla ruidosamente en vez de corregir mal.
-  - Salida: HTML autocontenido (CSS inline, sin CDN ni recursos externos),
-    en dos variantes: `_alumno.html` (sin clave) y `_docente.html` (con clave).
+  - Salida: HTML autocontenido (CSS inline, sin recursos externos) con UNA
+    excepción deliberada: MathJax desde su CDN, porque los cuestionarios de
+    física llevan matemática y sin él se leería `$R = V/I$` en crudo. Es la
+    única URL que el HTML puede contener; cualquier otro recurso externo sigue
+    prohibido y lo comprueba `test_md_a_html.py`. Se elige el CDN frente a
+    auto-hospedar ~1,5 MB de fuentes porque el alumno necesita internet de todos
+    modos para entregar en el Worker. Dos variantes: `_alumno.html` (sin clave)
+    y `_docente.html` (con clave).
   - Determinismo: el mismo .md produce exactamente los mismos bytes. No hay
     timestamps, aleatoriedad ni orden dependiente del sistema de ficheros.
 
@@ -1374,6 +1380,17 @@ def _documento(titulo: str, meta: dict, cuerpo: str, script: str) -> str:
         "<style>\n"
         + CSS.safe_substitute(_paleta())
         + "</style>\n"
+        "<script>\n"
+        "window.MathJax = {\n"
+        "  tex: {\n"
+        "    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],\n"
+        "    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],\n"
+        "    processEscapes: true\n"
+        "  }\n"
+        "};\n"
+        "</script>\n"
+        '<script id="MathJax-script" async '
+        'src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>\n'
         "</head>\n"
         "<body>\n"
         + _cabecera(meta, titulo)

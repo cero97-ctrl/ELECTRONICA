@@ -246,7 +246,15 @@ def main() -> int:
     parser.add_argument("--pdf", default=None, help="Ruta del acta PDF.")
     parser.add_argument("--sin-pdf", action="store_true", help="No generar el PDF.")
     parser.add_argument("--fecha", default=None, help="Fecha del acta (por defecto, el último envío).")
-    parser.add_argument("--token-env", default=None, help="Variable con el token de lectura.")
+    parser.add_argument(
+        "--token-env",
+        default=None,
+        help=(
+            "Variable con el token de lectura. Por defecto se deriva del repo "
+            "(`...-lab2` → GITHUB_TOKEN_RESULTADOS_LAB2; el repo base → "
+            "GITHUB_TOKEN_RESULTADOS)."
+        ),
+    )
     parser.add_argument("--consolidar", action="store_true",
                         help="Une los acta_*.csv de la semana en un solo (tex,pdf).")
     parser.add_argument("--semana", type=int, default=None,

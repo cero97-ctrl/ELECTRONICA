@@ -294,6 +294,61 @@ def test_normalizacion_ancho_completo() -> None:
     )
 
 
+def test_normalizacion_etiquetas_espanol() -> None:
+    """Un canónico en español no debe filtrar la clave: se traduce y se cuenta.
+
+    La etiqueta desconocida no falla, se pega a la última opción, y el alumno
+    recibiría la respuesta dentro del enunciado.
+    """
+    espanol = (
+        CANONICO.replace("**Answer:**", "**Respuesta:**")
+        .replace("**Hint:**", "**Pista:**")
+        .replace("**Explanation:**", "**Explicación:**")
+    )
+    r = dividir_mod.dividir(espanol, "LABORATORIO_II_FISICA", 3)
+    comprobar(
+        "cuenta las 6 etiquetas ES sustituidas (3 por pregunta)",
+        r["normalizaciones"] == 6,
+        str(r["normalizaciones"]),
+    )
+    comprobar("la clave sale bien de un canónico en español", r["clave"] == {1: "A", 2: "C"}, str(r["clave"]))
+    comprobar(
+        "la fuente no conserva etiquetas ES",
+        not any(e in r["fuente"] for e in ("Respuesta:", "Pista:", "Explicación:")),
+    )
+    comprobar(
+        "la fuente no lleva la pista ni la explicación",
+        "Una pista que no debe filtrarse" not in r["fuente"]
+        and "bien." not in r["fuente"],
+    )
+    comprobar(
+        "las respuestas quedan en inglés para el parser",
+        "**Answer:**" in r["respuestas"] and "**Respuesta:**" not in r["respuestas"],
+    )
+    comprobar(
+        "la última opción no absorbe la clave",
+        r["fuente"].count("- B. Segunda opción") == 1
+        and "Answer" not in r["fuente"].split("## Question 2")[0],
+    )
+
+
+def test_titulo_documento_separado_del_encabezado() -> None:
+    """El `# ...` es el nombre interno del banco; `titulo:` es lo que ve el alumno."""
+    r = dividir_mod.dividir(CANONICO, "LABORATORIO_II_FISICA", 3, "Lab II — Características I-V")
+    comprobar("el encabezado interno se conserva", "# ROL PRUEBA Cuestionario" in r["fuente"], r["fuente"][:200])
+    comprobar(
+        "el front matter lleva el título humano",
+        'titulo: "Lab II — Características I-V"' in r["fuente"],
+        r["fuente"][:300],
+    )
+    comprobar("el título interno se reporta aparte", r["titulo"] == "ROL PRUEBA Cuestionario", r["titulo"])
+    sin = dividir_mod.dividir(CANONICO, "CYBERSEGURIDAD", 4)
+    comprobar(
+        "sin --titulo el front matter usa el encabezado",
+        'titulo: "ROL PRUEBA Cuestionario"' in sin["fuente"],
+    )
+
+
 def test_cli() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
@@ -359,6 +414,8 @@ def main() -> int:
     test_ya_dividido()
     test_titulo_con_caracteres_especiales()
     test_normalizacion_ancho_completo()
+    test_normalizacion_etiquetas_espanol()
+    test_titulo_documento_separado_del_encabezado()
     test_cli()
     print(f"\n{PRUEBAS - len(FALLOS)}/{PRUEBAS} aserciones OK")
     if FALLOS:
