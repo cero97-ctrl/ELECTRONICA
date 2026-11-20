@@ -57,6 +57,7 @@ sys.path.insert(0, str(EJECUCION))
 import descargar_resultados  # noqa: E402  (capa 3: lector único del JSONC del Worker)
 import md_a_html  # noqa: E402  (capa 3: parser y validación de la fuente)
 import run_state  # noqa: E402  (capa 3: vista por corrida)
+import token_resultados  # noqa: E402  (capa 3: nombre del token, compartido con el acta)
 
 
 def _trazar(run_id: str, tipo: str, datos: dict) -> bool:
@@ -120,8 +121,21 @@ def _entorno() -> dict[str, str]:
     return entorno
 
 
-def _token_resultados() -> str | None:
-    valor = _entorno().get("GITHUB_TOKEN_RESULTADOS", "").strip()
+def _token_resultados(env: str | None = None) -> str | None:
+    """Token del repo de resultados; `GITHUB_TOKEN_RESULTADOS_<ENV>` manda.
+
+    Cada curso archiva en su propio repo y su PAT puede estar scoped a él, así que
+    un token por entorno evita que redesplegar un curso pise el del otro. El
+    nombre genérico sigue siendo el fallback (los roles de ciberseguridad no
+    declaran uno propio). La derivación del nombre vive en
+    `execution/token_resultados.py`, compartida con el lector del acta.
+    """
+    valores = _entorno()
+    if env:
+        valor = valores.get(token_resultados.variable(env), "").strip()
+        if valor:
+            return valor
+    valor = valores.get(token_resultados.variable(None), "").strip()
     return valor or None
 
 
@@ -530,7 +544,7 @@ def main() -> int:
 
     presentes = _secretos(wrangler, worker_dir, args.env)
     if not presentes["GITHUB_TOKEN"]:
-        token = _token_resultados()
+        token = _token_resultados(args.env)
         if token:
             alta = _ejecutar(
                 [wrangler, "secret", "put", "GITHUB_TOKEN"]
@@ -583,10 +597,11 @@ def main() -> int:
                 "code": 4,
                 "message": (
                     "falta el secreto GITHUB_TOKEN: añadir "
-                    "GITHUB_TOKEN_RESULTADOS=<PAT fine-grained con Contents: Read "
-                    "and write solo en cero97-ctrl/cuestionarios-resultados> a "
-                    ".env y repetir, o ejecutar `wrangler secret put GITHUB_TOKEN` "
-                    f"en {worker_dir}"
+                    "GITHUB_TOKEN_RESULTADOS (o GITHUB_TOKEN_RESULTADOS_<ENTORNO> "
+                    "para un token propio del curso) =<PAT fine-grained con "
+                    "Contents: Read and write sobre el repo de resultados> a .env "
+                    "y repetir, o ejecutar "
+                    f"`wrangler secret put GITHUB_TOKEN` en {worker_dir}"
                 ),
                 "url": url,
                 "secretos": presentes,

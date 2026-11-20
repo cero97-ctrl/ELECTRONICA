@@ -37,12 +37,25 @@ required_inputs:
       Alternativa sin navegador: `CLOUDFLARE_API_TOKEN` (`Workers Scripts: Edit`)
       y `CLOUDFLARE_ACCOUNT_ID` en `.env`. Sin una de las dos, el flujo sale con
       código 4 y no toca nada.
-  - name: .env → GITHUB_TOKEN_RESULTADOS
+  - name: .env → GITHUB_TOKEN_RESULTADOS[_<ENTORNO>]
     description: |
-      PAT fine-grained con `Contents: Read and write` **solo** en
-      `cero97-ctrl/cuestionarios-resultados`. El flujo lo sube como secreto
-      `GITHUB_TOKEN` por stdin (nunca como argumento de shell). No reutilizar el
-      `GITHUB_TOKEN` general de `.env`: ese token no debe acabar en Cloudflare.
+      PAT fine-grained con `Contents: Read and write` **solo** en el repo de
+      resultados del curso. El flujo lo sube como secreto `GITHUB_TOKEN` por
+      stdin (nunca como argumento de shell). No reutilizar el `GITHUB_TOKEN`
+      general de `.env`: ese token no debe acabar en Cloudflare.
+      **Un token por entorno:** con `--env <nombre>` el flujo prefiere
+      `GITHUB_TOKEN_RESULTADOS_<NOMBRE>` (en mayúsculas, `-` → `_`; p. ej.
+      `--env lab2` → `GITHUB_TOKEN_RESULTADOS_LAB2`) y cae a
+      `GITHUB_TOKEN_RESULTADOS` si no existe. Cada curso archiva en su propio
+      repo y su PAT suele estar scoped a él, así que sin esta separación
+      redesplegar un curso pisaría el secreto del otro con un token sin acceso
+      a su repo (el Worker arrancaría y fallaría en cada entrega).
+      **El mismo nombre lo deriva el acta** (`execution/descargar_resultados.py`,
+      regla única en `execution/token_resultados.py`) a partir del sufijo del
+      repo (`...-resultados-lab2` → `_LAB2`), así que desplegar con `--env lab2`
+      y leer con `--repo ...-lab2` usan la misma variable sin pasar
+      `--token-env`. Si los dos nombres divergen, el despliegue sale en verde y
+      el 404 aparece en la primera entrega o al sacar el acta.
   - name: --nomina <alumnos.csv>
     description: |
       Nómina con la cédula en la primera columna (TSV del sistema de la
@@ -57,6 +70,12 @@ required_inputs:
       `VENTANA_FIN`, así se cambia la hora sin redesplegar. Sin ellas la ventana
       queda abierta (los secretos persisten entre despliegues: para cerrar de
       nuevo hay que sobreescribirlos).
+
+      **La hora se escribe en UTC, no en VET.** Venezuela es UTC−4 todo el año
+      (no aplica horario de verano), así que un examen de las 08:00 VET empieza a
+      las `12:00:00Z`. Escribir `08:00:00Z` abre la ventana cuatro horas antes y
+      no lo delata ningún `/salud`: la ventana simplemente estará abierta cuando
+      no toca.
 
       El fin lleva **5 minutos de margen** sobre la duración real del examen
       (45 min de trabajo + 5 de holgura): el día del examen la página se abre a

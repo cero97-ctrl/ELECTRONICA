@@ -30,11 +30,17 @@ required_inputs:
       `md_a_html.cargar_clave()`, la misma función que usa el flujo de despliegue
       del Worker: una sola definición, para que el acta y el Worker no puedan
       calificar distinto. Por defecto, el cuestionario de Rol Rojo.
-  - name: .env → GITHUB_TOKEN_RESULTADOS
+  - name: .env → GITHUB_TOKEN_RESULTADOS[_<SUFIJO>]
     description: |
       PAT con `Contents: Read and write` sobre el repo de resultados. Aquí solo se
-      usa para **leer**. Si no está, se intenta con `GITHUB_TOKEN` (funciona, pero
-      ese token ve todos los repos: preferir el acotado). Sin ninguno, código 4.
+      usa para **leer**. La variable se **deriva del repo** con la misma regla que
+      usa el despliegue del Worker (`execution/token_resultados.py`):
+      `cero97-ctrl/cuestionarios-resultados` → `GITHUB_TOKEN_RESULTADOS`;
+      `.../cuestionarios-resultados-lab2` → `GITHUB_TOKEN_RESULTADOS_LAB2`. Así un
+      curso no despliega con un token y lee con otro. `--token-env <NOMBRE>` manda
+      si se pasa. Si la variable no existe, se intenta con `GITHUB_TOKEN`
+      (funciona, pero ese token ve todos los repos: preferir el acotado). Sin
+      ninguno, código 4.
   - name: --lista CSV|YAML
     description: |
       Nómina opcional con columnas `nombre`, `cedula`, `grupo` (o claves

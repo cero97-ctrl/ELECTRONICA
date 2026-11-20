@@ -26,6 +26,12 @@ cosmético: `execution/verificar_texto.py` los marca como corrupción de prosa y
 la auditoría del repo falla por ellos (pasó con Rojo, Azul y Legal). Se informa
 cuántos se sustituyeron.
 
+La segunda excepción son las etiquetas en español (`**Respuesta:**`, `**Pista:**`,
+`**Explicación:**`): se traducen a las inglesas que reconoce el parser. Tampoco es
+cosmético: una etiqueta desconocida no falla, se pega al texto de la última opción
+y la clave acaba en el HTML del alumno. Se cuentan en `normalizaciones` como las
+anteriores, y en Lab I esa traducción se hizo a mano (no reproducible).
+
 Uso:
     python3 execution/dividir_cuestionario.py --canonico ROL_AZUL_Cuestionario.md
     python3 execution/dividir_cuestionario.py --canonico X.md --dry-run --json
@@ -50,11 +56,26 @@ TITULO = re.compile(r"(?m)^#\s+(.+?)\s*$")
 
 ANCHO_COMPLETO = {"\uff1b": "; "}
 
+# El banco de preguntas emite a veces las etiquetas en español (los cursos que se
+# redactaron antes de fijar el formato en inglés). El parser solo reconoce las
+# inglesas, y una etiqueta desconocida NO falla: `_parsear_cuestionario()` pega la
+# respuesta, la pista y toda la explicación al texto de la última opción, así que
+# la clave se colaría en el HTML del alumno. Traducirlas aquí, en la única puerta
+# de entrada del canónico, evita esa fuga silenciosa.
+ETIQUETAS = {
+    "**Respuesta:**": "**Answer:**",
+    "**Pista:**": "**Hint:**",
+    "**Explicación:**": "**Explanation:**",
+}
+
 
 def _normalizar(texto: str) -> tuple[str, int]:
-    """Sustituye puntuación de ancho completo; devuelve (texto, nº sustituciones)."""
+    """Sustituye puntuación de ancho completo y etiquetas ES; devuelve (texto, nº)."""
     total = 0
     for malo, bueno in ANCHO_COMPLETO.items():
+        total += texto.count(malo)
+        texto = texto.replace(malo, bueno)
+    for malo, bueno in ETIQUETAS.items():
         total += texto.count(malo)
         texto = texto.replace(malo, bueno)
     return texto, total
@@ -170,19 +191,23 @@ def _cuerpo_alumno(titulo: str, preguntas: list[dict]) -> str:
     return "\n".join(partes).rstrip("\n") + "\n"
 
 
-def dividir(canonico: str, curso: str, grupos: int) -> dict:
+def dividir(canonico: str, curso: str, grupos: int, titulo_documento: str | None = None) -> dict:
     """Devuelve `{fuente, respuestas, clave, titulo, n_preguntas}` sin tocar disco."""
     canonico, normalizaciones = _normalizar(canonico)
     if not md_a_html.MARCA_RESPUESTAS.search(canonico):
         raise ValueError(
-            "el canónico no contiene `**Answer:**`: ya está dividido o no es el "
-            "archivo completo (no se sobrescribe a ciegas)"
+            "el canónico no contiene `**Answer:**` (ni `**Respuesta:**`): ya está "
+            "dividido o no es el archivo completo (no se sobrescribe a ciegas)"
         )
 
     meta, cuerpo = md_a_html._leer_front_matter(canonico)
     titulo = _titulo(cuerpo)
     if not titulo:
         raise ValueError("el canónico no tiene un título `# ...`")
+    # El `# ...` del canónico es el nombre interno del banco; el título que ve el
+    # alumno puede ser otro (en Lab I se editaba a mano tras dividir). Separarlos
+    # aquí hace que esa decisión sea explícita y sobreviva a una nueva división.
+    titulo_doc = (titulo_documento or titulo).strip()
     preguntas = md_a_html._parsear_respuestas(cuerpo)
     problemas = validar_preguntas(preguntas)
     if problemas:
@@ -192,7 +217,7 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
     justificar = [p["numero"] for p in preguntas if p.get("justificacion")]
     evidencia = _evidencia_canonica(meta, justificar)
     fuente = (
-        _front_matter(titulo, curso, grupos, justificar, evidencia)
+        _front_matter(titulo_doc, curso, grupos, justificar, evidencia)
         + "\n"
         + _cuerpo_alumno(titulo, preguntas)
     )
@@ -201,6 +226,7 @@ def dividir(canonico: str, curso: str, grupos: int) -> dict:
         "respuestas": canonico if canonico.endswith("\n") else canonico + "\n",
         "clave": clave,
         "titulo": titulo,
+        "titulo_documento": titulo_doc,
         "n_preguntas": len(preguntas),
         "justificacion_evidencia": evidencia,
         "normalizaciones": normalizaciones,
@@ -246,6 +272,11 @@ def main() -> int:
     parser.add_argument("--respuestas", default=None, help="Salida de respuestas (por defecto, hermano).")
     parser.add_argument("--curso", default="CYBERSEGURIDAD", help="Valor de `curso` en el front matter.")
     parser.add_argument("--grupos", type=int, default=4, help="Valor de `grupos` (1..20).")
+    parser.add_argument(
+        "--titulo",
+        default=None,
+        help="Título que ve el alumno (front matter). Por defecto, el `# ...` del canónico.",
+    )
     parser.add_argument("--forzar", action="store_true", help="Sobrescribe archivos existentes.")
     parser.add_argument("--dry-run", action="store_true", help="Valida sin escribir.")
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
@@ -270,7 +301,7 @@ def main() -> int:
         return 1
 
     try:
-        resultado = dividir(texto, args.curso, args.grupos)
+        resultado = dividir(texto, args.curso, args.grupos, args.titulo)
         _verificar(
             resultado["fuente"],
             resultado["respuestas"],
@@ -300,6 +331,7 @@ def main() -> int:
         "fuente": str(fuente_ruta),
         "respuestas": str(respuestas_ruta),
         "titulo": resultado["titulo"],
+        "titulo_documento": resultado["titulo_documento"],
         "n_preguntas": resultado["n_preguntas"],
         "clave": " ".join(resultado["clave"][n] for n in sorted(resultado["clave"])),
         "justificacion_evidencia": resultado["justificacion_evidencia"],
@@ -332,8 +364,8 @@ def main() -> int:
         print(f"  clave:      {resumen['clave']}")
         if resumen["normalizaciones"]:
             print(
-                f"  normalizado: {resumen['normalizaciones']} signo(s) de ancho "
-                "completo (U+FF1B → '; ')"
+                f"  normalizado: {resumen['normalizaciones']} sustitución(es): "
+                "ancho completo (U+FF1B → '; ') y/o etiquetas ES → EN"
             )
     return 0
 

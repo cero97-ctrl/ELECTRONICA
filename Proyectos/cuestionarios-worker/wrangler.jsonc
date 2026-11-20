@@ -39,6 +39,24 @@
         "GRUPOS": "4",
         "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
       }
+    },
+    "lab1": {
+      "name": "cuestionarios-worker-lab1",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados-lab1",
+        "CUESTIONARIO_ID": "lab_i_fisica_cuestionario",
+        "GRUPOS": "2",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "lab2": {
+      "name": "cuestionarios-worker-lab2",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados-lab2",
+        "CUESTIONARIO_ID": "lab_ii_fisica_cuestionario",
+        "GRUPOS": "3",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
     }
   }
 }

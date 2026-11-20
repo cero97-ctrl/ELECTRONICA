@@ -12,7 +12,9 @@ Ejecutar: python3 execution/test_descargar_resultados.py
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import json
 import re
 import subprocess
@@ -555,6 +557,84 @@ def test_repo_por_defecto() -> None:
     )
 
 
+def test_token_por_repo() -> None:
+    print("\n-- Token de lectura derivado del repo")
+    comprobar(
+        "el repo base usa el genérico",
+        D._variable_token("cero97-ctrl/cuestionarios-resultados")
+        == "GITHUB_TOKEN_RESULTADOS",
+    )
+    comprobar(
+        "el repo de Lab II usa su propio token",
+        D._variable_token("cero97-ctrl/cuestionarios-resultados-lab2")
+        == "GITHUB_TOKEN_RESULTADOS_LAB2",
+    )
+    comprobar(
+        "el repo de Lab I usa su propio token",
+        D._variable_token("cero97-ctrl/cuestionarios-resultados-lab1")
+        == "GITHUB_TOKEN_RESULTADOS_LAB1",
+    )
+    comprobar(
+        "un repo ajeno no inventa sufijo",
+        D._variable_token("cero97-ctrl/otro-repo") == "GITHUB_TOKEN_RESULTADOS",
+    )
+    comprobar(
+        "--token-env manda sobre la derivación",
+        D._variable_token("cero97-ctrl/cuestionarios-resultados-lab2", "MI_TOKEN")
+        == "MI_TOKEN",
+    )
+    comprobar(
+        "el despliegue y el acta derivan el mismo nombre",
+        D.token_resultados.variable("lab2")
+        == D._variable_token("cero97-ctrl/cuestionarios-resultados-lab2"),
+    )
+
+    fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
+    if not fuente.is_file():
+        comprobar("fuente de ejemplo presente", False, str(fuente))
+        return
+
+    original = D._token
+    pedidos: list[str] = []
+
+    def sin_token(nombre: str) -> None:
+        pedidos.append(nombre)
+        return None
+
+    D._token = sin_token
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            argv = sys.argv
+            sys.argv = [
+                "descargar_resultados.py",
+                "--fuente", str(fuente),
+                "--repo", "cero97-ctrl/cuestionarios-resultados-lab2",
+                "--salida", str(Path(tmp) / "acta.csv"),
+                "--sin-pdf", "--json",
+            ]
+            buffer = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    rc = D.main()
+            finally:
+                sys.argv = argv
+            salida = buffer.getvalue()
+    finally:
+        D._token = original
+
+    comprobar("sin token sale con código 4", rc == 4, f"rc={rc}")
+    comprobar(
+        "el default del parser no fija un nombre: se deriva del repo",
+        pedidos[:1] == ["GITHUB_TOKEN_RESULTADOS_LAB2"],
+        str(pedidos),
+    )
+    comprobar(
+        "el mensaje de error nombra la variable correcta",
+        "GITHUB_TOKEN_RESULTADOS_LAB2" in salida,
+        salida[-300:],
+    )
+
+
 def test_guarda_de_privacidad() -> None:
     print("\n-- El acta no se escribe fuera de una ruta ignorada")
     fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
@@ -591,6 +671,7 @@ def main() -> int:
     test_resumen()
     test_tex_y_latex()
     test_repo_por_defecto()
+    test_token_por_repo()
     test_guarda_de_privacidad()
     print(f"\n{PRUEBAS - len(FALLOS)}/{PRUEBAS} aserciones OK")
     if FALLOS:
