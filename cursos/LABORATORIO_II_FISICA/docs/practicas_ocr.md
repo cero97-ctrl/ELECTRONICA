@@ -5,13 +5,17 @@ sin capa de texto, 300 DPI). Documento original: UDO, Núcleo de Sucre, Departam
 de Física, Prof. César Rodríguez, Cumaná, abril de 2011.
 
 Generado el 2026-11-04 con `execution/ocr_pdf_escaneado.py` (Gemini, lotes con
-caché reanudable). Sin ediciones manuales: los valores se transcribieron de aquí a
-`curso.yaml` y los errores evidentes del OCR se resolvieron contra el contexto.
+caché reanudable). Los errores evidentes del OCR se resolvieron contra el contexto.
+Desde el 21-nov-2026 el desarrollo de las prácticas 01–08 se genera del OCR, no del
+YAML: `flujo_ocr_a_practicas.py` inyecta el texto y `flujo_dibujar_figuras_tikz.py`
+las 34 figuras.
 
-**Cobertura:** páginas 1–2 y 26–56. Las páginas 3–25 no se transcribieron a
-propósito, porque las prácticas 1 a 4 ya existen en LaTeX (HEAD del repositorio) y
-esa versión es la fuente exacta; el OCR solo cubre lo que no estaba disponible
-(prácticas 5 a 8) y las tablas de valores de componentes e instrumentos.
+**Cobertura de este extracto:** páginas 1–2 y 26–56, con las tablas de valores de
+componentes e instrumentos. La transcripción íntegra de las 56 páginas, incluidas
+las 3–25 (desarrollo de las prácticas 1 a 4), está en
+`docs/practicas_ocr_completo.md`. Antes del 21-nov las páginas 3–25 se habían
+omitido porque se creía que la versión LaTeX derivada de `curso.yaml` era la
+fuente exacta; esa decisión quedó revertida.
 
 **Advertencia:** una transcripción OCR no es fuente de verdad tipográfica. Los
 superíndices, subíndices y símbolos griegos pueden haberse perdido. Para citar el

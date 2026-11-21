@@ -6,26 +6,42 @@ Electricidad y magnetismo aplicados: instrumentación, circuitos y tratamiento d
 - Duración: 10 semanas
 - Versión: 1 — 2 de noviembre de 2026
 
-## Fuente de verdad
+## Fuentes de verdad
 
-`curso.yaml` es el descriptor del curso. Todo el material de este árbol
-(sílabo, plan semanal, guía, prácticas, evaluaciones y laboratorio) se
-genera desde él con:
+El material de este árbol tiene **tres** fuentes distintas; no se pueden regenerar
+todas con un solo comando:
+
+| Artefacto | Fuente | Regeneración |
+| --- | --- | --- |
+| Sílabo, plan semanal, guía, controles, evaluación final, rúbrica, laboratorio y README | `curso.yaml` | `flujo_disenar_curso.py --solo …` (ver abajo) |
+| Prácticas 01–08 y sus 34 figuras TikZ | `docs/practicas.pdf` (escaneo de 56 páginas, UDO, 2011), transcrito en `docs/practicas_ocr_completo.md` | `flujo_ocr_a_practicas.py` y `flujo_dibujar_figuras_tikz.py`; SOP en `directives/` |
+| Prácticas 09–10 | `curso.yaml` (el escaneo original solo cubre hasta la práctica 08) | se conservan tal cual |
+
+`curso.yaml` decidía el temario antes del 21-nov-2026; desde esa fecha el
+**desarrollo** de P01–P08 viene del escaneo, no del YAML. Los títulos y el orden
+sí coinciden, de modo que el plan y la guía siguen vigentes.
+
+Editar a mano un `.tex` generado se pierde en la siguiente ejecución: el cambio
+va a su fuente correspondiente.
+
+**Trampa:** `flujo_disenar_curso.py` sin `--solo` incluye el artefacto `practicas`
+y **pisa** `practicas/practica_01.tex` … `practica_08.tex` con el texto antiguo
+del YAML, llevándose por delante las 34 figuras TikZ. Para regenerar el resto sin
+tocar las prácticas:
 
 ```bash
-python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_II_FISICA/curso.yaml
+python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_II_FISICA/curso.yaml \
+  --solo silabo,plan_semanal,guia,controles,final,rubrica,laboratorio,readme
 ```
-
-Editar a mano un `.tex` generado se pierde en la siguiente ejecución: el
-cambio va al YAML.
 
 ## Estructura
 
 ```
-curso.yaml                 descriptor (fuente de verdad)
+curso.yaml                 descriptor del temario y de P09-P10
 plan_estudios/             silabo.pdf y plan_semanal.pdf
-docs/                      guia_estudiante.pdf
-practicas/                 practica_01.pdf .. una por semana
+docs/                      guia_estudiante.pdf, practicas.pdf (escaneo),
+                           practicas_ocr.md y practicas_ocr_completo.md
+practicas/                 practica_01.pdf .. P01-P08 del escaneo + P09-P10
 evaluaciones/              controles de fase y evaluacion_final
 laboratorio/               docker-compose.yml y README
 ```

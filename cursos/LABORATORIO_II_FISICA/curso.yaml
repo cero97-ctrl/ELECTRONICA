@@ -1,12 +1,18 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Descriptor del curso Laboratorio II de Física — fuente única de verdad.
-# Genera con:  python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_II_FISICA/curso.yaml
+# Descriptor del curso Laboratorio II de Física — fuente de verdad del temario,
+# la guía, el plan, los controles y las prácticas 09-10.
+# Genera el resto con:
+#   python3 flujo_disenar_curso.py --curso cursos/LABORATORIO_II_FISICA/curso.yaml \
+#     --solo silabo,plan_semanal,guia,controles,final,rubrica,laboratorio,readme
+# Sin --solo se regeneran también las prácticas 01-08 desde este YAML y se
+# pierden las 34 figuras TikZ inyectadas desde el escaneo (ver README.md).
 # No editar los .tex generados: se sobrescriben en cada corrida.
 # SOP: directives/disenar_curso.yaml (v1.1)
 #
 # Origen del temario: cursos/LABORATORIO_II_FISICA/docs/contenido.pdf (índice
-# escaneado). El desarrollo de cada práctica es redacción propia a partir de
-# física estándar; no se reutilizó material de terceros.
+# escaneado). El desarrollo de las prácticas 01-08 es transcripción del PDF de
+# la UDO (docs/practicas.pdf, abril de 2011) vía su OCR; las 09-10 y el resto
+# del material son redacción propia a partir de física estándar.
 # ─────────────────────────────────────────────────────────────────────────────
 
 meta:
