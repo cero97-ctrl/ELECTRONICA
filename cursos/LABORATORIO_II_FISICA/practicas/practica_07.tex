@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,185 +329,160 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 07}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 07 --- CIRCUITOS RESONANTES}
+\hypersetup{pdftitle={Práctica 07 --- CIRCUITOS RESONANTES},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 07 --- Resonancia serie y paralelo con L y C del inventario}{Semana 7 --- Fase 2: Elementos no lineales y régimen senoidal}
+\bandaTitulo[fondoOscuro]{Práctica 07 --- CIRCUITOS RESONANTES}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_07, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Determinar la frecuencia de resonancia de circuitos con L y C en serie y en paralelo, y obtener la inductancia de una bobina a partir de un circuito resonante con una capacitancia conocida.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Resonancia serie, con impedancia mínima y corriente máxima.
-  \item Resonancia paralelo, con impedancia máxima.
-  \item Frecuencia de resonancia y su dependencia de L y C.
-  \item Factor de calidad y su significado físico.
-  \item Ancho de banda y puntos de media potencia o de menos 3 dB.
-  \item Selectividad y aplicaciones en sintonía.
-  \item Efecto de la resistencia sobre la nitidez de la resonancia.
+  \item Determinar el valor de la frecuencia de resonancia de un circuito con L y C en
 \end{itemize}
+
+serie.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determinar el valor de la inductancia L de una bobina cuando ésta se conecta en
+\end{itemize}
+
+serie con una capacitancia C conocida en circuito resonante.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determinar el valor de la frecuencia de resonancia de un circuito con L y C en
+\end{itemize}
+
+paralelo.
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-En un circuito serie la impedancia es mínima cuando las reactancias se
-cancelan, $X_L = X_C$, y entonces la frecuencia de resonancia vale
-\[
-  f_0 = \frac{1}{2\pi\sqrt{LC}}
-\]
-En resonancia la corriente es máxima y las tensiones sobre L y sobre C
-pueden superar a la del generador en un factor igual al factor de calidad:
-\[
-  Q = \frac{\omega_0 L}{R} = \frac{1}{R}\sqrt{\frac{L}{C}}
-  \qquad\qquad
-  V_L = V_C = Q\,V_g
-\]
-El ancho de banda entre los puntos de media potencia, donde la corriente
-cae a $1/\sqrt{2}$ de su valor máximo y la tensión sobre el resistor a
-menos 3 dB, es
-\[
-  \Delta f = \frac{f_0}{Q}
-\]
-Un valor alto de $Q$ significa un pico estrecho y selectivo; uno bajo, una
-respuesta ancha y amortiguada. En configuración paralelo la resonancia
-produce impedancia máxima y la tensión sobre el conjunto alcanza su pico.
+Para entender el fenómeno de la resonancia, debemos, en primer lugar tener claro el concepto de vibraciones forzadas o simplemente oscilaciones. Las vibraciones forzadas constituyen un movimiento producido cuando a un sistema vibratorio se le aplica una fuerza externa vibratoria, cuyas vibraciones resultantes se caracterizan por tener dos componentes; una, llamada transientes, cuya frecuencia es la frecuencia natural del sistema y otra llamada componente estacionaria en la cual la frecuencia es igual a la de la fuerza aplicada.
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$v_g$] (0,3) to[R, l=$R$] (2.6,3)
-        to[L, l=$L$] (5.2,3) to[C, l=$C$] (7.8,3) -- (7.8,0) -- (0,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Circuito RLC serie; la tensión sobre R permite seguir la corriente en todo el barrido}
-\end{center}
+La amplitud de la vibración estacionaria es máxima cuando la frecuencia de la fuerza aplicada es igual a la frecuencia natural del sistema, si no hay amortiguamiento. A esta condición se le llama resonancia y se dice que el sistema resuena bajo los efectos de la fuerza aplicada.
+
+Los circuitos eléctricos en los cuales están presentes inductancias (bobinas) y capacitancias (condensadores) a la vez, también pueden experimentar el fenómeno de resonancia y por eso se les llama circuitos resonantes.
+
+Gran parte de la importancia práctica de los circuitos R-L-C en serie surge de la manera en que estos circuitos responden ante fuentes de diferente frecuencia angular $\omega$. Por ejemplo, un tipo de circuito sintonizador que se utiliza en los radiorreceptores es simplemente un circuito R-L-C en serie. Una señal de radio de frecuencia determinada genera una corriente de la misma frecuencia en el circuito receptor, pero la amplitud de la corriente es máxima si la frecuencia de la señal es la misma que la frecuencia a la que el circuito receptor está sintonizado. Este efecto se llama resonancia. Por lo tanto, en los circuitos resonantes, la magnitud física que entra en resonancia es la corriente eléctrica (I).
+
+Si conectamos una fuente de corriente alterna de amplitud de voltaje constante E y frecuencia angular ajustable $\omega$ entre los extremos de un circuito R-L-C en serie. La amplitud de corriente es:
+
+$I = \frac{E}{Z}$ (1)
+
+Donde Z es la impedancia del circuito, la cual está dada por la siguiente expresión:
+
+$Z = \sqrt{R^2 + (X_L - X_C)^2}$ (2)
+
+Conforme se modifica la frecuencia angular de la fuente, la amplitud de corriente varía como se muestra en la figura 1, el valor máximo de I se presenta a la frecuencia a la que z es mínima ($X_L = X_C$). La frecuencia angular $\omega_0$ a la que se presenta el máximo de I se conoce como frecuencia angular de resonancia. Se trata de la frecuencia angular a la cual las reactancias inductiva y capacitiva son iguales,
+
+$\omega_0 L = \frac{1}{\omega_0 C}$ (3)
+
+Despejando $\omega_0$ y sabiendo que es igual a $2\pi f_0$. Se obtiene la frecuencia de resonancia, cuya expresión es:
+
+$f_0 = \frac{1}{2\pi\sqrt{LC}}$ (4)
+
+Los circuitos con R-L-C en paralelo también presentan el efecto de resonancia y ocurre cuando la corriente es mínima, obteniéndose la misma frecuencia de resonancia que la de los circuitos con R-L-C en serie.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de corriente vs frecuencia con $I_{máx}$ y 0.707 $I_{máx}$ marcados.
+\end{tcolorbox}
+
+Figura 1. Curva características de un circuito resonante con L y C en serie.
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Un generador de funciones senoidal
-  \item Un resistor variable del tipo décadas
-  \item El capacitor del inventario usado en la práctica 6
-  \item La bobina del inventario usada en la práctica 6
-  \item Un multimedidor digital Keithley 175-A
-  \item Un voltímetro analógico
+  \item Un generador de funciones (senoidal)
+  \item Un resistor variable del tipo décadas.
+  \item Un capacitor o condensador.
+  \item Una bobina o inductor.
+  \item Un multímedidor digital Keithley mod.175.A
+  \item Un voltímetro analógico.
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Con la misma bobina y el mismo capacitor de la semana anterior, el grupo localiza la frecuencia de resonancia del circuito serie y del paralelo barriendo la frecuencia a ambos lados del pico, y usa el valor conocido de C para obtener L de la condición de resonancia.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Calcular la frecuencia de resonancia $f_0$ esperada con los valores de L y C del apéndice y anotarla como referencia.
-  \item Armar el circuito serie de la figura y hacerlo revisar por el profesor.
-  \item Elegir $f_1$ y $f_2$ tales que $f_1 	extless{} f_0 	extless{} f_2$ y barrer la frecuencia entre ambas.
-  \item Para cada valor de frecuencia anotar la corriente $i$, manteniendo constante la amplitud con el control del generador.
-  \item Repetir el mismo barrido con el circuito paralelo y anotar la corriente en cada punto.
-  \item Sin desmontar los equipos, añadir puntos en la región del pico para definir bien el máximo o el mínimo.
-  \item Medir la tensión sobre la bobina y sobre el capacitor en resonancia y comparar con la del generador.
-\end{enumerate}
-
-\section{\iconotexto{table}{Tabla de datos}}
-
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Barrido fino alrededor de la resonancia}\par\smallskip
-\begin{tabular}{@{}ccccc@{}}
-\toprule
-$f$ (Hz) & $V_R$ (V) & $I$ (mA) & $Z$ ($\Omega$) & Ganancia (dB) \\
-\midrule
-$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-$f_0$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-$\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize Anotar la resistencia empleada en cada barrido; se necesitan tres tablas como esta.}
-\end{minipage}
-\end{center}
-
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
-
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Graficar $i$ frente a $f$ para el circuito serie y para el paralelo, con ejes rotulados y unidades.
-  \item Determinar de la gráfica el valor extremo de la corriente y, con él, la frecuencia de resonancia $f_0$ experimental.
-  \item Conocidos C y $f_0$, despejar L de la condición de resonancia y compararla con el valor del apéndice de inductancias.
-  \item Repetir la determinación de $f_0$ para el circuito paralelo y comparar serie contra paralelo.
-  \item Identificar el ancho de banda como el intervalo entre $f_1$ y $f_2$ donde la corriente cae a $1/\sqrt{2}$ del extremo.
-  \item Discutir por qué los instrumentos imponen un límite de frecuencia a la medición y cómo afecta al barrido.
-\end{enumerate}
-
-\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
+3.2.1. EXPERIMENTO 1: L y C en serie.
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Repetir el barrido con tres valores de resistencia y determinar el factor de calidad por el ancho de banda y por la relación de tensiones.
-  \item Graficar el factor de calidad frente a la resistencia y verificar la dependencia inversa prevista.
-  \item Estimar la resistencia serie del inductor a partir del factor de calidad medido con la resistencia mínima.
+  \item Determine el valor de $f_o$ mediante la ec. 4. Usando los valores de L y C
 \end{itemize}
 
-\section{\iconotexto{box-open}{Entregable}}
+indicados en la guía.
 
-Curvas $i$--$f$ de los circuitos serie y paralelo, frecuencia de resonancia determinada gráficamente e inductancia obtenida de ella, comparada con el apéndice.
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito que se muestra en la figura 2.a. Hágalo revisar por su
+\end{itemize}
 
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+profesor.
 
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Varíe la frecuencia, desde $f_1$ hasta $f_2$, mediante el generador (G). Para
+\end{itemize}
 
-\section{\iconotexto{code}{Contrato del script}}
+cada valor de f anote el correspondiente a la intensidad de corriente, i, manteniendo el voltaje constante utilizando el control de amplitud del generador. NOTA: $f_1 	extless{} f_o 	extless{} f_2$
 
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
+3.2.2. EXPERIMENTO 2: L y C en paralelo.
 
-\end{lstlisting}
-\end{cajaConcepto}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Repetir los pasos anteriores pero para el circuito mostrado en la figura 2.b.
+\end{itemize}
 
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de dos circuitos. (a) Circuito serie RLC con voltímetro y amperímetro. (b) Circuito paralelo RLC con voltímetro y amperímetro.
+\end{tcolorbox}
+
+Figura 2. Circuitos resonantes (a) L y C en serie, (b) L y C en paralelo.
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\subsection*{EXPERIMENTO 1}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique i vs f.
+  \item De la gráfica determine el valor extremo de i, ($I_{máx}$). Con este valor se obtiene
+\end{itemize}
+
+$f_o$.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Conocidos los valores de C y $f_o$, determine el valor de L aplicando la ec. 4.
+\end{itemize}
+
+\subsection*{EXPERIMENTO 2}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique i vs f.
+  \item De la gráfica determine el valor extremo de i, ($I_{mín}$). Con este valor se obtiene
+\end{itemize}
+
+$f_o$.
+
+RECOMENDACIONES.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Es recomendable realizar la gráfica i vs. f. sin desmontar los equipos para poder
+\end{itemize}
+
+incrementar el número de datos en ciertas regiones de la curva (si es necesario).
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item La selección del amperímetro y el voltímetro implica tomar en cuenta la limitación en
+\end{itemize}
+
+el rango de frecuencia de los mismos.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Se define el ancho de banda de frecuencia al intervalo comprendido entre las
+\end{itemize}
+
+frecuencias $f_1$ y $f_2$, ($f_1 - f_2$) obtenidas de la gráfica i vs. f con L y C en serie, tal como se indica en la figura 1.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de dos circuitos. (a) Circuito serie RLC con voltímetro y amperímetro. (b) Circuito paralelo RLC con voltímetro y amperímetro.
 \end{tcolorbox}
 \end{document}

@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,192 +329,181 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 08}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 08 --- CARGA Y DESCARGA DE UN CAPACITOR}
+\hypersetup{pdftitle={Práctica 08 --- CARGA Y DESCARGA DE UN CAPACITOR},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 08 --- Carga y descarga de un capacitor con osciloscopio}{Semana 8 --- Fase 2: Elementos no lineales y régimen senoidal}
+\bandaTitulo[fondoOscuro]{Práctica 08 --- CARGA Y DESCARGA DE UN CAPACITOR}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_08, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe y control de fase \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Familiarizarse con el uso del osciloscopio, visualizar las curvas de carga y descarga de un capacitor y determinar su capacitancia a partir de las medidas tomadas sobre esas curvas.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Régimen transitorio y estado estacionario.
-  \item Ecuación diferencial del circuito RC y su solución exponencial.
-  \item Constante de tiempo y semiperiodo.
-  \item Linealización logarítmica de una exponencial.
-  \item Energía almacenada en un capacitor y disipada en el resistor.
-  \item Uso del osciloscopio en disparo único para capturar el transitorio.
-  \item Resistencia serie equivalente incluyendo la del generador.
+  \item Familiarizar al estudiante con el uso del osciloscopio.
+  \item Visualizar en el osciloscopio las curvas de carga y descarga de un capacitor.
+  \item Determinar la capacitancia de un capacitor, mediante medidas realizadas con el
 \end{itemize}
+
+osciloscopio en las curvas de carga o de descarga.
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-Aplicando la ley de tensiones al lazo de carga se obtiene la ecuación
-diferencial cuya solución es exponencial:
-\[
-  v_C(t) = \varepsilon\left(1 - e^{-t/\tau}\right)
-  \qquad\text{con}\qquad
-  \tau = R C
-\]
-Durante la descarga, partiendo de $V_0$:
-\[
-  v_C(t) = V_0\,e^{-t/\tau}
-\]
-En un tiempo igual a $\tau$ el capacitor alcanza el 63,2 por ciento de la
-tensión final, y el semiperiodo de la descarga vale
-\[
-  t_{1/2} = \tau \ln 2 \approx 0{,}693\,\tau
-\]
-Linealizando la descarga se obtiene una recta cuya pendiente es $-1/\tau$:
-\[
-  \ln v_C(t) = \ln V_0 - \frac{t}{\tau}
-\]
-Si los datos se toman en la carga conviene linealizar
-$\ln\left[(V_0 - v_C)/V_0\right]$, que da la misma pendiente $-1/\tau$.
-La energía almacenada al final de la carga es $W_C = \tfrac12 C \varepsilon^2$,
-mientras que la fuente entrega $C\varepsilon^2$; la mitad se disipa en el
-resistor independientemente del valor de $R$.
-La resistencia que gobierna el transitorio no es solo la de la caja de
-décadas: incluye la resistencia de salida del generador, de $50\ \Omega$ o
-$600\ \Omega$ según el equipo, de modo que $R = R_{\text{década}} + R_{\text{generador}}$.
+\subsection*{CAPACIDAD DE UN CONDUCTOR.}
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$\varepsilon$] (0,3) to[closing switch, l=$S$] (2.4,3)
-        to[R, l=$R$] (4.8,3) to[C, l=$C$] (4.8,0) -- (0,0);
-  \draw (4.8,3) -- (6.4,3) to[voltmeter, l=$v_C$] (6.4,0) -- (4.8,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Circuito de carga y descarga; el conmutador permite alternar entre ambos transitorios}
-\end{center}
+Se denomina capacidad C de un conductor aislado al cociente entre la carga que posee y el potencial V (diferencia de potencial relativo a un cero de potencial infinito) al cual se encuentra el mismo. Esto es: \[ C = \frac{q}{V} \] Debido a que el potencial es siempre proporcional a la carga, la capacidad definida por [1] no depende de V ni de Q, sino del tamaño y la forma del conductor. Esto se demuestra fácilmente para un conductor esférico. De radio R, en cuyo caso el potencial esta dado por: \[ V = \frac{1}{4\pi\epsilon_o} \frac{q}{R} \] Que sustituido en [1] conduce a la relación: \[ C = 4\pi\epsilon_o R \] (2)
+
+La ecuación [2] nos dice que la capacidad de un conductor no depende de V ni de q, como se dijo antes, sino del tamaño y la forma del conductor. Así, para una esfera, observamos que la capacidad es proporcional al radio R de la misma.
+
+La unidad de capacidad se deduce de [1] y para el sistema M.K.S. se denomina Faradio (1), es decir:
+
+\[ 1 \text { Faradio }(F)=\frac{I C}{I V} \] Debido a que el Faradio es una unidad muy grande, en la práctica se usan sub-múltiplos de ella, tales como: microfaradio, $\mu \mathrm{F}$, $1 \mu \mathrm{F}=10^{-6} \mathrm{	extasciitilde{}F}$ nanofaradio, $\mathrm{nF}$, $1 \mathrm{nF}=10^{-9} \mathrm{	extasciitilde{}F}$ picofaradio, $\mathrm{pF}$, $1 \mathrm{pF}=10^{-12} \mathrm{	extasciitilde{}F}$
+
+\subsection*{CAPACITORES O CONDENSADORES.}
+
+Un capacitor o condensador es un dispositivo o sistema formado por dos conductores que poseen cargas iguales y opuestas, separados una distancia, por lo general, muy pequeña. Un capacitor típico se compone de un par de placas paralelas de área A, separadas por una distancia d, tal como se muestra en la figura 1. La función fundamental de un capacitor es la de almacenar carga eléctrica y también energía. Esta función de los capacitores es la que determina sus amplias aplicaciones en electricidad y electrónica.
+
+\subsection*{CÁLCULO DE LA CAPACIDAD O CAPACITANCIA.}
+
+El cálculo de la capacitancia para cualquier tipo de capacitor no es difícil. Para geometrías sencillas; se puede hallar en primer lugar la magnitud del campo eléctrico E mediante la Ley de Gauss y Figura 1. Capacitor de placas paralelas.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un capacitor de placas paralelas con campo eléctrico E y distancia d
+\end{tcolorbox}
+
+luego, integrando el campo a lo largo de una trayectoria cualquiera, se calcula la diferencia de potencial V entre las placas mediante la relación: \[ V=-\int_{a}^{b} \vec{E} \cdot d \vec{l} \] Así, para un capacitor de placas paralelas, la capacidad C esta dada por: \[ C=\frac{\varepsilon_{0} A}{d} \] (3) En esta ecuación A es el área de las placas del condensador, d es la distancia de separación entre ellas y $\varepsilon_{0}$ es la constante de permitividad cuyo valor es: $\varepsilon_{0}=8.85 \times 10^{-12} \mathrm{C}^{2} / \mathrm{Nm}^{2}$ La ecuación [3] nos permite concluir que la capacidad de un condensador depende solamente de la forma y disposición geométrica de los conductores que forman el capacitor. En la práctica se acostumbra rellenar el espacio entre las placas con un material aislante, conocido como dieléctrico, con la finalidad de aumentar la capacidad. Los materiales aislantes o dieléctricos varían en cuanto a su capacidad para soportar un campo eléctrico, a esta capacidad se le llama "constante dieléctrica" del material.
+
+\subsection*{CARGA Y DESCARGA DE UN CAPACITOR.}
+
+La figura 2 representa el circuito de un capacitor y un resistor (circuito RC) conectados en serie a una fuente de voltaje dc. En el instante en que se cierra el interruptor S a la posición 1, el capacitor C que inicialmente estaba descargado comienza a cargarse a través de la resistencia R. En todo momento, durante el proceso de carga del capacitor, debe cumplirse la segunda ley de Kirchoff, es decir, que la suma de los voltajes de la resistencia, $V_{R}$, y del capacitor, $V_{C}$, debe ser igual al voltaje de la fuente. Esto es: $V_{0}=V_{R}+V_{C}$ o sea $V_{0}=i R+q / C$ Pero como $i=d q / d t$ se tiene finalmente que: \[ V_{0}=R \frac{d q}{d t}+\frac{q}{C} \] (4)
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito RC con un interruptor S, resistencia R y capacitor C
+\end{tcolorbox}
+
+Figura 2. Esquema de un circuito RC. La expresión (4) representa la "ecuación diferencial" del circuito, cuya solución es: \[ q=C V_{0}\left(1-e^{-t / R C}\right) \] (5) Del análisis de esta relación se puede notar lo siguiente: 1. En el instante $t=0$ (momento de colocar el interruptor en la posición 1) el voltaje del capacitor $V_{C}$ es cero. 2. Para un tiempo $t=\infty$ (tiempos largos con el interruptor en la posición 1) el voltaje del capacitor $V_{C}$ es igual al de la fuente, $V_{0}$. Supongamos que ahora pasamos el interruptor S de la posición 1 a la posición 2. En estas condiciones, se desconecta la fuente y el capacitor comienza a descargarse a través de la resistencia R. Por lo tanto se tiene que $V_{C}=V_{R}$, o sea: \[ \frac{q}{C}=-R \frac{d q}{d t} \] (6) La ecuación (6) representa la "ecuación diferencial" del circuito y el signo menos significa que la corriente $i$ circula en sentido contrario con relación al proceso de carga. La solución a ésta ecuación es: \[ q=V_{0} C e^{-t / R C} \] (7) Del análisis de esta ecuación notamos que: 1. En el instante $t=0$ (momento en que el interruptor S pasa a la posición 2) el voltaje del capacitor $V_{C}$ es el mismo de la fuente $V_{0}$. 2. Para $t=\infty$ (tiempos largos con el interruptor S en la posición 2) el voltaje del capacitor $V_{C}$ es cero.
+
+Para lo anterior podemos concluir que un capacitor requiere de cierto tiempo $t$ para cargarse y también para descargarse. La carga y descarga del capacitor está gobernada por el factor $e^{-RC}$. El producto RC tiene dimensiones de tiempo y se conoce como "constante de tiempo" del circuito y se designa por la letra griega "$\tau$" ($\tau=RC$). R debe expresarse en ohmios y C en Faradios. Un análisis breve del factor citado anteriormente, en términos de la constante de tiempo, permite ver que en un tiempo $t=RC$ el valor del exponencial es $e^{-1}$ cuyo valor numérico es 0.368 por lo que podemos decir que para un tiempo equivalente a una constante de tiempo el capacitor adquiere durante el proceso de carga un voltaje de $(1-0.368)$ veces $V_{0}$ $(0,632V_{0})$, equivalente al 63.2\% de $V_{0}$, aproximadamente; por lo largo, durante el proceso de descarga, en el mismo tiempo, el capacitor reduce su voltaje hasta 0.368 veces $V_{0}$, o sea 36.8\% de $V_{0}$. La figura 3 representa la gráfica del voltaje de carga y descarga de un capacitor en función del tiempo $t$. Figura 3. Porcentaje del voltaje de carga y descarga de un capacitor en función del tiempo.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de porcentaje de voltaje de carga y descarga de un capacitor en función del tiempo
+\end{tcolorbox}
+
+\section{\iconotexto{flask}{Desarrollo experimental}}
+
+El circuito de la figura 2 se realizará mediante la sustitución de la fuente de voltaje constante $V_0$ y el interruptor S por un generador de pulsos de duración de encendido $T_e$ y de duración de apagado $T_a$, como se muestra en la figura 4.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con un generador de pulsos y un capacitor, mostrando las señales de voltaje en el tiempo.
+\end{tcolorbox}
+
+**Nótese en la figura 4 que durante el tiempo $T_e$ el circuito tiene aplicado el voltaje $V_0$ (interruptor S en la posición 1) y por lo tanto durante ese tiempo el capacitor se carga a través de la resistencia. Durante el tiempo $T_a$ el voltaje aplicado al circuito es cero (interruptor S en la posición 2) por lo tanto durante ese tiempo, el capacitor se**
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de voltaje vs tiempo, mostrando la equivalencia entre la señal pulsante y la fuente de voltaje constante con el interruptor en dos posiciones.
+\end{tcolorbox}
+
+**Figura 5. Equivalencia entre la señal pulsante y la fuente de voltaje constante con el interruptor en las dos posiciones.**
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Un osciloscopio
-  \item Un generador de funciones con onda cuadrada
-  \item Un resistor de décadas
-  \item Un capacitor del inventario del laboratorio
-  \item Un óhmetro para verificar la resistencia conectada
+  \item 1 osciloscopio.
+  \item 1 generador de funciones (cuadrada).
+  \item 1 resistencia de décadas.
+  \item 1 capacitor
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Un generador de onda cuadrada sustituye a la fuente y al interruptor, de modo que el capacitor se carga durante el tiempo de encendido y se descarga durante el de apagado. El grupo captura la curva en el osciloscopio y determina la capacitancia a partir de la pendiente de la recta que resulta de linealizar la exponencial.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Armar el circuito RC con el generador de onda cuadrada y hacerlo revisar por el profesor.
-  \item Ajustar las escalas de tiempo y de tensión del osciloscopio hasta tener en pantalla una sola curva de carga y descarga bien estable.
-  \item Tomar un número suficiente de valores de $v_C$ para distintos tiempos, con la imagen estable.
-  \item Medir con el óhmetro la resistencia conectada en serie con el capacitor y anotar la resistencia de entrada del generador.
-  \item Medir $V_0$ conectando el generador en paralelo con el osciloscopio.
-  \item Cambiar el capacitor por otro de valor unas diez veces mayor o menor, sin cambiar la frecuencia de la señal.
-  \item Describir lo que se observa con el nuevo capacitor y explicar por qué cambia la curva.
-\end{enumerate}
-
-\section{\iconotexto{table}{Tabla de datos}}
-
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Transitorio de carga y de descarga}\par\smallskip
-\begin{tabular}{@{}cccc@{}}
-\toprule
-$t$ (s) & $v_C$ carga (V) & $v_C$ descarga (V) & $\ln\left[(V_0-v_C)/V_0\right]$ \\
-\midrule
-0,0 & 0,00 & $\ldots$ & $\ldots$ \\
-0,5 & $\ldots$ & $\ldots$ & $\ldots$ \\
-1,0 & $\ldots$ & $\ldots$ & $\ldots$ \\
-1,5 & $\ldots$ & $\ldots$ & $\ldots$ \\
-2,0 & $\ldots$ & $\ldots$ & $\ldots$ \\
-3,0 & $\ldots$ & $\ldots$ & $\ldots$ \\
-5,0 & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize El tiempo se toma desde el inicio del flanco; anotar $V_0$ y la resistencia total usada en el ajuste.}
-\end{minipage}
-\end{center}
-
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
-
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Graficar $\ln\left[(V_0-v_C)/V_0\right]$ frente a $t$ para la carga, y $\ln(v_C/V_0)$ si los datos son de la descarga.
-  \item Ajustar la recta por mínimos cuadrados y determinar la pendiente con su error.
-  \item Obtener la capacitancia a partir de la pendiente, tomando como $R$ la suma de la resistencia de décadas y la del generador (50 o 600 $\Omega$).
-  \item Calcular la desviación porcentual del valor de C obtenido frente al valor del fabricante del apéndice de capacitores.
-  \item Superponer la curva medida con el modelo exponencial y discutir los desvíos en el inicio del transitorio.
-\end{enumerate}
-
-\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
-
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Calcular la energía almacenada y la entregada por la fuente y verificar el balance del 50 por ciento.
-  \item Repetir el ajuste por mínimos cuadrados no lineales y comparar la constante de tiempo con la obtenida de la recta linealizada.
+  \item Arme el circuito de la figura 6 y hágalo revisar por el profesor.
 \end{itemize}
 
-\section{\iconotexto{box-open}{Entregable}}
-
-Curvas de carga y descarga capturadas, recta linealizada con su ajuste, capacitancia con su incertidumbre y desviación porcentual frente al valor del fabricante.
-
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
-
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
-
-\section{\iconotexto{code}{Contrato del script}}
-
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
-
-\end{lstlisting}
-\end{cajaConcepto}
-
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito RC con un generador de funciones y un osciloscopio.
 \end{tcolorbox}
+
+**Figura 6. Circuito RC a utilizar en la práctica.**
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Ajuste las escalas de tiempo y de voltaje del osciloscopio para tener en la
+\end{itemize}
+
+pantalla del mismo una sola curva de carga y descarga del capacitor.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Con la imagen bien estable en la pantalla del osciloscopio tome un número
+\end{itemize}
+
+suficiente de valores del voltaje del capacitor para diferentes tiempos.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Con un ohmímetro determine el valor de la resistencia conectada en serie con
+\end{itemize}
+
+el capacitor. Anote el valor de la resistencia de entrada del generador.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Mida el voltaje $V_0$, conectando en paralelo el generador al osciloscopio.
+  \item Cambie el capacitor utilizado por otro cuyo valor sea varias veces mayor o
+\end{itemize}
+
+menor (aproximadamente unas diez veces). Sin cambiar la frecuencia de la señal empleada obtenga la imagen de carga y descarga en el osciloscopio. Describa lo que observa y explique lo que ocurre.
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Con los datos obtenidos, grafique $\operatorname{Ln}\left[\frac{V_0-V_c}{V_0}\right]$ para la carga en función del
+\end{itemize}
+
+tiempo, siendo $V_0$ el valor de la fuente. Si los datos los tomó en la curva de descarga, entonces grafique $\operatorname{Ln}\left[\frac{V_c}{V_0}\right]$ en función del tiempo.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item De la recta que resulta, determine el valor de la pendiente, usando el método de
+\end{itemize}
+
+mínimo cuadrado
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item A través de la pendiente determine el valor de la capacitancia tomando como valor
+\end{itemize}
+
+de R la suma de la resistencia utilizada más la resistencia de la fuente (50 ó 600)$\Omega$.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine la desviación procentual del valor indicado por el fabricante para la
+\end{itemize}
+
+capacitancia $C_R$, con respecto al valor C determinado por usted.
+
+**TABLA 1: VALORES DE LOS CONDENSADORES EXISTENTES EN EL LABORATORIO.**
+
+\begin{center}\small
+\begin{tabular}{ll}
+\toprule
+N$^{\circ}$ DE BIENES & CAPACITANCIA \\
+\midrule
+Cap 01 & 2,152 $\mu$F \\
+Cap 02 & 103,0 nF \\
+Cap 03 & 10,09 nF \\
+T-9 & 5,106 $\mu$F \\
+T-10 & 3,495 $\mu$F \\
+T-15 & 45,52 nF \\
+T-16 & 5,081 nF \\
+5317 & Arcilla: 4,368 nF \\
+68F,S & Rectangular: 1,014 $\mu$F \\
+5319 & Negro: 229,2 nF \\
+ & Arcilla: 7,577 nF \\
+5320 & Arcilla: 100,7 nF \\
+5323 & Mostaza: 489,2 nF \\
+ & Arcilla: 6,860 nF \\
+ & Gris: 198,6 nF \\
+5327 & 1,004 $\mu$F \\
+5329 & Arcilla: 8,810 nF \\
+ & Negro: 228,7 nF \\
+5330 & Arcilla: 3,942 nF \\
+ & Amarillo: 1,013 $\mu$F \\
+\bottomrule
+\end{tabular}
+\end{center}
 \end{document}
