@@ -353,8 +353,16 @@
 
 Dos o más resistencias conectadas de modo que la misma carga fluya a través de cada una de ellas se dice que están conectadas en serie; por ella debe circular la misma corriente $i$.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con dos resistencias en serie, R1 y R2, con voltajes V1 y V2, y corrientes I1 y I2.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$, invert] (0,3);
+  \draw (0,3) -- (1,3);
+  \draw (1,3) to[R, l=$R_1$, v=$V_1$, i=$I_1$] (3.5,3);
+  \draw (3.5,3) to[R, l=$R_2$, v=$V_2$, i=$I_2$] (6,3);
+  \draw (6,3) -- (6,0) -- (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Asociación de dos resistencias en serie}
+\end{center}
 
 **Figura 1. Dos resistencias conectadas en serie por las cuales circula** **una corriente de intensidad I.**
 
@@ -373,8 +381,18 @@ Resistencia: & $R_{eq} = R_1 + R_2$ & (1.c) \\
 
 Dos resistencias unidas como en la figura 2 se dice que están conectadas en paralelo. Sea $i$ la corriente que va desde "a" hasta "b". En el punto "a", la corriente se divide en dos, $i_1$ que circula por $R_1$ e $i_2$ por $R_2$.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con dos resistencias en paralelo, R1 y R2, con voltajes V1 y V2, y corrientes I1 y I2.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$, invert] (0,3);
+  \draw (0,3) -- (1.5,3);
+  \draw (1.5,3) to[R, l=$R_1$, v=$V_1$, i=$I_1$] (1.5,0);
+  \draw (1.5,0) -- (0,0);
+  \draw (1.5,3) -- (4,3);
+  \draw (4,3) to[R, l=$R_2$, v=$V_2$, i=$I_2$] (4,0);
+  \draw (4,0) -- (1.5,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Asociación de dos resistencias en paralelo}
+\end{center}
 
 **Figura 2. Dos resistencias conectadas en paralelo, por las cuales circulan** **las corrientes $I_1$ e $I_2$.**
 
@@ -468,8 +486,19 @@ Se usa una red en la cual hay conectadas varias baterías y cajas de resistencia
   \item Mida la diferencia de potencial entre los extremos de cada resistencia.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje (Int.) y dos resistencias (R1, R2) en serie, con voltímetros (V1, V2) y amperímetros (I, I1, I2) midiendo los valores.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$, invert] (0,3.5);
+  \draw (0,3.5) to[switch, l=Int.] (1.5,3.5);
+  \draw (1.5,3.5) to[ammeter, l=$I$] (3,3.5);
+  \draw (3,3.5) to[R, l=$R_1$] (5,3.5);
+  \draw (5,3.5) to[R, l=$R_2$] (7,3.5);
+  \draw (7,3.5) -- (7,0) -- (0,0);
+  \draw (3,3.5) -- (3,2) to[voltmeter, l=$V_1$] (5,2) -- (5,3.5);
+  \draw (5,3.5) -- (5,1) to[voltmeter, l=$V_2$] (7,1) -- (7,3.5);
+\end{circuitikz}
+\par\smallskip{\small\itshape Medida de tensiones y corriente en el circuito serie}
+\end{center}
 
 Figura 3. Circuito experimental.
 
@@ -482,8 +511,25 @@ Figura 3. Circuito experimental.
   \item Mida la diferencia de potencial entre los extremos de cada resistencia.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje (Int.) y dos resistencias (R1, R2) en paralelo, con voltímetros (V1, V2) y amperímetros (I, I1, I2) midiendo los valores.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E$, invert] (0,4);
+  \draw (0,4) to[switch, l=Int.] (1.5,4);
+  \draw (1.5,4) to[ammeter, l=$I$] (3,4);
+  \draw (3,4) -- (6,4);
+  \draw (3,4) to[ammeter, l=$I_1$] (3,2.5) to[R, l=$R_1$] (3,0);
+  \draw (6,4) to[ammeter, l=$I_2$] (6,2.5) to[R, l=$R_2$] (6,0);
+  \draw (0,0) -- (6,0);
+  \draw (3,2.5) -- (4.2,2.5);
+  \draw (1.2,3.2) to[voltmeter, l=$V_1$] (1.2,0.8);
+  \draw (1.2,3.2) -- (1.2,4);
+  \draw (1.2,0.8) -- (1.2,0);
+  \draw (7.5,4) -- (7.5,3.2) to[voltmeter, l=$V_2$] (7.5,0.8) -- (7.5,0);
+  \draw (6,4) -- (7.5,4);
+  \draw (6,0) -- (7.5,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Medida de tensiones y corrientes en el circuito paralelo}
+\end{center}
 
 Figura 4. Circuito experimental.
 
@@ -497,8 +543,20 @@ Figura 4. Circuito experimental.
   \item Mida para cada malla, la diferencia de potencial entre los extremos de cada resistencia
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con tres fuentes de voltaje (E1, E2, E3) y tres resistencias (R1, R2, R3) interconectadas en una red, con amperímetros (I1, I2, I3) midiendo las corrientes.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$E_1$, invert] (0,2);
+  \draw (0,2) to[R, l=$R_1$] (0,4) -- (0,4);
+  \draw (0,4) to[ammeter, l=$I_1$] (2,4);
+  \draw (2,4) -- (4,4);
+  \draw (4,4) to[ammeter, l=$I_3$] (6,4);
+  \draw (6,4) to[R, l_=$R_3$] (6,2);
+  \draw (6,2) to[V, l_=$E_3$] (6,0);
+  \draw (0,0) -- (6,0);
+  \draw (2,4) to[ammeter, l=$I_2$] (2,2.6) to[R, l=$R_2$] (2,1.4) to[V, l=$E_2$, invert] (2,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Red con tres ramas y tres fuentes para las leyes de Kirchhoff}
+\end{center}
 
 Fig. 5. Circuito experimental de una red eléctrica
 

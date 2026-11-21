@@ -35,6 +35,16 @@ después de la pausa del 18-nov. El usuario cargó la sesión y pidió continuar
    la alternativa conforme propuesta en la alerta de determinismo y se registra la
    excepción a la alerta de autoridad: el OCR overridea P1–P4 por decisión consciente
    del usuario.
+8. **Reemplazo de P1–P8 autorizado** (21-nov): el usuario autorizó copiar las 8 prácticas
+   generadas desde el OCR a `cursos/LABORATORIO_II_FISICA/practicas/` y hacer commit.
+   P09–P10 quedan intactas (el escaneo original solo cubre 8 prácticas). Commit creado:
+   `33573c8b feat: flujo OCR->8 practicas de Lab II y reemplazo de P1-P8 desde el PDF original`
+   (25 archivos, +2843/−1251). **No se ha pusheado.**
+9. **Figuras: dibujar las 34 en TikZ** (21-nov): el usuario eligió la opción 2 entre las
+   alternativas presentadas (recortar del escaneo / recuperar las 24 vectoriales antiguas
+   / dibujarlas). Las descripciones `[FIGURA: ...]` del OCR son la fuente de verdad de
+   QUÉ dibujar; el modelo propone el código y un script lo valida compilándolo. No se
+   recuperan las reconstrucciones de `curso.yaml` (eran de otro enunciado, no del PDF).
 
 ## Actividades
 - Lectura de las dos bitácoras posteriores a la pausa para recuperar el estado: la del
@@ -102,9 +112,34 @@ después de la pausa del 18-nov. El usuario cargó la sesión y pidió continuar
   - Tests: `execution/test_generar_practicas_desde_ocr.py` → 70 aserciones, 0 fallos.
     Diagrama ISO 5807: `docs/AGENTE_IA/ocr_a_practicas_flujo.{tex,pdf}` (5 pp., 0 errores).
     `AGENTS.md` actualizado (test + comando del orquestador).
-  - **NO se han sobrescrito** las prácticas trackeadas en
-    `cursos/LABORATORIO_II_FISICA/practicas/`: el trabajo quedó en `.tmp/` a la espera de
-    que el usuario decida el destino final y autorice escribir/committear.
+  - **Ya se sobrescribieron** P1–P8 en `cursos/LABORATORIO_II_FISICA/practicas/` con el
+    contenido de `.tmp/practicas_desde_ocr/` (decisión 8). P09–P10 intactas. Commit
+    `33573c8b` creado, sin push.
+
+- **Flujo de figuras TikZ implementado (3 capas)** tras la decisión 9:
+  - Capa 1: `directives/dibujar_figuras_tikz.yaml` (SOP con 4 pasos, edge cases,
+    coste SÍ la primera vez / cero con manifest).
+  - Capa 2: `flujo_dibujar_figuras_tikz.py` (decide el modelo con
+    `execution/enrutador.py --task 'diseño' --archivos <OCR> --critico` —regla pura,
+    `anthropic/claude-opus-5`—, encadena la generación y la regeneración de prácticas,
+    valida entregas y guarda la vista `run_state`).
+  - Capa 3: `execution/generar_figuras_tikz.py` (extrae las 34 descripciones con la
+    numeración canónica importada de `generar_practicas_desde_ocr.py`, un lote por
+    práctica, bloques `<<<FIGURA:id>>>…<<<FIN:id>>>`, validación determinista —prohíbe
+    `pgfplots`, `galvanometer`, `full diode bridge`, `pC`, entornos desbalanceados— y
+    compilación AISLADA de cada bloque con 0 líneas `!`; manifest atómico y reanudable
+    en `.tmp/figuras_tikz/figuras.json`).
+  - Inyección en `execution/generar_practicas_desde_ocr.py`: `--figuras <manifest>` y
+    `render_practica(..., figuras=...)`. Sin manifest, comportamiento heredado (cajas).
+    Si una clave del manifest falta, se cae a la caja: nunca se publica un dibujo que
+    no pasó compilación.
+  - Tests: `execution/test_generar_practicas_desde_ocr.py` ampliado a **78 aserciones**
+    (numeración e inyección), nuevo `execution/test_generar_figuras_tikz.py` con
+    **30 aserciones** (funciones puras, sin red ni compilación). Ambos en verde.
+    `--dry-run` del orquestador en verde; saldo OpenRouter **no verificado** (el monitor
+    estima −$29.86 con una referencia hardcoded de 2026-09-01 y `limit: null`; la
+    prueba acotada de 1 figura consumió créditos y funcionó).
+  - Generación de las 34 en curso en background (log `.tmp/generar_figuras_tikz.log`).
 
 ## Pendientes
 - **24-nov, 08:00 VET — Lab II**: publicar con
@@ -118,12 +153,26 @@ después de la pausa del 18-nov. El usuario cargó la sesión y pidió continuar
 - **No tocar la ventana de Lab II**: cambiar solo el inicio dejaría el fin antiguo antes
   del inicio y el Worker rechazaría las 3 entregas con 403 (trampa ya documentada el 20-nov).
 - **OCR completo como entrada de material — RESUELTO**: `.tmp/ocr_practicas/practicas_ocr.md`
-  (56 páginas) se usó como fuente del flujo OCR → 8 prácticas (3 capas), ver Actividades.
-  Queda **decidir el destino final**: las 8 prácticas generadas están en
-  `.tmp/practicas_desde_ocr/`. Sobrescribir `cursos/LABORATORIO_II_FISICA/practicas/`
-  (trackeadas, derivadas antes de `curso.yaml`) requiere autorización del usuario; no se
-  hizo. Si se promueve el markdown a `docs/`, usar nombre nuevo
-  (`practicas_ocr_completo.md`) sin sobrescribir el OCR curado de 33 páginas.
+  (56 páginas) se usó como fuente del flujo OCR → 8 prácticas (3 capas); P1–P8 ya están
+  reemplazadas y commiteadas (`33573c8b`). Si se promueve el markdown a `docs/`, usar
+  nombre nuevo (`practicas_ocr_completo.md`) sin sobrescribir el OCR curado de 33 páginas.
+- **Figuras TikZ — COMPLETAS (21-nov, pendiente solo git)**: manifest
+  `.tmp/figuras_tikz/figuras.json` con `status: ok`, **34/34**, 0 fallos, distribución
+  3/2/4/5/5/6/3/6, todas con `anthropic/claude-opus-5`. Regeneración con el manifest
+  cacheado (0 llamadas nuevas a la API): `sha_conjunto=a66133379cba29bf`. Los 8 logs
+  `.build/practica_*.log` dan **0 líneas `!` y 0 `Overfull \hbox`**; 0 marcadores
+  `[FIGURA`, 34 entornos TikZ inyectados y los 34 pies presentes en los PDF (P05 parecía
+  4/5 por acentos LaTeX en `pdftotext`, verificado presente). P1–P8 copiadas al curso;
+  P09–P10 intactas (mismo SHA-256). Diagrama y tests en verde (78 + 30 aserciones).
+  **Pedir autorización antes de committear/pushear** (el commit anterior `33573c8b` sigue
+  sin push; hay que decidir si se amendea, se hace un commit nuevo o se pushea el actual).
+- **Saldo OpenRouter**: no se pudo confirmar (estimación negativa con referencia antigua).
+  La prueba acotada de 1 figura funcionó; conviene no lanzar opus masivamente sin saber
+  si hay saldo real, o confirmar con el usuario antes de repetir la corrida completa.
+- **Diagrama ISO 5807 — HECHO**: `docs/AGENTE_IA/dibujar_figuras_tikz_flujo.{tex,pdf}`
+  (6 pp., 0 errores, 0 Overfull, 0 solapes). Primera compilación falló por un `\hbox`
+  literal en la leyenda y un solape entre las etiquetas del bucle de reintento; ambos
+  corregidos en el descriptor `.tmp/descriptor_dibujar_figuras_tikz.json`.
 - El HTML no imprime día ni hora: pendiente cerrado por decisión del usuario.
 - **Bug latente heredado (no corregido)**: `flujo_desplegar_worker_cuestionarios.py`
   duplica el bloque `extras` + `_secretos` + `GITHUB_TOKEN` dentro de la rama

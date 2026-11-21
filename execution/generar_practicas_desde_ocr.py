@@ -257,14 +257,58 @@ def _caja_figura(descripcion: str) -> str:
     )
 
 
-def convertir_bloques(lineas: list[str]) -> str:
+def figuras_de_practica(practica: dict[str, Any]) -> list[dict[str, Any]]:
+    """Descriptores de figura en el MISMO orden en que `convertir_bloques` las emite.
+
+    Es la única definición de la numeración `pNN_fNN`: el generador de TikZ y
+    el inyector deben recorrer exactamente las mismas secciones canónicas y el
+    mismo orden de aparición, o lasfiguras se emparejarían con otra descripción.
+    """
+    resultado: list[dict[str, Any]] = []
+    n = 0
+    for clave in ORDEN_SECCIONES:
+        for linea in practica["secciones"].get(clave, []):
+            for m in RE_FIGURA_INLINE.finditer(linea):
+                n += 1
+                descripcion = m.group(1).strip()
+                resultado.append({
+                    "id": f"p{practica['numero']:02d}_f{n:02d}",
+                    "practica": practica["numero"],
+                    "indice": n,
+                    "descripcion": descripcion,
+                    "sha256_16": _sha(descripcion),
+                })
+    return resultado
+
+
+def convertir_bloques(
+    lineas: list[str],
+    figuras: dict[str, str] | None = None,
+    ids=None,
+) -> str:
     """Convierte el cuerpo de una sección en bloques LaTeX.
 
-    Reglas: viñetas → `itemize`; filas `|` → `tabular`; `[FIGURA: ...]` y
-    `[ILEGIBLE]` → cajas de aviso;SUB → subencabezado; el resto → párrafos
-    escapados con `_tm` (que conserva `$...$` y `\\[...\\]`).
+    Reglas: viñetas → `itemize`; filas `|` → `tabular`; `[FIGURA: ...]` → caja
+    con el TikZ validado (o caja de descripción si no hay manifest); `[ILEGIBLE]`
+    → caja de aviso; SUB → subencabezado; el resto → párrafos escapados con `_tm`.
+
+    `ids` es el iterador de descriptores devuelto por `figuras_de_practica` y
+    avanza exactamente una vez por marcador, tanto en líneas independientes
+    como en marcadores pegados al final de un párrafo.
     """
     bloques: list[str] = []
+
+    def _emitir_figura(descripcion: str) -> str:
+        fid = None
+        if ids is not None:
+            try:
+                fid = next(ids)["id"]
+            except StopIteration:
+                fid = None
+        if fid and figuras and fid in figuras:
+            return figuras[fid]
+        return _caja_figura(descripcion)
+
     i = 0
     while i < len(lineas):
         linea = lineas[i]
@@ -288,7 +332,7 @@ def convertir_bloques(lineas: list[str]) -> str:
 
         m_figura = re.fullmatch(r"\[FIGURA:\s*(.+)\]", texto, re.I | re.S)
         if m_figura:
-            bloques.append(_caja_figura(m_figura.group(1)))
+            bloques.append(_emitir_figura(m_figura.group(1)))
             i += 1
             continue
 
@@ -325,7 +369,7 @@ def convertir_bloques(lineas: list[str]) -> str:
         limpio, figs = _separar_figuras_inline(" ".join(parrafo))
         if limpio:
             bloques.append(_tm(limpio))
-        bloques.extend(_caja_figura(f) for f in figs)
+        bloques.extend(_emitir_figura(f) for f in figs)
 
     return "\n\n".join(bloques)
 
@@ -352,11 +396,20 @@ def _documento(titulo: str, cuerpo: str) -> str:
     )
 
 
-def render_practica(practica: dict[str, Any]) -> str:
-    """Renderiza una práctica parseada a LaTeX completo y determinista."""
+def render_practica(
+    practica: dict[str, Any],
+    figuras: dict[str, str] | None = None,
+) -> str:
+    """Renderiza una práctica parseada a LaTeX completo y determinista.
+
+    `figuras` mapea `pNN_fNN` → bloque TikZ ya validado. Si falta una clave,
+    se cae a la caja de descripción: el flujo sigue siendo reproducible y
+    nunca inventa un dibujo que no pasó compilación.
+    """
     numero = practica["numero"]
     titulo = _tm(practica["titulo"])
     encabezado = f"Práctica {numero:02d} --- {titulo}"
+    ids = iter(figuras_de_practica(practica)) if figuras is not None else None
     partes = [
         "\\begin{tcolorbox}[cajaContenido]"
         "\\textbf{Fuente:} enunciado del PDF original "
@@ -364,7 +417,9 @@ def render_practica(practica: dict[str, Any]) -> str:
         "\n\\end{tcolorbox}"
     ]
     for clave in ORDEN_SECCIONES:
-        cuerpo = convertir_bloques(practica["secciones"].get(clave, []))
+        cuerpo = convertir_bloques(
+            practica["secciones"].get(clave, []), figuras=figuras, ids=ids
+        )
         if not cuerpo:
             continue
         partes.append(seccion_con_icono(ICONOS_SECCION[clave], ETIQUETAS_SECCION[clave]))
@@ -459,6 +514,7 @@ def generar(
     salida: Path,
     esperadas: list[int],
     compilar: bool = True,
+    figuras: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Genera, valida, escribe y (opcionalmente) compila las prácticas."""
     try:
@@ -477,7 +533,7 @@ def generar(
             "encontradas": sorted(practicas),
         }
 
-    documentos = {n: render_practica(practicas[n]) for n in esperadas}
+    documentos = {n: render_practica(practicas[n], figuras=figuras) for n in esperadas}
     salida.mkdir(parents=True, exist_ok=True)
     build = salida / ".build"
     artefactos: list[dict[str, Any]] = []
@@ -544,6 +600,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ocr", default=str(OCR_POR_DEFECTO), help="markdown del OCR")
     ap.add_argument("--salida", default=str(SALIDA_POR_DEFECTO), help="directorio de salida")
     ap.add_argument("--practicas", default=None, help="'1-8', '1,3,5-7' o 'todas'")
+    ap.add_argument("--figuras", default=None,
+                    help="manifest JSON de TikZ validado; sin él se emiten cajas de descripción")
     ap.add_argument("--sin-compilar", action="store_true", help="solo escribir los .tex")
     ap.add_argument("--check", action="store_true", help="solo validar el OCR, sin escribir")
     ap.add_argument("--json", action="store_true", help="emitir informe JSON")
@@ -576,7 +634,29 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(informe, ensure_ascii=False, indent=2))
         return 0 if not problemas else 3
 
-    informe = generar(ruta_ocr, salida, esperadas, compilar=not args.sin_compilar)
+    figuras: dict[str, str] | None = None
+    if args.figuras:
+        ruta_figuras = Path(args.figuras).resolve()
+        try:
+            manifest = json.loads(ruta_figuras.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(json.dumps({"status": "error", "code": 6,
+                              "message": f"manifest de figuras inválido: {exc}"},
+                             ensure_ascii=False), file=sys.stderr)
+            return 6
+        if manifest.get("status") != "ok":
+            print(json.dumps({"status": "error", "code": 6,
+                              "message": "el manifest de figuras no está completo"},
+                             ensure_ascii=False), file=sys.stderr)
+            return 6
+        figuras = {
+            fid: datos["codigo"]
+            for fid, datos in manifest.get("figuras", {}).items()
+            if datos.get("codigo")
+        }
+
+    informe = generar(ruta_ocr, salida, esperadas,
+                      compilar=not args.sin_compilar, figuras=figuras)
     if args.json:
         print(json.dumps(informe, ensure_ascii=False, indent=2))
     else:
