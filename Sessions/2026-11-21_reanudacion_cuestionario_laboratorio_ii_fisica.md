@@ -164,8 +164,12 @@ después de la pausa del 18-nov. El usuario cargó la sesión y pidió continuar
   `[FIGURA`, 34 entornos TikZ inyectados y los 34 pies presentes en los PDF (P05 parecía
   4/5 por acentos LaTeX en `pdftotext`, verificado presente). P1–P8 copiadas al curso;
   P09–P10 intactas (mismo SHA-256). Diagrama y tests en verde (78 + 30 aserciones).
-  **Pedir autorización antes de committear/pushear** (el commit anterior `33573c8b` sigue
-  sin push; hay que decidir si se amendea, se hace un commit nuevo o se pushea el actual).
+  **Git — HECHO (autorización del usuario)**: se hizo commit nuevo
+  `9b68531f feat: 34 figuras TikZ en P1-P8 de Lab II desde el OCR, con flujo de 3 capas`
+  (26 archivos, +2069/−89) y push de ambos commits (`33573c8b` + `9b68531f`).
+  `origin/master...HEAD = 0 0`. Se usó staging explícito en vez de `update_repo.sh`
+  porque esa herramienta hace `git add -A` y habría incluido el PDF ajeno no trackeado
+  `cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf`, que se dejó intacto.
 - **Saldo OpenRouter**: no se pudo confirmar (estimación negativa con referencia antigua).
   La prueba acotada de 1 figura funcionó; conviene no lanzar opus masivamente sin saber
   si hay saldo real, o confirmar con el usuario antes de repetir la corrida completa.
