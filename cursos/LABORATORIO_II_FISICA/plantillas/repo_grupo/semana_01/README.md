@@ -1,4 +1,7 @@
-# Semana 01 — Característica corriente-tensión de un resistor
+# Práctica 01 — MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS
+
+> Semana 01 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

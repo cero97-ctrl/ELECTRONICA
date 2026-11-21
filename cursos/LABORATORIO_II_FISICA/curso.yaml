@@ -346,7 +346,7 @@ semanas:
       - Contenedor Jupyter opcional
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Característica corriente-tensión de un resistor
+      titulo: Práctica 01 — MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS
       escenario: >-
         Cada grupo recibe un resistor de carbón, un diodo semiconductor y dos
         multimedidores Keithley. Debe obtener la característica $I$--$V$ de los dos
@@ -478,7 +478,7 @@ semanas:
       - Python para el análisis
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Comparación de tres métodos para medir una resistencia
+      titulo: Práctica 02 — DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA
       escenario: >-
         Se entrega a cada grupo una resistencia desconocida. Debe medirla con el
         montaje voltamperimétrico en sus dos variantes, con el óhmmetro y con un
@@ -583,7 +583,7 @@ semanas:
       - Python para el ajuste de la recta
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Caracterización de la fuente y de los instrumentos
+      titulo: Práctica 03 — DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE
       escenario: >-
         Ningún instrumento es ideal: el amperímetro tiene resistencia serie y el
         voltímetro resistencia paralelo, y la fuente se cae cuando se le exige
@@ -699,7 +699,7 @@ semanas:
       - Python para resolver el sistema de mallas
     evaluacion: Práctica formativa con informe y control de fase
     practica:
-      titulo: Circuitos serie, paralelo y red de dos mallas
+      titulo: Práctica 04 — CIRCUITOS ELÉCTRICOS
       escenario: >-
         Se dispone una red de dos mallas sobre el tablero, con tres baterías y tres
         resistencias. El grupo debe medir las fuerzas electromotrices y las
@@ -803,7 +803,7 @@ semanas:
       - Python para el ajuste exponencial
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Característica estática del diodo y extracción de parámetros
+      titulo: Práctica 05 — ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR
       escenario: >-
         El grupo mide la curva completa de un diodo rectificador en directa y en
         inversa, la de un Zener en ruptura y la de un LED, y debe demostrar que la
@@ -919,7 +919,7 @@ semanas:
       - Python para el cálculo fasorial
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Determinación de reactancias, de C y de L en régimen senoidal
+      titulo: Práctica 06 — RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL
       escenario: >-
         Con un generador de funciones senoidal, una resistencia de décadas y dos
         Keithley, el grupo mide la reactancia de un capacitor y de una bobina del
@@ -1030,7 +1030,7 @@ semanas:
       - Python para el barrido y el ajuste
     evaluacion: Práctica formativa con informe
     practica:
-      titulo: Resonancia serie y paralelo con L y C del inventario
+      titulo: Práctica 07 — CIRCUITOS RESONANTES
       escenario: >-
         Con la misma bobina y el mismo capacitor de la semana anterior, el grupo
         localiza la frecuencia de resonancia del circuito serie y del paralelo
@@ -1135,7 +1135,7 @@ semanas:
       - Python para el ajuste exponencial
     evaluacion: Práctica formativa con informe y control de fase
     practica:
-      titulo: Carga y descarga de un capacitor con osciloscopio
+      titulo: Práctica 08 — CARGA Y DESCARGA DE UN CAPACITOR
       escenario: >-
         Un generador de onda cuadrada sustituye a la fuente y al interruptor, de
         modo que el capacitor se carga durante el tiempo de encendido y se descarga
@@ -1245,7 +1245,7 @@ semanas:
       - Python con SciPy para simular y ajustar
     evaluacion: Práctica sumativa con informe completo
     practica:
-      titulo: El mismo circuito por dos vías independientes
+      titulo: Práctica 09 — El mismo circuito por dos vías independientes
       escenario: >-
         Es la práctica integradora. Con el montaje RLC de las semanas anteriores el
         grupo obtiene el factor de calidad desde el ancho de banda en frecuencia y
@@ -1346,7 +1346,7 @@ semanas:
       - Python para el análisis en vivo
     evaluacion: Evaluación final práctica individual y portafolio
     practica:
-      titulo: Examen práctico individual y cierre del portafolio
+      titulo: Práctica 10 — Examen práctico individual y cierre del portafolio
       escenario: >-
         Cada integrante recibe un circuito sellado con parámetros desconocidos y
         debe caracterizarlo de forma individual en tres horas, con el instrumental

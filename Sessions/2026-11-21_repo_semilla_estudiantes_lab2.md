@@ -62,9 +62,38 @@ privado de cada grupo. La fuente de verdad de títulos, roles y corte es
   rompió el par de flechas opuestas haciendo que la corrección vuelva a `P5`.
   Verificación final: 0 líneas `!`, 0 `Overfull \hbox`, 0 solapes.
 
-## Pendientes
-- No se hizo commit ni push: los ficheros nuevos siguen sin marcar. Requiere
-  autorización explícita del usuario.
+## Continuación — corrección del título de la semana 01 (misma sesión)
+El usuario señaló que `plantillas/repo_grupo/semana_01/README.md` mostraba
+«Semana 01 — Característica corriente-tensión de un resistor», un resumen de
+`curso.yaml`, en lugar del título impreso en `practica_01.tex`. Al comparar los
+10 `.tex` con el descriptor, los 10 títulos diferían. El usuario eligió
+**corregir `curso.yaml`** (mantener un único descriptor) en lugar de hacer que
+el generador leyera los `.tex`.
+
+- Capa 3: `execution/sincronizar_titulos_practicas.py`. Extrae `\bandaTitulo`
+  de `practica_NN.tex`, normaliza `---` → `—`, valida el prefijo `Práctica NN`
+  y sustituye SOLO la línea `titulo:` dentro de cada bloque `practica:` del
+  YAML (edición quirúrgica: comentarios, anclas, `titulo:` de nivel semana y
+  espaciado intactos). `--check` solo reporta; `--apply` escribe con relectura
+  y verificación. Sin flags, solo reporta.
+- Capa 1: `directives/sincronizar_titulos_practicas.yaml` v1.0.
+- Capa 2: `flujo_sincronizar_titulos_practicas.py` con `run_state`, encadena
+  check → apply → regenerar semilla → test.
+- Ejecución: 10 títulos actualizados, semilla regenerada (43 archivos), idempotencia
+  confirmada (`--check` posterior → 0 cambios). `git diff` de `curso.yaml`:
+  exactamente 10 líneas cambiadas, sin otro byte tocado.
+- Ajuste adicional en `generar_repo_semilla.py`: el README semanal empieza
+  ahora por el título oficial exacto (`# Práctica 01 — …`) y la semana pasa a
+  una línea de contexto, para evitar el encabezado redundante
+  «Semana 01 — Práctica 01 — …». Tests actualizados: 41/41 OK.
+- Regresión descartada: `execution/test_generar_material_curso.py` 124/124 OK y
+  `flujo_disenar_curso.py --solo plan_semanal` compila con 0 errores y 0
+  `Overfull \hbox` pese a los títulos más largos.
+
+## Cierre
+- El usuario autorizó commit+push de esta corrección el 2026-11-21; se incluye
+  en el mismo commit que la bitácora y los 10 títulos sincronizados.
+- El commit anterior `db019d1` (semilla original) ya estaba pusheado.
 - No se tocó `cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf`.
 - Recordatorio del 24-nov antes de 08:00 VET: publicar el cuestionario con
   `flujo_publicar_cuestionario.py --web-dir cursos/LABORATORIO_II_FISICA/evaluaciones/web --repo cero97-ctrl/cuestionarios-lab2 --visibilidad public --push`

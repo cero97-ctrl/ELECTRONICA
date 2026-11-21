@@ -1,4 +1,7 @@
-# Semana 06 — Determinación de reactancias, de C y de L en régimen senoidal
+# Práctica 06 — RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL
+
+> Semana 06 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

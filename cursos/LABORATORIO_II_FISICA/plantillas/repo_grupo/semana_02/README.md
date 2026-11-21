@@ -1,4 +1,7 @@
-# Semana 02 — Comparación de tres métodos para medir una resistencia
+# Práctica 02 — DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA
+
+> Semana 02 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

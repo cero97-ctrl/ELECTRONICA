@@ -213,7 +213,10 @@ def readme_semanal(numero: int, titulo: str, corte: str, es_cierre: bool) -> str
 - [ ] `informe.pdf` individual, con las conclusiones firmadas por su autor.
 - [ ] `portafolio/` con las diez semanas corregidas y el README raíz al día.
 """
-    return f"""# Semana {numero:02d} — {titulo}
+    return f"""# {titulo}
+
+> Semana {numero:02d} del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

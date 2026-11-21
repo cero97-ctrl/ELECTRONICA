@@ -20,6 +20,10 @@ required_inputs:
       practica.titulo de las 10 semanas), `grupos.roles` (nombres de los cuatro
       roles) y `entregas.corte`. Si falta alguno o el número de semanas no es
       exactamente 10, el script falla antes de escribir nada (código 2).
+      Los `practica.titulo` son los oficiales impresos en `practica_NN.tex`; se
+      mantienen sincronizados con `flujo_sincronizar_titulos_practicas.py`
+      (directiva `sincronizar_titulos_practicas.yaml`). El README semanal
+      empieza literalmente por ese título y la semana va en una línea aparte.
 
   - name: salida
     description: >-

@@ -21,16 +21,16 @@ y la verificación.
 
 | Carpeta | Práctica | Entregada | Observaciones del docente |
 | --- | --- | --- | --- |
-| semana_01 | Característica corriente-tensión de un resistor | [ ] | | |
-| semana_02 | Comparación de tres métodos para medir una resistencia | [ ] | | |
-| semana_03 | Caracterización de la fuente y de los instrumentos | [ ] | | |
-| semana_04 | Circuitos serie, paralelo y red de dos mallas | [ ] | | |
-| semana_05 | Característica estática del diodo y extracción de parámetros | [ ] | | |
-| semana_06 | Determinación de reactancias, de C y de L en régimen senoidal | [ ] | | |
-| semana_07 | Resonancia serie y paralelo con L y C del inventario | [ ] | | |
-| semana_08 | Carga y descarga de un capacitor con osciloscopio | [ ] | | |
-| semana_09 | El mismo circuito por dos vías independientes | [ ] | | |
-| semana_10 | Examen práctico individual y cierre del portafolio | [ ] | | |
+| semana_01 | Práctica 01 — MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS | [ ] | | |
+| semana_02 | Práctica 02 — DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA | [ ] | | |
+| semana_03 | Práctica 03 — DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE | [ ] | | |
+| semana_04 | Práctica 04 — CIRCUITOS ELÉCTRICOS | [ ] | | |
+| semana_05 | Práctica 05 — ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR | [ ] | | |
+| semana_06 | Práctica 06 — RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL | [ ] | | |
+| semana_07 | Práctica 07 — CIRCUITOS RESONANTES | [ ] | | |
+| semana_08 | Práctica 08 — CARGA Y DESCARGA DE UN CAPACITOR | [ ] | | |
+| semana_09 | Práctica 09 — El mismo circuito por dos vías independientes | [ ] | | |
+| semana_10 | Práctica 10 — Examen práctico individual y cierre del portafolio | [ ] | | |
 
 **Corte:** Domingo a las 23:59 de la semana correspondiente. Lo entregado después del corte se corrige con la penalización prevista en las políticas.
 
