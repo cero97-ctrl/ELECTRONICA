@@ -359,8 +359,41 @@ La fabricación de un diodo semiconductor exige una muestra muy pura de un eleme
 
 libres. Este material se denomina semiconductor tipo p. Análogamente, la adición de arsénico produce un material que actúa como si el silicio tuviese un número grande de cargas negativas libres. Este material se denomina semiconductor tipo n. La figura (1.a), muestra un pedazo de un semiconductor tipo p y un pedazo de semiconductor tipo n, separados. La figura (1.b) muestra la formación de un diodo semiconductor cuando los dos pedazos de semiconductor (tipo p y tipo n) se unen. En el proceso de formación del diodo semiconductor ocurre una difusión de cargas positivas del lado p hacia el lado n y una difusión de cargas negativas desde el lado n hacia el lado p. estas cargas se cancelan mutuamente dejando un dipolo en la región de la unión, cuyo campo eléctrico crece hasta que contrarresta la difusión de las cargas.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Tabla con tres secciones: Zona neutra, Zona de cargas, Zona neutra. Cada sección tiene dos columnas: p y n. Cada columna tiene una serie de símbolos de más y menos.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) rectangle (9,3);
+  \draw (3,0) -- (3,3);
+  \draw (6,0) -- (6,3);
+  \draw (0,2.4) -- (9,2.4);
+  \draw[dashed] (1.5,0) -- (1.5,2.4);
+  \draw[dashed] (4.5,0) -- (4.5,2.4);
+  \draw[dashed] (7.5,0) -- (7.5,2.4);
+  \node at (1.5,2.7) {\small Zona neutra};
+  \node at (4.5,2.7) {\small Zona de cargas};
+  \node at (7.5,2.7) {\small Zona neutra};
+  \node at (0.75,2.1) {\small $p$};
+  \node at (2.25,2.1) {\small $n$};
+  \node at (3.75,2.1) {\small $p$};
+  \node at (5.25,2.1) {\small $n$};
+  \node at (6.75,2.1) {\small $p$};
+  \node at (8.25,2.1) {\small $n$};
+  \foreach \y in {0.4,1.0,1.6} {
+    \node at (0.5,\y) {$+$};
+    \node at (1.0,\y) {$+$};
+    \node at (2.0,\y) {$-$};
+    \node at (2.5,\y) {$-$};
+    \node at (3.5,\y) {$-$};
+    \node at (4.0,\y) {$-$};
+    \node at (5.0,\y) {$+$};
+    \node at (5.5,\y) {$+$};
+    \node at (6.5,\y) {$+$};
+    \node at (7.0,\y) {$+$};
+    \node at (8.0,\y) {$-$};
+    \node at (8.5,\y) {$-$};
+  }
+\end{circuitikz}
+\par\smallskip{\small\itshape Distribucion de cargas en la union p-n y su zona de carga espacial}
+\end{center}
 
 a.- Antes de la formación b.- Después de la formación
 
@@ -372,8 +405,40 @@ Un diodo puede ser polarizado de dos maneras: 1. **Polarizacion Directa:** Cuand
 
 2. **Polarizacion Inversa:** Cuando el terminal negativo de la fuente está conectado al material tipo p y el terminal positivo al material tipo n, tal como se muestra en la figura 2.b. En este caso, la diferencia de potencial aplicada aumenta el campo eléctrico de la zona, por lo que la difusión de cargas disminuye, no observándose ningún aumento de corriente.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un diodo con polarización directa (a) y polarización inversa (b). Muestra la conexión de una fuente de voltaje a un diodo, con símbolos de cargas positivas y negativas en las regiones p y n, y la dirección del campo eléctrico.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) rectangle (4,1.6);
+  \draw (2,0) -- (2,1.6);
+  \node at (1,1.9) {\small $p$};
+  \node at (3,1.9) {\small $n$};
+  \foreach \y in {0.4,1.1} {
+    \node at (0.6,\y) {$+$};
+    \node at (1.3,\y) {$+$};
+    \node at (2.7,\y) {$-$};
+    \node at (3.4,\y) {$-$};
+  }
+  \draw (0,0.8) -- (-1,0.8) -- (-1,-1.2) to[V, l_={$V$}] (5,-1.2) -- (5,0.8) -- (4,0.8);
+  \draw[->, thick] (1.6,-0.45) -- (2.4,-0.45) node[midway, below] {\small $E$};
+  \node at (2,-2.1) {(a) Polarizaci\'on directa};
+
+  \begin{scope}[xshift=8cm]
+    \draw (0,0) rectangle (4,1.6);
+    \draw (2,0) -- (2,1.6);
+    \node at (1,1.9) {\small $p$};
+    \node at (3,1.9) {\small $n$};
+    \foreach \y in {0.4,1.1} {
+      \node at (0.6,\y) {$+$};
+      \node at (1.3,\y) {$+$};
+      \node at (2.7,\y) {$-$};
+      \node at (3.4,\y) {$-$};
+    }
+    \draw (0,0.8) -- (-1,0.8) -- (-1,-1.2) to[V, l={$V$}] (5,-1.2) -- (5,0.8) -- (4,0.8);
+    \draw[->, thick] (2.4,-0.45) -- (1.6,-0.45) node[midway, below] {\small $E$};
+    \node at (2,-2.1) {(b) Polarizaci\'on inversa};
+  \end{scope}
+\end{circuitikz}
+\par\smallskip{\small\itshape Diodo en polarizacion directa e inversa y sentido del campo electrico}
+\end{center}
 
 a. Polarización directa b. Polarización inversa
 
@@ -381,8 +446,15 @@ Figura N$^{\circ}$ 2. Polarización de un diodo.
 
 La figura 3 muestra el símbolo esquemático de un diodo rectificador; la flecha del símbolo del diodo indica la dirección más común de la corriente.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Símbolo esquemático de un diodo rectificador con una flecha indicando la dirección de la corriente.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[D, l={$D$}] (4,0);
+  \draw[->, thick] (1.2,0.9) -- (2.8,0.9) node[midway, above] {\small $I$};
+  \node at (0.3,-0.5) {\small \'Anodo};
+  \node at (3.7,-0.5) {\small C\'atodo};
+\end{circuitikz}
+\par\smallskip{\small\itshape Simbolo del diodo rectificador y sentido de la corriente directa}
+\end{center}
 
 Figura N$^{\circ}$ 3. Símbolo esquemático del diodo.
 
@@ -394,8 +466,29 @@ Si $T \approx 300$ K y $V \ge 0$, (polarización directa) entonces: $\exp \left(
 
 La figura 4 muestra la característica I-V de un diodo.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfica de la característica I-V de un diodo, mostrando la corriente (I) en función del voltaje (V) para polarización directa e inversa. Se indican las regiones de polarización directa e inversa, y los valores de corriente y voltaje.
-\end{tcolorbox}
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \draw[->] (-3.6,0) -- (3.4,0) node[below right] {$V$ (V)};
+  \draw[->] (0,-1.4) -- (0,3.2) node[left] {$I$ (mA)};
+  \node[below left] at (0,0) {$0$};
+
+  \draw[thick] (-3.4,-0.18) -- (-0.8,-0.10) -- (0,0);
+  \draw[thick] (0,0) .. controls (0.9,0.02) and (1.35,0.35) .. (1.6,1.1)
+      .. controls (1.75,1.9) and (1.85,2.4) .. (2.0,3.0);
+
+  \draw[dashed] (1.6,0) -- (1.6,1.1);
+  \node[below] at (1.6,0) {\small $V_u$};
+
+  \draw[dashed] (0,2.2) -- (1.88,2.2);
+  \draw[dashed] (1.88,0) -- (1.88,2.2);
+  \node[left] at (0,2.2) {\small $I_1$};
+  \node[below right] at (1.88,0) {\small $V_1$};
+
+  \node[align=center] at (2.2,-0.85) {\small Polarizaci\'on\\[-2pt] \small directa};
+  \node[align=center] at (-2.0,1.4) {\small Polarizaci\'on\\[-2pt] \small inversa};
+\end{tikzpicture}
+\par\smallskip{\small\itshape Caracter\'istica corriente-tensi\'on de un diodo en polarizaci\'on directa e inversa}
+\end{center}
 
 Figura N$^{\circ}$ 4. Características I v de los diodos (Ge) y (Si)
 
@@ -432,8 +525,18 @@ directamente).
 
 valores de $i_m$ y los correspondientes valores de $V$. (mínimo 20 valores)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con un diodo, un amperímetro, un voltímetro y una resistencia.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l={$V_0$}] (0,3.5);
+  \draw (0,3.5) to[ammeter, l={$A$}] (3,3.5);
+  \draw (3,3.5) to[R, l={$R$}] (6,3.5);
+  \draw (6,3.5) to[D, l={$D$}] (6,0);
+  \draw (6,0) -- (0,0);
+  \draw (6,3.5) -- (8,3.5) to[voltmeter, l={$V$}] (8,0) -- (6,0);
+  \draw (0,0) node[ground]{};
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuito de medida de la curva caracteristica del diodo}
+\end{center}
 
 **Figura Nº 5. Esquema experimental para determinar las características i-V de un diodo**
 

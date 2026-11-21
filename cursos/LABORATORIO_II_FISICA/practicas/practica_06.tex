@@ -379,8 +379,16 @@ La capacitancia C es un parámetro que depende exclusivamente de la geometría d
 
 Esta última ecuación significa que cuanto mayor sea la rapidez de cambio de la tensión del capacitor, tanto mayor será la corriente capacitiva. Los capacitores, como los resistores pueden ser fijos o variables. En la figura 1 se ilustran los símbolos utilizados en cada caso.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Dos símbolos de capacitor, uno fijo y otro variable
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[C] (0,2);
+  \node at (0,-0.5) {(a)};
+  \draw (4,0) to[C] (4,2);
+  \draw[->] (3.2,0.3) -- (4.8,1.7);
+  \node at (4,-0.5) {(b)};
+\end{circuitikz}
+\par\smallskip{\small\itshape Símbolos de capacitor fijo (a) y variable (b)}
+\end{center}
 
 Capacitor fijo Capacitor variable
 
@@ -404,8 +412,13 @@ De las ecuaciones 4 y 5, se obtiene:
 
 A cada inductor se le asocia una resistencia igual a la de las vueltas del alambre y una capacitancia dispersa debida a la capacitancia entre las vueltas de la bobina. Para incluir esos efectos, se muestra en la figura 2 el circuito equivalente para el inductor. Sin embargo, la función primaria del inductor es introducir inductancia (no resistencia o capacitancia) en la red; por esa razón se construyen los inductores de tal manera que $R_o$ y $C_o$ sean pequeños.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Circuito equivalente del inductor con resistencia y capacitancia
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) node[left]{A} to[L, l=$L$] (3,0) to[R, l=$R_L$] (6,0) node[right]{B};
+  \draw (0,0) -- (0,-1.8) to[C, l=$C_p$] (6,-1.8) -- (6,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuito equivalente de un inductor real}
+\end{center}
 
 Figura 2. Circuito equivalente del inductor
 
@@ -413,8 +426,20 @@ $R_o$ resistencia de las vueltas del alambre, $C_o$ capacitancia distribuida y L
 
 Los símbolos utilizados para los inductores son como ilustran la figura 3.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Tres símbolos de inductor: inductor fijo con núcleo de aire, inductor fijo con núcleo de hierro, inductor variable
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[L] (2,0);
+  \node at (1,-0.8) {(a)};
+  \draw (3.5,0) to[L] (5.5,0);
+  \draw[thick] (3.7,0.35) -- (5.3,0.35);
+  \draw[thick] (3.7,0.5) -- (5.3,0.5);
+  \node at (4.5,-0.8) {(b)};
+  \draw (7,0) to[L] (9,0);
+  \draw[->] (7.2,-0.6) -- (8.8,0.7);
+  \node at (8,-1.1) {(c)};
+\end{circuitikz}
+\par\smallskip{\small\itshape Inductor de núcleo de aire, de núcleo de hierro y variable}
+\end{center}
 
 Inductor fijo con Inductor fijo con Inductor variable núcleo de aire núcleo de hierro
 
@@ -422,8 +447,15 @@ Figura 3. Representación simbólica de un inductor
 
 REACTANCIA DEL CAPACITOR Y DEL INDUCTOR
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Dos circuitos, uno RC y otro RL
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[V, l=$V$] (0,3) to[R, l=$R$] (3,3) to[C, l=$C$] (3,0) -- (0,0);
+  \node at (1.5,-0.7) {(a) Circuito RC};
+  \draw (6,0) to[V, l=$V$] (6,3) to[R, l=$R$] (9,3) to[L, l=$L$] (9,0) -- (6,0);
+  \node at (7.5,-0.7) {(b) Circuito RL};
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuitos RC y RL en serie}
+\end{center}
 
 (8) Figura 4a. Circuito RC. (8) Figura 4b. Circuito RL.
 
@@ -491,8 +523,18 @@ moviendo el control de amplitud en su generador.
   \item Repita los pasos 2, 3 y 4 del experimento 1.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito RC (a) y RL (b) con fuentes de voltaje, resistencias, capacitores e inductores.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[V, l=$V_0$] (0,3.5) to[switch, l=$S$] (1.5,3.5)
+        to[R, l=$R$] (4,3.5) to[C, l=$C$, v={$V_C$}] (4,0) -- (0,0);
+  \draw (4,0) to[short] (4,0);
+  \node at (2,-0.8) {(a)};
+  \draw (7,0) to[V, l=$V_0$] (7,3.5) to[switch, l=$S$] (8.5,3.5)
+        to[R, l=$R$] (11,3.5) to[L, l=$L$, v={$V_L$}] (11,0) -- (7,0);
+  \node at (9,-0.8) {(b)};
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuitos de carga RC (a) y RL (b) con interruptor}
+\end{center}
 
 Figura 5. Circuitos RC (a) y RL (b) para determinar las reactancias capacitiva, $X_C$ e inductiva, $X_L$, con una frecuencia fija.
 
@@ -515,8 +557,19 @@ Figura 5. Circuitos RC (a) y RL (b) para determinar las reactancias capacitiva, 
 
 y $V_R$)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuitos RC (a) y RL (b) para determinar los valores de C y L, respectivamente.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[V, l=$V$] (0,3.5) -- (1,3.5)
+        to[R, l=$R$] (3.5,3.5) to[C, l=$C$] (3.5,0) -- (0,0);
+  \draw (3.5,3.5) -- (5,3.5) to[voltmeter, l=$V_C$] (5,0) -- (3.5,0);
+  \node at (2.5,-0.8) {(a) Medida de $C$};
+  \draw (8,0) to[V, l=$V$] (8,3.5) -- (9,3.5)
+        to[R, l=$R$] (11.5,3.5) to[L, l=$L$] (11.5,0) -- (8,0);
+  \draw (11.5,3.5) -- (13,3.5) to[voltmeter, l=$V_L$] (13,0) -- (11.5,0);
+  \node at (10.5,-0.8) {(b) Medida de $L$};
+\end{circuitikz}
+\par\smallskip{\small\itshape Montajes para determinar la capacitancia y la inductancia}
+\end{center}
 
 Figura 6. Circuitos RC (a) y RL (b) para determinar los valores de C y L, respectivamente.
 

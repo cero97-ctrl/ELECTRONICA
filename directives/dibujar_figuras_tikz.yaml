@@ -1,0 +1,103 @@
+# Estado HONESTO: capacidad IMPLEMENTADA. Capa 3 =
+# execution/generar_figuras_tikz.py (extrae descripciones, pide TikZ por lotes,
+# compila cada bloque aislado y cachea solo lo que da 0 líneas `!`) más el
+# inyector en execution/generar_practicas_desde_ocr.py (`--figuras`). Capa 2 =
+# flujo_dibujar_figuras_tikz.py. Nació el 2026-11-21 porque el usuario eligió
+# "Dibujar las 34 en TikZ" (opción 2 del flujo de figuras) en lugar de recortar
+# del escaneo o recuperar las 24 reconstrucciones antiguas de `curso.yaml`.
+Status: activo
+
+Goal: "Sustituir las 34 cajas de descripción `[FIGURA: ...]` de las prácticas P1-P8 por dibujos TikZ/circuitikz derivados de la descripción del OCR, validados por compilación real y reproducibles desde un manifest. El markdown del OCR sigue siendo la fuente de verdad del CONTENIDO; el modelo solo decide QUÉ dibujar, nunca qué decir."
+
+Real scripts:
+  - "execution/generar_figuras_tikz.py"
+  - "execution/generar_practicas_desde_ocr.py (inyección con --figuras)"
+orchestrator: "flujo_dibujar_figuras_tikz.py"
+
+Real inputs:
+  - ocr: "Markdown del OCR (`.tmp/ocr_practicas/practicas_ocr.md`), fuente de verdad; contiene los 34 marcadores `[FIGURA: ...]`."
+  - manifest: "`.tmp/figuras_tikz/figuras.json`: JSON por figura {id, practica, indice, descripcion, sha256_16, codigo, sha_codigo, modelo}. Se guarda tras cada lote."
+
+Opciones CLI (del orquestador; la fuente de verdad es `flujo_dibujar_figuras_tikz.py --help`):
+  - name: "--ocr"
+    description: "Markdown del OCR de entrada (default .tmp/ocr_practicas/practicas_ocr.md)."
+  - name: "--salida-figuras"
+    description: "Directorio del manifest (default .tmp/figuras_tikz)."
+  - name: "--salida-practicas"
+    description: "Directorio de las prácticas regeneradas (default .tmp/practicas_desde_ocr)."
+  - name: "--practicas"
+    description: "Subconjunto: '1-8', '1,3,5-7' o 'todas' (default todas)."
+  - name: "--modelo-explicito"
+    description: "Override del modelo; se pasa al enrutador, que lo respeta tal cual."
+  - name: "--limite"
+    description: "Generar solo las primeras N figuras (prueba acotada). Desactiva la regeneración de prácticas para no mezclar TikZ con cajas de descripción."
+  - name: "--forzar"
+    description: "Regenerar también las figuras ya cacheadas (tras cambiar el prompt)."
+  - name: "--check"
+    description: "Sin API: lista figuras por práctica y cobertura del manifest."
+  - name: "--dry-run"
+    description: "Muestra el modelo decidido, los comandos y el aviso de coste, sin llamar a la API."
+  - name: "--no-alert"
+    description: "No emitir alerta audible al terminar."
+
+Steps:
+  - step: 1
+    action: "Decidir el modelo con el enrutador (no en el chat)"
+    script: "python3 execution/enrutador.py --task 'diseño' --archivos <ocr> --critico --no-log"
+    inputs:
+      ocr: "--archivos {{ocr}}"
+    step_notes:
+      - "El orquestador NO elige opus 'porque sí': mide el OCR y usa el vocabulario controlado `diseño` con criticidad. Mismo descriptor → mismo tier siempre."
+      - "--modelo-explicito del usuario se respeta tal cual (override total)."
+      - "La decisión se registra en la vista por corrida como `modelo_decidido_por`."
+  - step: 2
+    action: "Generar, validar y cachear las figuras"
+    script: "execution/generar_figuras_tikz.py"
+    inputs:
+      ocr: "--ocr {{ocr}}"
+      salida: "--salida {{salida_figuras}}"
+      modelo: "--modelo {{modelo}}"
+    step_notes:
+      - "La numeración pNN_fNN NO se redefine aquí: se importa `figuras_de_practica` de `generar_practicas_desde_ocr.py`, la misma fuente que usa el inyector. Así una descripción nunca se empareja con el dibujo de otra."
+      - "Un lote por práctica. Prompt con la lista `{id: descripción}`; el modelo devuelve bloques `<<<FIGURA:id>>> … <<<FIN:id>>>`."
+      - 'Validación determinista ANTES de compilar: sin `\usepackage`/`\documentclass`/`pgfplots`/`galvanometer`/`full diode bridge`/`pC`/`[FIGURA`, entornos balanceados, presente `center` y `circuitikz` o `tikzpicture`, sin prosa del OCR dentro del código.'
+      - "Validación real: cada bloque se compila AISLADO con el `PREAMBULO_INFOGRAFIA` del repo; se exigen 0 líneas `!` en el `.log` y existencia del PDF. Lo que falla se reintenta dentro del mismo lote (retry budget máx 3) y nunca entra al manifest."
+      - "El manifest se escribe de forma ATÓMICA tras cada lote. Con el manifest presente y sin --forzar, el proceso NO vuelve a llamar a la API: es determinista y reanudable."
+  - step: 3
+    action: "Validar el manifest y regenerar las prácticas con las figuras"
+    script: "flujo_dibujar_figuras_tikz.py (validar_manifest) → execution/generar_practicas_desde_ocr.py --figuras"
+    inputs:
+      manifest: "--figuras {{salida_figuras}}/figuras.json"
+      salida: "--salida {{salida_practicas}}"
+    step_notes:
+      - "Exige status ok y un código validado por figura. Si falta alguna, el inyector cae a la caja de descripción: nunca se publica un dibujo que no pasó compilación."
+      - "Las prácticas se compilan de nuevo y se verifican por `.log` con el mismo criterio que el flujo `ocr_a_practicas`."
+      - "Con --limite NO se regeneran las prácticas, para no mezclar figuras reales con descripciones."
+  - step: 4
+    action: "Validar la entrega y dejar traza"
+    script: "flujo_dibujar_figuras_tikz.py (validar_entrega)"
+    inputs:
+      salida: "directorio de salida del informe JSON"
+    step_notes:
+      - "Existe un `.tex` y un `.pdf` por práctica pedida, con más de 1000 bytes."
+      - "Vista por corrida en `.tmp/run_state_<run_id>.json` con los pasos 1_figuras, 2_validar_manifest, 3_practicas y 4_validar_entrega."
+
+Expected outputs:
+  - "<salida_figuras>/figuras.json: manifest con 34 figuras validadas, cada una con su `codigo`, `sha_codigo`, `modelo` y el `sha256_16` de la descripción de la que deriva."
+  - "<salida_figuras>/.build_figuras/figura_pNN_fNN.pdf: compilación aislada de cada figura (artefacto de verificación)."
+  - "<salida_practicas>/practica_01.tex … practica_08.tex: enunciados con los bloques TikZ inyectados en el mismo punto donde estaba el marcador."
+  - "Informe JSON por stdout: status, modelo decidido por el enrutador, figuras, sha_conjunto, prácticas y vista por corrida."
+
+Edge cases:
+  - error: "Falta OPENROUTER_API_KEY (código 7)."
+    recovery: "Recrear `.env` desde la checklist de migración. Este flujo SÍ consume créditos la primera vez; con el manifest ya generado no consume nada."
+  - error: "El modelo devuelve un ID repetido, ausente o inesperado (código 4)."
+    recovery: "El parser `RE_BLOQUE` reporta la lista exacta; se reintenta el lote con ese detalle en el mensaje. Tras 3 intentos se registra el fallo y el manifest queda `status: error`, sin publicarse."
+  - error: "La figura propuesta no compila: clave inventada (`galvanometer`, `full diode bridge`, `pC`), `=` en etiqueta sin llaves, Unicode griego suelto, `%` crudo (código 4)."
+    recovery: "`.agent/latex.md` entries 8, 18, 20 y 21 documentan cada caso. El validador rechaza las claves inventadas antes de compilar y el log da la línea exacta para el resto. La figura no entra al manifest."
+  - error: "Cambia el OCR y una descripción ya cacheada ya no coincide con su `sha256_16`."
+    recovery: "El guard de caché descarta esa entrada y la regenera; las demás se reutilizan. Nunca se reutiliza un dibujo generado para otra descripción."
+  - warning: "Las descripciones del OCR son resúmenes, no especificaciones: no dan valores numéricos ni geometría exacta."
+    recovery: "El modelo dibuja una representación esquemática y cualitativa fiel a la descripción (rótulos, topología, forma de la curva). No se inventan datos experimentales ni se copia la descripción como texto dentro de la figura. Si el original importa para publicación, conservar el PDF escaneado como referencia."
+  - warning: "No se recortan las figuras del escaneo ni se recuperan las 24 de `curso.yaml`."
+    recovery: "Decisión del usuario 2026-11-21 (opción 2). El escaneo es una imagen JPEG de página completa sin figuras independientes; las de `curso.yaml` son reconstrucciones de otro enunciado, no las del PDF original."

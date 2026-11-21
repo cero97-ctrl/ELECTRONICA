@@ -388,8 +388,28 @@ Como $I_R = \frac{V}{R}$, de la misma forma que $I_V = \frac{V}{R_V}$ se tiene q
 
 En este caso, la caída de tensión V es la suma de la caída de tensión en el amperímetro $V_A$ más la caída de tensión en la resistencia $V_R$. Esto es: $V = IR_A + IR$ (3) Si $R_A 	extless{}	extless{} R$, toda la caída de potencial se debe a la resistencia R, por lo tanto $IR_A$ $\approx 0$, lo cual conduce nuevamente a la relación [2]: $R = \frac{V}{I}$ (4)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con amperímetro, voltímetro y resistencia en dos configuraciones (1.a y 1.b)
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1,transform shape]
+  % --- Configuracion 1.a : amperimetro aguas arriba (voltimetro mide R) ---
+  \draw (0,0) to[V, l=$V$, invert] (0,3);
+  \draw (0,3) to[ammeter, l=$A$] (3,3);
+  \draw (3,3) to[R, l=$R$, *-*] (3,0);
+  \draw (3,0) -- (0,0);
+  \draw (3,3) -- (4.5,3) to[voltmeter, l=$V$] (4.5,0) -- (3,0);
+  \node at (2.25,-0.9) {(1.a)};
+
+  % --- Configuracion 1.b : voltimetro aguas arriba (amperimetro mide I de R) ---
+  \begin{scope}[xshift=8cm]
+    \draw (0,0) to[V, l=$V$, invert] (0,3);
+    \draw (0,3) -- (1.5,3) to[voltmeter, l=$V$] (1.5,0) -- (0,0);
+    \draw (1.5,3) to[ammeter, l=$A$] (4,3);
+    \draw (4,3) to[R, l=$R$, *-*] (4,0);
+    \draw (4,0) -- (1.5,0);
+    \node at (2.25,-0.9) {(1.b)};
+  \end{scope}
+\end{circuitikz}
+\par\smallskip{\small\itshape Dos montajes para medir una resistencia con amperimetro y voltimetro}
+\end{center}
 
 Figura 1. Circuito para determinar la resistencia R.
 
@@ -397,8 +417,31 @@ Figura 1. Circuito para determinar la resistencia R.
 
 El puente de resistencia o puente Wheatstone, se utiliza para determinar el valor de un resistor desconocido por comparación con tres resistores cuyas resistencias se pueden modificar. El circuito de este puente, mostrado en la figura 2, básicamente consta de f.e.m, tres resistores de precisión [$R_1$, $R_2$ y $R_C$], un detector V sensible a pequeñas diferencias de potencial y el resistor $R_X$ cuyo valor de resistencia se va a determinar. El método consiste en balancear el puente variando las resistencias $R_1$, $R_2$ y $R_C$ hasta que el detector indique cero potencial. En estas condiciones los puntos b y d están a un mismo potencial. Por lo tanto, la caída de potencial a través de $R_X$ debe ser igual a la caída de potencial a través de $R_1$, esto es: $I_X R_X = I_1 R_1$ De la misma forma, la caída de potencial a través de $R_C$ debe ser igual a la caída de potencial a través de $R_2$, es decir: $I_C R_C = I_2 R_2$ Si dividimos miembro a miembro ambas ecuaciones obtenemos para la resistencia desconocida el valor dado por: $R_X = R_C \frac{R_1}{R_2}$ (5)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un puente de Wheatstone con resistencias $R_X$, $R_1$, $R_C$, $R_2$ y un voltímetro V
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1,transform shape]
+  \coordinate (A) at (0,0);
+  \coordinate (B) at (3,2.2);
+  \coordinate (D) at (3,-2.2);
+  \coordinate (C) at (6,0);
+
+  \draw (A) to[R, l=$R_X$] (B);
+  \draw (B) to[R, l=$R_1$] (C);
+  \draw (A) to[R, l_=$R_C$] (D);
+  \draw (D) to[R, l_=$R_2$] (C);
+
+  \draw (B) to[voltmeter, l=$V$] (D);
+
+  \draw (A) -- (-1.6,0) to[V, l=$V_0$, invert] (-1.6,-3.6) -- (6,-3.6) -- (C);
+  \draw (6,-3.6) to[short, *-] (6,-3.6);
+
+  \node[left] at (A) {};
+  \fill (A) circle (1.6pt);
+  \fill (B) circle (1.6pt);
+  \fill (C) circle (1.6pt);
+  \fill (D) circle (1.6pt);
+\end{circuitikz}
+\par\smallskip{\small\itshape Puente de Wheatstone para la determinacion de una resistencia desconocida}
+\end{center}
 
 Figura 2. Puente de Wheatstone.
 

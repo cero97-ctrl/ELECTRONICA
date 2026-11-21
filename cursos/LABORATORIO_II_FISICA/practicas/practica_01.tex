@@ -368,8 +368,37 @@ Una cantidad relacionada con R es la resistividad $\rho$, o resistencia específ
 
 \[J = \frac{I}{A}\] (3) Con el fin de expresar la resistencia R, en términos de la naturaleza del material (resistividad) y de la geometría del conductor, consideremos un conductor cilíndrico de longitud $l$ y sección transversal de área A por el cual circula una corriente I al aplicarse entre sus extremos una diferencia de potencial V, tal como se muestra en la figura 1. Si suponemos el campo eléctrico constante debe cumplirse que: \[E = \frac{V}{l}\] (4) Sustituyendo los valores de [3] y [4] en [2], obtenemos que: \[\rho = \frac{RA}{l}\] (5) Esta relación nos lleva a una expresión para R dada por: \[R = \frac{\rho l}{A}\] (6) Según la cual R depende de la naturaleza y de la geometría del conductor.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un conductor cilíndrico con longitud $l$ y sección transversal A, mostrando el flujo de corriente I y la diferencia de potencial V.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1,transform shape]
+  % cuerpo del conductor
+  \draw[thick] (0,0.7) -- (5,0.7);
+  \draw[thick] (0,-0.7) -- (5,-0.7);
+  \draw[thick] (0,0) ellipse (0.33 and 0.7);
+  \draw[thick] (5,-0.7) arc (-90:90:0.33 and 0.7);
+  \draw[thick,dashed] (5,0.7) arc (90:270:0.33 and 0.7);
+
+  % seccion transversal
+  \draw[thick,dashed] (2.4,0) ellipse (0.33 and 0.7);
+  \draw[->] (2.9,1.5) -- (2.5,0.45);
+  \node[above] at (2.95,1.45) {$A$};
+
+  % longitud
+  \draw[|<->|] (0,-1.35) -- (5,-1.35) node[midway,below] {$l$};
+
+  % corriente
+  \draw[->,very thick] (1.2,0) -- (3.6,0);
+  \node[above] at (2.4,0.05) {$I$};
+
+  % terminales y fuente
+  \draw (-0.33,0) -- (-1.3,0) -- (-1.3,-2.4);
+  \draw (5.33,0) -- (6.3,0) -- (6.3,-2.4);
+  \draw (-1.3,-2.4) to[V,l={$V$},invert] (6.3,-2.4);
+
+  \node[above left] at (-0.4,0.6) {$+$};
+  \node[above right] at (5.4,0.6) {$-$};
+\end{circuitikz}
+\par\smallskip{\small\itshape Conductor cilindrico de longitud $l$ y seccion $A$ recorrido por la corriente $I$ bajo la tension $V$.}
+\end{center}
 
 Figura 1. Tramo de conductor de longitud $l$ y sección transversal de área A, a través del cual circula una corriente I.
 
@@ -484,8 +513,16 @@ Lea detalladamente el material de instrucción de los multimedidores digitales K
   \item Variando la salida de la fuente, para un valor fijo en el resistor R, obtenga una serie de valores (20 mínimos) de V e I.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje E, un amperímetro A, un voltímetro V y un resistor R.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1,transform shape]
+  \draw (0,0) to[V, l=$E$] (0,3);
+  \draw (0,3) to[ammeter, l=$A$] (3,3);
+  \draw (3,3) to[R, l=$R$] (3,0);
+  \draw (3,0) -- (0,0);
+  \draw (3,3) -- (5,3) to[voltmeter, l=$V$] (5,0) -- (3,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Montaje para medir la corriente y la tensión en un resistor.}
+\end{center}
 
 Figura 2. Circuito para el experimento 3.2.1
 
@@ -496,8 +533,17 @@ Figura 2. Circuito para el experimento 3.2.1
   \item Variando la salida de la fuente o variando el resistor R, obtenga una serie de valores (20 mínimos) de V e I.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje E, un amperímetro A, un voltímetro V y un diodo con un resistor R en serie.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1,transform shape]
+  \draw (0,0) to[V, l=$E$] (0,3);
+  \draw (0,3) to[ammeter, l=$A$] (3,3);
+  \draw (3,3) to[D, l=$D$] (5,3);
+  \draw (5,3) to[R, l=$R$] (5,0);
+  \draw (5,0) -- (0,0);
+  \draw (3,3) -- (3,-1.2) to[voltmeter, l=$V$] (6.5,-1.2) -- (6.5,1.5) -- (5,1.5);
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuito con diodo y resistencia en serie para obtener su curva caracter\'istica.}
+\end{center}
 
 Figura 3. Circuito para el experimento 3.2.2
 

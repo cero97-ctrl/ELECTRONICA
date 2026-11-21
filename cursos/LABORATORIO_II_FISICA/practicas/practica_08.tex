@@ -372,8 +372,22 @@ Un capacitor o condensador es un dispositivo o sistema formado por dos conductor
 
 El cálculo de la capacitancia para cualquier tipo de capacitor no es difícil. Para geometrías sencillas; se puede hallar en primer lugar la magnitud del campo eléctrico E mediante la Ley de Gauss y Figura 1. Capacitor de placas paralelas.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un capacitor de placas paralelas con campo eléctrico E y distancia d
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw[line width=2pt] (0,0) -- (0,3);
+  \draw[line width=2pt] (4,0) -- (4,3);
+  \node[above] at (0,3.1) {$+Q$};
+  \node[above] at (4,3.1) {$-Q$};
+  \foreach \y in {0.4,1.0,1.6,2.2,2.8}{
+    \draw[-{Stealth[length=3mm]}] (0.15,\y) -- (3.85,\y);
+  }
+  \node at (2,1.85) [above] {$\vec{E}$};
+  \draw[{Stealth[length=2mm]}-{Stealth[length=2mm]}] (0,-0.5) -- (4,-0.5);
+  \node[below] at (2,-0.5) {$d$};
+  \node[left] at (-0.2,1.5) {$A$};
+\end{circuitikz}
+\par\smallskip{\small\itshape Capacitor de placas paralelas separadas una distancia $d$ con campo uniforme $E$.}
+\end{center}
 
 luego, integrando el campo a lo largo de una trayectoria cualquiera, se calcula la diferencia de potencial V entre las placas mediante la relación: \[ V=-\int_{a}^{b} \vec{E} \cdot d \vec{l} \] Así, para un capacitor de placas paralelas, la capacidad C esta dada por: \[ C=\frac{\varepsilon_{0} A}{d} \] (3) En esta ecuación A es el área de las placas del condensador, d es la distancia de separación entre ellas y $\varepsilon_{0}$ es la constante de permitividad cuyo valor es: $\varepsilon_{0}=8.85 \times 10^{-12} \mathrm{C}^{2} / \mathrm{Nm}^{2}$ La ecuación [3] nos permite concluir que la capacidad de un condensador depende solamente de la forma y disposición geométrica de los conductores que forman el capacitor. En la práctica se acostumbra rellenar el espacio entre las placas con un material aislante, conocido como dieléctrico, con la finalidad de aumentar la capacidad. Los materiales aislantes o dieléctricos varían en cuanto a su capacidad para soportar un campo eléctrico, a esta capacidad se le llama "constante dieléctrica" del material.
 
@@ -381,27 +395,91 @@ luego, integrando el campo a lo largo de una trayectoria cualquiera, se calcula 
 
 La figura 2 representa el circuito de un capacitor y un resistor (circuito RC) conectados en serie a una fuente de voltaje dc. En el instante en que se cierra el interruptor S a la posición 1, el capacitor C que inicialmente estaba descargado comienza a cargarse a través de la resistencia R. En todo momento, durante el proceso de carga del capacitor, debe cumplirse la segunda ley de Kirchoff, es decir, que la suma de los voltajes de la resistencia, $V_{R}$, y del capacitor, $V_{C}$, debe ser igual al voltaje de la fuente. Esto es: $V_{0}=V_{R}+V_{C}$ o sea $V_{0}=i R+q / C$ Pero como $i=d q / d t$ se tiene finalmente que: \[ V_{0}=R \frac{d q}{d t}+\frac{q}{C} \] (4)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito RC con un interruptor S, resistencia R y capacitor C
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$V_0$, invert] (0,3)
+        to[switch, l=$S$] (3,3)
+        to[R, l=$R$] (6,3)
+        to[C, l=$C$, v^=$V_C$] (6,0) -- (0,0);
+  \draw (0,0) to[short, *-] (0,0) node[ground]{};
+\end{circuitikz}
+\par\smallskip{\small\itshape Circuito RC serie con interruptor para carga y descarga del capacitor.}
+\end{center}
 
 Figura 2. Esquema de un circuito RC. La expresión (4) representa la "ecuación diferencial" del circuito, cuya solución es: \[ q=C V_{0}\left(1-e^{-t / R C}\right) \] (5) Del análisis de esta relación se puede notar lo siguiente: 1. En el instante $t=0$ (momento de colocar el interruptor en la posición 1) el voltaje del capacitor $V_{C}$ es cero. 2. Para un tiempo $t=\infty$ (tiempos largos con el interruptor en la posición 1) el voltaje del capacitor $V_{C}$ es igual al de la fuente, $V_{0}$. Supongamos que ahora pasamos el interruptor S de la posición 1 a la posición 2. En estas condiciones, se desconecta la fuente y el capacitor comienza a descargarse a través de la resistencia R. Por lo tanto se tiene que $V_{C}=V_{R}$, o sea: \[ \frac{q}{C}=-R \frac{d q}{d t} \] (6) La ecuación (6) representa la "ecuación diferencial" del circuito y el signo menos significa que la corriente $i$ circula en sentido contrario con relación al proceso de carga. La solución a ésta ecuación es: \[ q=V_{0} C e^{-t / R C} \] (7) Del análisis de esta ecuación notamos que: 1. En el instante $t=0$ (momento en que el interruptor S pasa a la posición 2) el voltaje del capacitor $V_{C}$ es el mismo de la fuente $V_{0}$. 2. Para $t=\infty$ (tiempos largos con el interruptor S en la posición 2) el voltaje del capacitor $V_{C}$ es cero.
 
 Para lo anterior podemos concluir que un capacitor requiere de cierto tiempo $t$ para cargarse y también para descargarse. La carga y descarga del capacitor está gobernada por el factor $e^{-RC}$. El producto RC tiene dimensiones de tiempo y se conoce como "constante de tiempo" del circuito y se designa por la letra griega "$\tau$" ($\tau=RC$). R debe expresarse en ohmios y C en Faradios. Un análisis breve del factor citado anteriormente, en términos de la constante de tiempo, permite ver que en un tiempo $t=RC$ el valor del exponencial es $e^{-1}$ cuyo valor numérico es 0.368 por lo que podemos decir que para un tiempo equivalente a una constante de tiempo el capacitor adquiere durante el proceso de carga un voltaje de $(1-0.368)$ veces $V_{0}$ $(0,632V_{0})$, equivalente al 63.2\% de $V_{0}$, aproximadamente; por lo largo, durante el proceso de descarga, en el mismo tiempo, el capacitor reduce su voltaje hasta 0.368 veces $V_{0}$, o sea 36.8\% de $V_{0}$. La figura 3 representa la gráfica del voltaje de carga y descarga de un capacitor en función del tiempo $t$. Figura 3. Porcentaje del voltaje de carga y descarga de un capacitor en función del tiempo.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de porcentaje de voltaje de carga y descarga de un capacitor en función del tiempo
-\end{tcolorbox}
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \draw[-{Stealth[length=2mm]}] (0,0) -- (8,0) node[right] {$t$};
+  \draw[-{Stealth[length=2mm]}] (0,0) -- (0,4.6) node[above] {$V\ (\%)$};
+  \foreach \y/\l in {1/25,2/50,3/75,4/100}{
+    \draw (-0.08,\y) -- (0.08,\y);
+    \node[left] at (-0.1,\y) {\l};
+  }
+  \foreach \x/\l in {1.4/$\tau$,2.8/$2\tau$,4.2/$3\tau$,5.6/$4\tau$,7/$5\tau$}{
+    \draw (\x,-0.08) -- (\x,0.08);
+    \node[below] at (\x,-0.1) {\l};
+  }
+  \draw[dashed] (0,4) -- (7.6,4);
+  \draw[thick] plot[smooth,domain=0:7.6,samples=60] (\x,{4*(1-exp(-\x/1.4))});
+  \draw[thick,dashed] plot[smooth,domain=0:7.6,samples=60] (\x,{4*exp(-\x/1.4)});
+  \draw[dashed] (1.4,0) -- (1.4,2.528);
+  \draw[dashed] (0,2.528) -- (1.4,2.528);
+  \fill (1.4,2.528) circle (2pt) node[below right] {$63\%$};
+  \fill (1.4,1.472) circle (2pt) node[above right] {$37\%$};
+  \node at (5.2,3.4) {carga};
+  \node at (4.6,0.75) {descarga};
+\end{tikzpicture}
+\par\smallskip{\small\itshape Porcentaje del voltaje durante la carga y la descarga del capacitor.}
+\end{center}
 
 \section{\iconotexto{flask}{Desarrollo experimental}}
 
 El circuito de la figura 2 se realizará mediante la sustitución de la fuente de voltaje constante $V_0$ y el interruptor S por un generador de pulsos de duración de encendido $T_e$ y de duración de apagado $T_a$, como se muestra en la figura 4.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con un generador de pulsos y un capacitor, mostrando las señales de voltaje en el tiempo.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$v_g(t)$, invert] (0,3)
+        to[R, l=$R$] (3.5,3)
+        to[C, l=$C$, v^=$V_C$] (3.5,0) -- (0,0);
+  \node at (1.75,-0.8) {(a) Circuito};
+  \begin{scope}[xshift=6cm, yshift=0.2cm]
+    \draw[-{Stealth[length=2mm]}] (0,0) -- (5.6,0) node[right] {$t$};
+    \draw[-{Stealth[length=2mm]}] (0,0) -- (0,3) node[above] {$v$};
+    \draw[thick] (0,2) -- (1.4,2) -- (1.4,0) -- (2.8,0) -- (2.8,2) -- (4.2,2) -- (4.2,0) -- (5.2,0);
+    \node[right] at (1.5,2.4) {$v_g$: pulsos};
+    \draw[thick,dashed] plot[smooth,domain=0:1.4,samples=30] (\x,{2*(1-exp(-\x/0.45))});
+    \draw[thick,dashed] plot[smooth,domain=1.4:2.8,samples=30] (\x,{2*(1-exp(-1.4/0.45))*exp(-(\x-1.4)/0.45)});
+    \draw[thick,dashed] plot[smooth,domain=2.8:4.2,samples=30] (\x,{2*(1-exp(-(\x-2.8)/0.45))});
+    \draw[thick,dashed] plot[smooth,domain=4.2:5.2,samples=30] (\x,{2*(1-exp(-1.4/0.45))*exp(-(\x-4.2)/0.45)});
+    \node at (2.6,-0.8) {(b) Se\~nales};
+  \end{scope}
+\end{circuitikz}
+\par\smallskip{\small\itshape Generador de pulsos sobre un capacitor y respuesta temporal del voltaje.}
+\end{center}
 
 **Nótese en la figura 4 que durante el tiempo $T_e$ el circuito tiene aplicado el voltaje $V_0$ (interruptor S en la posición 1) y por lo tanto durante ese tiempo el capacitor se carga a través de la resistencia. Durante el tiempo $T_a$ el voltaje aplicado al circuito es cero (interruptor S en la posición 2) por lo tanto durante ese tiempo, el capacitor se**
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de voltaje vs tiempo, mostrando la equivalencia entre la señal pulsante y la fuente de voltaje constante con el interruptor en dos posiciones.
-\end{tcolorbox}
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \draw[-{Stealth[length=2mm]}] (0,0) -- (8,0) node[right] {$t$};
+  \draw[-{Stealth[length=2mm]}] (0,0) -- (0,3.2) node[above] {$V$};
+  \draw (-0.08,2.2) -- (0.08,2.2);
+  \node[left] at (-0.1,2.2) {$V_0$};
+  \draw[very thick] (0,2.2) -- (2,2.2) -- (2,0) -- (4,0) -- (4,2.2) -- (6,2.2) -- (6,0) -- (7.6,0);
+  \draw[dashed] (0,2.2) -- (7.6,2.2);
+  \node at (1,2.6) {$S$ en 1};
+  \node at (3,0.45) {$S$ en 2};
+  \node at (5,2.6) {$S$ en 1};
+  \node at (6.8,0.45) {$S$ en 2};
+  \draw[{Stealth[length=2mm]}-{Stealth[length=2mm]}] (0,-0.6) -- (4,-0.6);
+  \node[below] at (2,-0.6) {$T$ (periodo)};
+  \node at (4,-1.6) {\small Carga: fuente conectada \qquad Descarga: fuente en corto};
+\end{tikzpicture}
+\par\smallskip{\small\itshape Equivalencia entre la se\~nal pulsante y una fuente constante conmutada.}
+\end{center}
 
 **Figura 5. Equivalencia entre la señal pulsante y la fuente de voltaje constante con el interruptor en las dos posiciones.**
 
@@ -420,8 +498,25 @@ El circuito de la figura 2 se realizará mediante la sustitución de la fuente d
   \item Arme el circuito de la figura 6 y hágalo revisar por el profesor.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito RC con un generador de funciones y un osciloscopio.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$\sim$, invert] (0,3.5);
+  \node at (0,-0.9) {Generador};
+  \node at (0,-1.4) {de funciones};
+  \draw (0,3.5) to[R, l=$R$] (4,3.5)
+        to[C, l=$C$] (4,0) -- (0,0);
+  \draw (4,3.5) -- (6.5,3.5);
+  \draw (4,0) -- (6.5,0);
+  \draw[thick] (6.5,-0.4) rectangle (9.5,3.9);
+  \draw (6.8,1.1) rectangle (9.2,3.4);
+  \draw[thick] plot[smooth,domain=0:2.2,samples=40] ({6.9+\x},{2.25+0.75*sin(deg(\x*3.1))});
+  \node at (8,0.35) {Osciloscopio};
+  \draw (4,3.5) node[circ]{};
+  \draw (4,0) node[circ]{};
+  \draw (0,0) to[short, -*] (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Montaje experimental: circuito RC alimentado por generador y medido con osciloscopio.}
+\end{center}
 
 **Figura 6. Circuito RC a utilizar en la práctica.**
 

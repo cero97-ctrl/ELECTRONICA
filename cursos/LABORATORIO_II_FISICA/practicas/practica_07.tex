@@ -390,8 +390,29 @@ $f_0 = \frac{1}{2\pi\sqrt{LC}}$ (4)
 
 Los circuitos con R-L-C en paralelo también presentan el efecto de resonancia y ocurre cuando la corriente es mínima, obteniéndose la misma frecuencia de resonancia que la de los circuitos con R-L-C en serie.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfico de corriente vs frecuencia con $I_{máx}$ y 0.707 $I_{máx}$ marcados.
-\end{tcolorbox}
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \draw[->] (0,0) -- (9,0) node[right] {$f$ (Hz)};
+  \draw[->] (0,0) -- (0,5.2) node[above] {$I$ (A)};
+  \draw[thick] plot[smooth,domain=0.25:8.6,samples=80]
+    ({\x},{4/sqrt(1+ (2.4*(\x/4 - 4/\x))^2 )});
+  \draw[dashed] (0,4) -- (4,4);
+  \draw[dashed] (4,0) -- (4,4);
+  \draw[dashed] (0,2.828) -- (6.05,2.828);
+  \draw[dashed] (2.64,0) -- (2.64,2.828);
+  \draw[dashed] (6.05,0) -- (6.05,2.828);
+  \node[left] at (0,4) {$I_{\max}$};
+  \node[left] at (0,2.828) {$0.707\,I_{\max}$};
+  \node[below] at (4,0) {$f_{0}$};
+  \node[below] at (2.64,0) {$f_{1}$};
+  \node[below] at (6.05,0) {$f_{2}$};
+  \draw[<->] (2.64,1.5) -- (6.05,1.5) node[midway,above] {$\Delta f$};
+  \fill (4,4) circle (1.6pt);
+  \fill (2.64,2.828) circle (1.6pt);
+  \fill (6.05,2.828) circle (1.6pt);
+\end{tikzpicture}
+\par\smallskip{\small\itshape Curva de resonancia: corriente en funcion de la frecuencia y ancho de banda}
+\end{center}
 
 Figura 1. Curva características de un circuito resonante con L y C en serie.
 
@@ -434,8 +455,29 @@ cada valor de f anote el correspondiente a la intensidad de corriente, i, manten
   \item Repetir los pasos anteriores pero para el circuito mostrado en la figura 2.b.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de dos circuitos. (a) Circuito serie RLC con voltímetro y amperímetro. (b) Circuito paralelo RLC con voltímetro y amperímetro.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[V, l=$V_{g}$] (0,3.5);
+  \draw (0,3.5) to[ammeter, l=A] (2,3.5);
+  \draw (2,3.5) to[R, l=$R$] (4,3.5);
+  \draw (4,3.5) to[L, l=$L$] (6,3.5);
+  \draw (6,3.5) to[C, l=$C$] (6,0);
+  \draw (6,0) -- (0,0);
+  \draw (2,3.5) to[voltmeter, l=V, *-*] (2,1) -- (5,1) -- (5,3.5);
+  \node at (3,-0.8) {(a) Serie};
+
+  \draw (9,0) to[V, l=$V_{g}$] (9,3.5);
+  \draw (9,3.5) to[ammeter, l=A] (11,3.5);
+  \draw (11,3.5) -- (14.5,3.5);
+  \draw (11.5,3.5) to[R, l=$R$] (11.5,0);
+  \draw (13,3.5) to[L, l=$L$] (13,0);
+  \draw (14.5,3.5) to[C, l=$C$] (14.5,0);
+  \draw (14.5,0) -- (9,0);
+  \draw (11,3.5) to[voltmeter, l_=V] (11,0);
+  \node at (12,-0.8) {(b) Paralelo};
+\end{circuitikz}
+\par\smallskip{\small\itshape Montajes RLC en serie y en paralelo con voltimetro y amperimetro}
+\end{center}
 
 Figura 2. Circuitos resonantes (a) L y C en serie, (b) L y C en paralelo.
 
@@ -483,6 +525,27 @@ el rango de frecuencia de los mismos.
 
 frecuencias $f_1$ y $f_2$, ($f_1 - f_2$) obtenidas de la gráfica i vs. f con L y C en serie, tal como se indica en la figura 1.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de dos circuitos. (a) Circuito serie RLC con voltímetro y amperímetro. (b) Circuito paralelo RLC con voltímetro y amperímetro.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}[scale=1]
+  \draw (0,0) to[V, l=$V_{g}$] (0,3.5);
+  \draw (0,3.5) to[ammeter, l=A] (1.8,3.5);
+  \draw (1.8,3.5) to[R, l=$R$] (3.8,3.5);
+  \draw (3.8,3.5) to[C, l=$C$] (5.8,3.5);
+  \draw (5.8,3.5) to[L, l=$L$] (5.8,0);
+  \draw (5.8,0) -- (0,0);
+  \draw (3.8,3.5) to[voltmeter, l=V, *-*] (3.8,1.2) -- (5.8,1.2);
+  \node at (3,-0.8) {(a) Serie};
+
+  \draw (9,0) to[V, l=$V_{g}$] (9,3.5);
+  \draw (9,3.5) to[ammeter, l=A] (10.8,3.5);
+  \draw (10.8,3.5) -- (14.4,3.5);
+  \draw (11.4,3.5) to[R, l=$R$] (11.4,0);
+  \draw (12.9,3.5) to[C, l=$C$] (12.9,0);
+  \draw (14.4,3.5) to[L, l=$L$] (14.4,0);
+  \draw (14.4,0) -- (9,0);
+  \draw (10.8,3.5) to[voltmeter, l_=V] (10.8,0);
+  \node at (12,-0.8) {(b) Paralelo};
+\end{circuitikz}
+\par\smallskip{\small\itshape Variante de los circuitos RLC serie y paralelo empleados en la medida}
+\end{center}
 \end{document}

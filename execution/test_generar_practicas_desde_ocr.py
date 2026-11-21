@@ -223,6 +223,26 @@ def main() -> int:
     comprobar("[ILEGIBLE] → aviso, sin marcador",
               "Texto ilegible en el escaneo" in latex2 and "[ILEGIBLE]" not in latex2)
 
+    # ── Numeración e inyección de figuras (mismo orden para el generador
+    #    TikZ y para el inyector; aquí se fija que no se emparejen de más) ────
+    descriptores = m.figuras_de_practica(ps[1])
+    comprobar("P1 tiene dos descriptores de figura", len(descriptores) == 2,
+              str([d["id"] for d in descriptores]))
+    comprobar("IDs de figura estables y ordenados",
+              [d["id"] for d in descriptores] == ["p01_f01", "p01_f02"])
+    comprobar("descriptor lleva el sha de su descripción",
+              all(len(d["sha256_16"]) == 16 for d in descriptores))
+    tikZ = r"\begin{center}\begin{circuitikz}\draw (0,0) to[R] (2,0);\end{circuitikz}\end{center}"
+    inyectado = m.render_practica(ps[1], figuras={"p01_f02": tikZ})
+    comprobar("figura con manifest se inyecta", tikZ in inyectado)
+    comprobar("figura sin manifest sigue siendo caja",
+              "Figura del original" in inyectado)
+    comprobar("inyección no deja marcadores OCR", "[FIGURA" not in inyectado)
+    comprobar("inyección mantiene entornos balanceados",
+              inyectado.count(r"\begin{") == inyectado.count(r"\end{"))
+    comprobar("sin manifest, comportamiento heredado",
+              m.render_practica(ps[1]).count("Figura del original") == 2)
+
     # ── Validador de matemática consciente de display math ───────────────────
     comprobar("display math no reporta subíndices",
               m.validar_matematica_ocr(r"\[I_m = i_v + i\]", "P5") == [])

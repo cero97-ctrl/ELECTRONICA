@@ -380,8 +380,16 @@ Donde: R es un resistor ajustado de tal manera que no se exceda el rango del vol
   \item Cambie el modelo del multimedidor y repita los pasos anteriores.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia R y un voltímetro Vm en paralelo.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$V_0$, invert] (0,3);
+  \draw (0,3) -- (3,3);
+  \draw (3,3) to[R, l=$R$] (3,0);
+  \draw (3,0) -- (0,0);
+  \draw (3,3) -- (5,3) to[voltmeter, l=$V_m$] (5,0) -- (3,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Medida de la tension en la resistencia con el voltimetro en paralelo}
+\end{center}
 
 Figura 1. Montaje experimental para determinar la resistencia interna (Rv) de un voltímetro.
 
@@ -411,8 +419,15 @@ Im.
   \item Cambie el modelo del multimedidor y repita los pasos anteriores.
 \end{itemize}
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia R y un amperímetro Im en serie.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$V_0$, invert] (0,3);
+  \draw (0,3) to[ammeter, l=$I_m$] (3,3);
+  \draw (3,3) to[R, l=$R$] (3,0);
+  \draw (3,0) -- (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Medida de la corriente con el amperimetro en serie con la resistencia}
+\end{center}
 
 Figura 2. Montaje experimental para determinar la resistencia interna Ra, de un amperímetro.
 
@@ -432,8 +447,16 @@ La ecuación (3) puede reescribirse para observar la relación lineal que hay en
 
 tabla)
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia Rs y un voltímetro V en paralelo.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$V_0$, invert] (0,3);
+  \draw (0,3) -- (3,3);
+  \draw (3,3) to[R, l=$R_s$] (3,0);
+  \draw (3,0) -- (0,0);
+  \draw (3,3) -- (5,3) to[voltmeter, l=$V$] (5,0) -- (3,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Voltimetro conectado en paralelo con la resistencia patron}
+\end{center}
 
 Figura 3. Montaje experimental para determinar la resistencia interna $R_f$, de una fuente.
 
@@ -485,6 +508,13 @@ corte con sus respectivos errores.
 
 interna de la fuente suministrada.
 
-\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con dos resistencias en serie, con voltajes V1 y V2, y corrientes I1 y I2.
-\end{tcolorbox}
+\begin{center}
+\begin{circuitikz}
+  \draw (0,0) to[V, l=$V_0$, invert] (0,3);
+  \draw (0,3) to[R, l=$R_1$, v={$V_1$}, i={$I_1$}] (3.5,3);
+  \draw (3.5,3) to[R, l=$R_2$, v={$V_2$}, i={$I_2$}] (7,3);
+  \draw (7,3) -- (7,0) -- (0,0);
+\end{circuitikz}
+\par\smallskip{\small\itshape Dos resistencias en serie con sus tensiones y corrientes}
+\end{center}
 \end{document}
