@@ -290,7 +290,7 @@ semanas:
       - 'Calculadora'
     evaluacion: 'Taller formativo con entrega'
     practica:
-      titulo: 'Medición, apreciación y expresión de resultados'
+      titulo: 'Taller 01 — Medición, apreciación y expresión de resultados'
       escenario: >-
         Cada grupo recibe tres instrumentos con distinta apreciación y un juego
         de cuerpos. Debe medir la misma longitud con los tres, repetir diez
@@ -417,7 +417,7 @@ semanas:
       - 'Hoja de cálculo o Python'
     evaluacion: 'Taller formativo con entrega'
     practica:
-      titulo: 'Del objeto al resultado: propagar sin inventar cifras'
+      titulo: 'Taller 02 — Del objeto al resultado: propagar sin inventar cifras'
       escenario: >-
         Cada grupo mide el diámetro y la altura de un cilindro con el calibrador
         y calcula su volumen por la fórmula geométrica. Debe reportar el volumen
@@ -526,7 +526,7 @@ semanas:
       - 'Python con Matplotlib'
     evaluacion: 'Taller formativo con entrega'
     practica:
-      titulo: 'De la curva a la recta: linealizar para entender'
+      titulo: 'Taller 03 — De la curva a la recta: linealizar para entender'
       escenario: >-
         Cada grupo recibe una tabla de periodo y longitud de un péndulo. Debe
         graficar los datos crudos, descubrir que la relación no es lineal,
@@ -637,7 +637,7 @@ semanas:
       - 'Calculadora'
     evaluacion: 'Taller integrador con entrega'
     practica:
-      titulo: 'Ajustar, juzgar y escribir: el cierre de la fase uno'
+      titulo: 'Taller 04 — Ajustar, juzgar y escribir: el cierre de la fase uno'
       escenario: >-
         Cada grupo recibe una tabla de masa colgada y estiramiento de un resorte.
         Debe ajustar la recta por mínimos cuadrados, decidir si el resorte es
@@ -748,7 +748,7 @@ semanas:
       - 'Hilo fino'
     evaluacion: 'Práctica con informe'
     practica:
-      titulo: 'Volumen de un sólido por dos métodos'
+      titulo: 'Práctica 05 — Volumen de un sólido por dos métodos'
       escenario: >-
         Cada grupo recibe tres sólidos regulares. Debe medir sus dimensiones con
         el instrumento adecuado, calcular el volumen geométrico, medirlo de nuevo
@@ -881,7 +881,7 @@ semanas:
       - 'Sólidos metálicos de distintos materiales'
     evaluacion: 'Práctica con informe'
     practica:
-      titulo: 'Densidad de un cuerpo sólido'
+      titulo: 'Práctica 06 — Densidad de un cuerpo sólido'
       escenario: >-
         Cada grupo recibe varios sólidos metálicos sin identificar. Debe obtener
         la densidad de cada uno por la relación masa-volumen y por pesada
@@ -1004,7 +1004,7 @@ semanas:
       - 'Nivel de burbuja'
     evaluacion: 'Práctica con informe'
     practica:
-      titulo: 'Centro de masa de un sistema de dos cuerpos'
+      titulo: 'Práctica 07 — Centro de masa de un sistema de dos cuerpos'
       escenario: >-
         Cada grupo monta dos masas sobre una varilla, localiza el punto de
         equilibrio y lo compara con el centro de masa calculado. Debe repetir el
@@ -1121,7 +1121,7 @@ semanas:
       - 'Calculadora o Python'
     evaluacion: 'Práctica con informe'
     practica:
-      titulo: 'Ley de Hooke y constante elástica'
+      titulo: 'Práctica 08 — Ley de Hooke y constante elástica'
       escenario: >-
         Cada grupo cuelga masas crecientes de un resorte, mide el estiramiento y
         ajusta la recta fuerza-estiramiento. Debe reportar la constante elástica
@@ -1246,7 +1246,7 @@ semanas:
       - 'Calculadora o Python'
     evaluacion: 'Práctica con informe y datos reales'
     practica:
-      titulo: 'Péndulo simple y determinación de la gravedad'
+      titulo: 'Práctica 09 — Péndulo simple y determinación de la gravedad'
       escenario: >-
         Cada grupo recibe una tabla de veintiuna longitudes de hilo con el
         tiempo de cinco oscilaciones. Debe linealizar el modelo, ajustar la
@@ -1381,7 +1381,7 @@ semanas:
       - 'Base aislante y recipiente con agua'
     evaluacion: 'Práctica con informe y cierre del curso'
     practica:
-      titulo: 'Enfriamiento de un cuerpo sólido'
+      titulo: 'Práctica 10 — Enfriamiento de un cuerpo sólido'
       escenario: >-
         Cada grupo calienta dos cuerpos del mismo material y distinto tamaño en
         agua, los retira y registra su temperatura cada 30 s durante 10 min. Debe

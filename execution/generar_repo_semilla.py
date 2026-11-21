@@ -140,12 +140,20 @@ def corte_entrega(datos: dict) -> str:
     return " ".join(corte.split())
 
 
-def readme_raiz(titulos: dict[int, str], roles: list[str], corte: str) -> str:
+def nombre_curso(datos: dict) -> str:
+    """Nombre del curso, tomado de `meta.titulo` del descriptor."""
+    titulo = (datos.get("meta") or {}).get("titulo")
+    if not isinstance(titulo, str) or not titulo.strip():
+        raise ValueError("el descriptor no declara `meta.titulo`")
+    return " ".join(titulo.split())
+
+
+def readme_raiz(titulos: dict[int, str], roles: list[str], corte: str, curso: str) -> str:
     filas_roles = "\n".join(f"| {rol} | [Nombre del integrante {i}] |" for i, rol in enumerate(roles, 1))
     filas_semanas = "\n".join(
         f"| semana_{n:02d} | {titulos[n]} | [ ] | | |" for n in range(1, N_SEMANAS + 1)
     )
-    return f"""# Laboratorio II de Física — Repositorio del grupo
+    return f"""# {curso} — Repositorio del grupo
 
 > Plantilla semilla. Sustituye los marcadores `[Nombre del integrante N]` por los
 > datos reales **en tu repositorio privado**. Esta plantilla no contiene datos
@@ -213,10 +221,13 @@ def readme_semanal(numero: int, titulo: str, corte: str, es_cierre: bool) -> str
 - [ ] `informe.pdf` individual, con las conclusiones firmadas por su autor.
 - [ ] `portafolio/` con las diez semanas corregidas y el README raíz al día.
 """
+    es_taller = titulo.startswith("Taller ")
+    clase = "los talleres" if es_taller else "las prácticas"
+    plantilla = "taller_NN.tex" if es_taller else "practica_NN.tex"
     return f"""# {titulo}
 
-> Semana {numero:02d} del curso. Los títulos de las prácticas se toman de
-> `practicas/practica_NN.tex`, que es la fuente de verdad.
+> Semana {numero:02d} del curso. Los títulos de {clase} se toman de
+> `practicas/{plantilla}`, que es la fuente de verdad.
 
 ## Qué se hizo
 
@@ -255,8 +266,9 @@ def plan_de_archivos(datos: dict) -> dict[str, str]:
     titulos = titulos_practicas(datos)
     roles = nombres_roles(datos)
     corte = corte_entrega(datos)
+    curso = nombre_curso(datos)
     plan: dict[str, str] = {
-        "README.md": readme_raiz(titulos, roles, corte),
+        "README.md": readme_raiz(titulos, roles, corte, curso),
         ".gitignore": GITIGNORE,
     }
     for numero in range(1, N_SEMANAS + 1):
@@ -306,7 +318,7 @@ def escribir_plan(plan: dict[str, str], raiz: Path, forzar: bool = False) -> lis
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Genera el repo semilla de grupos del Laboratorio II de Física."
+        description="Genera el repo semilla de grupos desde el curso.yaml indicado."
     )
     parser.add_argument("--curso", type=Path, default=CURSO_POR_DEFECTO)
     parser.add_argument("--salida", type=Path, default=SALIDA_POR_DEFECTO)

@@ -2,14 +2,18 @@
 """
 sincronizar_titulos_practicas.py — Sync determinista de títulos (Layer 3)
 
-Copia el título oficial de `practicas/practica_NN.tex` (el argumento de
-`\\bandaTitulo`) a `semanas[].practica.titulo` de `curso.yaml`. El `.tex` es la
-fuente de verdad: el descriptor tenía resúmenes cortos que no coincidían con
-el título impreso en la práctica.
+Copia el título oficial impreso en `practicas/` (el argumento de `\\bandaTitulo`)
+a `semanas[].practica.titulo` de `curso.yaml`. El `.tex` es la fuente de verdad:
+el descriptor tenía resúmenes cortos que no coincidían con el título impreso.
+
+Sirve para ambos cursos sin duplicar lógica:
+  - Laboratorio II: `practica_NN.tex` para las 10 semanas.
+  - Laboratorio I: `taller_NN.tex` en las semanas 1..4 y `practica_NN.tex` en
+    las 5..10. La decisión es por existencia de archivo, nunca por adivinanza.
 
 La edición es QUIRÚRGICA: solo sustituye la línea `titulo:` dentro del bloque
 `practica:` de cada semana. El resto del YAML (comentarios, anclas, orden,
-espaciado y los `titulo:` de nivel semana) queda byte a byte intacto.
+espaciado, el estilo de citado y los `titulo:` de nivel semana) queda intacto.
 
 Por seguridad, sin `--apply` SOLO reporta. Nunca escribe si no hay cambios.
 
@@ -35,26 +39,74 @@ N_SEMANAS = 10
 BANDA_TITULO = re.compile(r"\\bandaTitulo\[[^\]]*\]\{([^}]*)\}")
 
 
-def extraer_titulo_tex(ruta: Path, numero: int) -> str:
-    """Devuelve el título oficial de una práctica, normalizado para Markdown."""
+def ruta_y_prefijo(curso: Path, numero: int) -> tuple[Path, str]:
+    """Localiza el .tex de la semana y devuelve su prefijo oficial esperado.
+
+    Laboratorio I nombra talleres las semanas 1..4 y prácticas la 5..10;
+    Laboratorio II usa `practica_NN.tex` para las 10. La decisión es pura:
+    existe `practica_NN.tex`, o si no `taller_NN.tex`. Nunca se adivina.
+    """
+    directorio = curso.parent / "practicas"
+    practica = directorio / f"practica_{numero:02d}.tex"
+    if practica.is_file():
+        return practica, f"Práctica {numero:02d}"
+    taller = directorio / f"taller_{numero:02d}.tex"
+    if taller.is_file():
+        return taller, f"Taller {numero:02d}"
+    raise ValueError(f"no hay practica_{numero:02d}.tex ni taller_{numero:02d}.tex en {directorio}")
+
+
+def extraer_titulo_tex(ruta: Path, numero: int, prefijo: str) -> str:
+    """Devuelve el título oficial de un taller/práctica, normalizado para Markdown."""
     try:
         texto = ruta.read_text(encoding="utf-8")
     except OSError as exc:
         raise ValueError(f"no se pudo leer {ruta}: {exc}") from exc
-    candidatos = [m for m in BANDA_TITULO.findall(texto) if m.strip().startswith("Práctica")]
+    clase = prefijo.split()[0]
+    candidatos = [m for m in BANDA_TITULO.findall(texto) if m.strip().startswith(clase)]
     if not candidatos:
-        raise ValueError(f"{ruta} no declara un \\bandaTitulo que empiece por 'Práctica'")
+        raise ValueError(f"{ruta} no declara un \\bandaTitulo que empiece por '{clase}'")
     titulo = " ".join(candidatos[0].replace("---", "—").split())
-    if not titulo.startswith(f"Práctica {numero:02d}"):
-        raise ValueError(f"{ruta}: el título '{titulo}' no corresponde a la práctica {numero:02d}")
+    if not titulo.startswith(prefijo):
+        raise ValueError(f"{ruta}: el título '{titulo}' no empieza por '{prefijo}'")
     return titulo
 
 
 def titulos_oficiales(curso: Path) -> dict[int, str]:
-    """Lee los 10 .tex y devuelve {numero: título oficial}."""
-    directorio = curso.parent / "practicas"
-    return {n: extraer_titulo_tex(directorio / f"practica_{n:02d}.tex", n)
-            for n in range(1, N_SEMANAS + 1)}
+    """Lee los 10 .tex (talleres o prácticas) y devuelve {numero: título oficial}."""
+    oficiales: dict[int, str] = {}
+    for numero in range(1, N_SEMANAS + 1):
+        ruta, prefijo = ruta_y_prefijo(curso, numero)
+        oficiales[numero] = extraer_titulo_tex(ruta, numero, prefijo)
+    return oficiales
+
+
+def descomillar(valor: str) -> str:
+    """Quita comillas envolventes (simples o dobles) de un scalar YAML."""
+    valor = valor.strip()
+    if len(valor) >= 2 and valor[0] == valor[-1] and valor[0] in ("'", '"'):
+        return valor[1:-1]
+    return valor
+
+
+def cotizar(nuevo: str, original: str) -> str:
+    """Escribe `nuevo` preservando el estilo de citado del valor original.
+
+    Los descriptores mezclan estilos: Lab II usa scalars planos y Lab I comillas
+    simples. Además, un título con ': ' (p. ej. 'Taller 02 — Del objeto al
+    resultado: propagar sin inventar cifras') NO puede escribirse como scalar
+    plano: YAML lo tomaría por un mapeo. Por eso se conserva el citado original
+    y, si no había, se añade cuando el valor lo exige.
+    """
+    original = original.strip()
+    if len(original) >= 2 and original[0] == original[-1] == "'":
+        return "'" + nuevo.replace("'", "''") + "'"
+    if len(original) >= 2 and original[0] == original[-1] == '"':
+        return '"' + nuevo.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    especial = ": " in nuevo or " #" in nuevo or nuevo.startswith(
+        ("-", "?", ":", "[", "{", "&", "*", "!", "|", ">", "%", "@", "`")
+    )
+    return "'" + nuevo.replace("'", "''") + "'" if especial else nuevo
 
 
 def titulos_actuales(texto: str) -> dict[int, str]:
@@ -76,7 +128,7 @@ def titulos_actuales(texto: str) -> dict[int, str]:
         if esperando:
             titulo = re.match(r"^      titulo:\s*(.+?)\s*$", linea)
             if titulo:
-                actuales[numero] = titulo.group(1)
+                actuales[numero] = descomillar(titulo.group(1))
                 esperando = False
     return actuales
 
@@ -103,10 +155,11 @@ def sustituir_titulos(texto: str, titulos: dict[int, str]) -> tuple[str, list[di
         if esperando and numero in titulos:
             titulo = re.match(r"^      titulo:\s*(.+?)\s*$", contenido)
             if titulo:
-                anterior, nuevo = titulo.group(1), titulos[numero]
-                if anterior != nuevo:
-                    cambios.append({"numero": numero, "anterior": anterior, "nuevo": nuevo})
-                    salida.append(f"      titulo: {nuevo}{salto}")
+                anterior_crudo, nuevo = titulo.group(1), titulos[numero]
+                if descomillar(anterior_crudo) != nuevo:
+                    cambios.append({"numero": numero,
+                                    "anterior": descomillar(anterior_crudo), "nuevo": nuevo})
+                    salida.append(f"      titulo: {cotizar(nuevo, anterior_crudo)}{salto}")
                 else:
                     salida.append(linea)
                 esperando = False
