@@ -8,6 +8,10 @@ Ejecuta la directiva sincronizar_titulos_practicas.yaml:
   3. flujo_crear_repo_semilla.py --forzar      → propaga a la semilla de grupos
   4. execution/test_generar_repo_semilla.py    → fija los títulos oficiales
 
+`--curso` elige el descriptor (Lab I o Lab II) y `--salida` la semilla a
+regenerar; por defecto es `plantillas/repo_grupo` junto al curso. Ambos cursos
+usan el MISMO orquestador y los MISMOS scripts de capa 3.
+
 La lógica de extracción y edición vive SOLO en la capa 3; aquí solo se encadena.
 """
 
@@ -45,8 +49,8 @@ def _ejecutar(cmd: list[str]) -> tuple[int, dict]:
     return resultado.returncode, datos
 
 
-def sincronizar(curso: Path, solo_check: bool, propagar: bool, alert: bool,
-                como_json: bool) -> int:
+def sincronizar(curso: Path, salida: Path | None, solo_check: bool, propagar: bool,
+                alert: bool, como_json: bool) -> int:
     run_id = RS.run_id_de_la_corrida("flujo-sincronizar-titulos-practicas")
     state = {
         "run_id": run_id,
@@ -56,7 +60,8 @@ def sincronizar(curso: Path, solo_check: bool, propagar: bool, alert: bool,
         "current_step": 0,
         "steps_completed": [],
         "steps_failed": [],
-        "context": {"curso": str(curso), "check": solo_check, "propagar": propagar},
+        "context": {"curso": str(curso), "salida": str(salida) if salida else None,
+                    "check": solo_check, "propagar": propagar},
     }
 
     def guardar() -> None:
@@ -99,9 +104,12 @@ def sincronizar(curso: Path, solo_check: bool, propagar: bool, alert: bool,
     guardar()
 
     if propagar:
+        cmd_semilla = [PYTHON, str(SEMILLA), "--curso", str(curso)]
+        if salida is not None:
+            cmd_semilla += ["--salida", str(salida)]
+        cmd_semilla += ["--forzar", "--json", "--no-alert"]
         ejecucion = subprocess.run(
-            [PYTHON, str(SEMILLA), "--curso", str(curso), "--forzar", "--json", "--no-alert"],
-            capture_output=True, text=True, encoding="utf-8",
+            cmd_semilla, capture_output=True, text=True, encoding="utf-8",
         )
         if ejecucion.returncode != 0:
             state["steps_failed"].append({"step": 3, "script": "flujo_crear_repo_semilla",
@@ -145,13 +153,21 @@ def main(argv: list[str] | None = None) -> int:
         description="Sincroniza los títulos de práctica desde los .tex al descriptor del curso."
     )
     parser.add_argument("--curso", default=str(CURSO_POR_DEFECTO))
+    parser.add_argument(
+        "--salida",
+        help="Directorio de la semilla a regenerar. Por defecto, el hermano del curso.",
+    )
     parser.add_argument("--check", action="store_true", help="Solo reporta cambios.")
     parser.add_argument("--no-propagar", action="store_true", help="No regenera la semilla.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--no-alert", action="store_true")
     args = parser.parse_args(argv)
+    curso = Path(args.curso).resolve()
+    salida = (Path(args.salida).resolve() if args.salida
+              else curso.parent / "plantillas/repo_grupo")
     return sincronizar(
-        curso=Path(args.curso).resolve(),
+        curso=curso,
+        salida=salida,
         solo_check=args.check,
         propagar=not args.no_propagar,
         alert=not args.no_alert,

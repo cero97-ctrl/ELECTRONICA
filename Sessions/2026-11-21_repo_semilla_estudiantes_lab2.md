@@ -95,6 +95,8 @@ el generador leyera los `.tex`.
   en el mismo commit que la bitácora y los 10 títulos sincronizados.
 - El commit anterior `db019d1` (semilla original) ya estaba pusheado.
 - No se tocó `cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf`.
+
+## Pendientes
 - Recordatorio del 24-nov antes de 08:00 VET: publicar el cuestionario con
   `flujo_publicar_cuestionario.py --web-dir cursos/LABORATORIO_II_FISICA/evaluaciones/web --repo cero97-ctrl/cuestionarios-lab2 --visibilidad public --push`
   y volver a `private` al cierre.

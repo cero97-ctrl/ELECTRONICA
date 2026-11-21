@@ -1,0 +1,24 @@
+# Secretos y entornos (nunca subir credenciales al repo del grupo)
+.env
+.env.*
+*.dev.vars
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Auxiliares de LaTeX. El informe.pdf SÍ se entrega: no se ignora.
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Sistemas operativos
+.DS_Store
+Thumbs.db

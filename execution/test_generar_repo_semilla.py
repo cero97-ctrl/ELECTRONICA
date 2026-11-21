@@ -160,6 +160,40 @@ with tempfile.TemporaryDirectory() as temporal:
     )
     comprobar("repetir sin --forzar sale 3", ejecucion.returncode == 3)
 
+# --- Laboratorio I: misma plantilla, descriptor y títulos distintos ----------
+CURSO_LAB1 = RAIZ / "cursos/LABORATORIO_I_FISICA/curso.yaml"
+datos_lab1 = mod.cargar_descriptor(CURSO_LAB1)
+titulos_lab1 = mod.titulos_practicas(datos_lab1)
+plan_lab1 = mod.plan_de_archivos(datos_lab1)
+
+comprobar("Lab I tiene 10 semanas", len(titulos_lab1) == 10)
+comprobar("Lab I toma el nombre de meta.titulo",
+          mod.nombre_curso(datos_lab1) == "Laboratorio I de Física")
+comprobar("Lab II toma el nombre de meta.titulo",
+          mod.nombre_curso(datos) == "Laboratorio II de Física")
+comprobar("README raíz de Lab II no cambió de encabezado",
+          raiz_readme.startswith("# Laboratorio II de Física — Repositorio del grupo"))
+comprobar("README raíz de Lab I usa su nombre",
+          plan_lab1["README.md"].startswith("# Laboratorio I de Física — Repositorio del grupo"))
+comprobar("Lab I: semanas 1..4 son talleres",
+          all(titulos_lab1[n].startswith(f"Taller {n:02d} —") for n in range(1, 5)),
+          str([titulos_lab1[n] for n in range(1, 5)]))
+comprobar("Lab I: semanas 5..10 son prácticas",
+          all(titulos_lab1[n].startswith(f"Práctica {n:02d} —") for n in range(5, 11)),
+          str([titulos_lab1[n] for n in range(5, 11)]))
+comprobar("README semanal 1 de Lab I empieza por su título oficial",
+          plan_lab1["semana_01/README.md"].splitlines()[0] == f"# {titulos_lab1[1]}")
+comprobar("README de taller cita taller_NN.tex",
+          "Los títulos de los talleres se toman de" in plan_lab1["semana_01/README.md"] and
+          "`practicas/taller_NN.tex`" in plan_lab1["semana_01/README.md"])
+comprobar("README de práctica cita practica_NN.tex",
+          "Los títulos de las prácticas se toman de" in plan_lab1["semana_05/README.md"] and
+          "`practicas/practica_NN.tex`" in plan_lab1["semana_05/README.md"])
+comprobar("el plan de Lab I es determinista",
+          plan_lab1 == mod.plan_de_archivos(mod.cargar_descriptor(CURSO_LAB1)))
+comprobar("el plan de Lab I tiene 43 archivos", len(plan_lab1) == 43)
+comprobar("los planes de Lab I y Lab II no son idénticos", plan_lab1 != plan)
+
 print("=" * 60)
 print(f"{PRUEBAS - len(FALLOS)}/{PRUEBAS} aserciones OK")
 if FALLOS:

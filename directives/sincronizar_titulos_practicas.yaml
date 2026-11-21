@@ -1,22 +1,29 @@
 name: sincronizar_titulos_practicas
 description: >-
-  Copia el título oficial impreso en `practicas/practica_NN.tex` al campo
+  Copia el título oficial impreso en `practicas/` al campo
   `semanas[].practica.titulo` de `curso.yaml`, con edición quirúrgica y
-  verificación posterior.
-version: 1.0
+  verificación posterior. Sirve para Laboratorio I y II con los mismos scripts.
+version: 1.1
 
 goal: >-
   Evitar que la semilla del repo de grupos (y cualquier otro generador que lea
-  el descriptor) muestre un resumen inventado en lugar del título real de la
-  práctica. El `.tex` es la fuente de verdad; el YAML es la vista que consumen
-  los flujos.
+  el descriptor) muestre un resumen inventado en lugar del título real impreso.
+  El `.tex` es la fuente de verdad; el YAML es la vista que consumen los flujos.
 
 required_inputs:
   - name: curso
     description: >-
-      Ruta a `cursos/LABORATORIO_II_FISICA/curso.yaml`. Debe declarar las 10
-      semanas con `practica.titulo`. Las prácticas se buscan como
-      `practicas/practica_NN.tex` junto al descriptor.
+      Ruta al `curso.yaml` del curso (Laboratorio I o II). Debe declarar las 10
+      semanas con `practica.titulo`. Los títulos se buscan junto al descriptor:
+      `practica_NN.tex` para Laboratorio II, y `taller_NN.tex` en las semanas
+      1..4 y `practica_NN.tex` en las 5..10 para Laboratorio I. La elección la
+      hace la existencia del archivo, nunca el nombre del curso.
+
+  - name: salida
+    description: >-
+      Opcional. Directorio de la semilla a regenerar. Por defecto
+      `plantillas/repo_grupo` junto al descriptor, de modo que cada curso
+      regenera SOLO su propia semilla.
 
 steps:
   - action: check
@@ -33,30 +40,37 @@ steps:
       Escritura atómica y relectura para verificar.
 
   - action: propagar
-    script: flujo_crear_repo_semilla.py --forzar --json
+    script: flujo_crear_repo_semilla.py --curso <curso> --salida <salida> --forzar --json
     description: >-
-      Regenera la semilla de grupos con los títulos ya corregidos. `--forzar`
-      sobrescribe solo los 43 archivos generados; nunca borra trabajo de grupos.
+      Regenera la semilla del curso indicado con los títulos ya corregidos.
+      `--forzar` sobrescribe solo los 43 archivos generados; nunca borra trabajo
+      de grupos. Sin `--salida`, se usa `plantillas/repo_grupo` junto al curso.
 
   - action: verificar
-    script: execution/test_generar_repo_semilla.py
+    script: execution/test_sincronizar_titulos_practicas.py y execution/test_generar_repo_semilla.py
     description: >-
-      Las aserciones fijan el título oficial de las semanas 1 y 10, de modo que
-      una regresión a los resúmenes cortos falle antes de publicarse.
+      El primero fija el citado YAML y la detección de talleres/prácticas; el
+      segundo fija los títulos oficiales de las semanas 1 y 10 de ambos cursos,
+      de modo que una regresión a los resúmenes cortos falle antes de publicarse.
 
 expected_outputs:
   - `curso.yaml` con los 10 títulos oficiales, sin otro byte modificado.
   - `plantillas/repo_grupo/semana_NN/README.md` con el título del `.tex`.
-  - Test de la semilla en verde.
+  - Tests del sincronizador y de la semilla en verde.
 
 edge_cases:
   - caso: Un .tex no declara \bandaTitulo
     protocolo: Código 2 antes de escribir. No se inventa el título ni se usa el
       resumen del YAML como sustituto.
 
-  - caso: El título extraído no empieza por `Práctica NN`
-    protocolo: Código 2. Evita sincronizar un título de otra práctica por error
-      de numeración de archivos.
+  - caso: El título extraído no empieza por `Práctica NN` o `Taller NN`
+    protocolo: Código 2. Evita sincronizar un título de otra semana por error de
+      numeración de archivos.
+
+  - caso: El título contiene ': ' y el YAML original era un scalar plano
+    protocolo: Se escribe entre comillas simples. Sin ellas, YAML lo interpretaría
+      como un mapeo y el descriptor quedaría roto. Si el original ya estaba
+      citado, se conserva su estilo de citado.
 
   - caso: El YAML ya está sincronizado
     protocolo: `--apply` no escribe nada y reporta 0 cambios. Idempotente.
