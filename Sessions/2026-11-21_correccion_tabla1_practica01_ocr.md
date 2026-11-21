@@ -37,8 +37,31 @@ correccion_tabla1_practica01_ocr
 - Directiva `directives/ocr_a_practicas.yaml` e índice de tests en `AGENTS.md`
   actualizados con el nuevo contrato.
 
+## Incidencia y corrección (commit `e9020374` → `6734a59`)
+- El usuario autorizó «Commit nuevo + push». `update_repo.sh` hace `git add -A`
+  e incluyó por error `cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf`,
+  que estaba marcado como «no tocar» en el contexto de la sesión. El fichero
+  contiene cédulas, nombres y correos de 2 estudiantes y el repo es público.
+  El error fue del orquestador: no excluí el untracked conocido del staging.
+- Impacto: el fichero no existía en el historial anterior; apareció por primera
+  y única vez en `e9020374`, ya pusheado. La exposición ocurrió antes de la
+  corrección; quitarlo del HEAD no habría bastado.
+- El usuario autorizó reescribir historia. Copia de seguridad local del PDF en
+  `/tmp/opencode/backup_pii_lab_i/` (SHA-256 `d5f890c0…`), ejecutado
+  `git filter-repo --invert-paths --path cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf`
+  (con `Y` a «continuar la ejecución anterior» de 2026-11-08), restaurado el
+  PDF al disco y añadida regla explícita en `.gitignore`.
+- Solo cambió el último commit (`e9020374` → `6734a59`); `bba5f76b` y anteriores
+  conservan su hash. `git log --all -- <ruta>` y `git ls-tree HEAD` dan vacío.
+- Lección para el orquestador: antes de `update_repo.sh` con cambios sin marcar,
+  revisar `git status --short` y staged explícitamente SOLO los ficheros
+  autorizados, o ampliar `.gitignore` primero. Nunca asumir que un untracked
+  conocido quedará fuera de un `git add -A`.
+
 ## Pendientes
-- Autorización de commit/push para estos ficheros (no ejecutado).
+- Completar el force push de la historia reescrita y verificar con un clone
+  fresco que el PDF no aparece en el remoto.
+- Avisar a quienes hubieran clonado el repo: conservan su copia local del PDF.
 - Recordatorio 24-nov antes de 08:00 VET: publicar el cuestionario con
   `flujo_publicar_cuestionario.py ... --visibilidad public --push` y volver a
   `private` al cerrar.

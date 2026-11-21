@@ -132,6 +132,10 @@ Thumbs.db
 # se copia a la carpeta de entregables)
 .build/
 
+# Lista nominal de estudiantes con cédulas y correos: dato local, NUNCA versionar
+# (el repo es público; se eliminó del historial el 2026-11-21 con filter-repo)
+cursos/LABORATORIO_I_FISICA/ALUMNOS_LAB_I_FISICA.pdf
+
 # Telemetría del router LLM (log de decisiones en runtime, crece indefinidamente)
 .tmp/routing_log.jsonl
 
