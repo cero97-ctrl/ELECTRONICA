@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 """
-monitor_saldo_openrouter.py — Estima el saldo de créditos de OpenRouter desde la API (Layer 3: Execution)
+monitor_saldo_openrouter.py — Saldo de créditos de OpenRouter desde la API (Layer 3: Execution)
 
-OpenRouter NO expone el saldo por API (solo en la página web). Este script lo
-estima restando el uso acumulado (`/api/v1/auth/key` → usage) a los créditos
-totales comprados, tomando como referencia el saldo visto en la página en un
-momento dado (ver constantes y la sección "Sesión" en Sessions/).
+OpenRouter SÍ expone los totales: `GET /api/v1/credits` devuelve
+`total_credits` y `total_usage`. El saldo es `total_credits - total_usage`.
+
+Antes se estimaba restando el `usage` de `/api/v1/auth/key` a una constante
+`CREDITS_TOTAL_REF` fijada a mano. Cada recarga dejaba la constante vieja: con
+$65 comprados y la referencia en $24.77 el script reportaba -$30.29 y emitía
+una falsa alerta de top-up aunque la cuenta tenía $5.04. La constante se
+eliminó: la fuente de verdad es la API, no un número copiado de la web.
+
+`/api/v1/auth/key` se consulta aparte solo para datos informativos (usage
+diario/semanal/mensual, tier, límite); NO decide el saldo.
 
 Uso:
     python3 execution/monitor_saldo_openrouter.py                 # chequeo puntual
@@ -13,7 +20,9 @@ Uso:
     python3 execution/monitor_saldo_openrouter.py --watch --interval 300
 
 Salida (stdout, JSON):
-    { "status": "ok", "saldo_estimado": 9.81, "usage": 0.02, ... }
+    { "status": "ok", "saldo": 5.04, "total_credits": 65.0,
+      "total_usage": 59.959, "usage": 55.0594, ... }
+  `saldo_estimado` se conserva como alias de `saldo` por compatibilidad.
 
 Códigos de salida:
     0 — OK (o alerta emitida)
@@ -36,12 +45,6 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ── Referencia de créditos totales ───────────────────────────────────────────
-# balance_visto + usage en ese instante. Ajustar si cambia la compra/top-up.
-# 2026-08-16: página mostró $9.82 con usage=0.01721381 → créditos totales ≈ 9.83721381
-# 2026-09-01: recarga → página mostró $22.44 con usage=2.329395 → ≈ 24.769395
-CREDITS_TOTAL_REF = 24.769395
-
 _ALERT_SCRIPT = Path(__file__).resolve().parent / "alert_user.py"
 _LOG_PATH = Path(__file__).resolve().parent.parent / ".tmp" / "saldo_openrouter.log"
 
@@ -57,7 +60,22 @@ def _load_api_key() -> str:
     return key
 
 
+def _get_credits(key: str) -> dict:
+    """Totales reales de la cuenta (fuente de verdad del saldo)."""
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/credits",
+        headers={"Authorization": f"Bearer {key}"},
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.load(resp).get("data", {})
+    return {
+        "total_credits": float(data.get("total_credits", 0.0)),
+        "total_usage": float(data.get("total_usage", 0.0)),
+    }
+
+
 def _get_usage(key: str) -> dict:
+    """Datos informativos de la clave; NO se usa para calcular el saldo."""
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/auth/key",
         headers={"Authorization": f"Bearer {key}"},
@@ -66,14 +84,16 @@ def _get_usage(key: str) -> dict:
         data = json.load(resp).get("data", {})
     return {
         "usage": data.get("usage", 0.0),
+        "usage_daily": data.get("usage_daily", 0.0),
         "usage_monthly": data.get("usage_monthly", 0.0),
         "is_free_tier": data.get("is_free_tier"),
         "limit": data.get("limit"),
     }
 
 
-def _estimado_saldo(usage: float) -> float:
-    return CREDITS_TOTAL_REF - usage
+def _saldo(credits: dict) -> float:
+    """Saldo real: créditos comprados menos uso total de la cuenta."""
+    return credits["total_credits"] - credits["total_usage"]
 
 
 def _log(line: str) -> None:
@@ -95,26 +115,32 @@ def _alert(mensaje: str) -> None:
 def chequeo(args) -> dict:
     try:
         key = _load_api_key()
+        credits = _get_credits(key)
         info = _get_usage(key)
     except Exception as e:
         _log(f"[ERROR] No se pudo consultar OpenRouter: {e}")
         return {"status": "error", "message": str(e)}
 
-    saldo = _estimado_saldo(info["usage"])
+    saldo = _saldo(credits)
     cruzando_warn = not args.watch and saldo < args.warn
     cruzando_alert = not args.watch and saldo < args.alert
 
     result = {
         "status": "ok",
-        "saldo_estimado": round(saldo, 2),
+        "saldo": round(saldo, 2),
+        "saldo_estimado": round(saldo, 2),  # alias legacy
+        "total_credits": round(credits["total_credits"], 6),
+        "total_usage": round(credits["total_usage"], 6),
         "usage_total": round(info["usage"], 6),
+        "usage_daily": round(info["usage_daily"], 6),
         "usage_monthly": round(info["usage_monthly"], 6),
         "is_free_tier": info["is_free_tier"],
         "limit": info["limit"],
     }
     _log(
-        "Saldo estimado: ${:.2f} (usage ${:.4f}, tier {})".format(
-            saldo, info["usage"], "gratis" if info["is_free_tier"] else "pago"
+        "Saldo: ${:.2f} (creditos ${:.4f} - uso ${:.4f}; tier {})".format(
+            saldo, credits["total_credits"], credits["total_usage"],
+            "gratis" if info["is_free_tier"] else "pago"
         )
     )
 
@@ -145,10 +171,12 @@ def main():
     while True:
         try:
             key = _load_api_key()
-            info = _get_usage(key)
-            saldo = _estimado_saldo(info["usage"])
+            credits = _get_credits(key)
+            saldo = _saldo(credits)
             _log(
-                "Saldo estimado: ${:.2f} (usage ${:.4f})".format(saldo, info["usage"])
+                "Saldo: ${:.2f} (creditos ${:.4f} - uso ${:.4f})".format(
+                    saldo, credits["total_credits"], credits["total_usage"]
+                )
             )
             if saldo < args.alert and not cruzo_alert:
                 cruzo_alert = True
