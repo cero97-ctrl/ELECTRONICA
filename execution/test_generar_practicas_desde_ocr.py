@@ -3,9 +3,10 @@
 
 Fijan el contrato del flujo OCR → prácticas: las 8 cabeceras irregulares se
 detectan, cada práctica conserva sus cinco secciones, los marcadores `[FIGURA]`
-(incluso inline) y `[ILEGIBLE]` nunca llegan al LaTeX, la matemática `$...$` y
- `\\[...\\]` sobrevive al escapado, y el mismo markdown produce siempre el mismo
-hash. Sin red y sin compilación: las funciones bajo prueba son puras.
+(incluso inline), `[ILEGIBLE]` y `[TABLA:]` nunca llegan al LaTeX, la leyenda
+`TABLA N` se emite centrada al pie, la matemática `$...$` y `\\[...\\]` sobrevive
+al escapado, y el mismo markdown produce siempre el mismo hash. Sin red y sin
+compilación: las funciones bajo prueba son puras.
 
 Ejecutar: python3 execution/test_generar_practicas_desde_ocr.py
 """
@@ -267,6 +268,43 @@ def main() -> int:
     comprobar("rango fuera de límites se descarta", m.parsear_rango("7-10") == [7, 8])
     comprobar("mismo markdown → mismo hash",
               m._sha("abc") == m._sha("abc") and m._sha("abc") != m._sha("abd"))
+
+    # ── Marcadores [TABLA:] y leyenda centrada (caso P1, 21-nov-2026) ─────────
+    # El escaneo dejaba `[TABLA:` / `]` alrededor de las tablas de P1: el PDF
+    # mostraba el marcador y la leyenda `] TABLA 1` sin centrar. Se congela aquí
+    # para que una re-extracción no reintroduzca el ruido.
+    con_marcadores = (
+        "esto es:\n[TABLA:\n| A | B |\n|---|---|\n| 1 | 2 |\n]\n(9)\n"
+        "resistores:\n[TABLA:\n| TIPO |\n|---|\n| CARBÓN |\n]\nTABLA 1\n"
+    )
+    sin_marcadores = m.limpiar_markdown(con_marcadores)
+    comprobar("marcador [TABLA: se elimina", "[TABLA:" not in sin_marcadores)
+    comprobar("corchete ] suelto se elimina",
+              not any(linea.strip() == "]" for linea in sin_marcadores.splitlines()))
+    comprobar("leyenda TABLA 1 se conserva", "TABLA 1" in sin_marcadores)
+    comprobar("filas de la tabla se conservan", "| CARBÓN |" in sin_marcadores)
+    bloques = m.convertir_bloques(sin_marcadores.splitlines())
+    comprobar("leyenda TABLA 1 centrada al pie",
+              r"\begin{center}\small\textbf{TABLA 1}\end{center}" in bloques)
+    comprobar("sin marcadores [TABLA: en el LaTeX", "[TABLA:" not in bloques)
+    comprobar("TABLAS 2 y 3 no se confunde con leyenda",
+              m.RE_LEYENDA_TABLA.match("TABLAS 2 y 3: VALORES DE LAS INDUCTANCIAS.") is None)
+    con_marca = {
+        n: {
+            "numero": p["numero"],
+            "titulo": p["titulo"],
+            "secciones": {k: list(v) for k, v in p["secciones"].items()},
+        }
+        for n, p in ps.items()
+    }
+    con_marca[1]["secciones"]["teoria"].append("[TABLA:")
+    problemas_marca = m.validar_practicas(con_marca, list(range(1, 9)))
+    comprobar("marcador reintroducido se reporta en validación",
+              any("[TABLA:" in x for x in problemas_marca))
+    ruta_real = RAIZ / "cursos" / "LABORATORIO_II_FISICA" / "docs" / "practicas_ocr_completo.md"
+    if ruta_real.is_file():
+        comprobar("OCR real sin marcadores [TABLA:",
+                  "[TABLA:" not in ruta_real.read_text(encoding="utf-8"))
 
     print(f"\n{PRUEBAS} aserciones, {len(FALLOS)} fallos")
     return 1 if FALLOS else 0

@@ -95,24 +95,34 @@ RE_SEPARADOR_TABLA = re.compile(r"^\s*:?-{2,}:?\s*$")
 RE_BULLET = re.compile(r"^\s*(?:\*|•|-)\s+(.*)$")
 RE_MARCA_SUB = re.compile(r"^@@SUB@@(.+)$")
 RE_FIGURA_INLINE = re.compile(r"\[FIGURA:\s*(.+?)\]", re.I | re.S)
+# El OCR del escaneo deja marcadores sueltos `[TABLA:` / `]` alrededor de las
+# tablas (p. ej. P1, págs. 5-6 del original). No son texto: se eliminan aquí para
+# que nunca lleguen al PDF, incluso si una re-extracción los reintroduce.
+RE_MARCA_TABLA = re.compile(r"^\s*(?:\[TABLA:|\])\s*$", re.I)
+# Leyenda de tabla: línea suelta `TABLA N` (sin dos puntos ni texto añadido).
+# Se emite centrada al pie; `TABLAS 2 y 3: ...` no coincide y se recorta aparte.
+RE_LEYENDA_TABLA = re.compile(r"^TABLA\s+(\d+)\s*$", re.I)
 
 
 # ── Funciones puras de parseo ─────────────────────────────────────────────────
 
 
 def limpiar_markdown(texto: str) -> str:
-    """Quita las marcas de página y los números sueltos del OCR.
+    """Quita marcas de página, números sueltos y delimitadores `[TABLA:` del OCR.
 
     Los números de página aparecen como líneas de uno a tres dígitos; los
     encabezados `## Página N` y `<!-- pagina N -->` son insertados por el OCR.
     Los ítems numerados (`1. En el instante...`) NO se tocan porque llevan
-    punto y texto.
+    punto y texto. Los marcadores `[TABLA:` / `]` son ruido del escaneo y
+    tampoco se tocan las leyendas `TABLA N`, que se renderizan aparte.
     """
     limpias: list[str] = []
     for linea in texto.splitlines():
         if RE_PAGINA_HTML.match(linea) or RE_PAGINA_MD.match(linea):
             continue
         if RE_SOLO_NUMERO.match(linea.strip()):
+            continue
+        if RE_MARCA_TABLA.match(linea):
             continue
         limpias.append(linea.rstrip())
     return "\n".join(limpias).strip()
@@ -288,9 +298,10 @@ def convertir_bloques(
 ) -> str:
     """Convierte el cuerpo de una sección en bloques LaTeX.
 
-    Reglas: viñetas → `itemize`; filas `|` → `tabular`; `[FIGURA: ...]` → caja
-    con el TikZ validado (o caja de descripción si no hay manifest); `[ILEGIBLE]`
-    → caja de aviso; SUB → subencabezado; el resto → párrafos escapados con `_tm`.
+    Reglas: viñetas → `itemize`; filas `|` → `tabular`; leyenda `TABLA N` →
+    centrada al pie; `[FIGURA: ...]` → caja con el TikZ validado (o caja de
+    descripción si no hay manifest); `[ILEGIBLE]` → caja de aviso; SUB →
+    subencabezado; el resto → párrafos escapados con `_tm`.
 
     `ids` es el iterador de descriptores devuelto por `figuras_de_practica` y
     avanza exactamente una vez por marcador, tanto en líneas independientes
@@ -322,6 +333,15 @@ def convertir_bloques(
             tabla, i = _tabla_markdown(lineas, i)
             if tabla:
                 bloques.append(tabla)
+            continue
+
+        m_leyenda = RE_LEYENDA_TABLA.match(texto)
+        if m_leyenda:
+            bloques.append(
+                "\\begin{center}\\small\\textbf{TABLA " + m_leyenda.group(1)
+                + "}\\end{center}"
+            )
+            i += 1
             continue
 
         m_sub = RE_MARCA_SUB.match(texto)
@@ -478,8 +498,12 @@ def validar_practicas(practicas: dict[int, dict[str, Any]], esperadas: list[int]
         latex = render_practica(p)
         if "<!-- pagina" in latex or "## Página" in latex:
             problemas.append(f"práctica {numero} conserva marcas de página del OCR")
-        if "[FIGURA" in latex or "[ILEGIBLE]" in latex:
-            problemas.append(f"práctica {numero} conserva marcadores del OCR sin convertir")
+        marcadores = [m for m in ("[FIGURA", "[ILEGIBLE]", "[TABLA:") if m in latex]
+        if marcadores:
+            problemas.append(
+                f"práctica {numero} conserva marcadores del OCR sin convertir "
+                f"({', '.join(marcadores)})"
+            )
         if latex.count(r"\begin{") != latex.count(r"\end{"):
             problemas.append(f"práctica {numero} tiene entornos LaTeX desbalanceados")
     return problemas

@@ -54,6 +54,7 @@ Steps:
     step_notes:
       - "El orquestador lo lanza como subproceso; NUNCA reimplementar aquí el parseo ni el renderizado."
       - "Los marcadores `[FIGURA: ...]` se convierten en cajas `tcolorbox` (también cuando van inline al final de un párrafo); `[ILEGIBLE]` se convierte en aviso. Ningún marcador queda en el LaTeX final."
+      - "Los delimitadores sueltos `[TABLA:` y `]` que deja el escaneo se eliminan en `limpiar_markdown`. Una línea suelta `TABLA N` se emite centrada al pie de la tabla como `\\begin{center}\\small\\textbf{TABLA N}\\end{center}`."
       - "Las ecuaciones `$...$` y `\\[ ... \\]` se preservan con `_tm` de `generar_material_curso.py`; no se reescapa la matemática."
       - "Cada `.tex` se compila aislado en `<salida>/.build/`; se lee el `.log` y se exigen 0 líneas `!`. Un `!` aunque exista el PDF es fallo (código 4)."
   - step: 3
@@ -73,8 +74,8 @@ Expected outputs:
 Edge cases:
   - error: "Falta una práctica o una sección (código 3)."
     recovery: "El informe lista `problemas` y `encontradas`. Revisar el markdown: el OCR pudo omitir una cabecera. No se inventa contenido; se corrige la fuente o se relanza el OCR de esa página."
-  - error: "Marcador `[FIGURA]` o `[ILEGIBLE]` sin convertir en el LaTeX (código 3)."
-    recovery: "El validador lo detecta antes de compilar. Revisar `convertir_bloques`: el marcador suele venir inline al final de un párrafo y debe pasar por `_separar_figuras_inline`."
+  - error: "Marcador `[FIGURA]`, `[ILEGIBLE]` o `[TABLA:` sin convertir en el LaTeX (código 3)."
+    recovery: "El validador lo detecta antes de compilar y nombra el marcador. Revisar `convertir_bloques` (figuras inline → `_separar_figuras_inline`) y `limpiar_markdown` (`RE_MARCA_TABLA`). Corregir siempre el markdown del OCR: editar el `.tex` a mano se pierde en la próxima regeneración."
   - error: "Compilación LaTeX con errores (código 4)."
     recovery: "El informe trae `errores` con la línea del `.log`. Causas típicas ya documentadas en `.agent/latex.md`: `\\` dentro de `\multicolumn`, `=` en etiqueta circuitikz sin llaves, Unicode griego en LaTeX crudo. El PDF NO se copia si hay `!`, aunque pdflatex lo haya generado en nonstopmode."
   - error: "Markdown de entrada inexistente o vacío (código 2)."
