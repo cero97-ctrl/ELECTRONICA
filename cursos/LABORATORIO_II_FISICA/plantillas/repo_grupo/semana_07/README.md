@@ -1,4 +1,7 @@
-# Semana 07 — Resonancia serie y paralelo con L y C del inventario
+# Práctica 07 — CIRCUITOS RESONANTES
+
+> Semana 07 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

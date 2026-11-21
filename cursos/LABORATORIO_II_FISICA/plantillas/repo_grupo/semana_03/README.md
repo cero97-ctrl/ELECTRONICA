@@ -1,4 +1,7 @@
-# Semana 03 — Caracterización de la fuente y de los instrumentos
+# Práctica 03 — DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE
+
+> Semana 03 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

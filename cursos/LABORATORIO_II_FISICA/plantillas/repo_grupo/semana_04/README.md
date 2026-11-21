@@ -1,4 +1,7 @@
-# Semana 04 — Circuitos serie, paralelo y red de dos mallas
+# Práctica 04 — CIRCUITOS ELÉCTRICOS
+
+> Semana 04 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

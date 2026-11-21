@@ -1,4 +1,7 @@
-# Semana 08 — Carga y descarga de un capacitor con osciloscopio
+# Práctica 08 — CARGA Y DESCARGA DE UN CAPACITOR
+
+> Semana 08 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

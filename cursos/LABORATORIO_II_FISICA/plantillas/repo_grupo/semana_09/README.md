@@ -1,4 +1,7 @@
-# Semana 09 — El mismo circuito por dos vías independientes
+# Práctica 09 — El mismo circuito por dos vías independientes
+
+> Semana 09 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

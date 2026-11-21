@@ -1,4 +1,7 @@
-# Semana 10 — Examen práctico individual y cierre del portafolio
+# Práctica 10 — Examen práctico individual y cierre del portafolio
+
+> Semana 10 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

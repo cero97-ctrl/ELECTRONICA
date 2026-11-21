@@ -44,10 +44,12 @@ plan = mod.plan_de_archivos(datos)
 
 comprobar("el descriptor real se carga", isinstance(datos, dict) and "semanas" in datos)
 comprobar("hay 10 semanas", len(titulos) == 10 and set(titulos) == set(range(1, 11)))
-comprobar("semana 1 trae su título",
-          titulos[1] == "Característica corriente-tensión de un resistor", titulos.get(1, ""))
-comprobar("semana 10 trae su título",
-          titulos[10] == "Examen práctico individual y cierre del portafolio", titulos.get(10, ""))
+comprobar("semana 1 trae el título oficial de practica_01.tex",
+          titulos[1] == "Práctica 01 — MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS",
+          titulos.get(1, ""))
+comprobar("semana 10 trae el título oficial de practica_10.tex",
+          titulos[10] == "Práctica 10 — Examen práctico individual y cierre del portafolio",
+          titulos.get(10, ""))
 comprobar("los cuatro roles vienen del descriptor",
           mod.nombres_roles(datos) == ["Medición", "Análisis", "Documentación", "Verificación"],
           str(mod.nombres_roles(datos)))
@@ -73,8 +75,10 @@ comprobar("README raíz trae el corte", "Domingo" in raiz_readme)
 comprobar("README raíz explica la privacidad", "privado" in raiz_readme.lower())
 
 semanal1 = plan["semana_01/README.md"]
-comprobar("README semanal 1 trae el título de la práctica",
-          "Característica corriente-tensión de un resistor" in semanal1)
+comprobar("README semanal 1 empieza por el título exacto de la práctica",
+          semanal1.splitlines()[0] ==
+          "# Práctica 01 — MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS",
+          semanal1.splitlines()[0])
 comprobar("README semanal 1 traza las cifras", "Trazabilidad de cifras" in semanal1)
 semanal10 = plan["semana_10/README.md"]
 comprobar("README semanal 10 pide informe individual y portafolio",

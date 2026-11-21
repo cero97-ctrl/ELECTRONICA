@@ -1,4 +1,7 @@
-# Semana 05 — Característica estática del diodo y extracción de parámetros
+# Práctica 05 — ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR
+
+> Semana 05 del curso. Los títulos de las prácticas se toman de
+> `practicas/practica_NN.tex`, que es la fuente de verdad.
 
 ## Qué se hizo
 

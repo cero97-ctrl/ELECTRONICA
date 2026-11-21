@@ -1,0 +1,65 @@
+name: sincronizar_titulos_practicas
+description: >-
+  Copia el título oficial impreso en `practicas/practica_NN.tex` al campo
+  `semanas[].practica.titulo` de `curso.yaml`, con edición quirúrgica y
+  verificación posterior.
+version: 1.0
+
+goal: >-
+  Evitar que la semilla del repo de grupos (y cualquier otro generador que lea
+  el descriptor) muestre un resumen inventado en lugar del título real de la
+  práctica. El `.tex` es la fuente de verdad; el YAML es la vista que consumen
+  los flujos.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta a `cursos/LABORATORIO_II_FISICA/curso.yaml`. Debe declarar las 10
+      semanas con `practica.titulo`. Las prácticas se buscan como
+      `practicas/practica_NN.tex` junto al descriptor.
+
+steps:
+  - action: check
+    script: execution/sincronizar_titulos_practicas.py --check --json
+    description: >-
+      Extrae los 10 títulos de los .tex y compara con el YAML. No escribe.
+      Lista cada cambio pendiente con su valor anterior y el nuevo.
+
+  - action: apply
+    script: execution/sincronizar_titulos_practicas.py --apply --json
+    description: >-
+      Sustituye únicamente la línea `titulo:` dentro de cada bloque `practica:`.
+      No toca los `titulo:` de nivel semana, comentarios, anclas ni espaciado.
+      Escritura atómica y relectura para verificar.
+
+  - action: propagar
+    script: flujo_crear_repo_semilla.py --forzar --json
+    description: >-
+      Regenera la semilla de grupos con los títulos ya corregidos. `--forzar`
+      sobrescribe solo los 43 archivos generados; nunca borra trabajo de grupos.
+
+  - action: verificar
+    script: execution/test_generar_repo_semilla.py
+    description: >-
+      Las aserciones fijan el título oficial de las semanas 1 y 10, de modo que
+      una regresión a los resúmenes cortos falle antes de publicarse.
+
+expected_outputs:
+  - `curso.yaml` con los 10 títulos oficiales, sin otro byte modificado.
+  - `plantillas/repo_grupo/semana_NN/README.md` con el título del `.tex`.
+  - Test de la semilla en verde.
+
+edge_cases:
+  - caso: Un .tex no declara \bandaTitulo
+    protocolo: Código 2 antes de escribir. No se inventa el título ni se usa el
+      resumen del YAML como sustituto.
+
+  - caso: El título extraído no empieza por `Práctica NN`
+    protocolo: Código 2. Evita sincronizar un título de otra práctica por error
+      de numeración de archivos.
+
+  - caso: El YAML ya está sincronizado
+    protocolo: `--apply` no escribe nada y reporta 0 cambios. Idempotente.
+
+  - caso: `--check` y `--apply` juntos
+    protocolo: Código 1, uso incorrecto (reservado; no se confunde con "sin verificar").
