@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,194 +329,162 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 03}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 03 --- DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE}
+\hypersetup{pdftitle={Práctica 03 --- DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 03 --- Caracterización de la fuente y de los instrumentos}{Semana 3 --- Fase 1: Instrumentación y leyes básicas de los circuitos}
+\bandaTitulo[fondoOscuro]{Práctica 03 --- DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UN VOLTÍMETRO, UN AMPERÍMETRO Y UNA FUENTE}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_03, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Determinar la resistencia interna del amperímetro, del voltímetro y de la fuente, y modelar la fuente real como fuerza electromotriz con resistencia en serie.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Modelo de fuente real; fuerza electromotriz y tensión en bornes.
-  \item Recta de carga y punto de operación.
-  \item Método de sustitución y método de media deflexión.
-  \item Máxima transferencia de potencia y su condición.
-  \item Efecto de carga sobre la medición de tensión.
+  \item Determinar experimentalmente la resistencia interna de un voltímetro, un
 \end{itemize}
+
+amperímetro y una fuente no estabilizada electrónicamente.
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-Una fuente real se modela como una fuerza electromotriz ideal en serie con
-una resistencia interna $r$. La tensión en bornes disminuye linealmente con
-la corriente entregada:
-\[
-  V = \varepsilon - r\,I
-\]
-de modo que $\varepsilon$ es la ordenada al origen y $r$ el valor absoluto
-de la pendiente de la recta $V$ frente a $I$. La potencia transferida a la
-carga es
-\[
-  P = V I = \frac{\varepsilon^2 R_L}{\left(R_L + r\right)^2}
-\]
-que alcanza su máximo cuando $R_L = r$; en ese punto la tensión en bornes
-vale la mitad de la fuerza electromotriz y el rendimiento es del 50 por
-ciento. Para el amperímetro, la resistencia interna se obtiene por
-sustitución: se ajusta una resistencia en paralelo hasta que la lectura
-caiga a la mitad, y entonces esa resistencia iguala a la interna.
-Para el voltímetro, con una resistencia $R$ en serie y la fuente de salida
-$E$ medida con $R=0$,
-\[
-  V_m = \frac{R_V E}{R + R_V}
-  \qquad\Longrightarrow\qquad
-  R_V = \frac{R\,V_m}{E - V_m}
-\]
-y para la fuente, con $R_e$ la resistencia equivalente de $R$ en paralelo
-con $R_V$,
-\[
-  V_m = \frac{E R_e}{r + R_e}
-  \qquad\Longrightarrow\qquad
-  \frac{R_e}{V_m} = \frac{1}{E} R_e + \frac{r}{E}
-\]
-de modo que el corte de la recta $R_e/V_m$ frente a $R_e$ da $r/E$ y de
-allí la resistencia interna. La desviación del valor medido respecto al del
-fabricante se expresa como
-\[
-  E_{\%} = \frac{\left|R_F - R\right|}{R_F} \times 100
-\]
-
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$\varepsilon$] (0,3) to[R, l=$r$] (3,3)
-        to[R, l=$R_L$] (3,0) -- (0,0);
-  \draw (3,3) -- (4.6,3) to[voltmeter, l=$V$] (4.6,0) -- (3,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Fuente real con su resistencia interna r alimentando una carga variable}
-\end{center}
+Ver sección 2 de la primera práctica Los instrumentos de medidas, por razones intrínsecas a los mismos, tienden a ofrecer una resistencia al paso de la corriente eléctrica. Esta resistencia es, en general, variable de acuerdo a las posibilidades de medidas del instrumento, así como el tipo de corriente, (continua o variable), a la cual se conecta. Una fuente de f.e.m., también posee una resistencia interna que determina una caída de tensión entre sus bornes. Aunque esta resistencia por lo general es muy pequeña, puede ser calculada mediante un montaje experimental adecuado.
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Fuente de tensión continua regulable de 0 a 30 V y 6 A
-  \item Caja de resistencias décadas, con ajuste en el orden de los M$\Omega$
-  \item Dos multimedidores Keithley (179, 175 o 175-A)
-  \item Resistores de carbón de 10 $\Omega$ y 47 $\Omega$
+  \item 1 multímedidor Keithley (179, 175 ó 175-A)
+  \item 1 Resistencia variable del tipo décadas.
+  \item 1 fuente estabilizada electrónicamente (Pila tipo D).
+  \item Cables de conexión.
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Ningún instrumento es ideal: el amperímetro tiene resistencia serie y el voltímetro resistencia paralelo, y la fuente se cae cuando se le exige corriente. El grupo debe medir las tres resistencias internas y construir el modelo de la fuente con sus parámetros y sus incertidumbres.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Medir la salida de la fuente $E$ con el voltímetro, con la carga desconectada, y anotarla como valor de referencia.
-  \item Seleccionar el rango de 2 V en el Keithley y montar una resistencia $R$ del orden de los M$\Omega$ en serie con el voltímetro.
-  \item Registrar en una tabla $E$, $V_m$ y $R$ para al menos cinco valores de $R$, ajustando $R$ de modo que no se exceda el rango.
-  \item Cambiar el modelo de multimedidor (175 por 179, o al revés) y repetir los pasos anteriores con el mismo rango.
-  \item Determinar la resistencia interna del amperímetro por el método de sustitución en los rangos de 200 $\mu$A y 2 mA.
-  \item Montar la fuente con la resistencia $R$ en paralelo con el voltímetro y obtener veinte valores de $V_m$ y $R$.
-  \item Verificar el punto de máxima transferencia de potencia y compararlo con la resistencia interna obtenida por el ajuste.
-  \item Estimar el error de carga que introduce el voltímetro al medir sobre un divisor de alta impedancia.
-\end{enumerate}
+\subsection*{RESISTENCIA INTERNA DE UN VOLTÍMETRO:}
 
-\section{\iconotexto{table}{Tabla de datos}}
+Puede demostrarse que la señal detectada por el voltímetro de la figura 1 es: $V_m = \frac{R_v E}{R + R_v}$ (1)
 
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Recta de carga de la fuente}\par\smallskip
-\begin{tabular}{@{}cccc@{}}
-\toprule
-$R_L$ ($\Omega$) & $V$ (V) & $I$ (mA) & $P$ (mW) \\
-\midrule
-10 & $\ldots$ & $\ldots$ & $\ldots$ \\
-22 & $\ldots$ & $\ldots$ & $\ldots$ \\
-47 & $\ldots$ & $\ldots$ & $\ldots$ \\
-100 & $\ldots$ & $\ldots$ & $\ldots$ \\
-220 & $\ldots$ & $\ldots$ & $\ldots$ \\
-470 & $\ldots$ & $\ldots$ & $\ldots$ \\
-1000 & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize Mínimo veinte filas para la fuente; la corriente se toma con el amperímetro en serie, no con la lectura de la fuente.}
-\end{minipage}
-\end{center}
+Donde: R es un resistor ajustado de tal manera que no se exceda el rango del voltímetro; Rv corresponde a la resistencia interna del voltímetro y E la salida de la fuente, la cual se determina con R=0. Así, conocidos R, E y Vm, se puede calcular Rv para el rango respectivo del voltímetro.
 
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Mida la salida de la fuente (E)
+  \item Arme el circuito mostrado en la figura 1.
+  \item Seleccione el rango de 2 V en el voltímetro (179 ,175 ó 175-A).
+  \item Ajuste un valor de R (puede ser en el orden de los M$\Omega$) y mida Vm.
+  \item En una tabla ordene los valores de E, Vm y R.
+  \item Cambie el modelo del multimedidor y repita los pasos anteriores.
+\end{itemize}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Ajustar la recta V frente a I y reportar fuerza electromotriz, resistencia interna y sus incertidumbres.
-  \item Deducir las expresiones de $R_V$, $R_a$ y $r$ antes de usarlas y contrastarlas con las del fundamento.
-  \item Determinar $R_V$ con su error y calcular $E_{\%}$ respecto a 11 M$\Omega$ para el Keithley 175 y 10 M$\Omega$ para el 179.
-  \item Determinar $R_a$ con su error en 200 $\mu$A y en 2 mA y compararla con 1 k$\Omega$ y 100 $\Omega$ del fabricante.
-  \item Graficar $R_e/V_m$ frente a $R_e$, ajustar la recta y obtener la resistencia interna de la fuente a partir del corte.
-  \item Graficar la potencia frente a la carga y verificar que el máximo ocurre cuando la carga iguala a la interna.
-  \item Discutir por qué la resistencia del voltímetro depende de la escala y qué implica para las prácticas anteriores.
-\end{enumerate}
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia R y un voltímetro Vm en paralelo.
+\end{tcolorbox}
 
-\section{\iconotexto{box-open}{Entregable}}
+Figura 1. Montaje experimental para determinar la resistencia interna (Rv) de un voltímetro.
 
-Recta de carga con ajuste, curva de potencia, valores de las tres resistencias internas con incertidumbre y discusión del efecto de carga.
+\subsection*{RESISTENCIA INTERNA DE UN AMPERÍMETRO:}
 
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+Puede demostrarse que la corriente, Im detectada por el amperímetro de la figura 2 es: $I_m = \frac{E}{R + R_a}$ (2)
 
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
+Donde: R es un resistor, ajustado de tal manera que no se exceda el rango del amperímetro; Ra corresponde a la resistencia interna del medidor y E es la salida de la fuente.
 
-\section{\iconotexto{code}{Contrato del script}}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Así conociendo E, R, e Im, se puede determinar el valor de Ra, para el
+\end{itemize}
 
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
+rango respectivo del amperímetro.
 
-\end{lstlisting}
-\end{cajaConcepto}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Mida la salida de la fuente (E)
+  \item Arme el circuito mostrado en la figura 2.
+  \item Seleccione el rango de 200 $\mu$A en el amperímetro.
+  \item Ajuste un valor de R, tal que no exceda el rango del amperímetro y mida
+\end{itemize}
 
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+Im.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item En una tabla ordene los valores de E, Im y R.
+  \item Cambie el modelo del multimedidor y repita los pasos anteriores.
+\end{itemize}
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia R y un amperímetro Im en serie.
+\end{tcolorbox}
+
+Figura 2. Montaje experimental para determinar la resistencia interna Ra, de un amperímetro.
+
+\subsection*{DETERMINACIÓN DE LA RESISTENCIA INTERNA DE UNA FUENTE:}
+
+El voltaje Vm registrado por el voltímetro de la figura 3, está dado por la ecuación: $V_m = \frac{ER_v}{R_s + R_v}$ (3)
+
+Donde: Rs representa la resistencia equivalente, para el conjunto formado por R y Rv (resistencia interna el voltímetro), las cuales se encuentran conectadas en paralelo. Por tanto, $R_s = \frac{RR_v}{R + R_v}$ (4)
+
+La ecuación (3) puede reescribirse para observar la relación lineal que hay entre $R_s/V_m$ y $R_s$; o sea, $\frac{R_s}{V_m} = \frac{1}{E} R_s + \frac{R_f}{E}$ (5)
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Mida la salida de la fuente (E)
+  \item Arme el circuito mostrado en la figura 3.
+  \item Variando la resistencia obtenga 20 valores de Vm y R (Ordénelos en una
+\end{itemize}
+
+tabla)
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje, una resistencia Rs y un voltímetro V en paralelo.
+\end{tcolorbox}
+
+Figura 3. Montaje experimental para determinar la resistencia interna $R_f$, de una fuente.
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\subsection*{RESISTENCIA INTERNA DE UN VOLTÍMETRO}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Deduzca la expresión (1)
+  \item Determine, con su error, la resistencia interna de los voltímetros digitales 179 y
+\end{itemize}
+
+175 en el rango de 2V.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine la desviación porcentual del valor medido por Ud., Rv, respecto al
+\end{itemize}
+
+valor indicado por el fabricante $R_f$ (10M$\Omega$ para 179 y 11M$\Omega$ para 175), mediante la expresión: $E\% = \frac{|R_f - R_v|}{R_f} \times 100$ (6)
+
+\subsection*{RESISTENCIA INTERNA DE UN AMPERÍMETRO}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Deduza la expresión (2)
+  \item Determine el valor con su error, de la resistencia interna $R_a$ de los
+\end{itemize}
+
+multimedidores Keithley 179 ó 175 en los rangos de 200$\mu$A, y 2mA.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine la desviación porcentual del valor medido por Ud. $R_a$, con respecto
+\end{itemize}
+
+al valor indicado por el fabricante $R_i$ (1kΩ para 200$\mu$A y 100Ω para 2 mA), mediante la ecuación (6).
+
+\subsection*{RESISTENCIA INTERNA DE UNA FUENTE}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Deduzca las ecuaciones (3), (4) Y (5).
+  \item Para cada valor de $R_L$ determine $R_f$, usando la ecuación (4).
+  \item Grafique $R_f$ Vs $R_L$. Aplique mínimo cuadrado y determine la pendiente y el
+\end{itemize}
+
+corte con sus respectivos errores.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item A partir del valor del corte, determine el valor con su error, de la resistencia
+\end{itemize}
+
+interna de la fuente suministrada.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con dos resistencias en serie, con voltajes V1 y V2, y corrientes I1 y I2.
 \end{tcolorbox}
 \end{document}

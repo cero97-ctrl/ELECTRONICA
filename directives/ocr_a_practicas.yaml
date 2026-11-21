@@ -1,0 +1,87 @@
+# Estado HONESTO: capacidad IMPLEMENTADA. La capa 3 es
+# execution/generar_practicas_desde_ocr.py (parsea el markdown del OCR, valida,
+# renderiza con el estilo infográfico y compila) y el orquestador es
+# flujo_ocr_a_practicas.py. Nació el 2026-11-21 porque el usuario declaró que el
+# markdown del OCR de `practicas.pdf` contiene las prácticas "tal y como lo
+# exige la Universidad": esa fuente SUPERA la decisión del 2026-11-04 de tomar
+# P1-P4 del .tex exacto de git HEAD. El OCR no es fuente tipográfica (trae 34
+# [FIGURA], 1 [ILEGIBLE], tablas comprimidas), sí es fuente de CONTENIDO.
+Status: activo
+
+Goal: "Convertir el markdown del OCR de `practicas.pdf` en los ocho enunciados LaTeX/PDF de las prácticas de Laboratorio II de Física, de forma determinista y repetible: mismo markdown → mismos .tex (mismo hash). Sin procesar el markdown a mano en el chat."
+
+Real scripts:
+  - "execution/generar_practicas_desde_ocr.py"
+orchestrator: "flujo_ocr_a_practicas.py"
+
+Real inputs:
+  - ocr: "Markdown del OCR (`.tmp/ocr_practicas/practicas_ocr.md`), 56 páginas, fuente de verdad del contenido."
+  - salida: "Directorio donde se escriben `practica_01.tex` … `practica_08.tex` y sus PDF."
+
+Opciones CLI (del orquestador; la fuente de verdad es `flujo_ocr_a_practicas.py --help`):
+  - name: "--ocr"
+    description: "Markdown del OCR de entrada (default .tmp/ocr_practicas/practicas_ocr.md)."
+  - name: "--salida"
+    description: "Directorio de salida (default .tmp/practicas_desde_ocr). Para publicar en el curso: cursos/LABORATORIO_II_FISICA/practicas."
+  - name: "--practicas"
+    description: "Subconjunto: '1-8', '1,3,5-7' o 'todas' (default todas)."
+  - name: "--sin-compilar"
+    description: "Solo escribir los .tex, sin invocar pdflatex."
+  - name: "--check"
+    description: "Sin escribir: valida que las 8 prácticas y sus secciones estén en el OCR."
+  - name: "--dry-run"
+    description: "Muestra el plan (comando, prácticas, coste) y sale."
+  - name: "--no-alert"
+    description: "No emitir alerta audible al terminar."
+
+Steps:
+  - step: 1
+    action: "Validar la estructura del OCR antes de escribir"
+    script: "flujo_ocr_a_practicas.py --check"
+    inputs:
+      ocr: "--ocr {{ocr}}"
+    step_notes:
+      - "Exige 8 cabeceras `PRÁCTICA n` (con/sin tilde, con/sin negrita) y, en cada práctica, objetivos, teoría, materiales, procedimiento y actividades."
+      - "Rechaza números impares de `$`, display math `\\[ ... \\]` desbalanceado, llaves desbalanceadas y `_`/`^` sueltos en modo texto."
+      - "No toca archivos ni compila; es el paso previo seguro."
+  - step: 2
+    action: "Generar y compilar las prácticas"
+    script: "execution/generar_practicas_desde_ocr.py"
+    inputs:
+      ocr: "--ocr {{ocr}}"
+      salida: "--salida {{salida}}"
+      rango: "--practicas {{practicas}}"
+    step_notes:
+      - "El orquestador lo lanza como subproceso; NUNCA reimplementar aquí el parseo ni el renderizado."
+      - "Los marcadores `[FIGURA: ...]` se convierten en cajas `tcolorbox` (también cuando van inline al final de un párrafo); `[ILEGIBLE]` se convierte en aviso. Ningún marcador queda en el LaTeX final."
+      - "Las ecuaciones `$...$` y `\\[ ... \\]` se preservan con `_tm` de `generar_material_curso.py`; no se reescapa la matemática."
+      - "Cada `.tex` se compila aislado en `<salida>/.build/`; se lee el `.log` y se exigen 0 líneas `!`. Un `!` aunque exista el PDF es fallo (código 4)."
+  - step: 3
+    action: "Validar la entrega"
+    script: "flujo_ocr_a_practicas.py (validar_entrega)"
+    inputs:
+      salida: "directorio de salida del informe JSON"
+    step_notes:
+      - "Exige un `.tex` (y un `.pdf` si se compiló) por práctica pedida, con más de 1000 bytes."
+      - "Guarda la vista por corrida en `.tmp/run_state_<run_id>.json` con los pasos 1_generar y 2_validar."
+
+Expected outputs:
+  - "<salida>/practica_01.tex … practica_08.tex: enunciados PDF listos, con estilo infográfico del repo, secciones Objetivos / Fundamento teórico / Desarrollo experimental / Materiales y equipos / Procedimiento / Actividades, y caja de 'Fuente: enunciado del PDF original'."
+  - "Informe JSON por stdout: status, prácticas, artefactos (numero, titulo, sha256_16, tex, pdf) y sha_conjunto."
+  - "Vista por corrida en .tmp/run_state_<run_id>.json."
+
+Edge cases:
+  - error: "Falta una práctica o una sección (código 3)."
+    recovery: "El informe lista `problemas` y `encontradas`. Revisar el markdown: el OCR pudo omitir una cabecera. No se inventa contenido; se corrige la fuente o se relanza el OCR de esa página."
+  - error: "Marcador `[FIGURA]` o `[ILEGIBLE]` sin convertir en el LaTeX (código 3)."
+    recovery: "El validador lo detecta antes de compilar. Revisar `convertir_bloques`: el marcador suele venir inline al final de un párrafo y debe pasar por `_separar_figuras_inline`."
+  - error: "Compilación LaTeX con errores (código 4)."
+    recovery: "El informe trae `errores` con la línea del `.log`. Causas típicas ya documentadas en `.agent/latex.md`: `\\` dentro de `\multicolumn`, `=` en etiqueta circuitikz sin llaves, Unicode griego en LaTeX crudo. El PDF NO se copia si hay `!`, aunque pdflatex lo haya generado en nonstopmode."
+  - error: "Markdown de entrada inexistente o vacío (código 2)."
+    recovery: "Generar primero el OCR con `flujo_ocr_pdf.py --pdf cursos/LABORATORIO_II_FISICA/docs/practicas.pdf --salida .tmp/ocr_practicas`."
+  - error: "Una celda de tabla con `%` sin escapar rompe la compilación dos filas más abajo."
+    recovery: "Ya resuelto: `_celda_tabla` pasa cada celda por `_tm`, que escapa `%`. No escribir `%` crudo en el markdown de entrada sin escapar."
+  - warning: "El OCR no es fuente tipográfica: 34 figuras y una portada ilegible."
+    recovery: "El contenido se conserva como cajas de aviso con la descripción de la figura; para la imagen real, consultar el PDF original. No se sustituye una figura por texto inventado."
+  - warning: "Coste: ninguno."
+    recovery: "Este flujo NO llama a ninguna API: solo parsea markdown y compila LaTeX en local. No consume OPENROUTER_API_KEY ni cuota de Gemini."

@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,190 +329,292 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 06}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 06 --- RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL}
+\hypersetup{pdftitle={Práctica 06 --- RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 06 --- Determinación de reactancias, de C y de L en régimen senoidal}{Semana 6 --- Fase 2: Elementos no lineales y régimen senoidal}
+\bandaTitulo[fondoOscuro]{Práctica 06 --- RESPUESTA DE LOS ELEMENTOS BÁSICOS R, L Y C A LA TENSIÓN SENOIDAL}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_06, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Estudiar el comportamiento de los circuitos RC y RL en régimen senoidal y usar esos circuitos para determinar la capacitancia de un capacitor y la inductancia de una bobina.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Señal senoidal, amplitud, frecuencia angular, fase y valor eficaz.
-  \item Concepto de fasor e impedancia compleja.
-  \item Reactancia inductiva y capacitiva; resistencia como caso particular.
-  \item Definición de reactancia como cociente entre tensión y corriente.
-  \item Dependencia de la reactancia con la frecuencia angular.
-  \item Impedancia equivalente serie y paralelo.
-  \item Resistencia serie de un inductor real y capacitancia distribuida de una bobina.
+  \item Introducir a los estudiantes en el estudio de los circuitos en régimen senoidal.
+  \item Estudiar al comportamiento de los circuitos RL y RC con la corriente o tensión
 \end{itemize}
+
+senoidal.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Utilizar los circuitos RC y RL para determinar la capacitancia de un condensador y
+\end{itemize}
+
+la inductancia de una bobina, respectivamente.
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-En régimen senoidal permanente cada elemento se describe por su impedancia
-compleja:
-\[
-  Z_R = R \qquad
-  Z_L = j\omega L \qquad
-  Z_C = \frac{1}{j\omega C} = -\frac{j}{\omega C}
-\]
-con $\omega = 2\pi f$. Los módulos de las reactancias son
-\[
-  X_L = \omega L \qquad\qquad X_C = \frac{1}{\omega C}
-\]
-La corriente se adelanta 90 grados a la tensión en el inductor y se atrasa
-90 grados en el capacitor; en el resistor están en fase. Para un circuito
-serie la impedancia total y el ángulo de fase son
-\[
-  Z = \sqrt{R^2 + \left(X_L - X_C\right)^2}
-  \qquad\qquad
-  \varphi = \arctan\!\frac{X_L - X_C}{R}
-\]
-Un inductor real incluye la resistencia de su devanado, por lo que su
-impedancia medida no es puramente imaginaria:
-$Z_L = \sqrt{R_s^2 + X_L^2}$. Con osciloscopio de dos canales, la diferencia
-de fase entre las señales se obtiene del desplazamiento temporal
-$\Delta t$ respecto del periodo $T$ mediante $\varphi = 360^\circ\,\Delta t/T$.
+Mediante la ley de Ohm y las ecuaciones básicas para el capacitor y el inductor, podemos estudiar el comportamiento de los circuitos RL y RC en presencia de una corriente, o la tensión senoidal.
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$v_g$] (0,3) to[R, l=$R$] (2.4,3)
-        to[L, l=$L$] (4.8,3) to[C, l=$C$] (7.2,3) -- (7.2,0) -- (0,0);
-  \draw (2.4,3) -- (2.4,4.2) to[voltmeter, l=$v_R$] (0.6,4.2);
-\end{circuitikz}
-\par\smallskip{\small\itshape Circuito serie alimentado por el generador; la tensión sobre R es proporcional a la corriente}
-\end{center}
+**RESISTOR:** Para las frecuencias de líneas de potencia y frecuencias hasta de unos cuantos kHz, el resistor, para los fines prácticos, no se ve afectado por la frecuencia de la corriente o tensión senoidal que se aplica. Para este rango de frecuencias, el resistor $R$ se puede considerar como una constante; es decir, cumple con la ley de Ohm. \[ V_R = RI \] (1) Así, si se gráfica $V_R$ vs $i$ deberíamos obtener una recta cuya pendiente debe ser numéricamente igual a la resistencia del resistor $R$.
+
+**CAPACITOR:** a diferencia de los resistores, los capacitores son elementos que manifiestan sus características sólo cuando se hace un cambio en la tensión o en la corriente del circuito en que se encuentra. Además, si consideramos la situación ideal, no disipan energía como los resistores, sino que la almacenan en una forma que puede regresar al circuito, siempre que lo requiera su diseño. Un elemento
+
+construido simplemente con dos placas conductoras paralelas, separadas por un material aislante, se denomina capacitor. La capacitancia es una medida de la eficiencia de un capacitor para almacenar carga entre sus placas; en otras palabras, su capacidad de almacenamiento. Un capacitor tiene capacitancia de un faradio si se deposita en las placas una carga de un coulomb mediante una diferencia de potencial de un voltio. Si se expresa en forma de ecuación, la capacitancia se determina así:
+
+\[C = \frac{q}{V_c}\] (2)
+
+donde: C es la capacitancia, $q$ la carga almacenada y $V_c$ = diferencia de potencial entre las placas.
+
+La capacitancia C es un parámetro que depende exclusivamente de la geometría del capacitor y de la naturaleza de los materiales que se utilizan para su construcción; especialmente, del material dieléctrico que se utiliza como material aislante. Así la capacitancia C, es una constante. De la ecuación 2, se obtiene:
+
+\[q = C.V_c\]
+
+\[i = \frac{dq}{dt} = C \frac{dV_c}{dt}\] (3)
+
+Esta última ecuación significa que cuanto mayor sea la rapidez de cambio de la tensión del capacitor, tanto mayor será la corriente capacitiva. Los capacitores, como los resistores pueden ser fijos o variables. En la figura 1 se ilustran los símbolos utilizados en cada caso.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Dos símbolos de capacitor, uno fijo y otro variable
+\end{tcolorbox}
+
+Capacitor fijo Capacitor variable
+
+Fig. 1. Representación simbólica de un capacitor.
+
+INDUCTOR: Son bobinas de varias dimensiones, diseñadas para introducir al circuito cantidades de inductancia específicas, la inductancia de una bobina es una medida del cambio instantáneo del flujo o de enlace de la bobina, debido a un cambio instantáneo de la corriente que pasa por el devanado; es decir:
+
+\[L = N \frac{d\phi}{di}\] (4)
+
+Donde: N es el número de vueltas del alambre, $\phi$ el flujo en webers e $i$ la corriente eléctrica que pasa por la bobina en amperes.
+
+Como la inductancia L de la bobina varía directamente con el flujo que enlaza el devanado, se utilizan con frecuencia materiales ferromagnéticos para incrementar la inductancia al hacer aumentar el flujo.
+
+El voltaje entre los extremos del inductor se determina por la ley de Faraday,
+
+\[V_L = L \frac{d\phi}{dt}\] (5)
+
+De las ecuaciones 4 y 5, se obtiene:
+
+\[V_L = L \frac{di}{dt}\] (6)
+
+A cada inductor se le asocia una resistencia igual a la de las vueltas del alambre y una capacitancia dispersa debida a la capacitancia entre las vueltas de la bobina. Para incluir esos efectos, se muestra en la figura 2 el circuito equivalente para el inductor. Sin embargo, la función primaria del inductor es introducir inductancia (no resistencia o capacitancia) en la red; por esa razón se construyen los inductores de tal manera que $R_o$ y $C_o$ sean pequeños.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Circuito equivalente del inductor con resistencia y capacitancia
+\end{tcolorbox}
+
+Figura 2. Circuito equivalente del inductor
+
+$R_o$ resistencia de las vueltas del alambre, $C_o$ capacitancia distribuida y L la inductancia de la bobina.
+
+Los símbolos utilizados para los inductores son como ilustran la figura 3.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Tres símbolos de inductor: inductor fijo con núcleo de aire, inductor fijo con núcleo de hierro, inductor variable
+\end{tcolorbox}
+
+Inductor fijo con Inductor fijo con Inductor variable núcleo de aire núcleo de hierro
+
+Figura 3. Representación simbólica de un inductor
+
+REACTANCIA DEL CAPACITOR Y DEL INDUCTOR
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Dos circuitos, uno RC y otro RL
+\end{tcolorbox}
+
+(8) Figura 4a. Circuito RC. (8) Figura 4b. Circuito RL.
+
+En los circuitos de las figuras 4a. y 4b, se utiliza como fuente un generador de señales que puede suministrar un voltaje senoidal igual a:
+
+\[V = V_o \text{sen}(\omega t)\] (7)
+
+Esta fuente genera en el circuito respectivo una corriente de la forma:
+
+\[i = I_o \text{sen}(\omega t - \theta)\] (8)
+
+donde: $V_o$ es la amplitud del voltaje, $I_o$ la amplitud de la corriente, $\omega = (2\pi f)$ frecuencia angular y $\theta$ diferencia de fase entre la corriente y el voltaje.
+
+La corriente $i$ causa en el resistor R una caída de voltaje $V_R$ dada por la ecuación 1; en el capacitor de la figura 4.a, una diferencia de potencial dada por:
+
+\[V_c = \frac{1}{C} \int i dt\] (9)
+
+y en el inductor del circuito de la figura 4.b, una diferencia de potencial igual a:
+
+\[V_L = L \frac{di}{dt}\]
+
+La oposición del resistor a la corriente $i$ se mide por la resistencia:
+
+\[R = \frac{V_R}{I}\] (10)
+
+En el mismo sentido se define la reactancia del capacitor como:
+
+\[X_C = \frac{V_C}{I}\] (11)
+
+Y la reactancia del inductor, como:
+
+\[X_L = \frac{V_L}{I}\] (12)
+
+Se puede demostrar, en base a las ecuaciones 9, 6, 11 y 12, que los módulos de las reactancias instantáneas $X_C$ y $X_L$ están dadas por las ecuaciones:
+
+\[|X_C| = \frac{1}{\omega C}\] \[|X_L| = \omega L\] (13)
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Un generador de funciones senoidal
-  \item Un resistor variable del tipo décadas
-  \item Un capacitor del inventario del laboratorio
-  \item Una bobina del inventario del laboratorio
-  \item Dos multimedidores Keithley (175 o 175-A)
+  \item Un generador de funciones (senoidal)
+  \item Un resistor variable del tipo décadas.
+  \item Un capacitor.
+  \item Una bobina.
+  \item 2 multimedidores digitales Keithley mod. 175 o 175 A.
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Con un generador de funciones senoidal, una resistencia de décadas y dos Keithley, el grupo mide la reactancia de un capacitor y de una bobina del inventario del laboratorio, y después determina su capacitancia y su inductancia variando la frecuencia entre 200 y 1200 Hz. Los valores obtenidos se contrastan con los del apéndice del inventario.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Armar el circuito RC serie y hacerlo revisar por el profesor antes de energizar.
-  \item Fijar la frecuencia del generador alrededor de 200 Hz y un valor de resistencia.
-  \item Tomar veinte pares de corriente $I$ y tensión $V_C$ moviendo el control de amplitud del generador.
-  \item Armar el circuito RL serie y repetir los pasos anteriores tomando veinte pares de $I$ y $V_L$ a la misma frecuencia.
-  \item Para determinar C, fijar un valor de R y variar la frecuencia veinte veces entre 200 y 1200 Hz, midiendo $V_C$ y $V_R$ en cada punto.
-  \item Para determinar L, repetir el barrido de frecuencia midiendo $V_L$ y $V_R$ en cada punto.
-  \item Calcular la corriente en cada punto como $I = V_R/R$ y anotar la incertidumbre de las dos lecturas.
-\end{enumerate}
-
-\section{\iconotexto{table}{Tabla de datos}}
-
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Barrido de frecuencia para determinar C y L}\par\smallskip
-\begin{tabular}{@{}ccccc@{}}
-\toprule
-$f$ (Hz) & $V_R$ (V) & $V_C$ (V) & $I$ (mA) & $X_C$ ($\Omega$) \\
-\midrule
-200 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-300 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-400 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-500 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-600 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-800 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-1000 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-1200 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize Los experimentos 1 y 2 usan frecuencia fija y amplitud variable, con su propia tabla de veinte filas.}
-\end{minipage}
-\end{center}
-
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
-
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Demostrar a partir de la definición de reactancia que $|X_C| = 1/(C\omega)$ y que $|X_L| = L\omega$.
-  \item Graficar $V_C$ frente a $I$ con los veinte puntos de frecuencia fija y ajustar la recta por mínimos cuadrados.
-  \item Obtener $X_C$ de la pendiente con su error y compararlo con el valor teórico calculado a partir de C.
-  \item Repetir el mismo tratamiento con $V_L$ frente a $I$ para obtener $X_L$.
-  \item Graficar $X_C$ frente a $1/\omega$ y $X_L$ frente a $\omega$, ajustar y obtener C y L de las pendientes, con sus errores.
-  \item Calcular la desviación porcentual de C frente al valor de la tabla de capacitores del apéndice y de L frente a las tablas de inductancias.
-\end{enumerate}
-
-\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
+3.2.1. EXPERIMENTO 1: Determinación de la reactancia capacitiva $X_C$.
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Medir el desfase entre tensión y corriente con osciloscopio de dos canales y compararlo con el previsto por el modelo fasorial.
-  \item Verificar el desfase con una figura de Lissajous y cuantificar la discrepancia entre ambos procedimientos.
+  \item Arme el circuito que se muestra en la figura 5.a.
+  \item Fije la frecuencia, del generador de funciones, alrededor de 200 Hz.
+  \item Fije un valor de resistencia.
+  \item Proceda a tomar una serie de 20 datos de corriente, $I$ y de voltaje, $V_C$
 \end{itemize}
 
-\section{\iconotexto{box-open}{Entregable}}
+moviendo el control de amplitud en su generador.
 
-Gráficas de $V_C$ y $V_L$ frente a $I$ con sus ajustes, valores de $X_C$ y $X_L$, y de C y L con su incertidumbre, comparados con el inventario del laboratorio.
+3.2.2. EXPERIMENTO 2: Determinación de la reactancia inductiva $X_L$.
 
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito que se muestra en la figura 5.b.
+  \item Repita los pasos 2, 3 y 4 del experimento 1.
+\end{itemize}
 
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
-
-\section{\iconotexto{code}{Contrato del script}}
-
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
-
-\end{lstlisting}
-\end{cajaConcepto}
-
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito RC (a) y RL (b) con fuentes de voltaje, resistencias, capacitores e inductores.
 \end{tcolorbox}
+
+Figura 5. Circuitos RC (a) y RL (b) para determinar las reactancias capacitiva, $X_C$ e inductiva, $X_L$, con una frecuencia fija.
+
+3.2.3. EXPERIMENTO 3: Determinación de la capacitancia C.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito que se muestra en la figura 6.a.
+  \item Fije un valor e el resistor.
+  \item Varíe la frecuencia 20 veces en un rango comprendido entre 200Hz y
+\end{itemize}
+
+1200Hz, midiendo para cada frecuencia los correspondientes valores de voltaje en el capacitor, $V_C$ y en el resistor, $V_R$.
+
+3.2.4. EXPERIMENTO 4: Determinación de la inductancia L.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito mostrado en la figura 6.b.
+  \item Repita los pasos 2 y 3 del experimento 3 (Para cada frecuencia se mide $V_L$
+\end{itemize}
+
+y $V_R$)
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuitos RC (a) y RL (b) para determinar los valores de C y L, respectivamente.
+\end{tcolorbox}
+
+Figura 6. Circuitos RC (a) y RL (b) para determinar los valores de C y L, respectivamente.
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\subsection*{EXPERIMENTO 1}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Demostrar $|X_C| = \frac{1}{C\omega}$.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique $V_C$ en función de I.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Aplique mínimo cuadrado para ajustar la recta y determine los valores de la
+\end{itemize}
+
+pendiente (m) y corte (b).
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine el valor de $X_C$ con su respectivo error, mediante el valor de la
+\end{itemize}
+
+pendiente.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Compare con el valor teórico.
+\end{itemize}
+
+\subsection*{EXPERIMENTO 2}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Demostrar $|X_L| = L\omega$
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique $V_L$ en función de I.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Aplique mínimo cuadrado para ajustar la recta y determine los valores de la
+\end{itemize}
+
+pendiente (m) y corte (b).
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine el valor de $X_L$ con su respectivo error, mediante el valor de la
+\end{itemize}
+
+pendiente.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Compare con el valor teórico.
+\end{itemize}
+
+\subsection*{EXPERIMENTO 3}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para cada valor de $V_R$ y $V_C$. Calcule el valor de $X_C$, usando la ec. 11.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique $X_C$ en función de $1/\omega$.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Aplique mínimo cuadrado para ajustar la recta, determine m y b.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine el valor de C con su respectivo error, mediante la pendiente.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Calcule la desviación porcentual, utilizando el valor teórico (ver tabla N$^{\circ}$1).
+\end{itemize}
+
+\subsection*{EXPERIMENTO 4}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para cada valor de $V_R$ y $V_L$. Calcule el valor de $X_L$, usando la ec. 12.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Grafique $X_L$ en función de $\omega$.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Aplique mínimo cuadrado para ajustar la recta, determine m y b.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Determine el valor de L con su respectivo error, mediante la pendiente.
+\end{itemize}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Calcule la desviación porcentual, utilizando el valor teórico (ver tabla N$^{\circ}$ 2 y 3).
+\end{itemize}
 \end{document}

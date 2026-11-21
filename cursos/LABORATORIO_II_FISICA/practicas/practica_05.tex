@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,196 +329,134 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 05}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 05 --- ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR}
+\hypersetup{pdftitle={Práctica 05 --- ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 05 --- Característica estática del diodo y extracción de parámetros}{Semana 5 --- Fase 2: Elementos no lineales y régimen senoidal}
+\bandaTitulo[fondoOscuro]{Práctica 05 --- ELEMENTOS NO LINEALES. DIODO SEMICONDUCTOR}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_05, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Obtener la característica corriente-tensión de un diodo en directa y en inversa, y extraer la corriente de saturación y el factor de idealidad por linealización del modelo exponencial.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Elemento óhmico frente a elemento no lineal.
-  \item Unión p-n, tensión umbral y conducción en directa.
-  \item Ecuación de Shockley y linealización logarítmica.
-  \item Resistencia dinámica o incremental del diodo.
-  \item Ruptura Zener y polarización inversa.
-  \item Diodo emisor de luz y su tensión característica.
-  \item Resistencia limitadora y protección del dispositivo.
+  \item Aplicar el método de los mínimos cuadrados en sistemas de datos que se pueden representar por medio de una función lineal.
+  \item Determinar el factor de idealidad (n) y la corriente de saturación inversa ($I_0$) de un diodo semiconductor.
 \end{itemize}
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-La corriente de un diodo en directa sigue la ecuación de Shockley:
-\[
-  I_D = I_S\left(e^{V_D/(n V_T)} - 1\right)
-  \qquad\text{con}\qquad
-  V_T = \frac{k_B T}{q} \approx 25{,}9\ \mathrm{mV}
-  \ \text{a}\ 300\ \mathrm{K}
-\]
-donde $I_S$ es la corriente de saturación y $n$ el factor de idealidad,
-entre 1 y 2. Tomando logaritmos se linealiza:
-\[
-  \ln I_D = \ln I_S + \frac{1}{n V_T}\,V_D
-\]
-de modo que la pendiente de $\ln I_D$ frente a $V_D$ es $1/(n V_T)$ y la
-ordenada al origen es $\ln I_S$. La resistencia dinámica en un punto de
-operación es la derivada:
-\[
-  r_d = \left.\frac{dV_D}{dI_D}\right|_{I_D} = \frac{n V_T}{I_D}
-\]
-En inversa la corriente es del orden de $I_S$ hasta alcanzar la tensión de
-ruptura, donde crece con muy poca variación de tensión; ese es el régimen
-que aprovecha el diodo Zener como regulador.
-El amperímetro no mide la corriente del diodo sino la suma de la del diodo
-y la que deriva el voltímetro que mide $V_D$:
-\[
-  i_m = i + i_v
-  \qquad\text{con}\qquad
-  i_v = \frac{V}{R_V}
-\]
-con $R_V$ del orden de 10 M$\Omega$, la corrección es despreciable en directa pero
-no en inversa, donde la corriente del diodo es del orden de los
-microamperios.
+La resistencia eléctrica de un elemento se define por: \[R = \frac{V}{I}\] Donde, V es la caída de potencial e I la corriente que circula por el elemento. Si esta razón es constante, a temperatura constante se dice que el elemento obedece a la ley de Ohm.
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$E$] (0,3) to[ammeter, l=$I_D$] (3,3)
-        to[R, l=$R$] (5.4,3) to[D, l=$D$] (5.4,0) -- (0,0);
-  \draw (5.4,3) -- (6.8,3) to[voltmeter, l=$V_D$] (6.8,0) -- (5.4,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Caracterización del diodo; la resistencia R limita la corriente y protege el dispositivo}
-\end{center}
+Un experimento interesante consiste en estudiar aquellos elementos cuya resistencia varía con la intensidad o con el voltaje (elementos no lineales). Uno de estos elementos es el diodo semiconductor. La palabra diodo significa dos electrodos.
+
+La fabricación de un diodo semiconductor exige una muestra muy pura de un elemento semiconductor, en cuyo seno se ha introducido uniformemente una cantidad, cuidadosamente controlada y muy pequeña, de otro elemento. El material básico normal es el Silicio (Si). Este es un semiconductor, por lo que a la temperatura ambiente posee relativamente pocas cargas libres (comparado con el número de cargas libres en un conductor como el cobre). El elemento que se introduce en el silicio debe estar cerca de éste en la tabla periódica pero ha de tener un electrón de valencia mayor o menor que él mismo. Por ejemplo el boro (valencia 3) y el arsénico (valencia 5) con silicio (valencia 4). La adición de boro produce un material que actúa como si el silicio tuviera un número grande de cargas positivas
+
+libres. Este material se denomina semiconductor tipo p. Análogamente, la adición de arsénico produce un material que actúa como si el silicio tuviese un número grande de cargas negativas libres. Este material se denomina semiconductor tipo n. La figura (1.a), muestra un pedazo de un semiconductor tipo p y un pedazo de semiconductor tipo n, separados. La figura (1.b) muestra la formación de un diodo semiconductor cuando los dos pedazos de semiconductor (tipo p y tipo n) se unen. En el proceso de formación del diodo semiconductor ocurre una difusión de cargas positivas del lado p hacia el lado n y una difusión de cargas negativas desde el lado n hacia el lado p. estas cargas se cancelan mutuamente dejando un dipolo en la región de la unión, cuyo campo eléctrico crece hasta que contrarresta la difusión de las cargas.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Tabla con tres secciones: Zona neutra, Zona de cargas, Zona neutra. Cada sección tiene dos columnas: p y n. Cada columna tiene una serie de símbolos de más y menos.
+\end{tcolorbox}
+
+a.- Antes de la formación b.- Después de la formación
+
+Figura N$^{\circ}$ 1 Diodo.
+
+Este diodo aún cuando no está polarizado, (lo cual significa que no tiene voltaje externo aplicado) tiene un campo eléctrico en la zona de carga, el cual se manifiesta por una diferencia de potencial entre el lado p y el lado n.
+
+Un diodo puede ser polarizado de dos maneras: 1. **Polarizacion Directa:** Cuando el terminal positivo de la fuente está conectado al material tipo p y el terminal negativo al material tipo n, tal como se muestra en la figura 2.a. en ésta, la diferencia de potencial aplicada disminuye el campo eléctrico de la zona de carga, por lo que la difusión de cargas aumenta, produciéndose una corriente eléctrica.
+
+2. **Polarizacion Inversa:** Cuando el terminal negativo de la fuente está conectado al material tipo p y el terminal positivo al material tipo n, tal como se muestra en la figura 2.b. En este caso, la diferencia de potencial aplicada aumenta el campo eléctrico de la zona, por lo que la difusión de cargas disminuye, no observándose ningún aumento de corriente.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un diodo con polarización directa (a) y polarización inversa (b). Muestra la conexión de una fuente de voltaje a un diodo, con símbolos de cargas positivas y negativas en las regiones p y n, y la dirección del campo eléctrico.
+\end{tcolorbox}
+
+a. Polarización directa b. Polarización inversa
+
+Figura N$^{\circ}$ 2. Polarización de un diodo.
+
+La figura 3 muestra el símbolo esquemático de un diodo rectificador; la flecha del símbolo del diodo indica la dirección más común de la corriente.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Símbolo esquemático de un diodo rectificador con una flecha indicando la dirección de la corriente.
+\end{tcolorbox}
+
+Figura N$^{\circ}$ 3. Símbolo esquemático del diodo.
+
+Si se analiza teóricamente el diodo semiconductor, se encuentra que la relación entre la corriente y el voltaje (característica I-V) para este elemento viene dada por la ecuación: \[I = I_0 \exp \left[ \frac{eV}{nKT} - 1 \right] \quad (2)\]
+
+Donde: $I_0$: Corriente de saturación inversa (En el orden de los $\mu$A para germanio y los nA para el silicio) $V$: Caída de potencial $e$: Carga del electrón ($1,602 \times 10^{-19}$ C) $K$: Constante de Boltzmann ($1,38 \times 10^{-23}$ J/K) $T$: Temperatura ambiente (300 K) $n$: Factor de idealidad, $1 	extless{} n 	extless{} 2$, (n=1 Germanio, n=2 Silicio)
+
+Si $T \approx 300$ K y $V \ge 0$, (polarización directa) entonces: $\exp \left( \frac{eV}{nKT} \right) 	extgreater{}	extgreater{} 1$; de aquí que podemos reducir (2) a: \[I = I_0 \exp \left( \frac{eV}{nKT} \right) \quad (3)\]
+
+La figura 4 muestra la característica I-V de un diodo.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Gráfica de la característica I-V de un diodo, mostrando la corriente (I) en función del voltaje (V) para polarización directa e inversa. Se indican las regiones de polarización directa e inversa, y los valores de corriente y voltaje.
+\end{tcolorbox}
+
+Figura N$^{\circ}$ 4. Características I v de los diodos (Ge) y (Si)
+
+En la región de polarización inversa se origina una corriente muy pequeña llamada corriente de saturación inversa y se le designa con $I_0$. El nombre de saturación nos recuerda que no puede obtenerse más de esta corriente en polarización inversa. En otras palabras, aumentando el voltaje inverso no se aumenta la corriente inversa. Para obtener los valores de $I_0$ y $n$ es necesario transformar la ecuación (3) a una relación lineal. Para ello se toma el logaritmo natural a dicha ecuación:
+
+\[ \ln I = \ln I_0 + \frac{eV}{nKT} \] (4)
+
+Si los valores de $\ln I$ están afectados con un error porcentual más grande que los valores de $V$, se pueden tomar los valores de $\ln I$ como ordenadas y $V$ como abscisa de tal manera que la gráfica $\ln I$ en función de $V$ debe determinar una recta cuya pendiente, m, y cuyo corte con eje ordenadas, b, están representados por las siguientes ecuaciones, respectivamente:
+
+\[ m = \frac{e}{nKT} \] (5)
+
+\[ b = \ln I_0 \] (6) La recta que mejor se ajusta a estos datos, se obtiene por medio del método de los mínimos cuadrados al regresar los "$\ln I$" sobre los "$V$" (teniendo $\ln I$ mayor error porcentual que $V$). Mediante este método se obtiene la pendiente "m" y así n mediante la relación (5). Como error de "m" se toma $\Delta m$. El error de "n" se obtiene de $\Delta m$ por medio de propagación de errores.
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Una fuente de poder de 0 a 30 V y 6 A
-  \item Dos multimedidores Keithley (179, 175 o 175-A)
-  \item Un diodo semiconductor rectificador
-  \item Una resistencia limitadora de 220 $\Omega$
+  \item 1 fuente de poder de $0 - 30$ v, $6$ A
+  \item 2 multímedidores Keithley ($175$ ó $175$-A)
+  \item 1 diodo semiconductor
+  \item 1 Resistencia
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-El grupo mide la curva completa de un diodo rectificador en directa y en inversa, la de un Zener en ruptura y la de un LED, y debe demostrar que la corriente sigue una exponencial obteniendo sus dos parámetros por un ajuste lineal sobre la variable transformada.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Calcular la resistencia limitadora que mantiene la corriente por debajo de 20 mA con la tensión máxima disponible.
-  \item Montar el circuito en directa y recorrer la tensión de 0 a 0,8 V en pasos de 50 mV hasta el umbral.
-  \item A partir del umbral, tomar puntos en pasos de 10 mV controlando que la corriente no supere el límite, hasta completar un mínimo de veinte pares $V$, $I$.
-  \item Medir con el mismo voltímetro la tensión sobre la resistencia limitadora, para estimar la corriente que deriva el voltímetro $i_v = V/R_V$.
-  \item Invertir el diodo y medir la corriente inversa en 2, 5 y 10 V, cambiando a la escala de microamperios.
-  \item Anotar la temperatura ambiente, porque los parámetros del diodo dependen de ella.
-\end{enumerate}
-
-\section{\iconotexto{table}{Tabla de datos}}
-
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Característica en directa del diodo de silicio}\par\smallskip
-\begin{tabular}{@{}ccccc@{}}
-\toprule
-$V_D$ (V) & $i_m$ (mA) & $i_v$ ($\mu$A) & $\ln I_D$ & $r_d$ ($\Omega$) \\
-\midrule
-0,100 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,300 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,450 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,550 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,600 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,650 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,700 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-0,750 & $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize Mínimo veinte filas; la columna del logaritmo se completa en el script, no a mano.}
-\end{minipage}
-\end{center}
-
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
-
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Corregir la corriente medida como $i = i_m - i_v$ y discutir cuándo la corrección es despreciable frente a la incertidumbre.
-  \item Graficar $\ln I$ frente a $V_D$ y ajustar la recta por mínimos cuadrados.
-  \item Obtener el factor de idealidad $n$ a partir de la pendiente y la corriente de saturación $I_0$ del corte, ambos con su error.
-  \item Calcular la resistencia dinámica en tres puntos de operación y compararla con la pendiente local de la curva.
-  \item Comparar el valor de $n$ con el intervalo esperado entre 1 y 2 y discutir las causas de la desviación.
-  \item Estimar el efecto de la temperatura sobre la tensión umbral y discutir su signo.
-\end{enumerate}
-
-\section{\iconotexto{plus-circle}{Ampliación (opcional)}}
-
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Repetir la caracterización con un diodo Zener de 5,1 V, en directa y en su ruptura inversa, limitando la corriente con el resistor adecuado.
-  \item Medir la curva de un diodo emisor de luz y registrar la tensión a la que comienza a emitir luz visible.
-  \item Comparar las tensiones umbral de los tres dispositivos y relacionarlas con el material semiconductor.
+  \item Arme el circuito que se muestra en la figura 5. (El diodo debe estar polarizado
 \end{itemize}
 
-\section{\iconotexto{box-open}{Entregable}}
+directamente).
 
-Curva en directa e inversa del diodo con la corrección por corriente derivada, parámetros del modelo exponencial con su incertidumbre y, si se realiza la ampliación, la comparación con Zener y LED.
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Variar la tensión de la fuente y/o variar la resistencia R, para obtener los
+\end{itemize}
 
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
+valores de $i_m$ y los correspondientes valores de $V$. (mínimo 20 valores)
 
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
-
-\section{\iconotexto{code}{Contrato del script}}
-
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
-
-\end{lstlisting}
-\end{cajaConcepto}
-
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un circuito con un diodo, un amperímetro, un voltímetro y una resistencia.
 \end{tcolorbox}
+
+**Figura Nº 5. Esquema experimental para determinar las características i-V de un diodo**
+
+**OBSERVACIÓN:** El voltímetro mide directamente el voltaje del diodo (V), sin embargo, el amperímetro mide la suma $i_m$ de las corrientes que pasan por el voltímetro $i_v$ y por el diodo $i$, es decir, \[ i_m = i_v + i \] La corriente que pasa por el voltímetro está dada por: \[ i_v = \frac{V}{R_v} \] Donde: V, voltaje medio en el voltímetro (voltaje aplicado al diodo) y $R_v$, Resistencia interna del voltímetro. Por lo que: \[ i_m = \frac{V}{R_v} + i \] Si se utiliza un multímedidor de alta resistencia de entrada (Keithley 175), se puede asegurar que: \[ \frac{V}{R_v} 	extless{}	extless{} i_m \] Entonces se puede hacer la siguiente aproximación: \[ i \approx i_m \]
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Graficar $\ln I$ vs $V$
+  \item Utilizar el método de los mínimos cuadrados para ajustar la ecuación (3) a los
+\end{itemize}
+
+datos experimentales.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item De la pendiente, hallar el factor de idealidad n usando la ecuación (5), con su
+\end{itemize}
+
+respectivo error.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Del corte con el eje de ordenada b, hallar la corriente de saturación inversa $i_0$,
+\end{itemize}
+
+usando la ecuación (6), con su respectivo error.
 \end{document}

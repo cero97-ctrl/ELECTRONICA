@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,184 +329,139 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 02}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 02 --- DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA}
+\hypersetup{pdftitle={Práctica 02 --- DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 02 --- Comparación de tres métodos para medir una resistencia}{Semana 2 --- Fase 1: Instrumentación y leyes básicas de los circuitos}
+\bandaTitulo[fondoOscuro]{Práctica 02 --- DETERMINACIÓN DE UNA RESISTENCIA ELÉCTRICA}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_02, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Determinar una resistencia desconocida por método voltamperimétrico, por óhmmetro y por puente de Wheatstone, y comparar la incertidumbre que aporta cada método.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Montajes de corta y larga derivación y su error sistemático.
-  \item Corrección por resistencia interna del amperímetro y del voltímetro.
-  \item Puente de Wheatstone y condición de equilibrio.
-  \item Sensibilidad del detector y su efecto sobre la incertidumbre.
-  \item Código de colores y tolerancia comercial.
-  \item Comparación de métodos, qué mide cada uno y con qué límite.
+  \item Conocer los diferentes métodos experimentales que permiten determinar una resistencia eléctrica.
+  \item Escoger entre estos métodos, aquel que permita determinar una resistencia de la manera más práctica y precisa.
 \end{itemize}
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-En el montaje de larga derivación el amperímetro mide la corriente del
-resistor más la del voltímetro, y en el de corta derivación el voltímetro
-mide la caída del resistor más la del amperímetro. Corrigiendo:
-\[
-  R_{\text{larga}} = \frac{V}{I - V/R_V}
-  \qquad\qquad
-  R_{\text{corta}} = \frac{V}{I} - R_A
-\]
-El puente de Wheatstone está en equilibrio cuando el detector marca cero.
-Si $I_1$ recorre el brazo superior ($R_1$ y $R_2$) e $I_2$ el inferior
-($R_x$ y $R_3$), la igualdad de potencial entre los puntos medios exige
-\[
-  I_2 R_x = I_1 R_1
-  \qquad\text{y}\qquad
-  I_2 R_3 = I_1 R_2
-\]
-y dividiendo miembro a miembro queda la condición de equilibrio
-\[
-  \frac{R_x}{R_3} = \frac{R_1}{R_2}
-  \qquad\Longrightarrow\qquad
-  R_x = R_1\,\frac{R_3}{R_2}
-\]
-La ventaja del puente es que el equilibrio no depende de la tensión de
-alimentación ni de la calibración absoluta del detector: solo de la
-exactitud de las resistencias patrón. Su límite es la sensibilidad, es
-decir cuánto desequilibrio hace falta para que el detector lo revele.
+Ver sección 2 de la primera práctica.
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$E$] (0,3);
-  \draw (0,3) to[R, l=$R_1$] (2,3) to[R, l=$R_2$] (4,3);
-  \draw (0,0) to[R, l=$R_x$] (2,0) to[R, l=$R_3$] (4,0);
-  \draw (4,3) -- (4,0);
-  \draw (2,3) to[ammeter, l=$G$] (2,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Puente de Wheatstone; el equilibrio se alcanza con corriente nula por el detector G}
-\end{center}
+\section{\iconotexto{flask}{Desarrollo experimental}}
+
+En esta parte del laboratorio, Ud. podrá determinar el valor de una resistencia eléctrica utilizando dos métodos experimentales, uno de medida indirecta y otro de medida directa.
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Resistencia desconocida suministrada por el profesor, de entre 100 $\Omega$ y 10 k$\Omega$
-  \item Caja de resistencias décadas de cuatro órdenes, con error del 1 \% del valor ajustado
-  \item Galvanómetro o detector de cero
-  \item Dos multimedidores Keithley (179, 175 o 175-A)
-  \item Pila tipo D como fuerza electromotriz del puente
+  \item 1 fuente de poder de $0-30$ v, 6 A
+  \item 2 multimedidores Keithley (179, 175 ó 175-A)
+  \item 1 Resistencia de carbón.
+  \item 3 Resistencias variable del tipo décadas.
+  \item 1 fuente estabilizada electrónicamente (Pila tipo D).
+  \item Cables de conexión.
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Se entrega a cada grupo una resistencia desconocida. Debe medirla con el montaje voltamperimétrico en sus dos variantes, con el óhmmetro y con un puente de Wheatstone, y decidir cuál de los cuatro resultados es más confiable justificándolo con la incertidumbre y no con la apariencia del número.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Medir la resistencia con el óhmmetro Keithley, desconectada del circuito, y anotar rango, resolución y error de especificación.
-  \item Montar la larga derivación, tomar cinco puntos de tensión y corriente y corregir por la resistencia del voltímetro.
-  \item Montar la corta derivación, repetir las cinco mediciones y corregir por la resistencia del amperímetro.
-  \item Armar el puente con R1 y R2 en relación 1 a 1 y ajustar R3 hasta anular el detector.
-  \item Repetir el equilibrio con relaciones 1 a 10, 10 a 1 y 100 a 1, eligiendo siempre potencias de diez, y comparar los valores de Rx.
-  \item Estimar la sensibilidad desviando R3 hasta que el detector apenas se mueva, y tomar ese intervalo como incertidumbre.
-  \item Leer el código de colores del resistor y contrastarlo con el resultado de cada método.
-\end{enumerate}
+\subsection*{AMPERÍMETRO Y VOLTÍMETRO.}
 
-\section{\iconotexto{table}{Tabla de datos}}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito mostrado en la figura 1a.
+  \item Variando la salida de la fuente, obtenga 20 valores de corriente y voltaje.
+\end{itemize}
 
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Resistencia obtenida por cada método}\par\smallskip
-\begin{tabular}{@{}cccc@{}}
-\toprule
-Método & $R_x$ ($\Omega$) & $u(R_x)$ ($\Omega$) & Fuente del error dominante \\
-\midrule
-Óhmmetro & $\ldots$ & $\ldots$ & $\ldots$ \\
-Larga derivación & $\ldots$ & $\ldots$ & $\ldots$ \\
-Corta derivación & $\ldots$ & $\ldots$ & $\ldots$ \\
-Puente, relación 1 a 1 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Puente, relación 1 a 10 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Código de colores & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize La columna de incertidumbre debe justificar su origen en cada caso.}
-\end{minipage}
-\end{center}
+El análisis de este circuito nos indica que la corriente $I$ que pasa por el amperímetro es la suma de la corriente $I_R$ que circula por el resistor R, más la corriente $I_V$, que circula por la resistencia interna del voltímetro $R_V$, por lo que: $I = I_R + I_V$ (1)
 
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+Como $I_R = \frac{V}{R}$, de la misma forma que $I_V = \frac{V}{R_V}$ se tiene que $I = \frac{V}{R} + \frac{V}{R_V}$ Si $R_V 	extgreater{}	extgreater{} R$, prácticamente toda la corriente pasa a través de R. Por lo tanto, $V/R_V$ $\approx 0$ por lo que se puede determinar el valor de R a partir de la relación, $R = \frac{V}{I}$ (2)
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Calcular la resistencia corregida de cada montaje y su incertidumbre propagada.
-  \item Comparar los valores del puente y decidir si la relación de brazos influye en la precisión alcanzada.
-  \item Expresar cada resultado como intervalo y comprobar cuáles se solapan entre sí.
-  \item Atribuir al puente la incertidumbre del 1 \% del valor ajustado en las décadas y justificar por qué no depende de la fuente.
-  \item Identificar el error sistemático dominante de cada método con una frase justificada.
-  \item Discutir en términos de precisión los tres métodos y concluir cuál introduce menos error en el rango medido.
-\end{enumerate}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito de la figura 1b.
+  \item Variando la salida de la fuente, obtenga 20 valores de corriente y voltaje.
+\end{itemize}
 
-\section{\iconotexto{box-open}{Entregable}}
+En este caso, la caída de tensión V es la suma de la caída de tensión en el amperímetro $V_A$ más la caída de tensión en la resistencia $V_R$. Esto es: $V = IR_A + IR$ (3) Si $R_A 	extless{}	extless{} R$, toda la caída de potencial se debe a la resistencia R, por lo tanto $IR_A$ $\approx 0$, lo cual conduce nuevamente a la relación [2]: $R = \frac{V}{I}$ (4)
 
-Tabla comparativa de los cuatro métodos con incertidumbres, discusión de cuál es más confiable y por qué, y scripts de corrección de los montajes.
-
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
-
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
-
-\section{\iconotexto{code}{Contrato del script}}
-
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
-
-\end{lstlisting}
-\end{cajaConcepto}
-
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con amperímetro, voltímetro y resistencia en dos configuraciones (1.a y 1.b)
 \end{tcolorbox}
+
+Figura 1. Circuito para determinar la resistencia R.
+
+\subsection*{PUENTE DE RESISTENCIAS:}
+
+El puente de resistencia o puente Wheatstone, se utiliza para determinar el valor de un resistor desconocido por comparación con tres resistores cuyas resistencias se pueden modificar. El circuito de este puente, mostrado en la figura 2, básicamente consta de f.e.m, tres resistores de precisión [$R_1$, $R_2$ y $R_C$], un detector V sensible a pequeñas diferencias de potencial y el resistor $R_X$ cuyo valor de resistencia se va a determinar. El método consiste en balancear el puente variando las resistencias $R_1$, $R_2$ y $R_C$ hasta que el detector indique cero potencial. En estas condiciones los puntos b y d están a un mismo potencial. Por lo tanto, la caída de potencial a través de $R_X$ debe ser igual a la caída de potencial a través de $R_1$, esto es: $I_X R_X = I_1 R_1$ De la misma forma, la caída de potencial a través de $R_C$ debe ser igual a la caída de potencial a través de $R_2$, es decir: $I_C R_C = I_2 R_2$ Si dividimos miembro a miembro ambas ecuaciones obtenemos para la resistencia desconocida el valor dado por: $R_X = R_C \frac{R_1}{R_2}$ (5)
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un puente de Wheatstone con resistencias $R_X$, $R_1$, $R_C$, $R_2$ y un voltímetro V
+\end{tcolorbox}
+
+Figura 2. Puente de Wheatstone.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Arme el circuito mostrado en la figura 2.
+  \item Empezando con la sensibilidad mínima (rango máximo) del detector
+\end{itemize}
+
+(voltímetro), ajuste los valores $R_1$, $R_2$ y $R_C$ hasta obtener una indicación mínima en el detector (V = 0).
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Aumente la sensibilidad del detector y repita el paso anterior.
+  \item Ajuste cada vez más hasta obtener la indicación cero con la máxima
+\end{itemize}
+
+sensibilidad, (mínimo rango).
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Anote los valores de $R_1$, $R_2$ y $R_C$.
+\end{itemize}
+
+RECOMENDACIÓN: A pesar de que el ajuste a cero en el detector se logra moviendo los selectores de $R_1$, $R_2$ y $R_C$, siempre es recomendable elegir una relación $R_1/R_2$ a valores como $10^3$, $10^2$, $10^{-1}$, $1$, $10$, $10^2$, ó $10^3$. Las resistencias $R_1$, $R_2$ y $R_C$ están constituidas por resistores variables en cuatro décadas que permiten estimar un error del 1\% del valor ajustado. Como f.e.m. puede utilizarse una pila y como resistor $R_X$ el resistor desconocido que le suministre el profesor.
+
+\subsection*{OHMÍMETRO}
+
+Existen multímedidores analógicos y digitales que, además de medir corriente y voltaje, están calibrados para indicar valores de resistencia eléctrica. Esto constituye el llamado ohmímetro. Utilice la resistencia empleada por usted en los métodos anteriores (amperímetro y voltímetro, puente de Wheatstone) y determine el valor con su error, utilizando el multímedidor Keithley 175 ó 179.
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\subsection*{LA PRECISIÓN DEL RESULTADO:}
+
+Los valores de R obtenidos mediante los métodos descritos anteriormente están afectados por un error. En las mediciones donde se empleó el método expuesto en la parte 3.2.1, el error depende de los errores con que son afectados los valores de V e I según las especificaciones de los multímetros utilizados y el rango empleado en las medidas correspondientes. Las mediciones donde se empleó el método desarrollado en la parte 3.2.2, partiendo del supuesto de que los cables de conexión carecen de resistencia y de que hay buenos contactos eléctricos en los diferentes puntos de interconexión, las fuentes de error provienen de las resistencias empleadas para el balanceo del puente, cuyo valor es de $\pm 1\%$ del valor ajustado. Finalmente, el error que se comete con el empleo del método expresado en 3.3.1, proviene del instrumento y el rango empleado, según especificaciones del manual de instrucciones.
+
+REALIZACIÓN DE LA PRÁCTICA.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Revise, en la bibliografía recomendada, lo relacionado con métodos
+\end{itemize}
+
+experimentales para medir resistencias eléctricas y amplíe la información teórica que se ha dado aquí como introducción.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para el método 3.2.1, construya la gráfica I Vs V, aplique mínimo cuadrado y
+\end{itemize}
+
+a partir de la pendiente y su error; determine el valor, con su error, de la resistencia suministrada.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para el método 3.2.2, determine el valor de $R_X$ con su error, usando la
+\end{itemize}
+
+ecuación 5.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para el método 3.3.1, determine el valor de $R_X$ con su error.
+  \item Examine, analice y discuta, en términos de precisión, los métodos
+\end{itemize}
+
+experimentales utilizados.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item En base a la discusión anterior y a los resultados obtenidos, concluya acerca
+\end{itemize}
+
+del método que introduce menos error en la determinación de una resistencia eléctrica.
 \end{document}

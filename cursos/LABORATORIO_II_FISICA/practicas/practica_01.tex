@@ -26,6 +26,7 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{needspace}
 \usepackage{colortbl}
 \usepackage{enumitem}
 
@@ -328,193 +329,181 @@
 \newcommand{\dificil}{\textcolor{rojoAlerta}{\faIcon{circle}\,\textbf{Difícil}}}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\renewcommand{\iconoBanda}{atom}
-\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{atom}~LABORATORIO\_II\_FISICA}
-\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 01}
-\hypersetup{pdftitle={Laboratorio II de Física},pdfauthor={Prof. César Rodríguez}
-  pdfsubject={LABORATORIO\_II\_FISICA}}
+\renewcommand{\iconoBanda}{flask}
+\fancyhead[L]{\footnotesize\color{grisTexto}\faIcon{flask}~Laboratorio II de Física}
+\fancyhead[R]{\footnotesize\color{grisTexto}Práctica 01 --- MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS}
+\hypersetup{pdftitle={Práctica 01 --- MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS},pdfauthor={Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011}}
 
 \begin{document}
-\bandaTitulo[fondoOscuro]{Práctica 01 --- Característica corriente-tensión de un resistor}{Semana 1 --- Fase 1: Instrumentación y leyes básicas de los circuitos}
+\bandaTitulo[fondoOscuro]{Práctica 01 --- MANEJO DEL INSTRUMENTAL ELÉCTRICO Y DETERMINACIÓN DE LA CARACTERÍSTICA CORRIENTE-VOLTAJE (I-V) DE ALGUNOS DISPOSITIVOS}{Prácticas según el programa de la Universidad de Oriente}
 
-\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} 2 de noviembre de 2026\end{center}
+\begin{center}\small\color{grisTexto}Prof. César Rodríguez \textbar{} Universidad de Oriente, Núcleo de Sucre, Departamento de Física \textbar{} Cumaná, abril de 2011\end{center}
 
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}X@{}}
-\toprule
-\textbf{Duración} & 3 horas de laboratorio presencial más 2 horas de análisis \\
-\textbf{Modalidad} & 3 grupos con roles rotativos \\
-\textbf{Entrega} & GitHub del grupo, carpeta semana\_01, antes del corte semanal \\
-\textbf{Instrumento} & Práctica formativa con informe \\
-\bottomrule
-\end{tabularx}
+\begin{tcolorbox}[cajaContenido]\textbf{Fuente:} enunciado del PDF original (Universidad de Oriente, Núcleo de Sucre, Departamento de Física, 2011).
+\end{tcolorbox}
 
-\section{\iconotexto{bullseye}{Objetivo}}
-
-Aprender a usar la fuente de poder, los multimedidores y el tablero de montaje, estimar la incertidumbre de cada lectura y decidir, a partir de la característica $I$--$V$, si un elemento es óhmico o no lineal.
-
-\section{\iconotexto{clipboard-list}{Contenidos que se aplican}}
+\section{\iconotexto{bullseye}{Objetivos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Magnitudes eléctricas y unidades del SI; prefijos y notación científica.
-  \item Resolución, exactitud y clase de un instrumento; dígitos de un multímetro.
-  \item Incertidumbre tipo A y tipo B; expresión del resultado con cifras significativas.
-  \item Conexión del voltímetro en paralelo y del amperímetro en serie; efecto de carga.
-  \item Ley de Ohm y criterio experimental de ohmicidad.
-  \item Ajuste por mínimos cuadrados, con pendiente, ordenada y sus incertidumbres.
-  \item Normas de seguridad eléctrica en la mesa de laboratorio.
+  \item Lograr que el estudiante aprenda a utilizar los instrumentos eléctricos de medida y
 \end{itemize}
+
+a realizar montaje de circuitos sencillos.
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Obtener la característica i-v de algunos dispositivos y determinar si cumplen o no
+\end{itemize}
+
+la ley de Ohm.
 
 \section{\iconotexto{book-open}{Fundamento teórico}}
 
-Un resistor es óhmico cuando la corriente que lo atraviesa es proporcional
-a la tensión entre sus bornes:
-\[
-  V = R\,I \qquad\Longrightarrow\qquad R = \frac{V}{I}
-\]
-La resistencia no se estima como el promedio de los cocientes $V_k/I_k$,
-sino como la pendiente del ajuste lineal de $V$ frente a $I$, que pondera
-todos los puntos y reduce el ruido de lectura:
-\[
-  R = \frac{n\sum_k V_k I_k - \sum_k V_k \sum_k I_k}
-           {n\sum_k I_k^2 - \left(\sum_k I_k\right)^2}
-\]
-La incertidumbre de la lectura de un multímetro digital combina un
-porcentaje de la lectura con un número de dígitos del último lugar:
-\[
-  u(V) = a \cdot V + b \cdot \mathrm{d\acute{i}g}
-\]
-con $a$ expresada en tanto por uno y $b$ en dígitos del último lugar.
-y, al propagar a una magnitud indirecta $R = V/I$,
-\[
-  \frac{u_R}{R} = \sqrt{\left(\frac{u_V}{V}\right)^2
-                      + \left(\frac{u_I}{I}\right)^2}
-\]
-La dispersión de los puntos alrededor del ajuste se mide con los
-residuales $e_k = V_k - R I_k$; si los residuales tienen signo
-sistemático en función de la corriente, el elemento no es óhmico o hay un
-error sistemático, como calentamiento del resistor o efecto de carga del
-amperímetro.
+Esta teoría es común para las prácticas "Determinación de una resistencia eléctrica" y "Determinación de la resistencia interna de un Voltímetro, un Amperímetro y una Fuente".
 
-\begin{center}
-\begin{circuitikz}
-  \draw (0,0) to[V, l=$E$] (0,3);
-  \draw (0,3) to[ammeter, l=$I$] (3,3);
-  \draw (3,3) to[R, l=$R$] (3,0);
-  \draw (3,0) -- (0,0);
-  \draw (3,3) -- (4.6,3) to[voltmeter, l=$V_R$] (4.6,0) -- (3,0);
-\end{circuitikz}
-\par\smallskip{\small\itshape Montaje de la práctica 1, con amperímetro en serie y voltímetro en paralelo con el resistor}
+\subsection*{RESISTENCIA, RESISTIVIDAD Y CONDUCTIVIDAD.}
+
+La resistencia eléctrica es la propiedad de un material que caracteriza su oposición al paso de una corriente eléctrica. En términos de la diferencia de potencial V, aplicada a sus extremos y de la intensidad de corriente I, que circula a través del conductor, la resistencia R, la definimos así: \[R = \frac{V}{I}\] (1) La unidad en el S.I. de resistencia es el ohm, que se representa por la letra griega $\Omega$. Según [1], $1\Omega = \frac{1V}{1A}$.
+
+Una cantidad relacionada con R es la resistividad $\rho$, o resistencia específica, la cual es la característica de un material y no de una muestra específica del mismo. Para materiales isótropos, la resistividad se define como: \[\rho = \frac{E}{J}\] (2) donde E es el campo eléctrico y J es la densidad de corriente o corriente por unidad de área de la sección transversal del conductor es decir:
+
+\[J = \frac{I}{A}\] (3) Con el fin de expresar la resistencia R, en términos de la naturaleza del material (resistividad) y de la geometría del conductor, consideremos un conductor cilíndrico de longitud $l$ y sección transversal de área A por el cual circula una corriente I al aplicarse entre sus extremos una diferencia de potencial V, tal como se muestra en la figura 1. Si suponemos el campo eléctrico constante debe cumplirse que: \[E = \frac{V}{l}\] (4) Sustituyendo los valores de [3] y [4] en [2], obtenemos que: \[\rho = \frac{RA}{l}\] (5) Esta relación nos lleva a una expresión para R dada por: \[R = \frac{\rho l}{A}\] (6) Según la cual R depende de la naturaleza y de la geometría del conductor.
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de un conductor cilíndrico con longitud $l$ y sección transversal A, mostrando el flujo de corriente I y la diferencia de potencial V.
+\end{tcolorbox}
+
+Figura 1. Tramo de conductor de longitud $l$ y sección transversal de área A, a través del cual circula una corriente I.
+
+De (5) se define la unidad en el S.I. de resistividad como: $\Omega$.m. La conductividad es un parámetro relacionado con el inverso de la resistividad. Generalmente se denota con la letra griega $\sigma$ y se define como:
+
+\[\sigma = \frac{1}{\rho} = \frac{J}{E}\] (7) En término de esta cantidad, la densidad de corriente se define también como: \[J = \sigma E\] (8) De [8] se deduce que J es un vector definido como el producto de un escalar $\sigma$ por el vector intensidad de campo eléctrico (E), esto es: [TABLA:
+
+\begin{center}\small
+\begin{tabular}{llll}
+\toprule
+ &  &  &  \\
+\midrule
+ & 2000.0 & $J = \sigma E$ &  \\
+ & 1000.0 & $\sigma^{01} - \sigma^{10}$ &  \\
+\bottomrule
+\end{tabular}
 \end{center}
+
+] (9)
+
+\subsection*{LEY DE OHM:}
+
+En 1820 George Simon Ohm (1787-1854), demostró experimentalmente que la resistencia R de ciertos conductores (los metales) bajo condiciones de temperatura constante, es independiente de la diferencia de potencial V aplicada en sus extremos y de la intensidad de corriente I que circula a través de ellos. En forma de ecuación, lo anterior se expresa así: \[R = \frac{V}{I} = \text{constante}\] (10) Debido a que esta ley sólo se cumple para los metales, se dice que la misma no describe una propiedad general de la materia, sino una característica particular de ciertas sustancias. Los conductores que cumplen la ley de Ohm se denominan óhmicos o lineales (su característica I-V es una recta), mientras que los que no la obedecen se denominan no lineales. Como ejemplo de estos últimos tenemos los materiales semiconductores.
+
+\subsection*{RESISTORES.}
+
+Un resistor es un componente de cualquier circuito, cuyo propósito es el de tener resistencia. Los materiales usados como resistores se caracterizan por tener un coeficiente de temperatura (CT) pequeño; o sea, la variación porcentual de la resistencia por grado de temperatura es pequeña. Los valores de la resistencia, del coeficiente de temperatura y la máxima potencia permitida
+
+en un resistor de algunos de los conductores más comunes, se muestran en la tabla 1. [TABLA:
+
+\begin{center}\small
+\begin{tabular}{llll}
+\toprule
+TIPO & RANGO DE VALORES & C. T. (\%/$^{\circ}$C) & POTENCIA MÁXIMA \\
+\midrule
+CARBÓN & $1\Omega - 22M\Omega$ & 0.1 & $2W$ \\
+ALAMBRE & $1\Omega - 100K\Omega$ & 0.0005 & $200W$ \\
+PELÍCULA METÁLICA & $0.1\Omega - 10^{10}\Omega$ & 0.0001 & $1W$ \\
+PELÍCULA DE CARBÓN & $1\Omega - 100M\Omega$ & Entre 0.015 - 0.05 & $2W$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+] TABLA 1
+
+En el caso de los resistores de carbón, existe un código de colores y una clave para determinar el valor de la resistencia. La clave consiste en leer los anillos o bandas de colores de izquierda a derecha (el extremo es el más próximo a la primera banda) de tal manera que las dos primeras bandas, AB, definen las dos primeras cifras del valor de la resistencia; la tercera banda, C, es un multiplicador y la cuarta banda, D, indica la tolerancia o error en la determinación de R. Así pues, el valor de la resistencia del resistor se especifica como: \[R = AB. 10^C \pm D\]
+
+Para determinar el valor del resistor debemos identificar los colores según lo indica la tabla 2.
+
+\begin{center}\small
+\begin{tabular}{llll}
+\toprule
+COLOR & VALOR & POTENCIA DE 10 & TOLERANCIA \\
+\midrule
+NEGRO & 0 & $10^0$ & $\pm 20 \%$ \\
+MARRÓN & 1 & $10^1$ & $\pm 1 \%$ \\
+ROJO & 2 & $10^2$ & $\pm 2 \%$ \\
+ANARANJADO & 3 & $10^3$ & $\pm 3 \%$ \\
+AMARILLO & 4 & $10^4$ &  \\
+VERDE & 5 & $10^5$ & $\pm 5 \%$ \\
+AZUL & 6 & $10^6$ &  \\
+VIOLETA & 7 & $10^7$ &  \\
+GRIS & 8 & $10^8$ &  \\
+BLANCO & 9 & $10^9$ &  \\
+PLATA &  & $10^{-2}$ & $\pm 10 \%$ \\
+ORO &  & $10^{-1}$ & $\pm 5 \%$ \\
+NINGUNO &  &  & $\pm 20 \%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+TABLA 2
+
+A manera de ejemplo, supongamos que nos dan dos resistores con la siguiente secuencia de colores:
+
+a. Amarillo, Violeta, Marrón, Plata; $47 \times 10^1 = 470 \Omega \pm 10 \%$ b. Marrón, Negro, Rojo, Ninguno; $10 \times 10^2 = 1 K \Omega \pm 20 \%$
+
+De acuerdo con el código de colores de la tabla 2, los resistores tendrían valores:
+
+a. $(470 \pm 10 \%) \Omega$. b. $(1000 \pm 20 \%) \Omega$.
+
+\subsection*{POTENCIA MÁXIMA DE UN RESISTOR:}
+
+Siempre que una corriente eléctrica de intensidad $i$ circula por un resistor R, se disipa energía en forma de calor (efecto Joule) en el resistor. La tasa de
+
+producción de calor o potencia disipada es $P=Ri^2$. Esto hace que suba la temperatura en el resistor y si no se evita sobrepasar el límite de temperatura máxima, se puede destruir el resistor. Por lo tanto, es muy importante tener presente la potencia máxima, $P_{máx}$, que pueden soportar los resistores de carbón cuando se le va ha conectar en un circuito. A partir de este valor máximo de P, se puede determinar la máxima corriente $I_{máx}$, o la máxima caída de potencial $V_{máx}$ que puede soportar el resistor sin dañarse empleando la relación: \[ P_{máx} = Ri_{máx}^2 = \frac{V_{máx}^2}{R} \] (11)
+
+\subsection*{AMPERÍMETROS, VOLTÍMETROS Y OHMÍMETROS:}
+
+Las cantidades $V, R$, e $I$ son cantidades macroscópicas de interés fundamental cuando se trabaja efectuando medidas eléctricas en conductores reales. Por lo tanto, son las cantidades que normalmente se miden con instrumentos debidamente calibrados. Estos instrumentos son: el amperímetro, para medir la intensidad de corriente $i$; el voltímetro, para medir la diferencia de potencia $V$ y el ohmímetro, para medir la resistencia $R$.
 
 \section{\iconotexto{box-open}{Materiales y equipos}}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Una fuente de poder de 0 a 30 V y 6 A
-  \item Dos multimedidores Keithley (179, 175 o 175-A)
-  \item Un diodo semiconductor rectificador
-  \item Una resistencia variable o de carbón
-  \item Tablero de montaje y cables de conexión
-  \item Manual de instrucciones de los Keithley 179 y 175
+  \item 1 fuente de poder de $0-30$ v, 6 A
+  \item 2 multimedidores Keithley (179, 175 ó 175-A)
+  \item 1 diodo semiconductor
+  \item 1 Resistencia (Variable o de carbón)
 \end{itemize}
-
-\section{\iconotexto{flask}{Escenario}}
-
-Cada grupo recibe un resistor de carbón, un diodo semiconductor y dos multimedidores Keithley. Debe obtener la característica $I$--$V$ de los dos dispositivos sobre el tablero, decidir cuál cumple la ley de Ohm y reportar la resistencia del resistor con la incertidumbre del ajuste, no con el promedio de los cocientes.
 
 \section{\iconotexto{list-ol}{Procedimiento}}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Leer, en el manual de los Keithley, cómo se selecciona cada función, cada rango y la resolución en voltímetro, amperímetro y óhmetro.
-  \item Identificar el valor nominal del resistor por código de colores y anotarlo con su tolerancia.
-  \item Montar el circuito del resistor, sin energizar, y hacerlo revisar por el profesor.
-  \item Conectar el voltímetro en paralelo con el resistor y el amperímetro en serie, ambos en el rango más alto, y bajar el rango hasta resolver la lectura.
-  \item Para un valor fijo de R, variar la salida de la fuente y obtener al menos ocho pares $V$, $I$, anotando rango y resolución en cada punto.
-  \item Sustituir el resistor por el diodo, en polarización directa, y obtener un mínimo de veinte pares $V$, $I$ variando la fuente o la resistencia.
-  \item Invertir la polarización del diodo y comprobar que la corriente es prácticamente nula dentro del rango del amperímetro.
-  \item Cortar la alimentación, medir el resistor con el óhmetro y comparar con el valor nominal y con el del ajuste.
-  \item Verificar el efecto de carga repitiendo tres puntos con el voltímetro antes del amperímetro y anotando la diferencia.
-\end{enumerate}
+Lea detalladamente el material de instrucción de los multimedidores digitales Keithley 179 y 175 en cada uno de los rangos como amperímetro, voltímetro (para medida en DC y AC) y ohmímetro.
 
-\section{\iconotexto{table}{Tabla de datos}}
+\subsection*{CARACTERÍSTICA I-V DE UN RESISTOR.}
 
-\begin{center}
-\begin{minipage}{\linewidth}
-\centering
-{\small
-\textbf{Registro de la característica corriente-tensión de los dos elementos}\par\smallskip
-\begin{tabular}{@{}cccccc@{}}
-\toprule
-Elemento & Ensayo & $V$ (V) & $I$ (mA) & $u_V$ (V) & $u_I$ (mA) \\
-\midrule
-Resistor & 1 & 1,00 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Resistor & 2 & 2,00 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Resistor & 3 & 4,00 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Resistor & 4 & 10,00 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Diodo & 1 & 0,20 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Diodo & 2 & 0,40 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Diodo & 3 & 0,55 & $\ldots$ & $\ldots$ & $\ldots$ \\
-Diodo & 4 & 0,65 & $\ldots$ & $\ldots$ & $\ldots$ \\
-\bottomrule
-\end{tabular}
-}\par\smallskip{\footnotesize Mínimo veinte filas para el diodo; anotar la resolución de cada instrumento y entregar los datos crudos en CSV.}
-\end{minipage}
-\end{center}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Realice el montaje del circuito mostrado en la figura 2.
+\end{itemize}
 
-\section{\iconotexto{calculator}{Análisis y tratamiento de datos}}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Variando la salida de la fuente, para un valor fijo en el resistor R, obtenga una serie de valores (20 mínimos) de V e I.
+\end{itemize}
 
-\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
-  \item Graficar $I$ frente a $V$ para cada elemento, con barras de incertidumbre y ejes rotulados con unidades.
-  \item Ajustar por mínimos cuadrados la rama lineal del resistor y reportar la pendiente, su incertidumbre y el coeficiente de determinación.
-  \item Calcular los residuales del resistor y decidir si son aleatorios o sistemáticos; justificar con la gráfica.
-  \item Comparar la resistencia del ajuste con el valor nominal, con el óhmetro y con el código de colores.
-  \item Describir la forma de la curva del diodo en directa y en inversa, y concluir si cumple o no la ley de Ohm.
-  \item Estimar la potencia máxima disipada por el resistor y comprobar que no excede su potencia nominal.
-  \item Cuantificar el efecto de carga observado en el último paso y atribuirlo a la resistencia interna del instrumento.
-\end{enumerate}
-
-\section{\iconotexto{box-open}{Entregable}}
-
-Tabla de datos crudos en CSV, gráfica de la característica con ajuste y banda de incertidumbre, script que reproduce la figura, y valor de la resistencia con su incertidumbre comparado contra el nominal.
-
-\section{\iconotexto{ruler-combined}{Rúbrica de corrección}}
-
-\begin{tabularx}{\linewidth}{@{}X r@{}}
-\toprule
-Criterio & Peso\\
-\midrule
-Fundamento teórico y modelo aplicado & 1,0 \\
-Montaje, seguridad y manejo del instrumental & 1,5 \\
-Toma de datos completa y trazable & 2,0 \\
-Presupuesto de incertidumbres & 2,0 \\
-Análisis, ajuste y gráficas & 2,0 \\
-Conclusiones contrastadas con el modelo & 1,0 \\
-Presentación y estructura del informe & 0,5 \\
-\midrule
-\textbf{Total} & \textbf{10,0}\\
-\bottomrule
-\end{tabularx}
-
-\section{\iconotexto{code}{Contrato del script}}
-
-\begin{cajaConcepto}Todo script entregado imprime \textbf{un solo objeto JSON} por la salida estándar y devuelve un diccionario con estas claves. \texttt{status} vale \texttt{ok} o \texttt{error}; si es \texttt{error}, \texttt{errores} explica el motivo y el programa sale con código distinto de cero.
-\begin{lstlisting}[language=Python,style=estiloPython]
-{
-  "status": "ok",
-  "practica": 1,
-  "magnitud": "resistencia",
-  "valor": 99.4,
-  "unidad": "ohm",
-  "incertidumbre": 0.6,
-  "metodo": "ajuste_lineal_minimos_cuadrados",
-  "n_puntos": 8,
-  "residual_max": 0.012,
-  "fuente_datos": "semana_01/datos/iv_resistor_220.csv",
-  "errores": []
-}
-
-\end{lstlisting}
-\end{cajaConcepto}
-
-\begin{tcolorbox}[cajaMejora]\textbf{Antes de empezar:} Antes de energizar, contrasta el montaje con la figura y verifica rangos y polaridad de cada instrumento. Si un instrumento se calienta, huele o marca fuera de escala, corta la alimentación y avisa al docente: el montaje se revisa antes de continuar.
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje E, un amperímetro A, un voltímetro V y un resistor R.
 \end{tcolorbox}
+
+Figura 2. Circuito para el experimento 3.2.1
+
+\subsection*{CARACTERÍSTICA I-V DE UN DIODO SEMICONDUCTOR.}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Realice el montaje del circuito mostrado en la figura 3.
+  \item Variando la salida de la fuente o variando el resistor R, obtenga una serie de valores (20 mínimos) de V e I.
+\end{itemize}
+
+\begin{tcolorbox}[cajaContenido]\textbf{Figura del original:} Diagrama de circuito con una fuente de voltaje E, un amperímetro A, un voltímetro V y un diodo con un resistor R en serie.
+\end{tcolorbox}
+
+Figura 3. Circuito para el experimento 3.2.2
+
+\section{\iconotexto{calculator}{Actividades}}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=3pt]
+  \item Para cada experimento construya la gráfica I Vs V, y escriba la conclusión respectiva.
+\end{itemize}
 \end{document}
