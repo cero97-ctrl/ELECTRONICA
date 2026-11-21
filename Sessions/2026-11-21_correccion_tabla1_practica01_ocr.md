@@ -57,10 +57,11 @@ correccion_tabla1_practica01_ocr
   revisar `git status --short` y staged explícitamente SOLO los ficheros
   autorizados, o ampliar `.gitignore` primero. Nunca asumir que un untracked
   conocido quedará fuera de un `git add -A`.
+- Corrección pusheada con `--force-with-lease`: `e9020374` → `6734a59` →
+  `840a315`. Verificado con un clone bare fresco del remoto: HEAD `840a315`,
+  354 commits, `git log --all -- <ruta>` vacío y el path ausente del árbol.
 
 ## Pendientes
-- Completar el force push de la historia reescrita y verificar con un clone
-  fresco que el PDF no aparece en el remoto.
 - Avisar a quienes hubieran clonado el repo: conservan su copia local del PDF.
 - Recordatorio 24-nov antes de 08:00 VET: publicar el cuestionario con
   `flujo_publicar_cuestionario.py ... --visibilidad public --push` y volver a
