@@ -1,0 +1,87 @@
+name: crear_repo_semilla_estudiantes
+description: >-
+  Genera el repositorio semilla que cada grupo de Laboratorio II de Física clona
+  para entregar sus informes: README raíz con integrantes y roles, tabla de las
+  10 semanas con los títulos reales de las prácticas, README por semana,
+  .gitignore, y las carpetas datos/, analisis/ y figuras/ con .gitkeep.
+version: 1.0
+
+goal: >-
+  Que ningún grupo pierda tiempo inventando la estructura de la entrega y que
+  el docente reciba siempre la misma trazabilidad: datos crudos intactos,
+  scripts que reproducen las figuras y un README que dice qué no se pudo
+  verificar. La plantilla no contiene datos personales: los integrantes son
+  marcadores y el repo semilla puede vivir en el repositorio público del curso.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml`. Bloques consumidos: `semanas` (numero y
+      practica.titulo de las 10 semanas), `grupos.roles` (nombres de los cuatro
+      roles) y `entregas.corte`. Si falta alguno o el número de semanas no es
+      exactamente 10, el script falla antes de escribir nada (código 2).
+
+  - name: salida
+    description: >-
+      Directorio destino. Por defecto
+      `cursos/LABORATORIO_II_FISICA/plantillas/repo_grupo`. Si ya contiene
+      archivos generados, hay que pasar `--forzar`; aun así el script NUNCA
+      borra archivos que el grupo haya puesto en sus carpetas.
+
+steps:
+  - action: validar
+    script: execution/generar_repo_semilla.py --check --json
+    description: >-
+      Parsea el descriptor y construye el plan de 43 archivos en memoria. No
+      escribe nada. Valida semanas 1..10, roles y corte.
+
+  - action: generar
+    script: execution/generar_repo_semilla.py --json [--forzar]
+    description: >-
+      Escribe el plan con escritura atómica por archivo y vuelve a verificar
+      byte a byte lo escrito. Rechaza sobrescribir sin `--forzar`.
+
+  - action: verificar
+    script: execution/generar_repo_semilla.py (verificar_plan, en el mismo proceso)
+    description: >-
+      La regla de verificación vive una sola vez, en la capa 3. Comprueba que
+      los 43 archivos existen y que su contenido es exactamente el del plan.
+      El orquestador solo comprueba el JSON de salida; no reimplementa la regla.
+
+  - action: diagrama
+    script: execution/generar_diagrama_flujo.py --descriptor .tmp/descriptor_repo_semilla_estudiantes.json --output docs/AGENTE_IA/repo_semilla_estudiantes_flujo
+    description: >-
+      Diagrama ISO 5807 del flujo, con 0 errores `!` y 0 `Overfull \\hbox`
+      verificados en el .log. Se entrega con el flujo, por convención del repo.
+
+  - action: notificar
+    script: execution/alert_user.py success
+    description: Alerta audible al terminar, salvo `--no-alert`.
+
+expected_outputs:
+  - README.md con integrantes marcadores, roles, tabla de 10 semanas y reglas.
+  - .gitignore que ignora .env y auxiliares de LaTeX sin ignorar `informe.pdf`.
+  - 10 carpetas `semana_NN/` con README propio y `datos/`, `analisis/`, `figuras/`
+    (más `portafolio/` en la semana 10), cada una con `.gitkeep`.
+  - `docs/AGENTE_IA/repo_semilla_estudiantes_flujo.{tex,pdf}` validado.
+
+edge_cases:
+  - caso: El directorio de salida ya existe con archivos del grupo
+    protocolo: Sin `--forzar`, código 3 y lista de los archivos en conflicto. Con
+      `--forzar` se sobrescriben SOLO los generados; los CSV o scripts del grupo
+      no se tocan nunca.
+
+  - caso: El descriptor no tiene exactamente 10 semanas o falta un título
+    protocolo: Código 2 antes de escribir. No se rellenan títulos a ojo ni se
+      inventan semanas: la fuente de verdad es `curso.yaml`.
+
+  - caso: Se ejecuta dos veces el mismo comando
+    protocolo: La segunda sin `--forzar` falla con código 3 (barrera anti-pisado).
+      Con `--forzar`, el resultado es byte a byte idéntico: sin reloj ni azar.
+
+  - caso: Se quiere publicar la semilla con nombres reales
+    protocolo: No hacerlo. Los nombres se ponen en cada repo privado del grupo.
+      El repo del curso es público y la nómina tiene su propia regla en .gitignore.
+
+  - caso: El diagrama falla tras 3 intentos
+    protocolo: Detener y reportar el .log; NO publicar un PDF defectuoso.
