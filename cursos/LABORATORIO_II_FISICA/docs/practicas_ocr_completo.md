@@ -123,12 +123,10 @@ En término de esta cantidad, la densidad de corriente se define también como:
 (8)
 De [8] se deduce que J es un vector definido como el producto de un escalar $\sigma$
 por el vector intensidad de campo eléctrico (E), esto es:
-[TABLA:
 | | | | |
 |---|---|---|---|
 | | 2000.0 | $J = \sigma E$ | |
 | | 1000.0 | $\sigma^{01} - \sigma^{10}$ | |
-]
 (9)
 2.2. LEY DE OHM:
 En 1820 George Simon Ohm (1787-1854), demostró experimentalmente que la
@@ -161,14 +159,12 @@ de la resistencia, del coeficiente de temperatura y la máxima potencia permitid
 
 en un resistor de algunos de los conductores más comunes, se muestran en la
 tabla 1.
-[TABLA:
 | TIPO | RANGO DE VALORES | C. T. (%/°C) | POTENCIA MÁXIMA |
 |---|---|---|---|
 | CARBÓN | $1\Omega - 22M\Omega$ | 0.1 | $2W$ |
 | ALAMBRE | $1\Omega - 100K\Omega$ | 0.0005 | $200W$ |
 | PELÍCULA METÁLICA | $0.1\Omega - 10^{10}\Omega$ | 0.0001 | $1W$ |
 | PELÍCULA DE CARBÓN | $1\Omega - 100M\Omega$ | Entre 0.015 - 0.05 | $2W$ |
-]
 TABLA 1
 
 En el caso de los resistores de carbón, existe un código de colores y una clave

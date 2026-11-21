@@ -127,6 +127,11 @@ Thumbs.db
 # Caché de documentación consultada (regenerable)
 .tmp/docs_cache/
 
+# Artefactos aislados de compilación LaTeX (generar_practicas_desde_ocr /
+# flujo_dibujar_figuras_tikz compilan en <salida>/.build/; solo el PDF final
+# se copia a la carpeta de entregables)
+.build/
+
 # Telemetría del router LLM (log de decisiones en runtime, crece indefinidamente)
 .tmp/routing_log.jsonl
 
