@@ -32,7 +32,13 @@ Evaluación de los informes de semana 01 de los 4 grupos de Ciberseguridad, prev
 - Integridad del acta del examen intacta: `.tex` `b4788744…`, `.pdf` `0e4fcc77…`.
 - Hashes del acta de informes: `.tex` `3e1fda6b…`, `.pdf` `c7180811…`.
 
+## Privacidad y cierre del repositorio (autorizado por el usuario)
+- El usuario decidió que **solo él** vea los resultados y que, si lo considera oportuno, los publique por WhatsApp. El repo es público, así que `resultados/**` sigue ignorado y no se subió ningún PDF, CSV ni JSON de notas.
+- Antes del commit se sanitizaron las dos bitácoras nuevas (nombres, cédulas y cifras → descripciones genéricas). El inventario mostró además PII real en `Sessions/2026-11-16_…md` y en fixtures de `execution/*.py` (incluido `test_fusionar_actas.py`, preexistente): se sustituyeron por identificadores ficticios (`V-9xxxxxxx`, `ALUMNO-N`, `AUSENTE-N`) con un mapping determinista de 52 reglas. Se revirtieron 5 `.tex` de INT_ELECTRONICA donde el apellido del profesor coincidía con un apellido de alumno.
+- Commit `f6def6a` (16 archivos) y reescritura de historia con `git filter-repo --replace-text` sobre los 360 commits. La versión instalada falló al grabar metadatos (`AssertionError`) **después** de escribir la historia nueva; se verificó con `git fsck`, escaneo de los 360 commits (0 con PII) y tests, y se eliminó el ref `refs/remotes/old/master`. Se purgaron objetos inalcanzables con `git gc --prune=now` y se borró el backup temporal externo.
+- `git push --force origin master`: el remoto quedó alineado con el local. Verificación por `raw.githubusercontent.com` (cache-buster): las tres bitácoras del 16 y 22-nov no contienen identificadores ni notas en el remoto. `git ls-tree` confirma que solo viajan los dos `resultados/README.md`, nunca resultados.
+- Tests tras la reescritura: calificaciones_inasistencia 31/31 · acta_semana 76/76 · descargar_resultados sin fallos · evaluar_informes OK · fusionar_actas 23/23 · `bitacoras.py check` → `veredicto_global: ok`. Las cuatro actas locales conservan sus hashes.
+
 ## Pendientes
-- **Mostrar al usuario el JSON y el PDF verificados y pedir autorización explícita de commit.** No ejecutar `git add` ni `git commit` antes.
-- Tras la autorización: commitear también los 6 archivos modificados del cierre del examen y sus bitácoras, respetando que `resultados/**` queda fuera de git.
 - Semanas posteriores: aplicar `evaluar_corte: true` por defecto (la fecha sí cuenta).
+- Publicar notas solo de forma manual desde los PDF locales, si el usuario lo decide.
