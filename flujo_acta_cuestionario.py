@@ -163,6 +163,8 @@ def _consolidar(args: argparse.Namespace) -> int:
         cmd.extend(["--salida", args.salida_dir])
     if args.curso:
         cmd.extend(["--curso", args.curso])
+    if args.calificaciones:
+        cmd.extend(["--calificaciones", args.calificaciones])
     if args.listas_dir:
         listas = sorted(Path(args.listas_dir).glob("grupo_*.csv"))
         if not listas:
@@ -199,6 +201,22 @@ def _consolidar(args: argparse.Namespace) -> int:
             problemas.append(f"el PDF es sospechosamente pequeño: {ruta_pdf}")
         if not isinstance(resultado.get("entregas"), int) or resultado["entregas"] < 1:
             problemas.append("el consolidador no reportó `entregas`")
+        if args.calificaciones:
+            entregas = resultado.get("entregas")
+            notas = resultado.get("notas_finales")
+            calificados = resultado.get("sin_entrega_calificados")
+            if not isinstance(notas, int) or not isinstance(calificados, int):
+                problemas.append(
+                    "se pasó --calificaciones pero el consolidador no reportó "
+                    "`notas_finales` y `sin_entrega_calificados`"
+                )
+            elif notas != entregas + calificados:
+                problemas.append(
+                    f"notas_finales={notas} no cuadra con {entregas} entregas + "
+                    f"{calificados} calificados con 0"
+                )
+            if not isinstance(resultado.get("promedio_final"), (int, float)):
+                problemas.append("el consolidador no reportó `promedio_final`")
         if problemas:
             codigo = 1
 
@@ -211,16 +229,24 @@ def _consolidar(args: argparse.Namespace) -> int:
         print(
             f"Acta de la semana {resultado.get('semana'):02d} — "
             f"{resultado.get('entregas')} entrega(s)"
+            + (f" + {resultado['sin_entrega_calificados']} calificada(s) con 0"
+               if resultado.get("sin_entrega_calificados") else "")
+            + (f" · {resultado['notas_finales']} nota(s) final(es)"
+               if resultado.get("notas_finales") is not None else "")
         )
         print(f"  TEX: {resultado.get('acta_tex')}")
         print(f"  PDF: {resultado.get('acta_pdf')}")
         for grupo, n in (resultado.get("por_grupo") or {}).items():
             print(f"  G{grupo}: {n}")
-        faltantes = resultado.get("faltantes") or []
+        faltantes = resultado.get("faltantes_sin_calificar")
+        if faltantes is None:
+            faltantes = resultado.get("faltantes") or []
         if faltantes:
-            print(f"  sin entrega: {len(faltantes)}")
+            print(f"  sin entrega sin calificar: {len(faltantes)}")
             for falta in faltantes:
                 print(f"    G{falta.get('grupo') or '?'} {falta['cedula']} {falta['nombre']}")
+        if resultado.get("promedio_final") is not None:
+            print(f"  promedio final: {resultado['promedio_final']:.2f}")
         if resultado.get("a_revisar"):
             print(f"  AVISO: {resultado['a_revisar']} fila(s) marcadas `revisar`.")
         if resultado.get("overfull"):
@@ -264,6 +290,8 @@ def main() -> int:
     parser.add_argument("--salida-dir", default=None,
                         help="Carpeta destino del acta consolidada.")
     parser.add_argument("--curso", default=None, help="Curso en el acta consolidada.")
+    parser.add_argument("--calificaciones", default=None, metavar="YAML",
+                        help="Descriptor de ausencias calificadas (solo con --consolidar).")
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
     parser.add_argument("--no-alert", action="store_true", help="Sin alerta audible.")
     args = parser.parse_args()

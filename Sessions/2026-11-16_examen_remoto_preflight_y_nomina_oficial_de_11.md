@@ -13,8 +13,8 @@ de los cuatro Workers con los 11 alumnos inscritos.
   sesiones.
 - Al organizar los grupos, el usuario aportó 9 alumnos y el cruce contra
   `alumnos_cyberseguridad.csv` (8 filas) mostró 3 discrepancias: ALUMNO-8
-  (90000008) y ALUMNO-9 (90000007) no estaban en la nómina, y ALUMNO-7
-  ALUMNO-10 (90000003) estaba sin grupo.
+  (90000008) y ALUMNO-9 (90000007) no estaban en la nómina, y ALUMNO-10
+  (90000003) estaba sin grupo.
 - La fuente oficial es `cursos/CYBERSEGURIDAD/listado_alumnos.pdf` (imprimir del
   sistema): tiene **11 alumnos**, todos `OK/inscrito`, e incluye a AUSENTE-1
   (90000001), que no estaba en la nómina, ni en la lista del usuario, ni en
@@ -23,7 +23,7 @@ de los cuatro Workers con los 11 alumnos inscritos.
 ## Decisiones (usuario)
 1. ALUMNO-8 y ALUMNO-9 **sí están inscritos**: añadirlos a la nómina y
    redesplegar antes de las 10:40.
-2. ALUMNO-7 ALUMNO-10 va en el **grupo 3** (Púrpura).
+2. ALUMNO-10 va en el **grupo 3** (Púrpura).
 3. AUSENTE-1 va en el **grupo 4** (Legal).
 4. La lista oficial es `listado_alumnos.pdf` (11 alumnos).
 5. Mantener **la lista completa de 11 en los 4 Workers** (no lista estricta por
@@ -86,10 +86,10 @@ de los cuatro Workers con los 11 alumnos inscritos.
   `*_alumno.html` responden **404**; los 4 `/salud` dan `abierta:false`,
   `motivo:"ya terminó"`, `inscritas:11`.
 - **Actas por grupo** en `cursos/CYBERSEGURIDAD/evaluaciones/resultados/`
-  (9 entregas de 11): Rojo 2/2 · Azul 3/3 ·
-  Púrpura 3/3 con **3 filas `revisar`** (justificación de la pregunta 10 casi
-  idéntica entre tres alumnos del grupo;
-  `justificaciones: copiada`) · Legal 1/3.
+  (9 entregas de 11): cobertura por rol en el acta local; las notas no se
+  reproducen en esta bitácora porque el repo es público. Púrpura 3/3 tuvo
+  **3 filas `revisar`** por justificación casi idéntica en la pregunta 10;
+  `justificaciones: copiada`. Legal 1/3.
 - **Faltantes de Legal**: AUSENTE-1 V-90000001 y AUSENTE-2 V-90000002.
   Sin corte eléctrico reportado, la contingencia del 17-nov no aplica salvo que
   presenten una falla verificable.

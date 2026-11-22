@@ -71,6 +71,11 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 LETRAS_VALIDAS = ("A", "B", "C", "D", "E")
+# Un ausente calificado por decisión docente NO es una fila a revisar: su 0 está
+# explicado en la caja de cobertura. Confundir ambos estados llenaba de avisos
+# falsos el acta y hacía creer que faltaba corregir algo.
+ESTADO_OK = "ok"
+ESTADO_SIN_ENTREGA = "sin_entrega"
 CEDULA_RE = re.compile(r"^([VEJ])?-?(\d{5,9})$")
 RUTA_ARCHIVO = re.compile(
     r"^resultados/(?P<cid>[a-z0-9_]{3,60})/grupo_(?P<grupo>\d{2})/"
@@ -459,19 +464,39 @@ def comparar(lista: list[dict], registros: list[dict]) -> dict:
     }
 
 
+def es_sin_entrega(registro: dict) -> bool:
+    """Una fila calificada por inasistencia no cuenta como entrega."""
+    return registro.get("estado") == ESTADO_SIN_ENTREGA
+
+
 def resumen(registros: list[dict]) -> dict:
-    notas = [float(r["nota_recalculada"]) for r in registros]
+    """Resume entregas y calificaciones finales sin confundirlas.
+
+    `entregas` cuenta solo lo que el Worker archivó. `notas_finales` cuenta
+    también las ausencias calificadas por decisión docente, que es lo que el
+    profesor publica. Conservar `promedio` como promedio de entregas mantiene
+    el contrato histórico de esta función; `promedio_final` es el que va al acta
+    cuando hay ceros por inasistencia.
+    """
+    entregas = [r for r in registros if not es_sin_entrega(r)]
+    calificados = [r for r in registros if es_sin_entrega(r)]
+    notas = [float(r["nota_recalculada"]) for r in entregas]
+    notas_finales = [float(r["nota_recalculada"]) for r in registros]
     por_grupo: dict[int, int] = {}
     for r in registros:
         por_grupo[r["grupo"]] = por_grupo.get(r["grupo"], 0) + 1
     return {
-        "entregas": len(registros),
+        "entregas": len(entregas),
+        "sin_entrega_calificados": len(calificados),
+        "notas_finales": len(registros),
         "promedio": round(sum(notas) / len(notas), 2) if notas else None,
+        "promedio_final": round(sum(notas_finales) / len(notas_finales), 2)
+        if notas_finales else None,
         "mejor": max(notas) if notas else None,
         "peor": min(notas) if notas else None,
         "por_grupo": {g: por_grupo[g] for g in sorted(por_grupo)},
-        "ultimo_envio": max((r["enviado_en"] for r in registros), default=None),
-        "a_revisar": sum(1 for r in registros if r["estado"] != "ok"),
+        "ultimo_envio": max((r["enviado_en"] for r in entregas), default=None),
+        "a_revisar": sum(1 for r in entregas if r["estado"] != ESTADO_OK),
     }
 
 
@@ -597,11 +622,12 @@ def latex_acta(
     datos = resumen(registros)
     filas = []
     for r in registros:
-        estado = (
-            r"\textcolor{verdeSignal}{\faIcon{check}}"
-            if r["estado"] == "ok"
-            else r"\textcolor{rojoAlerta}{\faIcon{exclamation-triangle}}"
-        )
+        if r["estado"] == ESTADO_OK:
+            estado = r"\textcolor{verdeSignal}{\faIcon{check}}"
+        elif es_sin_entrega(r):
+            estado = r"\textcolor{azulNoche}{\faIcon{times}}"
+        else:
+            estado = r"\textcolor{rojoAlerta}{\faIcon{exclamation-triangle}}"
         filas.append(
             " & ".join(
                 [
@@ -618,6 +644,7 @@ def latex_acta(
         )
     tabla = "\n".join(filas) if filas else r"\multicolumn{7}{c}{\textit{Sin entregas}} \\"
 
+    calificados = [r for r in registros if es_sin_entrega(r)]
     cobertura_tex = ""
     if cobertura is None:
         cobertura_tex = (
@@ -627,16 +654,48 @@ def latex_acta(
         )
     else:
         faltan = cobertura["faltantes"]
-        if faltan:
+        cedulas_calificadas = {normalizar_cedula(r["cedula"]) for r in calificados}
+        sin_calificar = [f for f in faltan
+                         if normalizar_cedula(f["cedula"]) not in cedulas_calificadas]
+        def item_calificado(r: dict) -> str:
+            motivo = r.get("avisos") or "sin motivo registrado"
+            if isinstance(motivo, list):
+                motivo = "; ".join(str(m) for m in motivo if str(m).strip())
+            return (
+                f"\\item {_tex(r['nombre']) or '(sin nombre)'} --- "
+                f"\\texttt{{{_tex(r['cedula'])}}}"
+                + (f", grupo {r['grupo']}" if r.get("grupo") else "")
+                + ": " + _tex(motivo)
+            )
+
+        if faltan and not sin_calificar:
+            avisos = "\n".join(item_calificado(r) for r in calificados)
+            cobertura_tex = (
+                r"\begin{tcolorbox}[cajaContenido, title={Cobertura cerrada}]"
+                f"\n{datos['entregas']} entregas + {len(calificados)} calificados con 0 "
+                f"· cobertura {datos['notas_finales']}/{cobertura['esperados']}.\n"
+                f"\\begin{{itemize}}\n{avisos}\n\\end{{itemize}}\n"
+                "\\end{tcolorbox}"
+            )
+        elif faltan:
             items = "\n".join(
                 f"\\item {_tex(f['nombre']) or '(sin nombre)'} --- \\texttt{{{_tex(f['cedula'])}}}"
                 + (f", grupo {f['grupo']}" if f.get("grupo") else "")
-                for f in faltan
+                for f in sin_calificar
             )
+            cerrado = ""
+            if calificados:
+                cerrado = (
+                    f"\n{len(calificados)} ya fueron calificados con 0 por decisión docente:\n"
+                    "\\begin{itemize}\n"
+                    + "\n".join(item_calificado(r) for r in calificados)
+                    + "\n\\end{itemize}"
+                )
             cobertura_tex = (
                 r"\begin{tcolorbox}[cajaContenido, title={Sin entrega}]"
-                f"\n{len(faltan)} de {cobertura['esperados']} en la nómina:\n"
-                f"\\begin{{itemize}}\n{items}\n\\end{{itemize}}\n\\end{{tcolorbox}}"
+                f"\n{len(sin_calificar)} de {cobertura['esperados']} en la nómina sin "
+                f"calificar:\n\\begin{{itemize}}\n{items}\n\\end{{itemize}}"
+                + cerrado + "\n\\end{tcolorbox}"
             )
         else:
             cobertura_tex = (
@@ -644,7 +703,8 @@ def latex_acta(
                 f"\nEntregaron los {cobertura['esperados']} de la nómina.\n\\end{{tcolorbox}}"
             )
 
-    revisables = [r for r in registros if r.get("estado") != "ok"]
+    revisables = [r for r in registros
+                  if r.get("estado") != ESTADO_OK and not es_sin_entrega(r)]
     remision_tex = (
         r" El motivo de cada una está en la caja «A revisar a mano»."
         if revisables
@@ -679,8 +739,26 @@ def latex_acta(
         )
 
     promedio = "--" if datos["promedio"] is None else f"{datos['promedio']:.2f}"
+    promedio_final = (
+        "--" if datos["promedio_final"] is None else f"{datos['promedio_final']:.2f}"
+    )
     mejor = "--" if datos["mejor"] is None else f"{datos['mejor']:.2f}"
     peor = "--" if datos["peor"] is None else f"{datos['peor']:.2f}"
+    resumen_extra = (
+        r""" ~$\cdot$~ \textbf{Calificados con 0:} """
+        + str(datos["sin_entrega_calificados"])
+        + r""" ~$\cdot$~ \textbf{Calificaciones finales:} """
+        + str(datos["notas_finales"])
+        + r""" ~$\cdot$~ \textbf{Promedio final:} """
+        + promedio_final
+        if calificados else ""
+    )
+    sin_entrega_tex = (
+        r" Las filas marcadas con \textcolor{azulNoche}{\faIcon{times}} "
+        r"corresponden a quienes no entregaron y fueron calificados con 0 por "
+        r"decisión docente; el motivo está en la caja de cobertura."
+        if calificados else ""
+    )
 
     return (
         PREAMBULO_INFOGRAFIA
@@ -704,6 +782,7 @@ def latex_acta(
         + str(datos["entregas"])
         + r""" ~$\cdot$~ \textbf{Promedio:} """
         + promedio
+        + resumen_extra
         + r""" ~$\cdot$~ \textbf{Mejor:} """
         + mejor
         + r""" ~$\cdot$~ \textbf{Peor:} """
@@ -737,6 +816,7 @@ acta ($10\cdot\text{aciertos}/\text{preguntas}$). Las filas marcadas con
 tal cual}: la nota o los \texttt{aciertos} no cuadran con la clave vigente, o la
 justificación está incompleta o coincide con la de otro alumno."""
         + remision_tex
+        + sin_entrega_tex
         + r""" Grupos declarados: """
         + str(grupos)
         + r""".}

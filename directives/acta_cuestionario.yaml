@@ -187,14 +187,21 @@ consolidar_semana:
     «cómo le fue a este grupo»; esta responde «cómo le fue a la semana», en una
     sola tabla donde cada fila conserva su grupo y los faltantes se ven juntos.
 
+    Si el docente decide calificar una inasistencia no justificada con 0, esa
+    decisión entra como un descriptor YAML (`--calificaciones`) y se convierte en
+    filas con estado `sin_entrega`. **Nunca se edita el CSV ni el PDF a mano**:
+    las notas finales salen de las entregas más ese descriptor, y la cobertura se
+    mide antes de añadir las filas para que un ausente no se cuente como entrega.
+
   layer: orchestration
   references:
     orchestrator: flujo_acta_cuestionario.py --consolidar
-    scripts: execution/acta_semana.py, execution/test_acta_semana.py
+    scripts: execution/acta_semana.py, execution/calificaciones_inasistencia.py
     input: cursos/<CURSO>/evaluaciones/resultados/acta_*.csv (uno por grupo)
     nominas: .tmp/grupo_<N>.csv con cabecera `grupo,cedula,nombre`
+    decision: cursos/<CURSO>/evaluaciones/resultados/calificaciones_inasistencia.yaml
     output: cursos/<CURSO>/evaluaciones/resultados/SEMANA_<NN>/acta_semana_<NN>.{tex,pdf}
-    tests: python3 execution/test_acta_semana.py
+    tests: python3 execution/test_acta_semana.py, python3 execution/test_calificaciones_inasistencia.py
 
   required_inputs:
     - name: --semana N
@@ -208,20 +215,30 @@ consolidar_semana:
       description: "Destino explícito; por defecto `<resultados>/SEMANA_<NN>`."
     - name: --actas-dir DIR
       description: "Default `cursos/CYBERSEGURIDAD/evaluaciones/resultados`."
+    - name: --calificaciones YAML
+      description: |
+        Opcional. Descriptor de la decisión docente. Debe traer `fecha_decision`
+        (ISO), `total_preguntas`, `motivo` y una lista `calificaciones` con
+        `cedula`, `nombre`, `grupo` y `nota` (0..10) por ausente. Solo se acepta
+        una cédula que figure como faltante en la nómina y que **no** aparezca en
+        ningún acta; cualquier otra cosa es código 3 sin escribir nada.
 
   steps:
     - paso: 1
-      script: python3 execution/test_acta_semana.py
+      script: python3 execution/test_acta_semana.py y python3 execution/test_calificaciones_inasistencia.py
       description: |
-        54 aserciones sin red ni pdflatex: unión por cédula normalizada, orden
-        estable, columnas de la tabla (7), faltantes desde la nómina, la caja
-        «A revisar a mano» con su motivo, el pie sin remisiones muertas y el
-        escapado.
+        Sin red ni pdflatex: unión por cédula normalizada, orden estable,
+        columnas de la tabla (7), faltantes desde la nómina, la caja «A revisar a
+        mano», el pie sin remisiones muertas, y las barreras del descriptor de
+        inasistencias (cédula ya entregada, foránea, grupo distinto, nota fuera
+        de rango, total distinto al de las actas).
     - paso: 2
-      script: python3 flujo_acta_cuestionario.py --consolidar --semana 1 --listas-dir .tmp
+      script: python3 flujo_acta_cuestionario.py --consolidar --semana 1 --listas-dir .tmp --calificaciones <yaml>
       description: |
         Genera el `.tex`, compila el `.pdf`, y verifica que ambos existen, que el
-        `.tex` cierra con `\end{document}` y que el PDF no está vacío.
+        `.tex` cierra con `\end{document}`, que el PDF no está vacío y que
+        `notas_finales == entregas + sin_entrega_calificados`. Sin
+        `--calificaciones` el acta queda como registro de entregas, sin ceros.
     - paso: 3
       script: python3 execution/verificar_pdf.py --pdf <pdf> --log .tmp/latex_build/<job>/<job>.log
       description: |
@@ -230,9 +247,10 @@ consolidar_semana:
 
   expected_outputs:
     - "Un `.tex` y un `.pdf` por semana, con resumen (entregas, promedio, mejor/peor, a revisar) y tabla de 7 columnas: G, cédula, nombre, aciertos, nota, J, estado."
-    - "Caja de cobertura con los faltantes de **toda** la semana, con su grupo."
+    - "Caja de cobertura con los faltantes de **toda** la semana, con su grupo. Si todos están calificados, la caja se llama «Cobertura cerrada» y dice `N entregas + M calificados con 0 · cobertura T/T`, con el motivo de cada uno."
+    - "Con `--calificaciones`: resumen con `Calificados con 0`, `Calificaciones finales` y `Promedio final`; el promedio final divide entre TODAS las filas, no solo entre las entregas. La fila del ausente lleva `0/preguntas`, estado `sin_entrega` (icono azul, NO el ⚠ de revisar) y el motivo en la caja."
     - "Fecha del acta = último envío real de la semana (no la del reloj)."
-    - "JSON con `entregas`, `por_grupo`, `faltantes`, `a_revisar`, `overfull`."
+    - "JSON con `entregas` (solo envíos reales), `sin_entrega_calificados`, `notas_finales`, `promedio_final`, `por_grupo`, `faltantes_sin_calificar`, `a_revisar`, `overfull`."
     - "Códigos: 0 ok (overfull solo informa) · 1 E/S o pdflatex sin PDF válido · 3 datos inválidos."
 
   edge_cases:
@@ -255,3 +273,27 @@ consolidar_semana:
       respuesta: |
         Se informa y no falla (cosmético). Si el texto se sale del margen, mirar
         el nombre más largo de la columna `p{5.0cm}` antes de tocar la tabla.
+    - caso: "El descriptor califica a alguien que sí entregó"
+      respuesta: |
+        Código 3 y no se escribe nada. Un mismo alumno no puede tener dos notas:
+        la del Worker y la del docente. Si lo que se quiere es corregir la nota,
+        se corrige la fuente y se regenera el acta; no se añade una fila.
+    - caso: "El descriptor nombra a alguien que no está en la nómina"
+      respuesta: |
+        Código 3. La cobertura se calcula ANTES de añadir las filas, así que un
+        nombre ajeno no puede entrar «porque sí»: o está en `grupo_N.csv` como
+        faltante, o la decisión es inventada.
+    - caso: "El grupo del descriptor difiere del de la nómina"
+      respuesta: |
+        Código 3. El acta se ordena por grupo; un grupo divergente colocaría la
+        nota en la fila equivocada sin que nadie lo notara en la tabla.
+    - caso: "`total_preguntas` no coincide con el de las entregas"
+      respuesta: |
+        Código 3. Un `0/8` mezclado con entregas `0/10` haría creer que el ausente
+        rindió otro cuestionario. El total lo fijan las actas reales.
+    - caso: "Falta la recuperación"
+      respuesta: |
+        No se inventa: si no hay artefactos verificables de una segunda sesión,
+        no se fusionan actas y la decisión se registra con su `motivo` y su
+        `referencia`. `flujo_fusionar_actas.py` exige actas de recuperación
+        reales; forzarlo sería fabricar datos.

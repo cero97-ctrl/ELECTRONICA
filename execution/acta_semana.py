@@ -36,11 +36,14 @@ RAIZ = Path(__file__).resolve().parent.parent
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
+from execution.calificaciones_inasistencia import incorporar  # noqa: E402
 from execution.descargar_resultados import (  # noqa: E402
     _compilar_pdf,
+    es_sin_entrega,
     latex_acta,
     leer_lista,
     normalizar_cedula,
+    resumen,
 )
 
 RESULTADOS_POR_DEFECTO = RAIZ / "cursos" / "CYBERSEGURIDAD" / "evaluaciones" / "resultados"
@@ -163,16 +166,23 @@ def curso_desde(carpeta: Path) -> str:
 
 
 def construir(registros: list[dict], *, curso: str, semana: int, esperados: int,
-              ausentes: list[dict]) -> str:
+              ausentes: list[dict], decision: dict | None = None) -> str:
     if not registros:
         raise ValueError("no hay entregas que consolidar")
+    if decision is not None:
+        calificadas = sum(1 for r in registros if es_sin_entrega(r))
+        if calificadas != len(decision["calificados"]):
+            raise ValueError(
+                f"el acta tiene {calificadas} filas sin entrega y el descriptor "
+                f"declara {len(decision['calificados'])} calificaciones"
+            )
     cobertura = {"esperados": esperados, "faltantes": ausentes} if esperados else None
     return latex_acta(
         registros,
         titulo=f"Semana {semana:02d} — cuestionarios por rol",
         curso=curso,
         cuestionario=f"semana_{semana:02d}",
-        fecha=max(r["enviado_en"] for r in registros),
+        fecha=max((r["enviado_en"] for r in registros), default="") or "--",
         grupos=max([r["grupo"] for r in registros] + [f.get("grupo") or 0 for f in ausentes]),
         cobertura=cobertura,
     )
@@ -193,6 +203,8 @@ def main() -> int:
                         help="Carpeta con los acta_*.csv por grupo.")
     parser.add_argument("--lista", action="append", default=[], metavar="CSV",
                         help="Nómina por grupo (repetible) para listar faltantes.")
+    parser.add_argument("--calificaciones", default=None, metavar="YAML",
+                        help="Descriptor de ausencias calificadas por decisión docente.")
     parser.add_argument("--salida", default=None,
                         help="Carpeta destino (por defecto <actas-dir>/SEMANA_NN).")
     parser.add_argument("--curso", default=None, help="Nombre del curso en el acta.")
@@ -220,10 +232,18 @@ def main() -> int:
     try:
         rutas = seleccionar_actas(actas_dir)
         registros = consolidar(rutas)
+        # La cobertura se mide ANTES de añadir las calificaciones por ausencia:
+        # son exactamente esos ausentes los que el descriptor puede calificar.
         esperados, ausentes = faltantes(registros, [Path(p) for p in args.lista])
+        decision = None
+        if args.calificaciones:
+            ruta_decision = Path(args.calificaciones)
+            if not ruta_decision.is_absolute():
+                ruta_decision = RAIZ / ruta_decision
+            registros, decision = incorporar(registros, ausentes, ruta_decision)
         curso = args.curso or curso_desde(actas_dir)
         latex = construir(registros, curso=curso, semana=args.semana,
-                          esperados=esperados, ausentes=ausentes)
+                          esperados=esperados, ausentes=ausentes, decision=decision)
     except ValueError as exc:
         return fallar(EXIT_DATOS, str(exc))
 
@@ -243,34 +263,55 @@ def main() -> int:
             return fallar(EXIT_IO, f"el PDF es sospechosamente pequeño: {ruta_pdf}")
 
     overfull = [] if args.sin_pdf else _contar_overfull(base)
+    datos = resumen(registros)
     por_grupo: dict[str, int] = {}
     for r in registros:
         por_grupo[str(r["grupo"])] = por_grupo.get(str(r["grupo"]), 0) + 1
+    cedulas_calificadas = {
+        normalizar_cedula(r["cedula"]) for r in registros if es_sin_entrega(r)
+    }
+    sin_calificar = [f for f in ausentes
+                     if normalizar_cedula(f["cedula"]) not in cedulas_calificadas]
     salida = {
         "status": "ok",
         "code": EXIT_OK,
         "semana": args.semana,
         "acta_tex": str(ruta_tex),
         "acta_pdf": None if args.sin_pdf else str(ruta_pdf),
-        "entregas": len(registros),
+        "entregas": datos["entregas"],
+        "sin_entrega_calificados": datos["sin_entrega_calificados"],
+        "notas_finales": datos["notas_finales"],
+        "promedio_final": datos["promedio_final"],
+        "descriptor_calificaciones": decision["ruta"] if decision else None,
         "grupos": max(r["grupo"] for r in registros),
         "por_grupo": dict(sorted(por_grupo.items(), key=lambda kv: int(kv[0]))),
         "faltantes": ausentes,
-        "a_revisar": sum(1 for r in registros if r["estado"] != "ok"),
+        "faltantes_sin_calificar": sin_calificar,
+        "a_revisar": datos["a_revisar"],
         "overfull": len(overfull),
     }
     if args.json:
         print(json.dumps(salida, ensure_ascii=False, indent=2))
     else:
-        print(f"Acta de la semana {args.semana:02d} — {len(registros)} entrega(s)")
+        print(
+            f"Acta de la semana {args.semana:02d} — {salida['entregas']} entrega(s)"
+            + (f" + {salida['sin_entrega_calificados']} calificada(s) con 0"
+               if salida["sin_entrega_calificados"] else "")
+            + f" · {salida['notas_finales']} nota(s) final(es)"
+        )
         print(f"  TEX: {ruta_tex}")
         if salida["acta_pdf"]:
             print(f"  PDF: {ruta_pdf}")
         print("  por grupo: " + " · ".join(f"G{g}:{n}" for g, n in salida["por_grupo"].items()))
-        if ausentes:
-            print(f"  sin entrega: {len(ausentes)} de {esperados}")
-            for f in ausentes:
+        if sin_calificar:
+            print(f"  sin entrega sin calificar: {len(sin_calificar)} de {esperados}")
+            for f in sin_calificar:
                 print(f"    G{f.get('grupo') or '?'} {f['cedula']} {f['nombre']}")
+        if salida["sin_entrega_calificados"]:
+            print(
+                f"  calificados con 0: {salida['sin_entrega_calificados']}"
+                f" · promedio final {salida['promedio_final']:.2f}"
+            )
         if overfull:
             print(f"  aviso: {len(overfull)} Overfull \\hbox (cosmético)")
     return EXIT_OK

@@ -1,0 +1,99 @@
+goal: >-
+  Evaluar los informes semanales que cada grupo publica en su repositorio privado
+  de GitHub, con la rúbrica del curso y trazabilidad por commit. La nota la calcula
+  el programa; el modelo solo puntúa criterios. El resultado se entrega en un acta
+  privada separada del acta del cuestionario.
+
+status: activo
+version: 1
+
+required_inputs:
+  - nombre: descriptor
+    descripcion: >-
+      YAML privado (en .tmp/) con semana, ruta de la rúbrica, grupos_esperados,
+      modelo Gemini y, por grupo, grupo/rol/repo/commit/informe. El SHA fija la
+      versión evaluada; sin él el resultado no es reproducible.
+  - nombre: rubrica
+    descripcion: >-
+      Rúbrica YAML con `criterios.<nombre>.peso`; los pesos deben sumar 10.
+      Para semana 01 se usa cursos/CYBERSEGURIDAD/evaluaciones/rubrica_practica.yaml.
+  - nombre: GOOGLE_API_KEY
+    descripcion: >-
+      Clave de Gemini free, leída del .env por el script. Este flujo NUNCA usa
+      OPENROUTER_API_KEY: no consume créditos de OpenRouter.
+
+steps:
+  - orden: 1
+    paso: Preparación de la sesión
+    accion: >-
+      `python3 execution/estado_sesion.py check` y crear la bitácora del día.
+      No tocar el acta del examen ni el descriptor de inasistencias.
+  - orden: 2
+    paso: Elección del modelo (determinista)
+    accion: >-
+      El modelo se fija en el descriptor. Si el usuario pide Gemini free, ejecutar
+      `python3 execution/enrutador.py --task examen --modelo-explicito
+      google/gemini-2.5-flash` y convertir el ID a `gemini-2.5-flash` para el SDK
+      directo. Nunca elegir modelo razonando en el chat.
+  - orden: 3
+    paso: Chequeo determinista (sin LLM)
+    accion: >-
+      `python3 execution/evaluar_informes_grupos.py --descriptor <yaml>
+      --salida-json .tmp/evaluacion_informes_grupos/chequeos.json --check`.
+      Baja por SHA con `gh api` (sesión ya autenticada), resuelve `Informe.md`
+      frente a `informe.md`, busca rutas citadas, contrasta hashes sha256, detecta
+      secretos y registra la fecha del commit como dato informativo.
+  - orden: 4
+    paso: Evaluación asistida
+    accion: >-
+      `python3 flujo_evaluar_informes_grupos.py --descriptor <yaml>`. El script
+      reutiliza `cargar_rubrica()` y `calcular_nota()` de evaluar_examen.py:
+      descarta cualquier nota total que el modelo emita y suma los parciales con
+      los pesos de la rúbrica. Máximo 3 reintentos ante JSON inválido.
+  - orden: 5
+    paso: Verificación y acta
+    accion: >-
+      El orquestador exige cobertura exacta de los grupos, compila el LaTeX en
+      `.tmp/latex_build/`, valida el PDF con `verificar_pdf.py` (0 errores y 0
+      overfull) y copia `informes_grupos.{tex,pdf}` a resultados/SEMANA_01/.
+  - orden: 6
+    paso: Cierre
+    accion: >-
+      `python3 execution/bitacoras.py check` y registro de decisiones. El commit
+      sigue bloqueado hasta autorización explícita del usuario.
+
+expected_outputs:
+  - .tmp/evaluacion_informes_grupos/evaluacion.json — notas, items, justificaciones anonimizadas y chequeos.
+  - cursos/CYBERSEGURIDAD/evaluaciones/resultados/SEMANA_01/informes_grupos.tex
+  - cursos/CYBERSEGURIDAD/evaluaciones/resultados/SEMANA_01/informes_grupos.pdf
+
+edge_cases:
+  - caso: Repo privado o `gh` sin sesión
+    protocolo: Error de red (código 4); no se reintentan credenciales dentro del código.
+  - caso: Informe con distinta capitalización (`Informe.md`)
+    protocolo: `resolver_informe()` acepta una única coincidencia case-insensitive y registra la ruta real.
+  - caso: Ruta citada en el informe que no existe en el repo
+    protocolo: Se cuenta y se reporta en avisos; NO se convierte en descuento automático.
+  - caso: Hash declarado que no cuadra o archivo ausente
+    protocolo: Se reporta con ruta en avisos; la nota sigue siendo decisión del modelo con la rúbrica.
+  - caso: Secreto o `.env` en el repositorio
+    protocolo: Se reporta la ruta, nunca el valor; se anonimizan cédulas/correos en justificaciones.
+  - caso: El modelo emite nota total, promedio o nivel
+    protocolo: `validar_items()` descarta esos campos y avisa; `calcular_nota()` es la única fuente de la nota.
+  - caso: JSON inválido o cuota agotada
+    protocolo: 3 intentos máximo; 429 de Gemini detiene y se reporta sin cambiar de backend.
+  - caso: Entrega fuera del corte semanal
+    protocolo: >-
+      Por defecto `evaluar_corte: true` y se marca `tardia` como dato. Excepción
+      documentada: semana 01, decidida por el docente el 2026-11-22, lleva
+      `evaluar_corte: false` y conserva `puntualidad: no_evaluada`.
+  - caso: Cobertura incompleta (menos de 4 grupos)
+    protocolo: Código 6; no se genera acta parcial.
+  - caso: Desaparecieron las copias finales del acta (resultados/ está gitignored)
+    protocolo: >-
+      No repetir las llamadas a Gemini. Regenerar desde el JSON ya evaluado con
+      `flujo_evaluar_informes_grupos.py --descriptor <yaml> --desde-json`: la capa 3
+      reconstruye el descriptor mínimo de forma pura, recompila y reverifica el PDF.
+      Las notas quedan exactamente como en la evaluación original.
+
+retry_budget: 3

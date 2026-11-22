@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import contextlib
 import csv
+import hashlib
 import importlib.util
 import io
+import json
 import os
 import sys
 import tempfile
@@ -289,6 +291,120 @@ def main() -> int:
         comprobar("--sin-pdf no deja PDF", not (salida / "acta_semana_09.pdf").exists())
         comprobar("no deja basura en la raíz del repo",
                   not (RAIZ / "acta_semana_09.tex").exists())
+
+        print("calificaciones por inasistencia")
+        desc = tmp / "inasistencia.yaml"
+        desc.write_text(
+            "fecha_decision: 2026-11-22\n"
+            "total_preguntas: 10\n"
+            'motivo: "Sin entrega; no justificó su ausencia; sin recuperación verificable"\n'
+            "referencia: Sessions/2026-11-22_prueba.md\n"
+            "calificaciones:\n"
+            "  - {cedula: V-33333333, nombre: C ALUMNO, grupo: 2, nota: 0.0}\n",
+            encoding="utf-8",
+        )
+        _, ausentes_finales = mod.faltantes(registros, [l1, l2])
+        finales, decision = mod.incorporar(registros, ausentes_finales, desc)
+        comprobar("dos entregas + un ausente = tres filas finales", len(finales) == 3)
+        cerrada = mod.construir(finales, curso="X", semana=10, esperados=esperados,
+                                ausentes=ausentes_finales, decision=decision)
+        comprobar("caja de cobertura cerrada", r"title={Cobertura cerrada}" in cerrada)
+        comprobar("la caja dice entregas + calificados + cobertura",
+                  "2 entregas + 1 calificados con 0" in cerrada
+                  and "cobertura 3/3" in cerrada)
+        comprobar("el motivo vive en el PDF", "no justificó su ausencia" in cerrada)
+        comprobar("el cero aparece en la tabla", "0/10 & 0.00" in cerrada)
+        fila_ausente = next(ln for ln in cerrada.splitlines()
+                            if "V-33333333" in ln and ln.endswith(r"\\") and "&" in ln)
+        comprobar("el ausente lleva el icono azul, no el rayo de revisar",
+                  r"\textcolor{azulNoche}{\faIcon{times}}" in fila_ausente
+                  and r"\textcolor{rojoAlerta}{" not in fila_ausente)
+        comprobar("cero calificado no cuenta como a revisar",
+                  mod.resumen(finales)["a_revisar"] == 0)
+        comprobar("el pie explica el icono azul",
+                  "fueron calificados con 0 por decisión docente" in cerrada)
+
+        print("promedio final y determinismo")
+        notas = [10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 7.0, 10.0, 10.0]
+        nueve = [
+            {"grupo": 1 + i % 4, "cedula": f"V-{10000000 + i}", "nombre": f"N{i}",
+             "aciertos": int(nota), "total": 10, "nota_recalculada": nota,
+             "enviado_en": "2026-11-16T15:00:00Z", "estado": "ok",
+             "justif_estado": "ok", "avisos": ""}
+            for i, nota in enumerate(notas)
+        ]
+        dos = [
+            {"grupo": 4, "cedula": cedula, "nombre": nombre, "aciertos": 0, "total": 10,
+             "nota_recalculada": 0.0, "enviado_en": "", "estado": "sin_entrega",
+             "justif_estado": "n/a", "avisos": "sin entrega; no justificó su ausencia"}
+            for cedula, nombre in (("V-90000001", "AUSENTE-1"),
+                                   ("V-90000002", "AUSENTE-2"))
+        ]
+        once = sorted(nueve + dos, key=lambda r: (r["grupo"], r["cedula"]))
+        res = mod.resumen(once)
+        comprobar("9 entregas, no 11", res["entregas"] == 9)
+        comprobar("2 calificados con 0", res["sin_entrega_calificados"] == 2)
+        comprobar("11 notas finales", res["notas_finales"] == 11)
+        comprobar("promedio de entregas 9.44", res["promedio"] == 9.44, str(res["promedio"]))
+        comprobar("promedio final 7.73", res["promedio_final"] == 7.73,
+                  str(res["promedio_final"]))
+        tex_uno = mod.construir(once, curso="X", semana=11, esperados=11, ausentes=dos)
+        tex_dos = mod.construir(once, curso="X", semana=11, esperados=11, ausentes=dos)
+        comprobar("mismo sha256 en dos corridas",
+                  hashlib.sha256(tex_uno.encode()).hexdigest()
+                  == hashlib.sha256(tex_dos.encode()).hexdigest())
+
+        print("main con --calificaciones")
+        cierre = tmp / "cierre_resultados"
+        cierre.mkdir()
+        _escribir(cierre / "acta_rol_rojo_cuestionario.csv", [
+            {"grupo": r["grupo"], "cedula": r["cedula"], "nombre": r["nombre"],
+             "aciertos": r["aciertos"], "total": r["total"],
+             "nota_recalculada": r["nota_recalculada"],
+             "enviado_en": r["enviado_en"], "estado": r["estado"]}
+            for r in nueve
+        ])
+        nomina = _lista(
+            tmp / "grupo_cierre.csv",
+            [(r["grupo"], r["cedula"].split("-")[-1], r["nombre"]) for r in nueve]
+            + [(4, "90000001", "AUSENTE-1"), (4, "90000002", "AUSENTE-2")],
+        )
+        desc_cierre = tmp / "cierre.yaml"
+        desc_cierre.write_text(
+            "fecha_decision: 2026-11-22\n"
+            "total_preguntas: 10\n"
+            'motivo: "Sin entrega; no justificó su ausencia"\n'
+            "referencia: Sessions/2026-11-22_prueba.md\n"
+            "calificaciones:\n"
+            "  - {cedula: V-90000001, nombre: AUSENTE-1, grupo: 4, nota: 0.0}\n"
+            "  - {cedula: V-90000002, nombre: AUSENTE-2, grupo: 4, nota: 0.0}\n",
+            encoding="utf-8",
+        )
+        argv = ["acta_semana.py", "--semana", "1", "--actas-dir", str(cierre),
+                "--salida", str(tmp / "cierre_salida"), "--sin-pdf", "--json",
+                "--lista", str(nomina), "--calificaciones", str(desc_cierre)]
+        viejo = sys.argv
+        buf = io.StringIO()
+        sys.argv = argv
+        try:
+            with contextlib.redirect_stdout(buf):
+                code_cierre = mod.main()
+        finally:
+            sys.argv = viejo
+        salida_json = json.loads(buf.getvalue())
+        comprobar("main con calificaciones devuelve 0", code_cierre == 0)
+        comprobar("JSON: 9 entregas", salida_json["entregas"] == 9)
+        comprobar("JSON: 2 calificados", salida_json["sin_entrega_calificados"] == 2)
+        comprobar("JSON: 11 notas finales", salida_json["notas_finales"] == 11)
+        comprobar("JSON: promedio final 7.73", salida_json["promedio_final"] == 7.73)
+        comprobar("JSON: 0 a revisar", salida_json["a_revisar"] == 0)
+        comprobar("JSON: sin faltantes sin calificar",
+                  salida_json["faltantes_sin_calificar"] == [])
+        tex_cierre = (tmp / "cierre_salida" / "acta_semana_01.tex").read_text(encoding="utf-8")
+        filas_tabla_final = [ln for ln in tex_cierre.splitlines()
+                             if ln.endswith(r"\\") and "&" in ln and "V-" in ln]
+        comprobar("el acta tiene 11 filas", len(filas_tabla_final) == 11,
+                  str(len(filas_tabla_final)))
 
     print()
     if FALLOS:

@@ -464,6 +464,20 @@ def test_resumen() -> None:
     comprobar("por grupo", r["por_grupo"] == {1: 2, 2: 1})
     comprobar("a revisar", r["a_revisar"] == 1)
     comprobar("último envío", r["ultimo_envio"] == "2026-11-11T11:00:00Z")
+
+    con_ausente = dict(registros[0])
+    con_ausente.update({
+        "cedula": "V-99999999", "nombre": "Sin Entrega", "aciertos": 0,
+        "nota_recalculada": 0.0, "enviado_en": "", "estado": "sin_entrega",
+    })
+    r2 = D.resumen(registros + [con_ausente])
+    comprobar("las entregas siguen siendo 3", r2["entregas"] == 3)
+    comprobar("un calificado con 0", r2["sin_entrega_calificados"] == 1)
+    comprobar("cuatro notas finales", r2["notas_finales"] == 4)
+    comprobar("promedio final 6.00", r2["promedio_final"] == 6.0, str(r2["promedio_final"]))
+    comprobar("el ausente no dispara a revisar", r2["a_revisar"] == 1)
+    comprobar("último envío ignora la fila sin fecha",
+              r2["ultimo_envio"] == "2026-11-11T11:00:00Z")
     vacio = D.resumen([])
     comprobar("sin entregas", vacio["entregas"] == 0 and vacio["promedio"] is None)
 
@@ -515,6 +529,29 @@ def test_tex_y_latex() -> None:
     comprobar("sin entregas lo dice", "Sin entregas" in tex_vacio)
     comprobar("lista a los faltantes", "V-1" in tex_vacio and "V-2" in tex_vacio)
     comprobar("fecha ausente -> guiones", "--" in tex_vacio)
+
+    con_cero = dict(registros[0])
+    con_cero.update({
+        "cedula": "V-99999999", "nombre": "Sin Entrega", "aciertos": 0,
+        "total": 10, "nota_recalculada": 0.0, "enviado_en": "",
+        "estado": "sin_entrega", "avisos": "no justificó su ausencia",
+        "justif_estado": "n/a",
+    })
+    tex_cerrado = D.latex_acta(
+        registros + [con_cero],
+        titulo="Rol Rojo", curso="CYBERSEGURIDAD", cuestionario="rol_rojo_cuestionario",
+        fecha="2026-11-11T10:00:00Z", grupos=4,
+        cobertura={"esperados": 2, "faltantes": [
+            {"cedula": "V-99999999", "nombre": "Sin Entrega", "grupo": 1}]},
+    )
+    comprobar("cobertura cerrada cuando todos están calificados",
+              r"title={Cobertura cerrada}" in tex_cerrado)
+    comprobar("resumen con calificaciones finales",
+              r"\textbf{Calificaciones finales:} 2" in tex_cerrado)
+    comprobar("promedio final 4.50", r"\textbf{Promedio final:} 4.50" in tex_cerrado)
+    comprobar("el motivo vive en la caja", "no justificó su ausencia" in tex_cerrado)
+    comprobar("sin caja de revisión si no hay filas revisables",
+              r"title={A revisar a mano}" not in tex_cerrado)
 
     # Invariante de tabla: cabecera, filas y la fila vacía deben tener las mismas
     # columnas. Con 5 declaradas y 6 celdas por fila, pdflatex revienta con
