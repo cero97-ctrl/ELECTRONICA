@@ -13,6 +13,7 @@ Ejecutar: python3 execution/test_descargar_resultados.py
 from __future__ import annotations
 
 import contextlib
+import csv
 import importlib.util
 import io
 import json
@@ -549,6 +550,12 @@ def test_tex_y_latex() -> None:
     comprobar("resumen con calificaciones finales",
               r"\textbf{Calificaciones finales:} 2" in tex_cerrado)
     comprobar("promedio final 4.50", r"\textbf{Promedio final:} 4.50" in tex_cerrado)
+    comprobar(
+        "el peor publicado es el 0 de la ausencia, no el peor de las entregas",
+        r"\textbf{Peor final:} 0.00" in tex_cerrado
+        and r"\textbf{Peor:} 9.00" not in tex_cerrado,
+        tex_cerrado[-1200:],
+    )
     comprobar("el motivo vive en la caja", "no justificó su ausencia" in tex_cerrado)
     comprobar("sin caja de revisión si no hay filas revisables",
               r"title={A revisar a mano}" not in tex_cerrado)
@@ -694,6 +701,107 @@ def test_guarda_de_privacidad() -> None:
         comprobar("no escribió nada", not destino.exists())
 
 
+def test_calificaciones_en_acta() -> None:
+    print("\n-- Calificaciones por ausencia en el acta individual")
+    entrega = {
+        "grupo": 1,
+        "cedula": "V-12345678",
+        "nombre": "Ana Pérez",
+        "aciertos": TOTAL,
+        "total": TOTAL,
+        "nota_recalculada": 10.0,
+        "enviado_en": "2026-11-24T13:00:00.000Z",
+        "estado": D.ESTADO_OK,
+        "archivo": RUTA_OK,
+        "avisos": [],
+        "justif_estado": "n/a",
+    }
+    cobertura = {
+        "esperados": 2,
+        "recibidos": 1,
+        "faltantes": [{"cedula": "V-87654321", "nombre": "", "grupo": None}],
+        "sobrantes": [],
+        "grupo_distinto": [],
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        ruta = Path(tmp) / "calificaciones.yaml"
+        ruta.write_text(
+            "fecha_decision: 2026-11-24\n"
+            f"total_preguntas: {TOTAL}\n"
+            'motivo: "Sin entrega; sin justificación"\n'
+            "referencia: Sessions/2026-11-24_prueba.md\n"
+            "calificaciones:\n"
+            "  - {cedula: V-87654321, nombre: SIN NOMBRE EN NOMINA, grupo: 1, nota: 0.0}\n",
+            encoding="utf-8",
+        )
+        try:
+            D.aplicar_calificaciones([entrega], None, ruta)
+            comprobar("sin --lista se rechaza", False)
+        except ValueError as exc:
+            comprobar("sin --lista se rechaza", "--lista" in str(exc), str(exc))
+        finales, decision = D.aplicar_calificaciones([entrega], cobertura, ruta)
+        comprobar("una fila por nota final", len(finales) == 2, str(len(finales)))
+        ausente = [r for r in finales if r["cedula"] == "V-87654321"][0]
+        comprobar("el ausente se marca sin_entrega", ausente["estado"] == D.ESTADO_SIN_ENTREGA)
+        comprobar("el ausente recibe 0", ausente["nota_recalculada"] == 0.0)
+        comprobar("el motivo viaja en la fila", "Sin entrega" in ausente["avisos"])
+        comprobar("la decisión queda trazada", decision["ruta"] == str(ruta))
+        filas_csv = list(csv.DictReader(io.StringIO(D.csv_texto(finales))))
+        ausente_csv = [f for f in filas_csv if f["cedula"] == "V-87654321"][0]
+        comprobar(
+            "el CSV no inventa nota archivada ni archivo para el ausente",
+            ausente_csv["nota"] == "" and ausente_csv["archivo"] == "",
+            str(ausente_csv),
+        )
+        comprobar(
+            "el CSV publica el 0 recalculado del ausente",
+            ausente_csv["nota_recalculada"] == "0.00",
+            str(ausente_csv),
+        )
+        comprobar(
+            "el motivo del CSV no se parte letra por letra",
+            ausente_csv["avisos"].startswith("Sin entrega")
+            and "decisión 2026-11-24" in ausente_csv["avisos"]
+            and "S; i; n" not in ausente_csv["avisos"],
+            ausente_csv["avisos"],
+        )
+        datos = D.resumen(finales)
+        comprobar("entregas separadas de calificados", datos["entregas"] == 1
+                  and datos["sin_entrega_calificados"] == 1, str(datos))
+        comprobar("promedio final incluye el 0", datos["promedio_final"] == 5.0, str(datos))
+        comprobar(
+            "mejor y peor finales incluyen el 0",
+            (datos["mejor_final"], datos["peor_final"]) == (10.0, 0.0),
+            str(datos),
+        )
+        ruta.write_text(
+            "fecha_decision: 2026-11-24\n"
+            f"total_preguntas: {TOTAL}\n"
+            'motivo: "Sin entrega"\n'
+            "calificaciones:\n"
+            "  - {cedula: V-12345678, nombre: Ana Pérez, grupo: 1, nota: 0.0}\n",
+            encoding="utf-8",
+        )
+        try:
+            D.aplicar_calificaciones([entrega], cobertura, ruta)
+            comprobar("no se puede calificar a quien entregó", False)
+        except ValueError as exc:
+            comprobar("no se puede calificar a quien entregó", "ya entregó" in str(exc), str(exc))
+        ruta.write_text(
+            "fecha_decision: 2026-11-24\n"
+            f"total_preguntas: {TOTAL}\n"
+            'motivo: "Sin entrega"\n'
+            "calificaciones:\n"
+            "  - {cedula: V-99999999, nombre: Desconocido, grupo: 1, nota: 0.0}\n",
+            encoding="utf-8",
+        )
+        try:
+            D.aplicar_calificaciones([entrega], cobertura, ruta)
+            comprobar("no se puede inventar un ausente", False)
+        except ValueError as exc:
+            comprobar("no se puede inventar un ausente", "faltante" in str(exc), str(exc))
+
+
 def main() -> int:
     print("Pruebas de execution/descargar_resultados.py")
     test_cedula()
@@ -709,6 +817,7 @@ def main() -> int:
     test_tex_y_latex()
     test_repo_por_defecto()
     test_token_por_repo()
+    test_calificaciones_en_acta()
     test_guarda_de_privacidad()
     print(f"\n{PRUEBAS - len(FALLOS)}/{PRUEBAS} aserciones OK")
     if FALLOS:

@@ -179,9 +179,14 @@ def filas_para(registros: list[dict], ausentes: list[dict], descriptor: dict) ->
                 "nombre": item["nombre"],
                 "aciertos": 0,
                 "total": descriptor["total_preguntas"],
+                # No hay JSON archivado: `nota` (la que envió el Worker) y
+                # `archivo` quedan vacíos. Solo existe la nota decidida aquí,
+                # que es `nota_recalculada` y es la que publica el acta.
+                "nota": None,
                 "nota_recalculada": item["nota"],
                 "enviado_en": "",
                 "estado": ESTADO_SIN_ENTREGA,
+                "archivo": "",
                 "justif_estado": "n/a",
                 "avisos": aviso,
             }

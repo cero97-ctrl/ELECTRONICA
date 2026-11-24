@@ -91,6 +91,7 @@ def _descargar(args: argparse.Namespace) -> dict:
         ("--repo", args.repo),
         ("--cuestionario", args.cuestionario),
         ("--lista", args.lista),
+        ("--calificaciones", args.calificaciones),
         ("--salida", args.salida),
         ("--pdf", args.pdf),
         ("--fecha", args.fecha),
@@ -116,12 +117,20 @@ def _descargar(args: argparse.Namespace) -> dict:
     return datos
 
 
-def _verificar(resultado: dict, sin_pdf: bool) -> list[str]:
+def _verificar(resultado: dict, sin_pdf: bool, calificaciones: bool = False) -> list[str]:
     """Comprueba que lo que la capa 3 dice haber escrito existe y cuadra."""
     problemas: list[str] = []
     entregas = resultado.get("entregas")
     if not isinstance(entregas, int):
         return ["la capa 3 no reportó `entregas`"]
+    # Con descriptor, el CSV lleva las entregas MÁS las ausencias calificadas;
+    # compararlo solo contra `entregas` daría un falso fallo de verificación.
+    filas_esperadas = entregas
+    if calificaciones:
+        calificados = resultado.get("sin_entrega_calificados")
+        if not isinstance(calificados, int):
+            return ["se pasó --calificaciones pero la capa 3 no reportó `sin_entrega_calificados`"]
+        filas_esperadas += calificados
 
     ruta_csv = resultado.get("acta_csv")
     if not ruta_csv:
@@ -134,9 +143,10 @@ def _verificar(resultado: dict, sin_pdf: bool) -> list[str]:
             filas = list(csv.DictReader(fh))
     except (OSError, csv.Error) as exc:
         return [f"el acta CSV no se pudo leer: {exc}"]
-    if len(filas) != entregas:
+    if len(filas) != filas_esperadas:
         problemas.append(
-            f"el CSV tiene {len(filas)} fila(s) y la capa 3 reportó {entregas} entrega(s)"
+            f"el CSV tiene {len(filas)} fila(s) y la capa 3 reportó "
+            f"{entregas} entrega(s) + {filas_esperadas - entregas} calificada(s)"
         )
     if entregas and any(not f.get("cedula") for f in filas):
         problemas.append("hay filas sin cédula en el acta")
@@ -268,6 +278,15 @@ def main() -> int:
     parser.add_argument("--rama", default="main", help="Rama del repo.")
     parser.add_argument("--cuestionario", default=None, help="Id del cuestionario.")
     parser.add_argument("--lista", default=None, help="Nómina CSV/YAML para detectar faltantes.")
+    parser.add_argument(
+        "--calificaciones",
+        default=None,
+        metavar="YAML",
+        help=(
+            "Descriptor de ausencias a calificar con 0. En el acta individual "
+            "exige --lista; con --consolidar se aplica al consolidado semanal."
+        ),
+    )
     parser.add_argument("--salida", default=None, help="Ruta del acta CSV.")
     parser.add_argument("--pdf", default=None, help="Ruta del acta PDF.")
     parser.add_argument("--sin-pdf", action="store_true", help="No generar el PDF.")
@@ -290,8 +309,6 @@ def main() -> int:
     parser.add_argument("--salida-dir", default=None,
                         help="Carpeta destino del acta consolidada.")
     parser.add_argument("--curso", default=None, help="Curso en el acta consolidada.")
-    parser.add_argument("--calificaciones", default=None, metavar="YAML",
-                        help="Descriptor de ausencias calificadas (solo con --consolidar).")
     parser.add_argument("--json", action="store_true", help="Salida JSON.")
     parser.add_argument("--no-alert", action="store_true", help="Sin alerta audible.")
     args = parser.parse_args()
@@ -303,7 +320,13 @@ def main() -> int:
     _trazar(
         run_id,
         "flujo/inicio",
-        {"fuente": args.fuente, "repo": args.repo, "lista": args.lista, "sin_pdf": args.sin_pdf},
+        {
+            "fuente": args.fuente,
+            "repo": args.repo,
+            "lista": args.lista,
+            "calificaciones": args.calificaciones,
+            "sin_pdf": args.sin_pdf,
+        },
     )
 
     resultado = _descargar(args)
@@ -311,7 +334,9 @@ def main() -> int:
 
     problemas_verificacion: list[str] = []
     if codigo in (0, 5):
-        problemas_verificacion = _verificar(resultado, args.sin_pdf)
+        problemas_verificacion = _verificar(
+            resultado, args.sin_pdf, bool(args.calificaciones)
+        )
         if problemas_verificacion:
             codigo = 1
             resultado["status"] = "error"
@@ -339,6 +364,8 @@ def main() -> int:
             "status": estado,
             "exit_code": codigo,
             "entregas": resultado.get("entregas"),
+            "sin_entrega_calificados": resultado.get("sin_entrega_calificados"),
+            "descriptor": resultado.get("descriptor_calificaciones"),
             "a_revisar": resultado.get("a_revisar"),
             "verificacion": problemas_verificacion,
         },

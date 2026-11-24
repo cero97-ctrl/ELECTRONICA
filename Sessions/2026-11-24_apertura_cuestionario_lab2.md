@@ -91,3 +91,70 @@ Apertura y cierre del cuestionario web de Laboratorio II de Física (24-nov-2026
   `cursos/LABORATORIO_I_FISICA/practicas/web/` y
   `publicar_lab1_practicas_web.sh`. Sin push (no autorizado en esta sesión).
 - No se armó el acta: decisión del usuario de dejarla para otra sesión.
+
+## Acta de Lab II (09:17 VET, tras el aviso del usuario «ya venció el plazo»)
+- El usuario levantó la reserva anterior y pidió el acta una vez vencida la
+  ventana. Capa 3 reutilizada sin cambios: `execution/descargar_resultados.py`;
+  capa 2: `flujo_acta_cuestionario.py`; capa 1: `directives/acta_cuestionario.yaml`.
+- `python3 execution/test_descargar_resultados.py` → 120/120 aserciones OK.
+- Entrada preparada: el nomina del Worker (`nomina_lab_ii_fisica.csv`, una
+  cédula por línea) **no** sirve como `--lista` del acta, porque ese lector
+  espera CSV con cabecera; se derivó `.tmp/nomina_lab_ii_acta.csv` con cabecera
+  `cedula` y las mismas 3 cédulas (idénticas a las del deploy, `inscritas:3`).
+  No se inventó ninguna nota ni nombre: los nombres vienen de los JSON archivados.
+- `flujo_acta_cuestionario.py --fuente .../lab_ii_fisica_cuestionario.md --repo
+  cero97-ctrl/cuestionarios-resultados-lab2 --lista .tmp/nomina_lab_ii_acta.csv
+  --json --no-alert` → `status: ok`, `code: 0`, 10 preguntas, **2 entregas**,
+  promedio **8.50** (mejor 10.00, peor 7.00), `a_revisar: 0`, cobertura 2/3:
+  falta `V-24535276`, sin sobrantes ni grupos divergentes. Último envío
+  `2026-11-24T13:01:02.797Z` (09:01 VET).
+- `execution/verificar_pdf.py` → `status: ok`, 1 página, 0 errores `!`,
+  0 `Overfull \hbox`, 0 solapes. CSV con 2 filas, notas archivadas = recalculadas.
+- Entregables (gitignored, datos personales):
+  `cursos/LABORATORIO_II_FISICA/evaluaciones/resultados/acta_lab_ii_fisica_cuestionario.{csv,pdf}`.
+- Decisión docente pendiente en ese momento: qué hacer con la inasistencia de
+  `V-24535276`; se resolvió más abajo por instrucción expresa del usuario.
+
+## Cierre del acta con el 0 por inasistencia
+- El usuario decidió: «califícala con 0». Esa decisión se registró como dato en
+  un descriptor, **nunca se escribió a mano** en el CSV ni en el PDF.
+- Se completaron las 3 capas del flujo que ya existía: capa 1
+  `directives/acta_cuestionario.yaml` (nuevo `--calificaciones`, con su caso
+  límite), capa 2 `flujo_acta_cuestionario.py` (pasa el flag y verifica
+  `entregas + calificados`) y capa 3 `execution/descargar_resultados.py`
+  (`aplicar_calificaciones()` reutiliza `calificaciones_inasistencia.py`).
+  La validación y la conversión a filas siguen viviendo **una sola vez**, en
+  `execution/calificaciones_inasistencia.py`; no se duplicó en el orquestador.
+- La cobertura se mide ANTES de calificar: sin `--lista` el descriptor se
+  rechaza (no se puede verificar quién faltó), y no puede tocar a quien entregó
+  ni a alguien ajeno a la nómina.
+- Descriptor (gitignored, bajo `resultados/**`):
+  `cursos/LABORATORIO_II_FISICA/evaluaciones/resultados/calificaciones_inasistencia.yaml`
+  → `fecha_decision: 2026-11-24`, `total_preguntas: 10`, motivo «Sin entrega; no
+  justificó su ausencia; sin recuperación verificable», `referencia` a esta
+  bitácora, y `V-24535276`, grupo 1, `nota: 0`. La nómina del Worker trae solo
+  cédulas: se dejó el marcador explícito `SIN NOMBRE EN NOMINA` en vez de
+  inventar un nombre.
+- Pruebas sin red: `test_descargar_resultados.py` **135/135**,
+  `test_acta_semana.py` **76/76**, `test_calificaciones_inasistencia.py`
+  **31/31**. Los casos nuevos congelan los tres defectos que aparecieron al
+  conectar el descriptor al acta individual: fila sin nota archivada ni JSON
+  (celdas vacías, no inventadas), `avisos` como texto que se partía letra por
+  letra (ahora se aplana igual que la lista del Worker) y «Peor: 7.00» que
+  ocultaba el 0 (pasó a «Peor final: 0.00» cuando hay calificados).
+- Regeneración con `--calificaciones` → `status: ok`, `code: 0`:
+  **2 entregas + 1 calificado = 3 notas finales**, promedio de entregas 8,50,
+  **promedio final 5,67**, mejor final 10,00, peor final 0,00, `a_revisar: 0`,
+  cobertura cerrada 3/3 sin sobrantes ni grupos divergentes. Último envío
+  `2026-11-24T13:01:02.797Z`.
+- `execution/verificar_pdf.py` → 1 página, 0 errores `!`, 0 `Overfull \hbox`,
+  0 solapes. `pdftotext` confirma «Promedio final: 5.67», «Peor final: 0.00» y
+  el motivo completo de `V-24535276` en la caja de cobertura.
+- Entregables (gitignored, datos personales): se regeneraron
+  `acta_lab_ii_fisica_cuestionario.{csv,pdf}` y se añadió el descriptor
+  `calificaciones_inasistencia.yaml` en el mismo directorio.
+- Commit final con **staging explícito**: bitácora, directiva, orquestador y
+  los tres scripts de capa 3 modificados. Sin push (no autorizado). Quedan
+  intactos `cursos/LABORATORIO_I_FISICA/practicas/web/` y
+  `publicar_lab1_practicas_web.sh` (ajenos, sin trackear). Lab I no se toca: su
+  ventana es el 26-nov a las 09:45 VET.

@@ -60,6 +60,18 @@ required_inputs:
       `.tmp/latex_build/acta_<cuestionario>/` y se copia al destino; si pdflatex
       deja líneas `!` en el log, el acta CSV sigue siendo válida y el flujo lo
       reporta como aviso en vez de dar por bueno un PDF roto.
+  - name: --calificaciones YAML
+    description: |
+      Opcional. Decide dar 0 a quien no entregó y no justificó. Es el MISMO
+      descriptor que usa el consolidado semanal (`--calificaciones` allí):
+      `fecha_decision` ISO, `total_preguntas`, `motivo`, `referencia` opcional y
+      una lista `calificaciones` con `cedula`, `nombre`, `grupo` y `nota` (0..10).
+      Exige `--lista`: la cobertura se mide ANTES, así que el descriptor solo
+      puede tocar a quien figure como faltante en la nómina y no haya entregado.
+      La validación y la conversión a filas viven SOLO en
+      `execution/calificaciones_inasistencia.py`; ni el orquestador ni este SOP
+      las reimplementan. El acta lleva `entregas` y `sin_entrega_calificados`
+      separados y el promedio final divide entre TODAS las notas.
 
 contract:
   recalculo: |
@@ -119,7 +131,11 @@ steps:
     script: python3 flujo_acta_cuestionario.py --lista <nomina.csv>
     description: |
       Igual, pero con cobertura: el acta lista a los que no entregaron. Es la
-      forma de correrlo cuando la nota va a publicarse.
+      forma de correrlo cuando la nota va a publicarse. Si hay una decisión
+      docente de dar 0 a las ausencias, añadir
+      `--calificaciones <descriptor.yaml>`: el acta pasa a tener una fila por
+      nota final (entregas + ausencias calificadas) y la caja de cobertura se
+      cierra con el motivo de cada una.
   - paso: 4
     script: revisión manual del CSV/PDF
     description: |
@@ -131,10 +147,20 @@ expected_outputs:
   - "PDF infográfico (longtable de 7 columnas —incluye `J` de justificación—, una fila por estudiante, resumen, caja de cobertura y, si hay filas `revisar`, caja «A revisar a mano» con el motivo de cada una) compilado sin errores `!` ni `Overfull \\hbox`."
   - "Resumen por consola o JSON: entregas, promedio, mejor/peor, por grupo, último envío y cuántas filas hay que revisar."
   - "Con `--lista`: faltantes, sobrantes y cédulas cuyo grupo no coincide con la nómina."
+  - "Con `--calificaciones`: `descriptor_calificaciones` en el JSON, `sin_entrega_calificados` separado de `entregas`, `promedio_final` sobre todas las notas y caja «Cobertura cerrada» con el motivo de cada 0."
   - "El flujo verifica lo que la capa 3 dijo haber escrito: que el CSV existe, que sus filas coinciden con `entregas` y que el PDF existe y no es un archivo vacío."
   - "Códigos de salida: 0 ok · 1 E/S o verificación fallida · 3 fuente/clave inválida, uso incorrecto o ruta no ignorada · 4 red/credenciales · 5 entregas inválidas o notas que no cuadran."
 
 edge_cases:
+  - caso: "Se pasa --calificaciones sin --lista"
+    respuesta: |
+      Código 3 sin escribir nada: sin nómina no hay forma de verificar quién
+      faltó, y el descriptor podría calificar a alguien que sí entregó.
+  - caso: "El descriptor nombra a alguien que entregó o que no está en la nómina"
+    respuesta: |
+      Código 3 sin escribir nada. `calificaciones_inasistencia.py` rechaza
+      ambos casos, además de cédulas repetidas, grupo distinto al de la nómina,
+      nota fuera de 0..10 y `total_preguntas` distinto al de las entregas.
   - caso: "Todavía no hay entregas"
     respuesta: |
       Código 0 con `entregas: 0` y un acta que dice «Sin entregas». No es un

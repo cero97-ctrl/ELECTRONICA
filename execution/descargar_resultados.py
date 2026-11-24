@@ -14,6 +14,10 @@ Contrato:
     alguien editó el JSON a mano) la fila sale marcada `revisar`.
   - Con `--lista` (CSV o YAML con nombre/cédula/grupo) se informa de quién no
     entregó. Sin lista no se puede juzgar la cobertura y el acta lo dice.
+  - Con `--calificaciones` (mismo YAML que el consolidado semanal) las ausencias
+    verificadas se incorporan como filas con 0 por decisión docente. La cobertura
+    se mide antes: el descriptor no puede inventar ausentes ni calificar a quien
+    sí entregó.
   - Determinismo: mismo contenido del repo → mismos bytes. No hay "ahora": la
     fecha del acta es la del último envío (o `--fecha`).
 
@@ -376,6 +380,15 @@ def ordenar(registros: list[dict]) -> list[dict]:
     )
 
 
+def texto_avisos(avisos: object) -> str:
+    """Aplana avisos que pueden venir como lista (Worker) o texto (decisión)."""
+    if avisos is None:
+        return ""
+    if isinstance(avisos, str):
+        return avisos.strip()
+    return "; ".join(str(a).strip() for a in avisos if str(a).strip())
+
+
 def csv_texto(registros: list[dict]) -> str:
     salida = io.StringIO()
     escritor = csv.DictWriter(salida, fieldnames=CABECERA_CSV, lineterminator="\n")
@@ -388,12 +401,18 @@ def csv_texto(registros: list[dict]) -> str:
                 "nombre": r["nombre"],
                 "aciertos": r["aciertos"],
                 "total": r["total"],
-                "nota": f"{float(r['nota']):.2f}",
+                # Un ausente calificado por decisión docente no tiene nota
+                # archivada ni JSON: esas dos celdas van vacías, no se rellenan
+                # con la nota decidida (esa vive en `nota_recalculada`).
+                "nota": (
+                    "" if r.get("nota") in (None, "")
+                    else f"{float(r['nota']):.2f}"
+                ),
                 "nota_recalculada": f"{float(r['nota_recalculada']):.2f}",
                 "enviado_en": r["enviado_en"],
                 "estado": r["estado"],
-                "archivo": r["archivo"],
-                "avisos": "; ".join(r["avisos"]),
+                "archivo": r.get("archivo", ""),
+                "avisos": texto_avisos(r.get("avisos")),
                 "justificaciones": r.get("justif_estado", "n/a"),
                 "duracion_s": "" if r.get("duracion_s") is None else r["duracion_s"],
                 "pegas": "" if r.get("pegas") is None else r["pegas"],
@@ -464,6 +483,26 @@ def comparar(lista: list[dict], registros: list[dict]) -> dict:
     }
 
 
+def aplicar_calificaciones(
+    registros: list[dict], cobertura: dict | None, ruta: Path
+) -> tuple[list[dict], dict]:
+    """Incorpora al acta las ausencias calificadas por decisión docente.
+
+    La cobertura se mide ANTES: el descriptor solo puede dar 0 a quien figure
+    como faltante en la nómina y no haya entregado. Sin nómina no hay ausentes
+    verificables, así que se rechaza en vez de suponer quién faltó. La validación
+    del descriptor vive en `calificaciones_inasistencia.py`; aquí no se duplica.
+    """
+    from execution.calificaciones_inasistencia import incorporar  # importación perezosa: ese módulo importa de aquí
+
+    if cobertura is None:
+        raise ValueError(
+            "para calificar ausencias hace falta --lista: sin nómina no se puede "
+            "verificar quién faltó"
+        )
+    return incorporar(registros, cobertura["faltantes"], Path(ruta))
+
+
 def es_sin_entrega(registro: dict) -> bool:
     """Una fila calificada por inasistencia no cuenta como entrega."""
     return registro.get("estado") == ESTADO_SIN_ENTREGA
@@ -494,6 +533,10 @@ def resumen(registros: list[dict]) -> dict:
         if notas_finales else None,
         "mejor": max(notas) if notas else None,
         "peor": min(notas) if notas else None,
+        # Con ceros por inasistencia el acta publica las notas FINALES: un
+        # «Peor: 7.00» junto a una fila con 0 es información engañosa.
+        "mejor_final": max(notas_finales) if notas_finales else None,
+        "peor_final": min(notas_finales) if notas_finales else None,
         "por_grupo": {g: por_grupo[g] for g in sorted(por_grupo)},
         "ultimo_envio": max((r["enviado_en"] for r in entregas), default=None),
         "a_revisar": sum(1 for r in entregas if r["estado"] != ESTADO_OK),
@@ -742,8 +785,12 @@ def latex_acta(
     promedio_final = (
         "--" if datos["promedio_final"] is None else f"{datos['promedio_final']:.2f}"
     )
-    mejor = "--" if datos["mejor"] is None else f"{datos['mejor']:.2f}"
-    peor = "--" if datos["peor"] is None else f"{datos['peor']:.2f}"
+    clave_mejor = "mejor_final" if calificados else "mejor"
+    clave_peor = "peor_final" if calificados else "peor"
+    etiqueta_mejor = "Mejor final" if calificados else "Mejor"
+    etiqueta_peor = "Peor final" if calificados else "Peor"
+    mejor = "--" if datos[clave_mejor] is None else f"{datos[clave_mejor]:.2f}"
+    peor = "--" if datos[clave_peor] is None else f"{datos[clave_peor]:.2f}"
     resumen_extra = (
         r""" ~$\cdot$~ \textbf{Calificados con 0:} """
         + str(datos["sin_entrega_calificados"])
@@ -783,9 +830,13 @@ def latex_acta(
         + r""" ~$\cdot$~ \textbf{Promedio:} """
         + promedio
         + resumen_extra
-        + r""" ~$\cdot$~ \textbf{Mejor:} """
+        + r""" ~$\cdot$~ \textbf{"""
+        + etiqueta_mejor
+        + r""":} """
         + mejor
-        + r""" ~$\cdot$~ \textbf{Peor:} """
+        + r""" ~$\cdot$~ \textbf{"""
+        + etiqueta_peor
+        + r""":} """
         + peor
         + r""" ~$\cdot$~ \textbf{A revisar:} """
         + str(datos["a_revisar"])
@@ -968,6 +1019,16 @@ def main() -> int:
     parser.add_argument("--rama", default="main", help="Rama del repo (main).")
     parser.add_argument("--cuestionario", default=None, help="Id del cuestionario (slug de la fuente).")
     parser.add_argument("--lista", default=None, help="Nómina CSV/YAML para detectar faltantes.")
+    parser.add_argument(
+        "--calificaciones",
+        default=None,
+        metavar="YAML",
+        help=(
+            "Descriptor de ausencias calificadas por decisión docente. Exige "
+            "--lista: solo puede dar 0 a quien figure como faltante y no haya "
+            "entregado. Mismo esquema que el consolidado semanal."
+        ),
+    )
     parser.add_argument("--salida", default=None, help="Ruta del acta CSV.")
     parser.add_argument("--pdf", default=None, help="Ruta del acta PDF.")
     parser.add_argument("--sin-pdf", action="store_true", help="No generar el PDF.")
@@ -1170,6 +1231,26 @@ def main() -> int:
             "sin --lista no se puede saber quién falta: el acta solo incluye a quien envió"
         )
 
+    decision = None
+    if args.calificaciones:
+        try:
+            registros, decision = aplicar_calificaciones(
+                registros, cobertura, Path(args.calificaciones).resolve()
+            )
+        except ValueError as exc:
+            return terminar(
+                _resultado(
+                    "error",
+                    EXIT_DATOS,
+                    message=f"descriptor de inasistencias inválido: {exc}",
+                ),
+                EXIT_DATOS,
+            )
+        avisos.append(
+            f"{decision['ruta']}: {len(decision['calificados'])} ausencia(s) calificada(s) "
+            f"por decisión docente ({decision['fecha_decision']})"
+        )
+
     datos_resumen = resumen(registros)
     fecha = args.fecha or datos_resumen["ultimo_envio"] or ""
 
@@ -1209,10 +1290,13 @@ def main() -> int:
         "acta_csv": str(salida_csv),
         "acta_pdf": None if args.sin_pdf else (str(salida_pdf) if pdf_ok else None),
         "entregas": datos_resumen["entregas"],
+        "sin_entrega_calificados": datos_resumen["sin_entrega_calificados"],
         "promedio": datos_resumen["promedio"],
+        "promedio_final": datos_resumen["promedio_final"],
         "a_revisar": datos_resumen["a_revisar"],
         "resumen": datos_resumen,
         "cobertura": cobertura,
+        "descriptor_calificaciones": decision["ruta"] if decision else None,
         "avisos": avisos,
     }
     if not args.json:
