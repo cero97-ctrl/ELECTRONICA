@@ -133,8 +133,9 @@ Apertura y cierre del cuestionario web de Laboratorio II de Física (24-nov-2026
   → `fecha_decision: 2026-11-24`, `total_preguntas: 10`, motivo «Sin entrega; no
   justificó su ausencia; sin recuperación verificable», `referencia` a esta
   bitácora, y `V-24535276`, grupo 1, `nota: 0`. La nómina del Worker trae solo
-  cédulas: se dejó el marcador explícito `SIN NOMBRE EN NOMINA` en vez de
-  inventar un nombre.
+  cédulas, así que al principio se dejó el marcador explícito
+  `SIN NOMBRE EN NOMINA` en vez de inventar un nombre; el usuario informó el
+  nombre real después y se corrigió en el descriptor (ver sección final).
 - Pruebas sin red: `test_descargar_resultados.py` **135/135**,
   `test_acta_semana.py` **76/76**, `test_calificaciones_inasistencia.py`
   **31/31**. Los casos nuevos congelan los tres defectos que aparecieron al
@@ -158,3 +159,15 @@ Apertura y cierre del cuestionario web de Laboratorio II de Física (24-nov-2026
   intactos `cursos/LABORATORIO_I_FISICA/practicas/web/` y
   `publicar_lab1_practicas_web.sh` (ajenos, sin trackear). Lab I no se toca: su
   ventana es el 26-nov a las 09:45 VET.
+
+## Corrección del nombre de la ausencia (misma sesión)
+- El usuario informó que `V-24535276` es **GARCIA GARCIA, LUIS RAFAEL**.
+  Se cambió `nombre` en el descriptor (la única fuente del 0) y se **regeneró**
+  el acta con el mismo flujo; no se editaron el CSV ni el PDF a mano.
+- Verificación: CSV → `V-24535276  GARCIA GARCIA, LUIS RAFAEL  0.00  sin_entrega`;
+  `pdftotext` → la tabla y la caja de cobertura muestran el nombre completo;
+  `verificar_pdf.py` → 1 página, 0 errores `!`, 0 `Overfull \hbox`, 0 solapes.
+- Las notas no cambiaron: 2 entregas + 1 calificado = 3 notas finales,
+  promedio final 5,67, peor final 0,00, `a_revisar: 0`.
+- Segundo commit con staging explícito de esta bitácora; sin push. El descriptor
+  y el acta siguen siendo gitignored (datos personales bajo `resultados/**`).
