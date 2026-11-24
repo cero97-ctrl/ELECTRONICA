@@ -304,6 +304,7 @@ PREAMBULO_INFOGRAFIA = r"""\documentclass[11pt,a4paper]{article}
     boxrule=1pt,
     drop fuzzy shadow=azulNoche!25!white,
     top=2pt, bottom=2pt, left=0pt, right=0pt,
+    colupper=white, coltext=white,
   ]%
 }
 \AfterEndEnvironment{lstlisting}{\end{tcolorbox}}
