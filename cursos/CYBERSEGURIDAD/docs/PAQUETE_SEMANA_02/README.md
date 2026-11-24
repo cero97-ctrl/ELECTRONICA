@@ -2,14 +2,15 @@
 
 **Ciberseguridad Aplicada · Fase 1 · Criptografía aplicada y gestión de secretos**
 
-Material listo para entregar a los cuatro grupos. Todo se genera desde
-`cursos/CYBERSEGURIDAD/curso.yaml`; los PDF de esta carpeta son copias de los
-artefactos canónicos y **no se editan a mano**.
+Material listo para entregar a los cuatro grupos. Los PDF `01` a `07` se generan
+desde `cursos/CYBERSEGURIDAD/curso.yaml` y son copias de los artefactos
+canónicos: **no se editan a mano**. El aviso `00` es un entregable puntual.
 
 ## Contenido
 
 | Archivo | Para qué sirve |
 | --- | --- |
+| `00_mensaje_whatsapp_semana_02.pdf` | Aviso para enviar por WhatsApp: enlace al paquete, los 7 PDF y reglas de entrega. |
 | `01_instrucciones_semana_02.pdf` | Instrucciones paso a paso, rol de cada grupo, qué se entrega y cómo se corrige. |
 | `02_practica_02.pdf` | Enunciado de la práctica «Caja de herramientas criptográficas». |
 | `03_rol_rojo_grupo_1.pdf` | Ejemplo de trabajo del rol Rojo: cifrar, firmar y romper la integridad. |
@@ -17,6 +18,9 @@ artefactos canónicos y **no se editan a mano**.
 | `05_rol_purpura_grupo_3.pdf` | Ejemplo del rol Púrpura: instrumentar las operaciones criptográficas. |
 | `06_legal_reporte_grupo_4.pdf` | Ejemplo del rol Legal y reporte: custodia de secretos y admisibilidad. |
 | `07_guia_teorica_02.pdf` | Guía de estudio de los cinco temas de la semana (AES-GCM, RSA/ECC, hash/HMAC/KDF, TLS y secretos). |
+
+El aviso `00_mensaje_whatsapp_semana_02.{tex,pdf}` transcribe el mensaje aprobado
+para el grupo; es el único archivo de la carpeta que no se deriva de `curso.yaml`.
 
 Los cuatro ejemplos son **modelos de trabajo**, no la entrega: cambian el énfasis
 según el rol, pero todos los grupos resuelven la misma práctica en su propio

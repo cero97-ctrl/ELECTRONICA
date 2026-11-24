@@ -56,6 +56,12 @@ material_semana_02_ciberseguridad
 - Incidencias del subagente resueltas: `list-check` no existe en FontAwesome 5
   (→ `clipboard-list`), `cajaContenido` es un `.style` y no un entorno, y una
   aserción del test buscaba el nombre en la definición del preámbulo.
+- A petición del usuario se volcó el mensaje de WhatsApp aprobado a
+  `PAQUETE_SEMANA_02/00_mensaje_whatsapp_semana_02.{tex,pdf}` (1 página, 0
+  errores `!`, 0 overfull) y se actualizó el `README.md` del paquete. Se volvió
+  a caer en la trampa #17 de `.agent/latex.md`: `cajaContenido` es un `.style`
+  y se corrigió a `\begin{tcolorbox}[cajaContenido]`. El `.tex` es determinista;
+  entre dos compilaciones el PDF solo difiere en el `/ID` aleatorio de pdfTeX.
 
 ## Pendientes
 - No hacer `git add` ni `git commit` sin autorización explícita del usuario.
