@@ -16,6 +16,18 @@ genera desde él con:
 python3 flujo_disenar_curso.py --curso cursos/CYBERSEGURIDAD/curso.yaml
 ```
 
+Las instrucciones de una semana, los ejemplos por rol y la guía teórica de
+estudio se emiten por separado (el descriptor sigue siendo la fuente de verdad):
+
+```bash
+python3 flujo_instrucciones_semana.py --curso cursos/CYBERSEGURIDAD/curso.yaml --semana 2
+python3 flujo_instrucciones_semana.py --curso cursos/CYBERSEGURIDAD/curso.yaml --semana 2 --grupo 1
+python3 flujo_guia_teorica.py --curso cursos/CYBERSEGURIDAD/curso.yaml --semana 2
+```
+
+El material listo para repartir a los estudiantes de la semana 02 está en
+`docs/PAQUETE_SEMANA_02/`.
+
 Editar a mano un `.tex` generado se pierde en la siguiente ejecución: el
 cambio va al YAML.
 

@@ -13,11 +13,16 @@ INFOGRAFIAS/
 |-- README.md          # esta convención (sí se versiona)
 |-- SEM_1/             # una carpeta por semana: SEM_NN
 |   |-- *.png          # una infografía por rol o por flujo
+|-- SEM_2/             # criptografía y gestión de secretos
+|   |-- *.jpg          # una infografía por rol o por flujo
 ```
 
 Nombres de archivo: `<tema> rol <rol>.png` o `<flujo> ciberseguridad.png`, en español
 y sin sufijos redundantes. Las de la semana 1 cubren los cuatro papeles del trabajo
-en grupo (rojo, azul, púrpura y legal y reporte).
+en grupo (rojo, azul, púrpura y legal y reporte); las de la semana 2 repiten los
+cuatro papeles sobre cifrado, firma, TLS, instrumentación y custodia de secretos.
+La extensión es la que devuelve la herramienta de imagen (`png` en SEM_1, `jpg`
+en SEM_2): se conserva tal cual para no re-codificar los archivos.
 
 ## Reglas
 

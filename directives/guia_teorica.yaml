@@ -1,0 +1,93 @@
+name: guia_teorica
+description: >-
+  Emite la guía teórica de estudio de una semana del curso como documento único
+  `<curso>/docs/teoria_NN.{tex,pdf}`. Es material de ESTUDIO —explicación,
+  comandos de ejemplo, errores frecuentes, mapa rápido, checklist y glosario—
+  NO un examen: las evaluaciones teóricas por grupo se generan en otro artefacto.
+version: 1.0
+
+goal: >-
+  Que el estudiante tenga, antes de la práctica, el vocabulario y el porqué de
+  cada decisión técnica de la semana. Toda la decisión está en el descriptor:
+  el orquestador solo elige el script, valida la entrega y registra el estado.
+  El mismo descriptor produce siempre los mismos bytes del `.tex`.
+
+required_inputs:
+  - name: curso
+    description: >-
+      Ruta al descriptor `curso.yaml`. Debe contener `meta` (codigo, titulo,
+      autor, fecha, fecha_iso), `semanas[N]` (numero, titulo, objetivo,
+      contenidos, glosario) y `semanas[N].teoria`.
+  - name: semana
+    description: Número de semana a emitir (entero).
+  - name: salida
+    description: >-
+      Opcional. Directorio de salida; por defecto `<directorio del curso>/docs`.
+  - name: sin-compilar
+    description: Opcional. Escribe solo el `.tex` sin invocar `pdflatex`.
+  - name: json
+    description: Opcional. Emite un único objeto JSON por stdout.
+  - name: no-alert
+    description: Opcional. Suprime la alerta sonora al terminar.
+
+steps:
+  - step: 1
+    script: execution/generar_guia_teorica.py
+    action: >-
+      Cargar el YAML, validar que la semana exista y traiga `teoria` completa,
+      componer el LaTeX con `PREAMBULO_INFOGRAFIA` y compilar aislado en
+      `.tmp/latex_build/teoria_NN/`. El `.log` se parsea buscando `^! ` y
+      `Overfull \\hbox`; se copia el PDF junto al `.tex` solo si no hay errores.
+    invocation: >-
+      python3 execution/generar_guia_teorica.py --curso <curso.yaml>
+      --semana <N> [--salida DIR] [--sin-compilar] [--json]
+  - step: 2
+    script: flujo_guia_teorica.py (verificación de entrega)
+    action: >-
+      Comprobar que existan el `.tex` y el PDF (salvo `--sin-compilar`), que
+      el PDF supere 2000 bytes y que la lista de errores del log esté vacía.
+      Registrar cada paso en la vista de estado con `run_id` propio.
+  - step: 3
+    script: execution/alert_user.py
+    action: Emitir `success` o `error`, salvo `--no-alert`.
+
+expected_outputs:
+  - cursos/<CURSO>/docs/teoria_NN.tex — fuente LaTeX determinista.
+  - cursos/<CURSO>/docs/teoria_NN.pdf — PDF verificado, 0 líneas `!` y 0 overfull.
+  - JSON con `tex`, `pdf`, `errores` y `overfull` cuando se pide `--json`.
+  - Vista `.tmp/run_state_<run_id>.json` con el registro de los tres pasos.
+
+edge_cases:
+  - caso: La semana no existe o no declara `teoria:`.
+    protocolo: >-
+      Código 3 con la lista de problemas; no se escribe ningún `.tex`. No se
+      inventa contenido: `teoria` es dato del descriptor, no decisión del chat.
+  - caso: Una tabla declara más anchos que columnas, o no caben en el margen.
+    protocolo: >-
+      Código 3 antes de compilar. Se valida que la suma de anchos más un
+      `tabcolsep` por columna no exceda 16.6 cm.
+  - caso: Una celda de la tabla no es texto (por ejemplo `No` sin comillas en YAML).
+    protocolo: >-
+      Código 3 con aviso de entrecomillar: un booleano en una celda cruda
+      rompe la compilación con «Misplaced \\noalign» dos filas más abajo.
+  - caso: `pdflatex` emite líneas `!` en el log.
+    protocolo: >-
+      Código 4 aunque el PDF exista (nonstopmode lo genera igual). No se copia
+      el PDF al curso; el `.log` queda en `.tmp/latex_build/` para diagnosticar.
+  - caso: `Overfull \\hbox` en el log.
+    protocolo: >-
+      Se cuenta y se informa en el JSON. Es cosmético, no bloquea, pero debe
+      corregirse ajustando los anchos declarados en `teoria.tabla.anchos`.
+  - caso: `cajaContenido` se usa como entorno.
+    protocolo: >-
+      Nunca: es un `.style` de `\tcbset`. El generador usa
+      `\begin{tcolorbox}[cajaContenido]`; `cajaConcepto` y `cajaRecuerda` sí
+      son `\newtcolorbox` y se usan con `\begin{...}`.
+  - caso: Se pide repetir el flujo en otro directorio.
+    protocolo: >-
+      El `job` y la fecha del PDF salen de `meta` y del número de semana; no se
+      usa `datetime.now()` en el contenido. El sha256 del `.tex` es idéntico.
+  - caso: Se pide un examen en vez de una guía.
+    protocolo: >-
+      Fuera de esta directiva: las evaluaciones teóricas son otro artefacto y
+      usan el banco privado. Esta guía nunca emite preguntas ni respuesta.

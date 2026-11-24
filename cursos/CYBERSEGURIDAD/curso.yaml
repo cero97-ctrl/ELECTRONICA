@@ -546,6 +546,179 @@ semanas:
   - TLS
   - Cadena de certificados
   - Gestión de secretos
+  teoria:
+    introduccion: >-
+      Esta guía es material de estudio para la semana 02: explica por qué se elige
+      cada primitiva, qué propiedad garantiza y qué fallos se repiten al usarla.
+      No es un examen ni sustituye a la práctica: los comandos son ejemplos para
+      entender el mecanismo y la evidencia de la semana se produce en el
+      repositorio del grupo, con las evaluaciones teóricas ya publicadas aparte.
+    temas:
+    - titulo: AES en GCM frente a CBC, y por qué GCM da integridad
+      explicacion: >-
+        AES es un cifrado simétrico de bloque de 128 bits con claves de 128, 192
+        o 256 bits. En CBC cada bloque se mezcla con el anterior usando un vector
+        de inicialización aleatorio: eso da confidencialidad, pero un atacante
+        puede modificar un bloque del texto cifrado y provocar un cambio
+        previsible en el texto claro sin que nadie lo detecte. GCM es un modo
+        autenticado: además del texto cifrado produce una etiqueta de
+        autenticación de 128 bits que cubre los datos y el contenido adicional.
+        Si un solo byte cambia, la etiqueta no cuadra y el descifrado falla.
+      puntos:
+      - "CBC necesita relleno, IV aleatorio e imprevisible, y una MAC separada (encrypt-then-MAC) si se quiere integridad."
+      - "GCM necesita un nonce único por clave: repetirlo con la misma clave destruye la seguridad de la etiqueta."
+      - "El contenido adicional se autentica pero no se cifra; sirve para proteger cabeceras que deben verse."
+      - "Confidencialidad e integridad son propiedades distintas: cifrar no significa detectar manipulación."
+      comandos: |
+        python3 - <<'PY'
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        import os
+        clave = AESGCM.generate_key(bit_length=256)
+        nonce = os.urandom(12)
+        cifrado = AESGCM(clave).encrypt(nonce, b'mensaje de prueba', None)
+        print('cifrado:', cifrado.hex())
+        alterado = bytearray(cifrado)
+        alterado[0] ^= 1
+        try:
+            AESGCM(clave).decrypt(nonce, bytes(alterado), None)
+            print('ERROR: se descifro sin detectar el cambio')
+        except Exception as exc:
+            print('integridad rota:', type(exc).__name__)
+        PY
+      errores:
+      - "Reutilizar nonce y clave en GCM, aunque el mensaje sea distinto."
+      - "Usar CBC sin MAC y creer que el relleno válido demuestra integridad."
+      - "Guardar clave, nonce y texto cifrado en el mismo archivo sin anotar qué es cada cosa."
+      - "Probar la integridad con el texto cifrado original en vez de con una copia alterada."
+    - titulo: RSA, curvas elípticas e intercambio de claves
+      explicacion: >-
+        RSA y las curvas elípticas son criptografía asimétrica: una clave pública
+        que se distribuye y una privada que nunca sale. RSA apoya su seguridad en
+        la dificultad de factorizar; una curva como P-256 ofrece seguridad
+        comparable con claves mucho más cortas. En la práctica RSA se usa sobre
+        todo para firmar y autenticar, con relleno PSS para firmas u OAEP para
+        cifrado; nunca se firma con RSA crudo. El intercambio de claves lo hace
+        ECDH: cada parte aporta un valor efímero y ambas llegan al mismo secreto
+        sin enviarlo. Como los valores son efímeros, comprometer la clave
+        privada de largo plazo no revela sesiones pasadas: eso es secreto
+        perfecto hacia adelante.
+      puntos:
+      - "La firma demuestra origen e integridad del mensaje; no lo cifra."
+      - "RSA-2048 es el mínimo aceptable hoy; P-256 es el equivalente habitual en curvas."
+      - "ECDHE ephemeral es el mecanismo de acuerdo de claves; el certificado solo autentica a quién corresponde esa clave."
+      - "Verificar con la clave pública correcta es tan importante como firmar con la privada correcta."
+      comandos: |
+        openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out firma.pem
+        openssl pkey -in firma.pem -pubout -out firma.pub.pem
+        openssl dgst -sha256 -sign firma.pem -out mensaje.sig mensaje.txt
+        openssl dgst -sha256 -verify firma.pub.pem -signature mensaje.sig mensaje.txt
+        openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out curva.pem
+      errores:
+      - "Firmar con RSA sin relleno PSS y cifrar con RSA sin OAEP."
+      - "Confundir la clave pública del certificado con la clave privada de la sesión."
+      - "Reutilizar los mismos parámetros efímeros en varias sesiones."
+      - "Creer que una firma válida significa que el mensaje era secreto."
+    - titulo: Hash, HMAC, PBKDF2 y Argon2
+      explicacion: >-
+        Un hash criptográfico resume un mensaje en una huella de tamaño fijo:
+        sirve para detectar cambios, no para ocultar el contenido. Un HMAC añade
+        una clave secreta al hash y permite demostrar que el mensaje fue
+        autenticado por quien conoce esa clave. Para contraseñas no basta un
+        hash rápido: hace falta una función de derivación lenta con sal única,
+        porque el atacante prueba millones de candidatos offline. PBKDF2 aplica
+        muchas iteraciones de HMAC-SHA256 y su coste se ajusta con el número de
+        iteraciones. Argon2id, además, exige memoria, lo que encarece los
+        intentos masivos con GPU. Se guarda el algoritmo, los parámetros, la sal
+        y el resultado; nunca la contraseña.
+      puntos:
+      - "Hash: detecta cambios accidentales o intencionados, sin secreto."
+      - "HMAC: detecta manipulación y falsificación si solo el emisor y el receptor conocen la clave."
+      - "PBKDF2: resiste fuerza bruta subiendo iteraciones; mide el tiempo antes de elegir el número."
+      - "Argon2id: resiste mejor los ataques paralelos porque fija coste de memoria, tiempo y paralelismo."
+      comandos: |
+        sha256sum mensaje.txt
+        python3 - <<'PY'
+        import hashlib
+        print(hashlib.pbkdf2_hmac('sha256', b'clave', b'sal-unica', 100000).hex())
+        PY
+        pip install argon2-cffi
+        python3 -c "from argon2.low_level import hash_secret; print(hash_secret(b'clave', b'sal-unica'))"
+      errores:
+      - "Usar MD5 o SHA-1 para contraseñas o para firma digital."
+      - "Guardar la contraseña en claro junto a la sal y llamar eso hash."
+      - "Repetir la misma sal para todos los usuarios."
+      - "Elegir iteraciones sin medir: demasiadas rompen el inicio de sesión y demasiadas pocas no defienden."
+    - titulo: TLS 1.2 frente a TLS 1.3, cadena de certificados y errores de validación
+      explicacion: >-
+        TLS protege el canal entre cliente y servidor. TLS 1.2 negocia la
+        versión y el algoritmo en varios viajes y admite modos antiguos como
+        CBC y el intercambio de claves con RSA estático. TLS 1.3 recorta la
+        negociación a un viaje, elimina los algoritmos obsoletos y exige cifrado
+        autenticado, de modo que también va cifrada buena parte del handshake.
+        El certificado del servidor se valida siguiendo la cadena: hoja,
+        intermedios y una raíz en la tienda de confianza. No basta con que el
+        certificado exista: se comprueba firma, fechas, nombre del servidor en
+        el SAN, uso previsto y revocación.
+      puntos:
+      - "TLS 1.3 usa nombres de cifrado distintos y solo modos AEAD como AES-GCM o ChaCha20-Poly1305."
+      - "La cadena incompleta es un fallo del servidor: el cliente no puede reconstruir los intermedios por arte de magia."
+      - "Un certificado autofirmado puede ser válido en el laboratorio si se importa explícitamente, nunca por defecto."
+      - "0-RTT de TLS 1.3 ahorra un viaje pero puede repetirse: no conviene para acciones no idempotentes."
+      comandos: |
+        openssl s_client -connect example.com:443 -servername example.com -showcerts </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+        openssl x509 -in cert.pem -noout -text | grep -E 'Signature Algorithm|Public-Key'
+        openssl verify -CAfile ca.pem cert.pem
+      errores:
+      - "Confiar en el common name cuando el navegador exige el SAN."
+      - "Ignorar un error de cadena con -k o desactivar la verificación para que la prueba pase."
+      - "Suponer que un certificado caducado se arregla cambiando la hora del cliente."
+      - "Creer que TLS 1.3 permite los mismos cifrados que TLS 1.2."
+    - titulo: Gestión de secretos y detección de claves en repositorios
+      explicacion: >-
+        Un secreto es cualquier dato que permite actuar en nombre del sistema:
+        tokens de API, contraseñas, claves privadas o cookies de sesión. No
+        pertenece al código fuente ni al historial de Git: se entrega por
+        variables de entorno, un gestor de secretos o un archivo local ignorado.
+        Si un secreto llegó a un commit, lo primero es rotarlo en el proveedor,
+        porque borrar el commit no lo convierte en secreto otra vez; después se
+        reescribe el historial y se avisa a quienes clonaron. La detección se
+        hace con patrones y entropía antes del commit y también sobre todo el
+        historial, incluidas ramas y etiquetas.
+      puntos:
+      - "Un .env ignorado protege el futuro, no el pasado: revisa también commits antiguos."
+      - "Rotar primero, limpiar después: el orden inverso deja una ventana de abuso."
+      - "Los secretos de prueba también se rotan: los bots los encuentran igual."
+      - "La huella de un repositorio público incluye los archivos borrados en el historial."
+      comandos: |
+        git grep -nE '(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' || true
+        git log --all -p -S'BEGIN PRIVATE KEY' -- .
+        gitleaks detect --source . --redact
+      errores:
+      - "Borrar el archivo del último commit y dar el caso por cerrado."
+      - "Poner el token en una variable de entorno pero dejar el valor por defecto en el código."
+      - "Subir capturas de pantalla o logs con el token visible."
+      - "Confiar solo en un escáner: las claves con formatos nuevos se escapan."
+    tabla:
+      titulo: Mapa rápido de primitivas de la semana
+      columnas: ["Primitiva", "Propiedad principal", "No cubre", "Uso en la práctica"]
+      anchos: [2.4, 3.0, 4.8, 4.4]
+      filas:
+      - ["AES-256-GCM", "Confidencialidad e integridad", "No distribuye la clave entre desconocidos", "Cifrar y alterar el archivo"]
+      - ["Firma RSA o ECC", "Origen e integridad del mensaje", "No oculta el contenido", "Firmar y verificar con el caso alterado"]
+      - ["HMAC", "Autenticación con clave compartida", "No sirve para derivar claves de contraseñas", "Comparar con un hash sin clave"]
+      - ["PBKDF2 y Argon2id", "Resistencia a fuerza bruta", "No cifra ni firma", "Medir coste e iteraciones"]
+      - ["TLS 1.3", "Canal cifrado y autenticado", "No arregla un certificado inválido", "Leer emisor, validez y algoritmo"]
+    checklist:
+    - "Puedo explicar con mis palabras por qué GCM detecta un byte alterado y CBC no, sin MAC."
+    - "Sé distinguir firma, HMAC y hash por la propiedad que aporta y por el secreto que usa."
+    - "He medido el tiempo de PBKDF2 con varias iteraciones y puedo justificar el valor elegido."
+    - "Sé reconocer en una salida de openssl el emisor, la validez y el algoritmo del certificado."
+    - "Compruebo la cadena completa y el SAN antes de aceptar un certificado del laboratorio."
+    - "Si aparece un secreto en Git, rotarlo primero y reescribir el historial después."
+    cierre: >-
+      La práctica de esta semana pide demostrar cada propiedad con una salida
+      real: cifrar, alterar, firmar, verificar, inspeccionar y medir. Esta guía
+      da el vocabulario; el repositorio del grupo da la evidencia.
   practica:
     titulo: Caja de herramientas criptográficas
     escenario: 'Cada grupo cifra y descifra un archivo, firma y verifica un mensaje, inspecciona un certificado real y mide el coste de derivar una clave con distinto número de iteraciones.
