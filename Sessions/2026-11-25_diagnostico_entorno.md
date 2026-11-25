@@ -39,7 +39,15 @@ diagnostico_entorno
 - **Sin secretos**, cadena de logs intacta (778 logs / 1788 eventos), 40/40 flujos delegan en `execution/`, barrera anti-borrado 105 aserciones sin fallos, 13 ficheros sin trackear (umbral 20), bitácoras 0 accionables.
 - Informe completo en `.tmp/auditoria_repo.json`. No se corrigió nada: el usuario pidió solo la auditoría.
 
+## Actividades (correcciones autorizadas por el usuario)
+- El usuario aprobó corregir los dos fallos "en el orden que propones". Se aplicaron sin tocar los avisos.
+- **Paso 1 — texto**: 13 × U+FF1B (`；`) → `;` en 4 líneas de los dos fuentes de cuestionarios web (6 reemplazos en Lab II, 7 en Lab I). `python3 execution/verificar_texto.py` → **0 hallazgos** (888 ficheros, 269324 líneas), antes 13.
+  - **Decisión de alcance**: ambos `.md` están ignorados por `.gitignore:75` (`cursos/*/evaluaciones/web/**`) y NO están trackeados: son la fuente privada de la clave de los cuestionarios en un repo público. Por eso la corrección es **local al working tree** y no se fuerza al índice (`git add -f` se rechaza: sería fuga de enunciados/clave). En un clon limpio esos archivos no vienen de git.
+- **Paso 2 — directivas**: `--actas-dir` se quitó de `required_inputs` en `consolidar_semana` y el hallazgo se preservó como `edge_cases` (el flag existe en `execution/acta_semana.py:202`, pero `flujo_acta_cuestionario.py --consolidar` no lo reenvía; la capa 2 es la voz del flujo). El código es la fuente de verdad: no se añadió un flag al orquestador sin una decisión funcional. YAML validado con `yaml.safe_load`.
+- **Verificación**: `python3 flujo_auditar_repo.py --dimension directivas` → de `fallo` a **`aviso`** (11.6 s, 0 fallos; quedan 9 huecos declarados `Status: planificado`). Pasada COMPLETA de nuevo → **VEREDICTO: `con_avisos` (exit 0)**, 190.1 s, 14/14 dimensiones, **0 fallos**, 9 `ok` / 5 `aviso`; `texto` quedó `ok` y `directivas` `aviso`.
+- Informe final en `.tmp/auditoria_repo.json`. Se commitean solo la bitácora y `directives/acta_cuestionario.yaml`; no se tocan los archivos sin trackear preexistentes (`cursos/LABORATORIO_I_FISICA/practicas/web/`, `publicar_lab1_practicas_web.sh`).
+
 ## Pendientes
-- Corregir el flag fantasma `--actas-dir` en `directives/acta_cuestionario.yaml`: el código es la fuente de verdad; hay que decidir si la intención documentada corresponde a `--salida-dir` o a otra opción real.
-- Sustituir los 13 caracteres U+FF1B por `;` en los dos ficheros fuente de cuestionarios web y repetir `python3 execution/verificar_texto.py` hasta 0 hallazgos.
-- Avisos pendientes de decisión (no bloquean): peso_git, pdf_stale, estados sin log y disco. El disco al 86,6 % es competencia de `flujo_disco.py` / `directives/mantenimiento_disco.yaml`, no de esta auditoría (que es solo lectura).
+- Avisos pendientes de decisión (no bloquean, `con_avisos`): `directivas` (9 capacidades declaradas en 8 directivas con `Status: planificado`), `peso_git` (347 MB; 10 ficheros ≥ 5 MB), `pdf_stale` (14 pares con fuente más nueva, 12 PDF sin `.tex`), `estado_sesion` (206 vistas sin log, no juzgables) y `disco` (86,6 %, 874,6 MB recuperables solo en la whitelist).
+- El disco es competencia de `flujo_disco.py` / `directives/mantenimiento_disco.yaml`, no de la auditoría (solo lectura). Sin `--yes` ese flujo nunca borra.
+- Si se quiere que la corrección de los U+FF1B viaje a otra máquina, hay que distribuir los fuentes privados de los cuestionarios por su canal propio; **`git add -f` no es ese canal**.

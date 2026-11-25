@@ -239,8 +239,6 @@ consolidar_semana:
         «Cobertura no verificable» en vez de decir que todos entregaron.
     - name: --salida-dir DIR
       description: "Destino explícito; por defecto `<resultados>/SEMANA_<NN>`."
-    - name: --actas-dir DIR
-      description: "Default `cursos/CYBERSEGURIDAD/evaluaciones/resultados`."
     - name: --calificaciones YAML
       description: |
         Opcional. Descriptor de la decisión docente. Debe traer `fecha_decision`
@@ -299,6 +297,14 @@ consolidar_semana:
       respuesta: |
         Se informa y no falla (cosmético). Si el texto se sale del margen, mirar
         el nombre más largo de la columna `p{5.0cm}` antes de tocar la tabla.
+    - caso: "Se consolidan actas de otra carpeta (flag `--actas-dir`)"
+      respuesta: |
+        `execution/acta_semana.py --help` sí ofrece `--actas-dir` (por defecto
+        `cursos/CYBERSEGURIDAD/evaluaciones/resultados`), pero el orquestador
+        `flujo_acta_cuestionario.py --consolidar` no lo reenvía: no es un flag del
+        flujo y por eso ya no figura en `required_inputs`. Si se necesita otra
+        carpeta de actas, se amplía primero la capa 2 para pasarlo a la capa 3;
+        documentarlo aquí no lo hace existir.
     - caso: "El descriptor califica a alguien que sí entregó"
       respuesta: |
         Código 3 y no se escribe nada. Un mismo alumno no puede tener dos notas:
