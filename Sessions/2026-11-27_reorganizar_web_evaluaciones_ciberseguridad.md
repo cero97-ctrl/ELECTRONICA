@@ -196,8 +196,11 @@ reorganizar_web_evaluaciones_ciberseguridad
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
   git).
 - No reabrir el material aprobado de la semana 02.
-- **No ocultar todavía**: el usuario quiere revisar primero cómo se ve la
-  página, y avisará cuando haya que pasar
-  `cero97-ctrl/cuestionarios-ciberseguridad-s02` a `--visibilidad private`
-  (mismo comando que en la semana 01; el CDN puede servir la copia cacheada
-  hasta ~10 min, así que hacerlo con horas de antelación).
+- El usuario revisó la página, aprobó el aviso tal cual y pidió ocultarla. Se
+  ejecutó `flujo_publicar_cuestionario.py --repo
+  cero97-ctrl/cuestionarios-ciberseguridad-s02 --visibilidad private --json`
+  (sin `--push`: es la rama que solo cambia visibilidad). Resultado `status ok`,
+  `pages_visible: false`; `gh api` confirma `visibility=private`. La URL raíz y
+  una ficha devuelven HTTP 404 con cache-buster al primer intento. El repo
+  conserva el commit `2b87c6a47525` con el payload completo: para volver a
+  mostrarla basta `--visibilidad public` (y esperar la caché del CDN, ~10 min).
