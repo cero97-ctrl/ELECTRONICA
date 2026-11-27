@@ -116,6 +116,22 @@ reorganizar_web_evaluaciones_ciberseguridad
   `8a3e1a8..7dd7919`; antes del push HEAD traía 3 commits de auditoría del
   25-nov que también se subieron. `origin/master...HEAD` quedó en `0 0`.
 
+- A petición del usuario se identificó el cuestionario publicado como del grupo
+  con rol Rojo **en la propia fuente**, no editando el HTML a mano: se añadió
+  front matter a `SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO.md` con
+  `titulo: "Criptografía Práctica — Rol Rojo"` y `grupo: "Rol Rojo"`. El
+  conversor ya renderiza esos campos en `<title>`, `<h1>`, `<p class="meta">`
+  (`Cuestionario · Grupo Rol Rojo`) y en el índice; antes solo aparecía
+  «Criptografía Práctica» y la palabra «Rojo» dentro de la pregunta 7.
+- Se regeneró con `flujo_evaluacion_web.py` y se republicó con
+  `flujo_publicar_cuestionario.py --push --visibilidad public`. La primera
+  verificación con `curl` seguía mostrando la versión antigua: era caché del
+  CDN (`cache-control: max-age=600`), no un push fallido. Con cache-buster,
+  el HTML servido es byte-idéntico al local (SHA-256 `57482256…`), el índice
+  dice «Criptografía Práctica — Rol Rojo» y sigue sin mención al docente.
+  El contenido de `cursos/*/evaluaciones/web/**` está gitignored a propósito,
+  así que este ajuste no generó commit de código.
+
 ## Pendientes
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
   git).
