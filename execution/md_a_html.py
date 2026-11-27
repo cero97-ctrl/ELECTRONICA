@@ -314,6 +314,22 @@ code {
   border-radius: 4px;
   font-size: .9em;
 }
+pre.bloque-codigo {
+  margin: .6rem 0;
+  padding: .7rem .85rem;
+  overflow-x: auto;
+  background: var(--codigo);
+  color: #eaf6ff;
+  border-radius: 6px;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+pre.bloque-codigo code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
 footer {
   max-width: 900px;
   margin: 0 auto;
@@ -359,6 +375,77 @@ def _inline(texto: str) -> str:
     seguro = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", seguro)
     seguro = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", seguro)
     return seguro
+
+
+def unir_enunciado(lineas: list[str]) -> str:
+    """Une el enunciado conservando los bloques cercados con triple backtick.
+
+    La prosa se une con espacios, como siempre. Dentro de un bloque ``` se
+    conservan los saltos de línea: una tabla en ASCII unida en una sola línea
+    se lee desordenada en el HTML. El separador de respuestas usa esta misma
+    función para que fuente y solucionario firmen exactamente el mismo texto.
+    """
+    bloques: list[str] = []
+    prosa: list[str] = []
+    codigo: list[str] = []
+    en_codigo = False
+
+    def vaciar_prosa() -> None:
+        if prosa:
+            bloques.append(" ".join(prosa))
+            prosa.clear()
+
+    for linea in lineas:
+        desnuda = linea.strip()
+        if not desnuda:
+            continue
+        if desnuda.startswith("```"):
+            if en_codigo:
+                codigo.append("```")
+                bloques.append("\n".join(codigo))
+                codigo.clear()
+                en_codigo = False
+            else:
+                vaciar_prosa()
+                en_codigo = True
+                codigo.append("```")
+            continue
+        if en_codigo:
+            codigo.append(linea.rstrip())
+        else:
+            prosa.append(desnuda)
+    vaciar_prosa()
+    if en_codigo:
+        bloques.append("\n".join(codigo))
+    return "\n".join(bloques)
+
+
+def _enunciado_html(texto: str) -> str:
+    """Renderiza el enunciado: prosa en <p> y bloques ``` en <pre><code>."""
+    lineas = texto.split("\n")
+    partes: list[str] = []
+    i = 0
+    while i < len(lineas):
+        if lineas[i].startswith("```"):
+            j = i + 1
+            while j < len(lineas) and not lineas[j].startswith("```"):
+                j += 1
+            cuerpo = "\n".join(lineas[i + 1 : j])
+            partes.append(
+                '<pre class="bloque-codigo"><code>'
+                + html.escape(cuerpo)
+                + "</code></pre>"
+            )
+            i = j + 1
+            continue
+        j = i
+        while j < len(lineas) and not lineas[j].startswith("```"):
+            j += 1
+        prosa = " ".join(lineas[i:j])
+        if prosa:
+            partes.append(f'<p class="enunciado">{_inline(prosa)}</p>')
+        i = j
+    return "\n".join(partes)
 
 
 def _leer_front_matter(texto: str) -> tuple[dict, str]:
@@ -412,7 +499,7 @@ def _parsear_cuestionario(texto: str) -> list[dict]:
         preguntas.append(actual)
 
     for pregunta in preguntas:
-        pregunta["enunciado"] = " ".join(pregunta["enunciado"]).strip()
+        pregunta["enunciado"] = unir_enunciado(pregunta["enunciado"])
     return preguntas
 
 
@@ -494,7 +581,7 @@ def _parsear_respuestas(texto: str) -> list[dict]:
         preguntas.append(actual)
 
     for pregunta in preguntas:
-        pregunta["enunciado"] = " ".join(pregunta["enunciado"]).strip()
+        pregunta["enunciado"] = unir_enunciado(pregunta["enunciado"])
     return preguntas
 
 
@@ -960,7 +1047,7 @@ def _preguntas_html(
             f'<section class="pregunta" id="p{numero}" data-numero="{numero}">'
             f'<h2><span class="num">{numero}</span> Pregunta {numero}'
             f'<span class="puntos">({_formato_punto(valor)} pto)</span></h2>'
-            f'<p class="enunciado">{_inline(pregunta["enunciado"])}</p>'
+            f'{_enunciado_html(pregunta["enunciado"])}'
             "<fieldset>"
             f'<legend class="sr-only">Opciones de la pregunta {numero}</legend>'
             f"{_opciones_html(pregunta)}"

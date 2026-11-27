@@ -109,6 +109,49 @@ def test_parseo() -> None:
     )
 
 
+CS_TABLA = """# Demo tabla
+
+## Pregunta 1
+
+Considere:
+
+```
++----+----+
+| A  | B  |
++----+----+
+```
+
+¿Cuál fila?
+
+- A. La primera.
+- B. La segunda.
+
+**Respuesta:** A. La primera.
+
+**Pista:** Mire la tabla.
+
+**Explicación:**
+
+- A ✓ Correcta.
+- B ✗ Incorrecta.
+"""
+
+
+def test_tabla_en_bloque() -> None:
+    print("\n[tabla en bloque]")
+    cabecera, preguntas = S.parsear(CS_TABLA)
+    filas = "+----+----+\n| A  | B  |\n+----+----+"
+    comprobar("el separador conserva las filas", filas in preguntas[0]["enunciado"])
+    limpia = S.armar_fuente(cabecera, preguntas)
+    solucionario = S.armar_respuestas(cabecera, preguntas)
+    comprobar("la fuente conserva el bloque", filas in limpia)
+    comprobar("el solucionario conserva el bloque", filas in solucionario)
+    problemas, _ = M._cruzar(
+        M._parsear_cuestionario(limpia), M._parsear_respuestas(solucionario)
+    )
+    comprobar("fuente y solucionario siguen cruzando", not problemas, str(problemas))
+
+
 def test_salidas() -> None:
     print("\n[salidas]")
     cabecera, preguntas = S.parsear(CS)
@@ -214,6 +257,7 @@ def main() -> int:
     print("=" * 54)
     test_es_separable()
     test_parseo()
+    test_tabla_en_bloque()
     test_salidas()
     test_cruce_con_el_conversor()
     test_validacion()

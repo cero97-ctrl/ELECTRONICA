@@ -85,7 +85,7 @@ def parsear(texto: str) -> tuple[list[str], list[dict]]:
     def cerrar() -> None:
         nonlocal actual
         if actual is not None:
-            actual["enunciado"] = " ".join(actual["enunciado"]).strip()
+            actual["enunciado"] = M.unir_enunciado(actual["enunciado"])
             actual["texto_respuesta"] = " ".join(actual["texto_respuesta"]).strip()
             actual["pista"] = " ".join(actual["pista"]).strip()
             preguntas.append(actual)

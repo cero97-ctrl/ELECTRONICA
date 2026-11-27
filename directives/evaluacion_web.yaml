@@ -244,6 +244,13 @@ edge_cases:
       regenera un examen ya publicado: quien hubiera empezado perdería lo
       respondido. Si hay que corregir una errata, se corrige y se asume que nadie
       había entrado todavía.
+  - caso: "El enunciado trae una tabla ASCII entre triple backtick"
+    respuesta: |
+      Se renderiza como `<pre class="bloque-codigo"><code>` con desplazamiento
+      horizontal, no como texto corrido dentro de `<p>`. El bloque llega desde
+      el markdown porque `unir_enunciado()` conserva los saltos y el separador
+      usa la misma función; la huella del cuestionario cambia al corregirlo,
+      así que la corrección se hace antes de publicar o con nadie aún dentro.
   - caso: "El navegador del alumno bloquea `localStorage`"
     respuesta: |
       Todo el acceso va dentro de `try/catch`: la página funciona igual que antes

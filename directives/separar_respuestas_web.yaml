@@ -96,6 +96,14 @@ edge_cases:
     respuesta: |
       Se unen con un espacio, igual que hace `_parsear_cuestionario`, de modo
       que el cruce fuente/respuestas no reporte diferencias falsas.
+  - caso: "El enunciado trae una tabla o código entre triple backtick"
+    respuesta: |
+      Los saltos dentro del bloque se conservan; la prosa de fuera se une con
+      espacios. `unir_enunciado()` vive en `execution/md_a_html.py` (contrato
+      único) y la usa también el separador, así que fuente y solucionario
+      siempre cruzan. Antes la tabla se pegaba en una sola línea y se veía
+      desordenada en el HTML. Si hay que corregir un examen ya separado,
+      se vuelve a separar desde `_original_con_respuestas.md` con `--forzar`.
   - caso: "La explicación usa `Explicacion` sin tilde"
     respuesta: |
       Se aceptan las dos formas (`Explicación` y `Explicacion`).

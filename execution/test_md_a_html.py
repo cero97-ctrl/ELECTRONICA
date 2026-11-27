@@ -208,6 +208,58 @@ def test_parser():
     comprobar("parser acepta 'Pregunta N'", preguntas[1]["numero"] == 2)
 
 
+FUENTE_TABLA = """# Cuestionario con tabla
+
+## Pregunta 1
+
+Considere la tabla:
+
+```
++----+----+
+| A  | B  |
++----+----+
+```
+
+¿Qué fila se repite?
+
+- A. La primera.
+- B. La segunda.
+"""
+
+
+def test_enunciado_con_tabla_en_bloque():
+    preguntas = M._parsear_cuestionario(FUENTE_TABLA)
+    enunciado = preguntas[0]["enunciado"]
+    comprobar(
+        "el bloque conserva sus saltos",
+        "\n" in enunciado and "+----+----+\n| A  | B  |\n+----+----+" in enunciado,
+        repr(enunciado),
+    )
+    meta = {
+        "curso": "CYBERSEGURIDAD",
+        "tipo": "cuestionario",
+        "titulo": "Cuestionario con tabla",
+        "puntaje_total": 1,
+        "clave": {1: "A"},
+    }
+    problemas, _, puntos, _ = M.validar(preguntas, meta)
+    comprobar("la fuente con tabla valida", not problemas, str(problemas))
+    html = M._render_alumno("Cuestionario con tabla", meta, preguntas, puntos)
+    comprobar("la tabla se renderiza en pre", '<pre class="bloque-codigo"><code>' in html)
+    comprobar(
+        "las filas no se pegan en una línea",
+        "+----+----+\n| A  | B  |\n+----+----+" in html,
+    )
+    comprobar("la tabla no queda dentro de un párrafo", '<p class="enunciado">+----' not in html)
+    # El solucionario_pass comparte el mismo enunciado: si el join difiriera,
+    # _cruzar rechazaría la clave por "enunciado difiere".
+    respuestas = M._parsear_respuestas(
+        FUENTE_TABLA.replace("- B. La segunda.", "- B. La segunda.\n\n**Answer:** A")
+    )
+    problemas_cruce, _ = M._cruzar(preguntas, respuestas)
+    comprobar("la tabla no rompe el cruce con la clave", not problemas_cruce, str(problemas_cruce))
+
+
 def test_validacion_correcta():
     problemas, clave, puntos, total = M.validar(_preguntas(), META)
     comprobar("fuente válida sin problemas", not problemas, str(problemas))

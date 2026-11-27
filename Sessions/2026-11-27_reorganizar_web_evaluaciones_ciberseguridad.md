@@ -155,6 +155,25 @@ reorganizar_web_evaluaciones_ciberseguridad
   segundos; se resolvió solo (el `pages_visible: true` del flujo mira la URL
   raíz, que estaba cacheada). Pruebas: separador 43/43, `md_a_html` 186/186,
   publicador 46/46.
+- El usuario reportó que la pregunta 10 del rol rojo tenía una tabla ASCII
+  desordenada. Causa raíz: el separador unía todas las líneas del enunciado con
+  `" ".join(...)`, de modo que el bloque cercado con triple backtick se pegó
+  en una sola línea y el conversor lo metía en un `<p>` como texto corrido.
+  Arreglo en capa 3, no a mano en el HTML: `unir_enunciado()` y
+  `_enunciado_html()` viven en `execution/md_a_html.py` (contrato único del
+  formato), conservan los saltos dentro del bloque y lo renderizan como
+  `<pre class="bloque-codigo"><code>` con desplazamiento horizontal; el
+  separador llama a la misma función para que fuente y solucionario sigan
+  cruzando. Se regeneró la fuente desde `_original_con_respuestas.md` con
+  `--forzar`, se le repuso el front matter del rol y se republicaron los
+  cuatro alumnos (commit remoto `2142647312f4`). SHAs nuevos: azul
+  `8169f755…`, púrpura `1c82d1b0…`, legal `f44b979f…`, rojo `8020a2e6…`.
+  Verificación: `raw.githubusercontent.com` traía la tabla con 8 filas antes
+  de que Pages refrescara; tras la propagación los cuatro HTML servidos son
+  byte-idénticos a los locales, sin clave, y la pregunta 10 muestra las filas
+  alineadas dentro del `<pre>`. Pruebas: separador 47/47, `md_a_html` 192/192,
+  publicador 46/46, `desplegar_worker` 13/13. Se documentaron los dos casos en
+  `directives/separar_respuestas_web.yaml` y `directives/evaluacion_web.yaml`.
 
 ## Pendientes
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
