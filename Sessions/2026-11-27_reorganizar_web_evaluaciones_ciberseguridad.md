@@ -98,10 +98,29 @@ reorganizar_web_evaluaciones_ciberseguridad
   `test_md_a_html.py` 186/186, `test_publicar_cuestionario.py` 46/46;
   `py_compile` sin errores y la nueva directiva parsea como YAML.
 
+- Con autorización explícita del usuario, se publicó `SEMANA_02` en un repo
+  propio, `cero97-ctrl/cuestionarios-ciberseguridad-s02` (URL
+  `https://cero97-ctrl.github.io/cuestionarios-ciberseguridad-s02/`). No se
+  reutilizó `cero97-ctrl/cuestionarios`: contiene los 4 HTML de la semana 01 y
+  el push es `--force`, así que habría borrado ese material. El repo quedó
+  público con Pages activo; el árbol remoto tiene solo `.nojekyll`,
+  `index.html` y `rol_rojo_cuestionario_alumno.html`, sin docente ni clave.
+- Verificación posterior al push, no solo el reporte del flujo: `curl` devolvió
+  HTTP 200 con UA de navegador; el SHA-256 del HTML remoto
+  (`5b3cd2b7…`) es idéntico al local; `gh api` confirmó visibilidad `public`,
+  rama `main` y los 3 archivos del árbol.
+- Commit `7dd7919` con 19 archivos (14 modificados + 5 nuevos: la bitácora, la
+  directiva, el separador, su prueba y el orquestador). Quedaron deliberadamente
+  fuera los dos untracked de Laboratorio I (`practicas/web/` y
+  `publicar_lab1_practicas_web.sh`). Push fast-forward de
+  `8a3e1a8..7dd7919`; antes del push HEAD traía 3 commits de auditoría del
+  25-nov que también se subieron. `origin/master...HEAD` quedó en `0 0`.
+
 ## Pendientes
-- Autorización del usuario para commitear y pushear este cambio.
-- Autorización explícita antes de publicar `SEMANA_02` en GitHub Pages: solo se
-  preparó el payload en seco (`--dry-run`), sin `--push`.
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
   git).
 - No reabrir el material aprobado de la semana 02.
+- Ocultar `cero97-ctrl/cuestionarios-ciberseguridad-s02` con `--visibilidad
+  private` después del examen, igual que se hizo con el repo de la semana 01
+  (el CDN puede servir la copia cacheada hasta ~10 min: hacerlo con horas de
+  antelación).
