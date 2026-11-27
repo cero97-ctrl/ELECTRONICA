@@ -1,0 +1,107 @@
+# 2026-11-27 — reorganizar_web_evaluaciones_ciberseguridad
+
+## Tema
+reorganizar_web_evaluaciones_ciberseguridad
+
+## Contexto
+- El usuario pidió mover todo el contenido de
+  `cursos/CYBERSEGURIDAD/evaluaciones/web/` a una subcarpeta `SEMANA_01`
+  dentro de esa misma ruta, sin tocar el material aprobado y publicado de la
+  semana 02 ni los archivos sin seguimiento de Laboratorio I.
+- Al revisar antes de ejecutar se detectó una violación del espíritu
+  determinista: `execution/publicar_cuestionario.py` exige `web/` como nombre
+  exacto y recolecta los `*_alumno.html` solo en su raíz, y
+  `flujo_evaluacion_web.py` busca las fuentes por defecto en
+  `web/fuentes/*.md`. Mover sin adaptar rompería ambos comandos. Se alertó y se
+  propuso la alternativa conforme; el usuario eligió «Mover y adaptar flujos».
+
+## Decisiones (usuario)
+1. La carpeta destino se llama exactamente `SEMANA_01` y queda en
+   `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/`.
+2. Se mueve todo y se adaptan publicador, conversor, orquestadores, directivas
+   y pruebas para que los comandos sigan funcionando con rutas por defecto.
+3. No se hace commit ni push de este cambio hasta autorización explícita.
+4. No se toca el material de la semana 02 ni los dos archivos sin seguimiento
+   de Laboratorio I (`practicas/web/` y `publicar_lab1_practicas_web.sh`).
+5. Decisión técnica derivada de la alternativa aceptada: la barrera admite
+   **tanto** `web/` (raíz, la siguen usando Laboratorio I y II) **como**
+   `web/SEMANA_NN` (Ciberseguridad). Restringirla solo a `SEMANA_NN` habría
+   roto los comandos de publicación de los otros cursos, que el usuario pidió
+   mantener funcionando. Se rechaza cualquier nivel adicional, p. ej.
+   `web/SEMANA_01/fuentes/`.
+6. El usuario colocó `ROL_ROJO_CUESTIONARIO.md` con 10 preguntas en
+   `SEMANA_02/fuentes/`, con respuestas en español (`**Respuesta:**`,
+   `**Pista:**`, `**Explicación:**`). Se detectó que el conversor solo entiende
+   las marcas en inglés y que, de generar sin corregir, la clave se filtraría en
+   la opción D de la variante alumno. Se detuvo antes de generar, se explicó el
+   riesgo en lenguaje sencillo y el usuario eligió **separar automáticamente**
+   con un script determinista (no adaptar el conversor ni generar con fuga).
+
+## Actividades
+- Se verificó el estado derivado (`execution/estado_sesion.py check`: `ok`, 0
+  acciones) y se creó esta bitácora con `execution/bitacoras.py nueva`.
+- Se movieron los 10 elementos de la raíz de `web/` a `SEMANA_01/`
+  (`fuentes/`, `index.html` y 8 HTML). Se compararon los SHA-256 de los 17
+  archivos antes y después: idénticos. En la raíz de `web/` solo queda
+  `SEMANA_01/`.
+- Capa 3 adaptada: `execution/publicar_cuestionario.py` (default
+  `.../web/SEMANA_01`, barrera `web/` o `web/SEMANA_NN`),
+  `execution/md_a_html.py` (barrera de salida con el mismo criterio),
+  `execution/descargar_resultados.py` (ruta de ejemplo).
+- Capa 2 adaptada: `flujo_publicar_cuestionario.py`,
+  `flujo_evaluacion_web.py` (dos patrones por defecto: semanas y raíz),
+  `flujo_acta_cuestionario.py` y `flujo_desplegar_worker_cuestionarios.py`.
+- Directivas actualizadas: `publicar_cuestionario.yaml`, `evaluacion_web.yaml`,
+  `acta_cuestionario.yaml` y `entregar_respuestas_worker.yaml` (incluidos los
+  comandos de recuperación, que ahora apuntan a `web/SEMANA_01/`).
+- Pruebas: `test_publicar_cuestionario.py` 46/46, `test_md_a_html.py` 186/186,
+  `test_descargar_resultados.py` 135/135, `test_desplegar_worker.py` 13/13;
+  los cuatro YAML parsean y `py_compile` no reporta errores. Se añadieron
+  aserciones nuevas para la barrera por semana y para los dos patrones del
+  conversor.
+- Verificación en seco: `flujo_publicar_cuestionario.py --dry-run --json`
+  prepara exactamente 4 `*_alumno.html` (sin docente, sin clave) en
+  `.tmp/publicacion/cuestionarios/`; `flujo_evaluacion_web.py --check
+  --dry-run` encuentra las 4 fuentes de `SEMANA_01` y sus 4 archivos de
+  respuestas. Los 8 enlaces relativos del `index.html` movido apuntan a
+  archivos existentes (0 enlaces rotos): las rutas relativas se conservan
+  porque fuentes y HTML se movieron juntos.
+- Se dejó pendiente, sin tocar, un fallo preexistente de Laboratorio II:
+  `lab_ii_fisica_cuestionario_2_barajado.md` contiene `**Answer:**` y el
+  conversor lo rechaza con código 3. El patrón de raíz que lo detecta ya
+  existía antes de este cambio.
+- A petición del usuario, se creó `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/`
+  con la misma estructura de directorios que `SEMANA_01` (únicamente `fuentes/`)
+  y sin ningún archivo. No se copió ni se movió contenido.
+- Se añadió el flujo de separación en las tres capas:
+  `directives/separar_respuestas_web.yaml` (SOP),
+  `flujo_preparar_fuente_web.py` (orquestador con `run_state` y trazas) y
+  `execution/separar_respuestas_md.py` (lógica pura). Más
+  `execution/test_separar_respuestas_md.py` (43 aserciones, sin red). El script
+  valida la pareja con `md_a_html.cargar_clave()` en un directorio temporal
+  **antes** de escribir, guarda un respaldo byte-idéntico del original y nunca
+  imprime la clave.
+- Se ejecutó el flujo sobre el archivo real: 10 preguntas separadas. Se crearon
+  `ROL_ROJO_CUESTIONARIO.md` (limpio),
+  `ROL_ROJO_CUESTIONARIO_respuestas.md` (clave) y
+  `ROL_ROJO_CUESTIONARIO_original_con_respuestas.md` (respaldo). El check en
+  seco pasó de `tiene_clave: false` a `tiene_clave: true`.
+- Se generaron `rol_rojo_cuestionario_alumno.html` (27 924 bytes) y
+  `rol_rojo_cuestionario_docente.html` (27 233 bytes) en `SEMANA_02/`. El alumno
+  no contiene `const CLAVE`; el docente sí. El `index.html` local enlaza al
+  docente, pero es material privado: el dry-run del publicador con
+  `--web-dir .../SEMANA_02` preparó **solo** `rol_rojo_cuestionario_alumno.html`
+  y un índice sin docente ni clave.
+- El respaldo con marcas en español no se cuela en el glob por defecto: el
+  check global pasó de 11 a 12 fuentes (solo se añadió la fuente limpia).
+- Pruebas finales: `test_separar_respuestas_md.py` 43/43,
+  `test_md_a_html.py` 186/186, `test_publicar_cuestionario.py` 46/46;
+  `py_compile` sin errores y la nueva directiva parsea como YAML.
+
+## Pendientes
+- Autorización del usuario para commitear y pushear este cambio.
+- Autorización explícita antes de publicar `SEMANA_02` en GitHub Pages: solo se
+  preparó el payload en seco (`--dry-run`), sin `--push`.
+- Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
+  git).
+- No reabrir el material aprobado de la semana 02.

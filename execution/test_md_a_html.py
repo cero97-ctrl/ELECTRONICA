@@ -557,6 +557,26 @@ def test_barrera_de_rutas():
         comprobar("acepta la carpeta web ignorada", False, str(exc))
 
 
+def test_barrera_de_salida_por_semana():
+    base = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web"
+    casos = [
+        (base / "SEMANA_01", True),
+        (base / "SEMANA_01" / "fuentes", False),
+        (base / "archivo", False),
+        (base / "SEMANA_01" / "extra", False),
+    ]
+    for ruta, permitida in casos:
+        try:
+            M._validar_salida(ruta)
+            resultado = True
+        except PermissionError:
+            resultado = False
+        comprobar(
+            f"salida {ruta.relative_to(RAIZ)} {'aceptada' if permitida else 'rechazada'}",
+            resultado == permitida,
+        )
+
+
 def test_formato_punto():
     comprobar("1.0 se muestra como 1", M._formato_punto(1.0) == "1")
     comprobar("1.5 usa coma", M._formato_punto(1.5) == "1,5")
@@ -719,7 +739,18 @@ def test_orquestador_ignora_archivos_de_respuestas():
     spec.loader.exec_module(mod)
     comprobar("detecta _respuestas.md", mod._es_archivo_de_respuestas(Path("X_respuestas.md")))
     comprobar("no confunde un cuestionario", not mod._es_archivo_de_respuestas(Path("X.md")))
-    fuentes = mod._resolver_fuentes(["cursos/*/evaluaciones/web/fuentes/*.md"])
+    patrones = list(mod.PATRONES_POR_DEFECTO)
+    comprobar(
+        "el default cubre fuentes por semana",
+        any("SEMANA_*" in p for p in patrones),
+        str(patrones),
+    )
+    comprobar(
+        "el default conserva la raíz web/ de otros cursos",
+        any(p.endswith("/web/fuentes/*.md") for p in patrones),
+        str(patrones),
+    )
+    fuentes = mod._resolver_fuentes(patrones)
     nombres = [f.name for f in fuentes]
     comprobar(
         "el glob por defecto no trae el archivo de respuestas",

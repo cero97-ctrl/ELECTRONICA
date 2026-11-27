@@ -37,7 +37,7 @@ CONSOLIDADOR = EJECUCION / "acta_semana.py"
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
 FUENTE_POR_DEFECTO = (
-    "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
+    "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md"
 )
 
 DIAGNOSTICO = {

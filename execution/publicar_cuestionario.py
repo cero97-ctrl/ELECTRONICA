@@ -2,8 +2,9 @@
 """Capa 3: publica en GitHub Pages solo la variante `alumno` de los cuestionarios.
 
 El repo del curso es público y la carpeta `cursos/<CURSO>/evaluaciones/web/`
-contiene también `_docente.html` (con `const CLAVE`) y `fuentes/*_respuestas.md`
-(la clave). Publicar la carpeta entera, o un `git add -A` con una regla mal
+(o su subcarpeta `SEMANA_NN`, p. ej. `web/SEMANA_01/`) contiene también
+`_docente.html` (con `const CLAVE`) y `fuentes/*_respuestas.md` (la clave).
+Publicar la carpeta entera, o un `git add -A` con una regla mal
 puesta, filtraría las respuestas y en GitHub quedarían en el historial para
 siempre. Por eso este script:
 
@@ -25,6 +26,7 @@ Uso:
     python3 execution/publicar_cuestionario.py --visibilidad private
     python3 execution/publicar_cuestionario.py --visibilidad public --push
     python3 execution/publicar_cuestionario.py --web-dir cursos/OTRO/evaluaciones/web --json
+    python3 execution/publicar_cuestionario.py --web-dir cursos/OTRO/evaluaciones/web/SEMANA_01 --json
 
 Códigos de salida: 0 ok · 1 error de E/S · 3 payload rechazado (fuga) ·
 4 gh/git falló · 5 ruta rechazada.
@@ -51,7 +53,7 @@ sys.path.insert(0, str(EJECUCION))
 import md_a_html as M  # noqa: E402  (reusa `_documento` y el estilo)
 import publicar_github as G  # noqa: E402  (mecánica git/Pages compartida)
 
-WEB_POR_DEFECTO = "cursos/CYBERSEGURIDAD/evaluaciones/web"
+WEB_POR_DEFECTO = "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01"
 STAGE_POR_DEFECTO = ".tmp/publicacion"
 MARCAS_FUGA = ("const CLAVE", "**Answer:**", "Modo docente")
 MARCA_DATOS = 'id="estudiante-nombre"'
@@ -69,12 +71,26 @@ CSS_INDICE = (
 
 
 def _validar_web_dir(ruta: Path) -> Path:
+    """Admite `web/` y `web/SEMANA_NN/`, pero no subcarpetas arbitrarias.
+
+    Los cursos que aún no se organizan por semana publican desde la raíz `web/`;
+    Ciberseguridad ya trabaja en `web/SEMANA_NN/`. Se rechaza cualquier nivel
+    adicional (p. ej. `web/SEMANA_01/fuentes/`) para que el glob de
+    `_recolectar()` no se convierta en una excusa para publicar la carpeta entera.
+    """
     resuelta = ruta.resolve()
     partes = resuelta.parts
-    if resuelta.name != "web" or "cursos" not in partes or "evaluaciones" not in partes:
+    permitida = False
+    if "cursos" in partes and "evaluaciones" in partes and "web" in partes:
+        indice = len(partes) - 1 - partes[::-1].index("web")
+        restantes = partes[indice + 1 :]
+        permitida = not restantes or (
+            len(restantes) == 1 and re.fullmatch(r"SEMANA_\d{2}", restantes[0]) is not None
+        )
+    if not permitida:
         raise PermissionError(
-            "solo se publica desde cursos/<CURSO>/evaluaciones/web/, no desde "
-            f"{resuelta}"
+            "solo se publica desde cursos/<CURSO>/evaluaciones/web/ o desde "
+            f"cursos/<CURSO>/evaluaciones/web/SEMANA_NN/, no desde {resuelta}"
         )
     return resuelta
 

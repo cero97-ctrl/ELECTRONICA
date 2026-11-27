@@ -42,7 +42,7 @@ PYTHON = sys.executable
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
 WORKER_DIR = RAIZ / "Proyectos" / "cuestionarios-worker"
-FUENTE = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
+FUENTE = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md"
 WRANGLER_HERMANO = RAIZ / "Proyectos/cloudflare-agent/node_modules/.bin/wrangler"
 URL_WORKER = re.compile(r"https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev")
 # Cloudflare responde 403 (error code 1010) al User-Agent por defecto de urllib,

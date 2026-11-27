@@ -17,7 +17,7 @@ references:
   orchestrator: flujo_acta_cuestionario.py
   scripts: execution/descargar_resultados.py, execution/test_descargar_resultados.py
   input: repo privado `cero97-ctrl/cuestionarios-resultados` → `resultados/<cuestionario>/grupo_<NN>/<cedula>.json`
-  clave: cursos/<CURSO>/evaluaciones/web/fuentes/<CUESTIONARIO>.md (+ `_respuestas.md`)
+  clave: cursos/<CURSO>/evaluaciones/web/[SEMANA_NN/]fuentes/<CUESTIONARIO>.md (+ `_respuestas.md`)
   output: cursos/<CURSO>/evaluaciones/resultados/acta_<cuestionario>.{csv,pdf}
   backend: directives/entregar_respuestas_worker.yaml (quien archiva las entregas)
   tests: python3 execution/test_descargar_resultados.py

@@ -15,6 +15,7 @@ Uso:
     python3 flujo_publicar_cuestionario.py --dry-run
     python3 flujo_publicar_cuestionario.py --push
     python3 flujo_publicar_cuestionario.py --push --repo cero97-ctrl/otro --json
+    python3 flujo_publicar_cuestionario.py --web-dir cursos/OTRO/evaluaciones/web/SEMANA_01 --dry-run
 
 Códigos de salida: 0 ok · 1 error de E/S · 3 payload rechazado (fuga) ·
 4 gh/git falló · 5 ruta rechazada.
@@ -35,6 +36,7 @@ PYTHON = sys.executable
 PUBLICADOR = EJECUCION / "publicar_cuestionario.py"
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
+WEB_POR_DEFECTO = "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01"
 
 sys.path.insert(0, str(EJECUCION))
 import run_state  # noqa: E402  (capa 3: vista por corrida)
@@ -96,8 +98,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--web-dir",
-        default="cursos/CYBERSEGURIDAD/evaluaciones/web",
-        help="Carpeta web del curso.",
+        default=WEB_POR_DEFECTO,
+        help="Carpeta web del curso (raíz `web/` o subcarpeta `web/SEMANA_NN/`).",
     )
     parser.add_argument("--repo", default=None, help="owner/nombre destino.")
     parser.add_argument("--push", action="store_true", help="Crea/actualiza el repo y Pages.")

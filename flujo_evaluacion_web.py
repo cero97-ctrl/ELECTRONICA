@@ -7,14 +7,15 @@ barrera de rutas viven en la capa 3. Este flujo solo resuelve fuentes, encadena
 el conversor, agrega resultados y deja trazabilidad.
 
 El HTML es material privado: la fuente y la salida viven bajo
-`cursos/<CURSO>/evaluaciones/web/`, ignorado por git. La variante `alumno` no
+`cursos/<CURSO>/evaluaciones/web/` o su subcarpeta `web/SEMANA_NN/`, ignoradas
+por git. La variante `alumno` no
 lleva la clave; la `docente` sí y la toma del front matter (`clave:`) o de un
 archivo hermano `<fuente>_respuestas.md` con las respuestas (`**Answer:** X.`).
 Ese archivo se valida contra la fuente antes de usarse y nunca se convierte
 como si fuera un cuestionario.
 
 Uso:
-    python3 flujo_evaluacion_web.py --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md --variantes alumno
+    python3 flujo_evaluacion_web.py --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md --variantes alumno
     python3 flujo_evaluacion_web.py --variantes alumno,docente
     python3 flujo_evaluacion_web.py --check
     python3 flujo_evaluacion_web.py --dry-run --json
@@ -39,7 +40,12 @@ PYTHON = sys.executable
 CONVERSOR = EJECUCION / "md_a_html.py"
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
-PATRON_POR_DEFECTO = "cursos/*/evaluaciones/web/fuentes/*.md"
+# Cubre las dos disposiciones convivientes: cursos organizados por semana y
+# cursos que aún guardan las fuentes en la raíz de `web/`.
+PATRONES_POR_DEFECTO = (
+    "cursos/*/evaluaciones/web/SEMANA_*/fuentes/*.md",
+    "cursos/*/evaluaciones/web/fuentes/*.md",
+)
 
 sys.path.insert(0, str(EJECUCION))
 import run_state  # noqa: E402  (capa 3: vista por corrida)
@@ -149,7 +155,7 @@ def main() -> int:
     parser.add_argument("--no-alert", action="store_true", help="Sin alerta audible.")
     args = parser.parse_args()
 
-    fuentes = _resolver_fuentes(args.fuente or [PATRON_POR_DEFECTO])
+    fuentes = _resolver_fuentes(args.fuente or list(PATRONES_POR_DEFECTO))
     if not fuentes:
         mensaje = "no se encontró ningún .md de origen"
         if args.json:

@@ -1,0 +1,113 @@
+goal: |
+  Convertir un cuestionario Markdown escrito con las marcas en español
+  (`**Respuesta:**`, `**Pista:**`, `**Explicación:**`) en la pareja de archivos
+  que el conversor web ya entiende: un cuestionario limpio y un solucionario
+  aparte con `**Answer:**`, `**Hint:**` y `**Explanation:**`.
+
+  El motivo es una barrera de fuga, no una preferencia de estilo. El conversor
+  `execution/md_a_html.py` solo reconoce las marcas en inglés. Si se le entrega
+  un archivo con `**Respuesta:**` después de las opciones, trata esa línea (y la
+  pista y la explicación) como continuación de la última opción: la variante
+  `alumno` mostraría la clave correcta y el repo es público. Este flujo separa
+  antes de generar cualquier HTML.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_preparar_fuente_web.py
+  script: execution/separar_respuestas_md.py
+  contrato: execution/md_a_html.py (cargar_clave, _cruzar)
+  next_step: flujo_evaluacion_web.py
+  tests: python3 execution/test_separar_respuestas_md.py
+  input: cursos/<CURSO>/evaluaciones/web/SEMANA_NN/fuentes/<CUESTIONARIO>.md
+  output: |
+    <CUESTIONARIO>.md (limpio), <CUESTIONARIO>_respuestas.md (clave) y
+    <CUESTIONARIO>_original_con_respuestas.md (respaldo íntegro del original).
+
+required_inputs:
+  - name: --fuente
+    description: |
+      Ruta al Markdown que trae las respuestas en español. Por defecto
+      `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO.md`.
+      Debe tener `## Pregunta N` consecutivas, opciones `- A. ...` y las tres
+      marcas en español por pregunta.
+  - name: --forzar
+    description: |
+      Opcional. Permite sobrescribir un `_respuestas.md` previo. Sin esta bandera,
+      si el solucionario ya existe el flujo se niega con código 5. El respaldo
+      del original NUNCA se sobrescribe: si ya existe, se conserva.
+
+steps:
+  - name: comprobar que la fuente es separable
+    run: |
+      El script exige que existan `**Respuesta:**` y `**Pista:**` y que NO
+      aparezcan `**Answer:**`, `**Hint:**` ni `**Explanation:**`. Si ya está
+      separado, termina con código 4 sin tocar nada (idempotencia: una segunda
+      pasada no destruye el trabajo ya hecho).
+  - name: parsear y validar
+    run: |
+      Extrae numeración, enunciado, opciones, letra de respuesta, pista y
+      viñetas de explicación. Rechaza numeración no consecutiva, menos de 2 o
+      más de 6 opciones, letras repetidas, respuesta ausente o fuera de las
+      opciones, y explicación sin viñetas. Cualquier problema termina con código
+      3 antes de escribir.
+  - name: armar los dos textos
+    run: |
+      La fuente limpia conserva título y enunciados y elimina toda marca de
+      clave. El solucionario repite el mismo examen (para que `_cruzar` pueda
+      compararlo) y añade las marcas en inglés con la respuesta, la pista y las
+      explicaciones originales. Ningún texto se reescribe "a mano" en el chat.
+  - name: validar con el contrato real en un directorio temporal
+    run: |
+      Escribe ambos textos en `.tmp/` y llama a
+      `md_a_html.cargar_clave(fuente, respuestas)`. Si el conversor rechaza la
+      pareja o no recupera una clave por pregunta, se aborta sin haber tocado
+      los archivos del curso.
+  - name: escribir con respaldo y de forma atómica
+    run: |
+      Guarda primero `<stem>_original_con_respuestas.md` con los bytes exactos
+      del original, luego el solucionario y por último la fuente limpia. Cada
+      escritura va a un archivo temporal del mismo directorio y se renombra con
+      `os.replace`, para que un fallo no deje un archivo a medias.
+
+expected_outputs:
+  - Un Markdown de examen sin respuestas, pistas ni explicaciones.
+  - Un `_respuestas.md` que `flujo_evaluacion_web.py` acepta como clave.
+  - Un respaldo del original, byte a byte idéntico.
+  - Informe JSON con rutas, número de preguntas y SHA-256. La clave NO se
+    imprime en el informe para no exponerla en consolas ni bitácoras.
+  - Código de salida 0; 1 E/S; 3 validación; 4 no separable; 5 solucionario
+    existente sin `--forzar`.
+
+edge_cases:
+  - caso: "El archivo ya está separado"
+    respuesta: |
+      Código 4. No se sobrescribe nada: el flujo es reanudable y una segunda
+      ejecución no debe convertir un solucionario en examen.
+  - caso: "Ya existe `_respuestas.md` de otra versión"
+    respuesta: |
+      Código 5 salvo `--forzar`. Antes de forzar, conviene comparar el respaldo:
+      dos claves distintas para el mismo enunciado corregirían distinto.
+  - caso: "Falta una respuesta o está fuera de A-D"
+    respuesta: |
+      Código 3 con el número de pregunta. No se escribe ningún archivo: publicar
+      un examen con una clave incompleta es peor que no publicar.
+  - caso: "El enunciado ocupa varias líneas"
+    respuesta: |
+      Se unen con un espacio, igual que hace `_parsear_cuestionario`, de modo
+      que el cruce fuente/respuestas no reporte diferencias falsas.
+  - caso: "La explicación usa `Explicacion` sin tilde"
+    respuesta: |
+      Se aceptan las dos formas (`Explicación` y `Explicacion`).
+  - caso: "El markdown tiene front matter YAML"
+    respuesta: |
+      Se conserva en la fuente limpia tal cual. El solucionario genera su propia
+      cabecera, sin `clave:`, para que la única fuente de verdad sea el archivo
+      de respuestas.
+
+security:
+  - "La clave nunca se imprime en la salida del script ni del orquestador."
+  - "El respaldo se crea antes que cualquier sobrescritura y jamás se reemplaza."
+  - "Ningún archivo del curso se toca si la validación con `cargar_clave` falla."
+  - "Todas las rutas quedan bajo `cursos/<CURSO>/evaluaciones/web/`, ignoradas por git."
+  - "Solo después de este flujo se ejecuta `flujo_evaluacion_web.py`."

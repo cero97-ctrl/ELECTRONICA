@@ -24,7 +24,8 @@ Contrato:
     timestamps, aleatoriedad ni orden dependiente del sistema de ficheros.
 
 Reglas de seguridad:
-  - Solo escribe dentro de `cursos/<CURSO>/evaluaciones/web/` (nunca en
+  - Solo escribe dentro de `cursos/<CURSO>/evaluaciones/web/` o de su
+    subcarpeta `web/SEMANA_NN/` (nunca en
     `fuentes/`), y exige que git ignore la ruta de salida. Un examen es
     material privado en un repo público.
 
@@ -1591,8 +1592,13 @@ def _validar_salida(salida_dir: Path) -> None:
             "la salida debe ser cursos/<CURSO>/evaluaciones/web/ "
             f"(recibido: {relativo})"
         )
-    if len(partes) > 3 and partes[3] == "fuentes":
-        raise PermissionError("la salida no puede escribirse dentro de fuentes/")
+    if len(partes) > 3:
+        if len(partes) != 4 or re.fullmatch(r"SEMANA_\d{2}", partes[3]) is None:
+            raise PermissionError(
+                "la salida debe ser cursos/<CURSO>/evaluaciones/web/ o "
+                "cursos/<CURSO>/evaluaciones/web/SEMANA_NN/ "
+                f"(recibido: {relativo})"
+            )
     prueba = destino / ".md_a_html_guard"
     resultado = subprocess.run(
         ["git", "check-ignore", "-q", str(prueba)],

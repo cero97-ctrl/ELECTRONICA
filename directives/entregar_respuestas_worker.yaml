@@ -19,7 +19,7 @@ references:
   orchestrator: flujo_desplegar_worker_cuestionarios.py
   worker: Proyectos/cuestionarios-worker (src/logica.js, src/index.js, wrangler.jsonc)
   tests: cd Proyectos/cuestionarios-worker && npm test
-  input: cursos/<CURSO>/evaluaciones/web/fuentes/<CUESTIONARIO>.md (+ _respuestas.md)
+  input: cursos/<CURSO>/evaluaciones/web/[SEMANA_NN/]fuentes/<CUESTIONARIO>.md (+ _respuestas.md)
   output: |
     Un Worker por grupo: `https://cuestionarios-worker.cero-agents.workers.dev`
     (ROL ROJO, base) y `https://cuestionarios-worker-<grupo>.cero-agents.workers.dev`
@@ -327,7 +327,7 @@ contingencia:
     - name: desplegar el Worker cerrado
       run: |
         python3 flujo_desplegar_worker_cuestionarios.py \
-          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
           --env <grupo>_recuperacion \
           --nomina .tmp/verificados_<grupo>.csv \
           --inicio 2026-11-17T13:00:00Z --fin 2026-11-17T13:45:00Z \
@@ -339,10 +339,10 @@ contingencia:
         el HTML se genera **después**, o el botón saldría sin destino.
     - name: archivar los HTML del examen regular
       run: |
-        mkdir -p cursos/CYBERSEGURIDAD/evaluaciones/web/archivo/regular_2026-11-16
-        find cursos/CYBERSEGURIDAD/evaluaciones/web -maxdepth 1 \
+        mkdir -p cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/archivo/regular_2026-11-16
+        find cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01 -maxdepth 1 \
           -name '*_alumno.html' ! -name '*_recuperacion_*' \
-          -exec mv {} cursos/CYBERSEGURIDAD/evaluaciones/web/archivo/regular_2026-11-16/ \;
+          -exec mv {} cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/archivo/regular_2026-11-16/ \;
       description: |
         Se guardan en local (la carpeta `web/` está ignorada por git) para poder
         reutilizarlos si hiciera falta otra recuperación. El `find` excluye los
@@ -351,7 +351,7 @@ contingencia:
     - name: generar el HTML de recuperación
       run: |
         python3 flujo_evaluacion_web.py \
-          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
           --variantes alumno
       description: |
         Escribe `web/rol_<grupo>_recuperacion_cuestionario_alumno.html`. Se
@@ -374,7 +374,7 @@ contingencia:
     - name: acta por grupo
       run: |
         python3 flujo_acta_cuestionario.py \
-          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
+          --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_<GRUPO>_RECUPERACION_Cuestionario.md \
           --lista .tmp/verificados_<grupo>.csv --sin-pdf
       description: |
         Genera `resultados/acta_rol_<grupo>_recuperacion_cuestionario.csv`. La

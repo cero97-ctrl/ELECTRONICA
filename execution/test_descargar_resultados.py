@@ -633,7 +633,7 @@ def test_token_por_repo() -> None:
         == D._variable_token("cero97-ctrl/cuestionarios-resultados-lab2"),
     )
 
-    fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
+    fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md"
     if not fuente.is_file():
         comprobar("fuente de ejemplo presente", False, str(fuente))
         return
@@ -681,7 +681,7 @@ def test_token_por_repo() -> None:
 
 def test_guarda_de_privacidad() -> None:
     print("\n-- El acta no se escribe fuera de una ruta ignorada")
-    fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md"
+    fuente = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md"
     if not fuente.is_file():
         comprobar("fuente de ejemplo presente", False, str(fuente))
         return

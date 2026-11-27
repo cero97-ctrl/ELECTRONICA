@@ -148,6 +148,46 @@ def test_barrera_de_rutas():
         comprobar("rechaza una carpeta que no es web/", True)
 
 
+def test_barrera_de_rutas_por_semana():
+    """Conviven `web/` (otros cursos) y `web/SEMANA_NN/` (Ciberseguridad)."""
+    base = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web"
+    casos = [
+        (base, True),
+        (base / "SEMANA_01", True),
+        (base / "SEMANA_12", True),
+        (base / "SEMANA_1", False),
+        (base / "fuentes", False),
+        (base / "SEMANA_01" / "fuentes", False),
+        (base / "SEMANA_01" / "extra", False),
+    ]
+    for ruta, permitida in casos:
+        try:
+            P._validar_web_dir(ruta)
+            resultado = True
+        except PermissionError:
+            resultado = False
+        comprobar(f"ruta {ruta.relative_to(RAIZ)} {'aceptada' if permitida else 'rechazada'}", resultado == permitida)
+
+    comprobar(
+        "el default apunta a SEMANA_01",
+        P.WEB_POR_DEFECTO.endswith("/evaluaciones/web/SEMANA_01"),
+        P.WEB_POR_DEFECTO,
+    )
+    try:
+        P._validar_web_dir(RAIZ / P.WEB_POR_DEFECTO)
+        comprobar("el default pasa la barrera", True)
+    except PermissionError as exc:
+        comprobar("el default pasa la barrera", False, str(exc))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        semana = Path(tmp) / "cursos/DEMO/evaluaciones/web/SEMANA_01"
+        semana.mkdir(parents=True)
+        _escribir(semana, "a_alumno.html", ALUMNO)
+        _escribir(semana, "a_docente.html", DOCENTE)
+        nombres = [p.name for p in P._recolectar(semana)]
+        comprobar("en SEMANA_NN solo se recoge el alumno", nombres == ["a_alumno.html"], str(nombres))
+
+
 def test_titulo():
     comprobar(
         "extrae el título del HTML",

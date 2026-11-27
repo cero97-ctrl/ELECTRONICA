@@ -3,9 +3,10 @@ goal: |
   separado, servido por GitHub Pages, para que los estudiantes lo abran desde
   las PCs del laboratorio sin instalar nada.
 
-  El repositorio del curso es público y la carpeta `evaluaciones/web/` también
-  contiene `_docente.html` (con `const CLAVE`) y `fuentes/*_respuestas.md` (la
-  clave). Publicar la carpeta entera filtraría las respuestas y en GitHub
+  El repositorio del curso es público y la carpeta `evaluaciones/web/` (o su
+  subcarpeta `web/SEMANA_NN/`) también contiene `_docente.html` (con `const
+  CLAVE`) y `fuentes/*_respuestas.md` (la clave). Publicar la carpeta entera
+  filtraría las respuestas y en GitHub
   quedarían en el historial para siempre. Por eso se publica en un repo
   separado y **solo** los `*_alumno.html`, con un índice propio sin enlaces al
   docente. La clave nunca sale de la máquina.
@@ -23,7 +24,7 @@ layer: orchestration
 references:
   orchestrator: flujo_publicar_cuestionario.py
   scripts: execution/publicar_cuestionario.py, execution/test_publicar_cuestionario.py
-  input: cursos/<CURSO>/evaluaciones/web/*_alumno.html
+  input: cursos/<CURSO>/evaluaciones/web/[SEMANA_NN/]*_alumno.html
   output: repo público `cero97-ctrl/cuestionarios` (index.html + *_alumno.html + .nojekyll)
   url: https://cero97-ctrl.github.io/cuestionarios/
   tests: python3 execution/test_publicar_cuestionario.py
@@ -31,12 +32,13 @@ references:
 required_inputs:
   - name: --web-dir DIR
     description: |
-      Carpeta web **de un curso**; debe ser exactamente
-      `cursos/<CURSO>/evaluaciones/web` (código 5 si no). Por defecto,
-      `cursos/CYBERSEGURIDAD/evaluaciones/web`, así que omitirlo significa
-      «Ciberseguridad», no «todos los cursos». Hoy es la única carpeta web del
-      repo, pero el valor por defecto no debe leerse como cobertura global: otro
-      curso exige pasar su `--web-dir` y su `--repo`.
+      Carpeta web **de un curso**: `cursos/<CURSO>/evaluaciones/web` o, si el
+      curso está organizado por semanas, `.../web/SEMANA_NN` (código 5 si no).
+      Por defecto, `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01`, así que
+      omitirlo significa «Ciberseguridad, semana 01», no «todos los cursos ni
+      todas las semanas». Para otra semana o curso hay que pasar su `--web-dir`
+      (y su `--repo` si es otro curso), porque el índice se arma solo con lo que
+      haya en esa carpeta y la visibilidad es por repo.
   - name: --repo owner/nombre
     description: |
       Destino. Por defecto `<usuario-gh>/cuestionarios`. Se crea público si no
@@ -148,10 +150,12 @@ edge_cases:
       Esperar hasta un minuto y reintentar la URL. Si sigue en 404, comprobar
       `gh api repos/<repo>/pages` (rama `main`, ruta `/`) y que el repo sea
       público.
-  - caso: "Hay cuestionarios en más de un curso"
+  - caso: "Hay cuestionarios en más de un curso o más de una semana"
     respuesta: |
-      Una ejecución por curso, con su `--web-dir` y su `--repo`:
-      `--web-dir cursos/<CURSO>/evaluaciones/web --repo <usuario>/cuestionarios-<curso>`.
+      Una ejecución por curso/semana, con su `--web-dir` y su `--repo`:
+      `--web-dir cursos/<CURSO>/evaluaciones/web --repo <usuario>/cuestionarios-<curso>`
+      (raíz, para cursos sin organizar) o
+      `--web-dir cursos/<CURSO>/evaluaciones/web/SEMANA_NN --repo <usuario>/cuestionarios-<curso>-sNN`.
       No reutilizar el repo de otro curso por dos razones: el `index.html` se
       genera con todos los `*_alumno.html` de la carpeta, así que los cursos
       acabarían mezclados en un mismo índice; y la visibilidad es **por repo**,

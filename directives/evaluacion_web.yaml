@@ -10,8 +10,9 @@ goal: |
   de fuentes se descartó por peso y porque obliga a tocar también el publicador.
 
   El repositorio es público y los exámenes son material privado: la fuente vive
-  en `cursos/<CURSO>/evaluaciones/web/fuentes/` y la salida en
-  `cursos/<CURSO>/evaluaciones/web/`, ambas rutas ignoradas por git. La variante
+  en `cursos/<CURSO>/evaluaciones/web/fuentes/` (o en
+  `.../web/SEMANA_NN/fuentes/`) y la salida en la carpeta que contiene `fuentes/`,
+  ambas rutas ignoradas por git. La variante
   `_alumno.html` no contiene la clave; la `_docente.html` sí, y por eso lleva un
   aviso visible y nunca debe compartirse con estudiantes.
 
@@ -20,15 +21,17 @@ layer: orchestration
 references:
   orchestrator: flujo_evaluacion_web.py
   scripts: execution/md_a_html.py, execution/test_md_a_html.py
-  input: cursos/<CURSO>/evaluaciones/web/fuentes/*.md
-  output: cursos/<CURSO>/evaluaciones/web/<slug>_alumno.html, <slug>_docente.html, index.html
+  input: cursos/<CURSO>/evaluaciones/web/[SEMANA_NN/]fuentes/*.md
+  output: cursos/<CURSO>/evaluaciones/web/[SEMANA_NN/]<slug>_alumno.html, <slug>_docente.html, index.html
   tests: python3 execution/test_md_a_html.py
 
 required_inputs:
   - name: --fuente PATRÓN
     description: |
-      Repetible. Ruta o glob al .md de origen. Si se omite, se usan todos los
-      `cursos/*/evaluaciones/web/fuentes/*.md`.
+      Repetible. Ruta o glob al .md de origen. Si se omite, se usan los
+      `cursos/*/evaluaciones/web/SEMANA_*/fuentes/*.md` y los
+      `cursos/*/evaluaciones/web/fuentes/*.md` de los cursos aún no organizados
+      por semana.
   - name: --variantes alumno,docente
     description: |
       Variantes a generar. `alumno` no lleva clave; `docente` la exige y falla
@@ -256,7 +259,7 @@ edge_cases:
       a una segunda entrega con la misma cédula.
 
 security:
-  - "Solo se escribe dentro de cursos/<CURSO>/evaluaciones/web/, nunca en fuentes/."
+  - "Solo se escribe dentro de cursos/<CURSO>/evaluaciones/web/ o web/SEMANA_NN/, nunca en fuentes/."
   - "La barrera exige que `git check-ignore` confirme que la ruta está ignorada."
   - "La variante alumno no contiene la clave ni retroalimentación."
   - "La variante docente advierte que la clave es visible en el código fuente."

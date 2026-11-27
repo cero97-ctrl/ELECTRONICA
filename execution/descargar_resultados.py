@@ -27,7 +27,7 @@ Privacidad:
 
 Uso:
     python3 execution/descargar_resultados.py \\
-        --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/fuentes/ROL_ROJO_Cuestionario.md
+        --fuente cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_01/fuentes/ROL_ROJO_Cuestionario.md
     python3 execution/descargar_resultados.py --fuente <md> --lista estudiantes.csv --json
 
 Códigos de salida:
