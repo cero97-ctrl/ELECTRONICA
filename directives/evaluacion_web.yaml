@@ -59,6 +59,7 @@ contract:
     curso: CYBERSEGURIDAD
     tipo: cuestionario
     titulo: "ROL ROJO — Cuestionario"
+    aviso: "Texto del encabezado"  # opcional; se muestra en un recuadro bajo el título
     semana: 1                  # opcional
     grupo: 1                   # opcional
     variante: 1                # opcional
@@ -71,6 +72,14 @@ contract:
     justificacion_evidencia: [10]  # opcional; subconjunto de justificacion_items que pide pegar un artefacto literal
     retroalimentacion: {1: "..."}  # opcional; solo se muestra en docente
     ---
+  aviso: |
+    `aviso:` es texto libre escapado y se imprime en `<p class="aviso-cabecera">`
+    dentro de `<header class="banda">`, en ambas variantes y también en el
+    índice (el publicador lo lee de las páginas de alumno). Sirve para
+    instrucciones vigentes para todo el grupo, como «NO consulten sus
+    repositorios GitHub para responder el cuestionario». No cambia la huella
+    del cuestionario, así que no invalida entregas ya realizadas; por eso se
+    decide antes de publicar. Un valor no-texto se rechaza con código 3.
   respuestas: |
     Archivo hermano opcional `fuentes/<fuente>_respuestas.md` con la misma
     estructura de preguntas y opciones, más una línea `**Answer:** X. ...` por

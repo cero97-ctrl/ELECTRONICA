@@ -174,6 +174,23 @@ reorganizar_web_evaluaciones_ciberseguridad
   alineadas dentro del `<pre>`. Pruebas: separador 47/47, `md_a_html` 192/192,
   publicador 46/46, `desplegar_worker` 13/13. Se documentaron los dos casos en
   `directives/separar_respuestas_web.yaml` y `directives/evaluacion_web.yaml`.
+- El usuario pidió añadir en el encabezado: «Esta vez agregaremos un grado de
+  dificultad: NO consulten sus repositorios GitHub para responder el
+  cuestionario» (corregí la errata «respositorios» y añadí el artículo «el»).
+  Se implementó como campo `aviso:` del front matter en `md_a_html.py`:
+  `<p class="aviso-cabecera">` dentro de `<header class="banda">`, con estilo
+  propio y versión de impresión en negro. Está en las 8 variantes y el
+  publicador lo hereda al índice leyéndolo de las páginas de alumno; la barrera
+  rechaza el payload si unas páginas lo traen y otras no o si difiere el texto.
+  Se regeneraron los cuatro roles y se republicó (commit remoto `2b87c6a47525`,
+  SHAs `53497627…`, `cda541353…`, `2b264b54…`, `74825f9f…`). Tras dos intentos
+  por caché de Pages, lo servido coincide byte a byte con lo local: el aviso
+  está en el índice y en los cuatro encabezados, sin clave, y la tabla de la
+  pregunta 10 del rol rojo sigue con sus 8 filas. Pruebas: `md_a_html` 197/197,
+  publicador 51/51, separador 47/47. Se documentó en
+  `directives/evaluacion_web.yaml` y `directives/publicar_cuestionario.yaml`.
+  El aviso NO entra en la huella del cuestionario, así que no invalida entregas
+  ya hechas; por eso hay que ponerlo antes de que los alumnos respondan.
 
 ## Pendientes
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de

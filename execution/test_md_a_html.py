@@ -208,6 +208,31 @@ def test_parser():
     comprobar("parser acepta 'Pregunta N'", preguntas[1]["numero"] == 2)
 
 
+def test_aviso_en_cabecera():
+    etiqueta = '<p class="aviso-cabecera">'
+    sin_aviso = M._documento("T", META, "<p>x</p>", "")
+    comprobar("sin aviso no hay elemento", etiqueta not in sin_aviso)
+    mensaje = (
+        "Esta vez agregaremos un grado de dificultad: NO consulten sus "
+        "repositorios GitHub para responder el cuestionario."
+    )
+    documento = M._documento("T", {**META, "aviso": mensaje}, "<p>x</p>", "")
+    comprobar(
+        "el aviso se ve dentro del encabezado",
+        f"{etiqueta}{mensaje}</p>" in documento
+        and documento.index('<header class="banda">')
+        < documento.index(etiqueta)
+        < documento.index("</header>"),
+    )
+    escapado = M._documento("T", {**META, "aviso": "<script>malo</script>"}, "", "")
+    comprobar("el aviso se escapa", "&lt;script&gt;" in escapado and "<script>malo" not in escapado)
+    problemas, _, _, _ = M.validar(_preguntas(), {**META, "aviso": ["no es texto"]})
+    comprobar("aviso no texto se rechaza", any("aviso" in p for p in problemas), str(problemas))
+    _, _, puntos, _ = M.validar(_preguntas(), META)
+    alumno = M._render_alumno("T", {**META, "aviso": mensaje}, _preguntas(), puntos)
+    comprobar("la variante alumno lleva el aviso", alumno.count(etiqueta) == 1)
+
+
 FUENTE_TABLA = """# Cuestionario con tabla
 
 ## Pregunta 1

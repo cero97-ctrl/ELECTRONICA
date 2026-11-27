@@ -127,6 +127,19 @@ body {
 }
 .banda h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.3rem); font-weight: 600; }
 .banda .meta { margin: .7rem 0 0; color: #d7e6f5; font-size: .92rem; }
+.banda .aviso-cabecera {
+  display: inline-block;
+  max-width: 62rem;
+  margin: .9rem 0 0;
+  padding: .55rem .8rem;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-left: 5px solid var(--cyan);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, .18);
+  color: #fff;
+  font-weight: 600;
+  font-size: .95rem;
+}
 main { max-width: 900px; margin: 0 auto; padding: 1.6rem 1.1rem 4rem; }
 .aviso {
   border-left: 5px solid var(--nota);
@@ -341,6 +354,7 @@ footer {
   body { background: #fff; }
   .banda { background: #fff; color: #000; border-bottom: 2px solid #000; }
   .banda .curso, .banda .meta { color: #333; }
+  .banda .aviso-cabecera { color: #000; border-color: #000; background: #fff; }
   .acciones, .progreso, .resultado, .aviso, .aviso-material { display: none; }
   .pregunta { box-shadow: none; break-inside: avoid; }
   .datos { box-shadow: none; }
@@ -817,6 +831,8 @@ def validar(preguntas: list[dict], meta: dict) -> tuple[list[str], dict[int, str
     problemas: list[str] = []
     if not preguntas:
         problemas.append("no se encontró ninguna pregunta (`## Question N` / `## Pregunta N`)")
+    if "aviso" in meta and not isinstance(meta["aviso"], str):
+        problemas.append("`aviso` debe ser texto para el encabezado")
 
     numeros = [p["numero"] for p in preguntas]
     if len(set(numeros)) != len(numeros):
@@ -988,11 +1004,18 @@ def _cabecera(meta: dict, titulo: str) -> str:
     linea = _meta_linea(meta)
     meta_html = f'<p class="meta">{html.escape(linea, quote=True)}</p>' if linea else ""
     curso_html = f'<p class="curso">{curso}</p>' if curso else ""
+    aviso = meta.get("aviso")
+    aviso_html = (
+        f'<p class="aviso-cabecera">{html.escape(str(aviso), quote=True)}</p>'
+        if aviso
+        else ""
+    )
     return (
         '<header class="banda">'
         f"{curso_html}"
         f"<h1>{titulo_html}</h1>"
         f"{meta_html}"
+        f"{aviso_html}"
         "</header>"
     )
 

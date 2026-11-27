@@ -68,7 +68,11 @@ contract:
     pide nombre, cédula y grupo incumple el propósito.
   indice: |
     `index.html` se genera en la capa 3 a partir del `<title>` de cada HTML; no
-    lista la variante docente ni enlaza a ella. Se añade `.nojekyll` para que
+    lista la variante docente ni enlaza a ella. Si las páginas llevan
+    `<p class="aviso-cabecera">`, el índice muestra el mismo aviso una sola vez.
+    La barrera rechaza el payload si unas páginas lo tienen y otras no, o si el
+    texto no coincide entre ellas: un índice con un solo aviso no puede
+    representar instrucciones distintas por rol. Se añade `.nojekyll` para que
     Pages no procese los archivos con Jekyll.
   determinismo: |
     El payload es byte a byte reproducible (mismo HTML de entrada → mismo

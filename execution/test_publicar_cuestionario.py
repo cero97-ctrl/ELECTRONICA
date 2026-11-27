@@ -117,6 +117,37 @@ def test_indice_solo_alumno():
         comprobar("índice pide datos", "cédula" in indice)
 
 
+def test_aviso_del_encabezado_en_el_indice():
+    mensaje = "NO consulten sus repositorios GitHub"
+    con_aviso = ALUMNO.replace(
+        "<body>",
+        f'<body><header class="banda"><p class="aviso-cabecera">{mensaje}</p></header>',
+        1,
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        a = _escribir(Path(tmp), "uno_alumno.html", con_aviso)
+        b = _escribir(Path(tmp), "dos_alumno.html", con_aviso)
+        indice = P._indice_html([a, b])
+        comprobar(
+            "el índice muestra el aviso",
+            f'<p class="aviso-cabecera">{mensaje}</p>' in indice,
+            indice[:300],
+        )
+        comprobar(
+            "el aviso no se repite", indice.count('<p class="aviso-cabecera">') == 1
+        )
+        comprobar("avisos iguales pasan la barrera", not P._validar_payload([a, b]))
+        c = _escribir(Path(tmp), "tres_alumno.html", ALUMNO)
+        problemas = P._validar_payload([a, c])
+        comprobar(
+            "avisos distintos se rechazan",
+            any("aviso" in p for p in problemas),
+            str(problemas),
+        )
+        solo = _escribir(Path(tmp), "cuatro_alumno.html", ALUMNO)
+        comprobar("sin aviso no bloquea", not P._validar_payload([solo]))
+
+
 def test_payload_determinista():
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)

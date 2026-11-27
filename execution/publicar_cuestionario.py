@@ -104,6 +104,7 @@ def _recolectar(web_dir: Path) -> list[Path]:
 
 def _validar_payload(archivos: list[Path]) -> list[str]:
     problemas: list[str] = []
+    avisos: list[str] = []
     if not archivos:
         problemas.append("no hay ningún `*_alumno.html` en la carpeta")
     for ruta in archivos:
@@ -124,6 +125,12 @@ def _validar_payload(archivos: list[Path]) -> list[str]:
                 f"{ruta.name}: no tiene el módulo de datos del estudiante "
                 f"(`{MARCA_DATOS}`); regenerar antes de publicar"
             )
+        avisos.append(_aviso_de(texto))
+    if any(avisos) and len(set(avisos)) != 1:
+        problemas.append(
+            "los cuestionarios no coinciden en el aviso del encabezado; "
+            "regenerar todos desde el mismo `aviso:`"
+        )
     return problemas
 
 
@@ -132,6 +139,12 @@ def _titulo_de(texto: str, respaldo: str) -> str:
     if not coincidencia:
         return respaldo
     return html.unescape(coincidencia.group(1).strip()) or respaldo
+
+
+def _aviso_de(texto: str) -> str:
+    """Lee el aviso del encabezado de una página de alumno, si lo tiene."""
+    coincidencia = re.search(r'<p class="aviso-cabecera">(.*?)</p>', texto, re.S)
+    return html.unescape(coincidencia.group(1).strip()) if coincidencia else ""
 
 
 def _indice_html(archivos: list[Path]) -> str:
@@ -150,7 +163,14 @@ def _indice_html(archivos: list[Path]) -> str:
         "<h2>Cuestionarios disponibles</h2>\n"
         f'<ul class="indice">{"".join(entradas)}</ul>'
     )
-    documento = M._documento("Cuestionarios del curso", {"curso": "", "tipo": ""}, cuerpo, "")
+    avisos = [_aviso_de(ruta.read_text(encoding="utf-8")) for ruta in archivos]
+    aviso = next((a for a in avisos if a), "")
+    documento = M._documento(
+        "Cuestionarios del curso",
+        {"curso": "", "tipo": "", "aviso": aviso},
+        cuerpo,
+        "",
+    )
     return documento.replace("</style>\n", f"</style>\n<style>\n{CSS_INDICE}</style>\n", 1)
 
 
