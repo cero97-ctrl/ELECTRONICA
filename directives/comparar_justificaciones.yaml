@@ -1,0 +1,78 @@
+goal: |
+  Producir una tabla PRIVADA de apoyo para que el docente revise a mano las
+  justificaciones de los cuestionarios web: frente a cada texto del estudiante,
+  la explicación de por qué la respuesta es correcta que ya existe en el original
+  del profesor. La tabla NO decide si la justificación está bien o mal, NO calcula
+  nota y NO publica nada; deja una columna en blanco para el veredicto humano.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_comparar_justificaciones.py
+  script: execution/comparar_justificaciones.py
+  extractor: execution/descargar_resultados.py (descarga, validación, copias, escape)
+  parser: execution/md_a_html.py (fuente, clave y ítems exigidos)
+  tests: python3 execution/test_comparar_justificaciones.py
+
+required_inputs:
+  - name: fuentes
+    description: |
+      Markdown separado de cada rol (`ROL_*_CUESTIONARIO_S2.md`). Cada uno debe
+      tener su `_respuestas.md` (clave) y su `_original_con_respuestas.md`
+      (`**Respuesta:**` y razones `- A ✓` / `- B ✗`). Por defecto se toman los
+      cuatro de SEMANA_02.
+  - name: entregas
+    description: |
+      JSON archivados por el Worker en `resultados/<cuestionario_id>/grupo_NN/
+      <cedula>.json`. Se leen del repo privado con el token de lectura derivado
+      del sufijo del repo, o de una carpeta local con `--local` (sin red).
+  - name: --check
+    description: Valida fuentes y explicaciones sin leer entregas ni escribir nada.
+
+contract:
+  filas: |
+    Una fila por (cuestionario, estudiante, pregunta exigida). El orden es
+    determinista: cuestionarios por id, alumnos con `descargar_resultados.ordenar`
+    y preguntas ascendentes. Mismo contenido → mismos bytes; sin fecha de "ahora".
+  referencia: |
+    La columna derecha muestra la `**Respuesta:**` y todas las razones ✓/✗ del
+    original privado. Es material de apoyo para leer más rápido, NO una rúbrica
+    y NO un comparador de parecido: no se mide similitud con la explicación.
+  estado: |
+    `ok`, `sin texto` o `copiada` (similitud entre alumnos, ya detectada por
+    `descargar_resultados.marcar_copias`). Ninguno de esos estados es un juicio
+    pedagógico; el veredicto lo escribe el profesor en la columna `V`.
+  privacidad: |
+    La tabla lleva nombres, cédulas y la clave. `execution/comparar_justificaciones.py`
+    rechaza con código 3 cualquier salida no ignorada por git (misma barrera del
+    acta). Nunca se sube al repo público ni se pasa al publicador de cuestionarios.
+
+steps:
+  - paso: 1
+    script: python3 flujo_comparar_justificaciones.py --check
+    description: Comprueba que las cuatro fuentes y sus explicaciones cuadran.
+  - paso: 2
+    script: python3 flujo_comparar_justificaciones.py --json
+    description: Descarga/lee entregas, valida y escribe Markdown + PDF.
+  - paso: 3
+    script: python3 flujo_comparar_justificaciones.py --local <dir> --sin-pdf --json
+    description: Variante sin red para probar con entregas de muestra.
+
+expected_outputs:
+  - `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/revision/comparativa_justificaciones.md`
+  - `.../comparativa_justificaciones.pdf` (salvo `--sin-pdf`)
+  - Informe JSON con `filas`, `entregas`, `cuestionarios`, `descartados`, `md` y `pdf`.
+  - Códigos: 0 ok · 1 E/S · 3 fuente/ruta inválida · 4 red/credenciales ·
+    5 hubo descartados · 6 falló la verificación del orquestador.
+
+edge_cases:
+  - caso: "Aún no hay entregas archivadas"
+    respuesta: La tabla se genera vacía («Sin entregas archivadas») y el JSON avisa; código 0.
+  - caso: "Un original no tiene `**Explicación:**` con razones"
+    respuesta: Falla con código 3 antes de leer la red; nunca se faceda texto contra una referencia inexistente.
+  - caso: "Un JSON archivado no pasa la validación del Worker"
+    respuesta: Se omite, se cuenta en `descartados` y el código es 5; el resto de la tabla se genera igual.
+  - caso: "Se intenta escribir fuera de una ruta ignorada por git"
+    respuesta: Falla con código 3; los datos privados no llegan al árbol versionado.
+  - caso: "Se pide comparar por parecido con la explicación"
+    respuesta: No está implementado a propósito. Es decisión del usuario revisar a mano; automatizarlo exigiría otra directiva, otra capa 3 y una rúbrica explícita.

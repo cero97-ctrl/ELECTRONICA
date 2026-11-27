@@ -28,6 +28,12 @@ justificaciones_cuestionarios_semana_02
    `rol_<rol>_cuestionario_s2`) no colisione con SEMANA_01.
 7. Mantener el `aviso` aprobado, la tabla de la pregunta 10 y las infografías;
    no tocar Laboratorio I ni Laboratorio II.
+8. Tras leer las justificaciones archivadas, el usuario eligió **revisión
+   manual**: NO comparar automáticamente el texto del alumno con la explicación
+   de referencia para dar nota. Pidió una tabla privada de apoyo que ponga los
+   dos textos frente a frente y deje el veredicto en blanco al profesor.
+9. La tabla no calcula nota, no decide «bien/mal», no usa LLM y no publica: es
+   solo lectura de entregas ya validadas + texto de los originales privados.
 
 ## Actividades
 - Renombradas las 12 fuentes de SEMANA_02 con sufijo `_S2` (fuente, respuestas y
@@ -115,16 +121,44 @@ justificaciones_cuestionarios_semana_02
 - Pruebas finales: separador 47/47, md_a_html 201/201, publicador 51/51,
   desplegador 13/13, insertador 11/11; `bitacoras.py check` → `veredicto_global:
   ok`, 0 anomalías.
-- **Estado actual: OCULTO** (repo privado). Pendiente solo confirmar la expiración
-  de caché del enlace directo y commitear/pushear el trabajo local.
+- Enlace directo verificado **404** tras expirar la caché de Pages; repo privado
+  y `pages_visible=false` confirmados.
+- Los 4 Workers ya están desplegados (`/salud` true) con los secretos de clave,
+  token, nómina, ítems y mínimo; sin `VENTANA_*`. No hay entregas archivadas en
+  `cero97-ctrl/cuestionarios-resultados` bajo los cuatro IDs `_s2` todavía.
+- Nuevo flujo de tres capas para la revisión manual (decisión 8):
+  - Capa 3 `execution/comparar_justificaciones.py`: extrae de cada
+    `_original_con_respuestas.md` la `**Respuesta:**` y las razones `- A ✓` /
+    `- B ✗`, reutiliza `descargar_resultados` para descargar/validar/marcar
+    copias y `md_a_html.cargar_clave`, y arma una fila por (cuestionario,
+    alumno, pregunta exigida). Orden determinista y sin fechas: mismos datos →
+    mismos bytes. Rechaza con código 3 cualquier salida no ignorada por git,
+    porque la tabla lleva nombres, cédulas y la clave.
+  - Capa 2 `flujo_comparar_justificaciones.py`: `--check`, `--json`, `--local`
+    (sin red) y `--sin-pdf`; traza en `sesion_log`, vista `run_state` y verifica
+    que los archivos reportados existen y declaran el número de filas.
+  - SOP `directives/comparar_justificaciones.yaml` y prueba
+    `execution/test_comparar_justificaciones.py` (39 aserciones, sin red).
+  - Salida prevista:
+    `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/revision/comparativa_justificaciones.{md,pdf}`,
+    ignorada por git. Columnas: estudiante, cédula, P, respuesta, justificación
+    del estudiante, referencia (clave y porqué), estado (`ok`/`sin texto`/
+    `copiada`) y **Veredicto docente en blanco**. El estado `copiada` se toma
+    de la detección de similitud ya existente entre alumnos; no es un juicio.
+- Probado con 4 entregas de muestra en `.tmp/demo_entregas`: 40 filas, PDF
+  compilado con **0 líneas `!` y 0 `Overfull \hbox`**; la tabla real (sin
+  entregas aún) se generó vacía con aviso y código 0.
+- Trampa evitada: el slug de `ROL_LEGAL_CUESTIONARIO_S2.md` es
+  `rol_legal_cuestionario_s2` (no `..._reporte_tecnico_...`); la fuente única
+  del ID es `md_a_html._slug`, igual que en el despliegue del Worker.
+- **Estado actual: OCULTO** (repo privado); Workers SEMANA_02 activos con
+  ventana abierta; tabla lista para generarse cuando lleguen entregas.
 
 ## Pendientes
-- Verificar `npm test` del Worker y `flujo_desplegar_worker_cuestionarios.py
-  --check` para los 4 entornos.
-- Desplegar los 4 Workers con `--nomina` y `--actualizar-fuente` (sin
-  `--inicio`/`--fin`).
-- Regenerar los 8 HTML y verificar 10 textareas por `*_alumno.html`, botón de
-  entrega habilitado y ausencia de clave/docente en la variante alumno.
-- Publicar con `--visibilidad public`, esperar OK del usuario y ocultar con
-  `--visibilidad private`.
+- Cuando existan entregas archivadas, ejecutar
+  `python3 flujo_comparar_justificaciones.py --json` y entregar al profesor el
+  Markdown/PDF privado; fijar la nota definitiva a mano, sin automatizar.
 - Tests finales, `bitacoras.py check`, commit y push.
+- NO tocar `cursos/LABORATORIO_I_FISICA/practicas/web/` ni
+  `publicar_lab1_practicas_web.sh`: aparecen como untracked y son trabajo del
+  usuario, ajeno a esta sesión.
