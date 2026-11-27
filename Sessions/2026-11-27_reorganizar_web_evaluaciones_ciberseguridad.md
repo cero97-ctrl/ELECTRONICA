@@ -132,11 +132,36 @@ reorganizar_web_evaluaciones_ciberseguridad
   El contenido de `cursos/*/evaluaciones/web/**` está gitignored a propósito,
   así que este ajuste no generó commit de código.
 
+- El usuario entregó después los otros tres markdowns de la semana 02 en
+  `fuentes/` (`ROL_AZUL_CUESTIONARIO.md`, `ROL_PURPURA_CUESTIONARIO.md`,
+  `ROL_LEGAL_CUESTIONARIO.md`), cada uno con 10 preguntas y respuestas en
+  español (`**Respuesta:**`, `**Pista:**`, `**Explicación:**`). Se separaron con
+  `flujo_preparar_fuente_web.py` (uno por rol, sin `--forzar`): fuente limpia +
+  `_respuestas.md` + `_original_con_respuestas.md`, convalidado por las 43
+  aserciones del separador. A la fuente limpia se le añadió front matter con
+  `titulo` y `grupo` para que la página diga «Rol Azul», «Rol Púrpura» y
+  «Legal — Reporte técnico», igual que ya decía «Rol Rojo».
+- Se generaron los 8 HTML con `flujo_evaluacion_web.py` (4 alumnos sin
+  `const CLAVE`, 4 docentes con clave) y se publicaron los 4 alumnos en el MISMO
+  repo `cero97-ctrl/cuestionarios-ciberseguridad-s02` con un índice común y
+  cuatro enlaces, ninguno al docente. Decisión del usuario: dejarlo visible
+  para que lo revise y ocultarlo solo cuando él lo indique. El seco con
+  `--visibilidad` solo cambia visibilidad y no prepara el payload: hubo que
+  repetirlo sin esa bandera para verificar los cuatro archivos.
+- Verificación remota con cache-buster: los cuatro HTML servidos son
+  byte-idénticos a los locales (SHA `5940fd99…`, `ee2558ac…`, `b509db79…`,
+  `57482256…`); el índice lista los cuatro roles y no menciona al docente.
+  Justo tras el push Pages sirvió 404 para los archivos nuevos durante unos
+  segundos; se resolvió solo (el `pages_visible: true` del flujo mira la URL
+  raíz, que estaba cacheada). Pruebas: separador 43/43, `md_a_html` 186/186,
+  publicador 46/46.
+
 ## Pendientes
 - Confirmación visual explícita de las 4 infografías `SEM_2` (siguen fuera de
   git).
 - No reabrir el material aprobado de la semana 02.
-- Ocultar `cero97-ctrl/cuestionarios-ciberseguridad-s02` con `--visibilidad
-  private` después del examen, igual que se hizo con el repo de la semana 01
-  (el CDN puede servir la copia cacheada hasta ~10 min: hacerlo con horas de
-  antelación).
+- **No ocultar todavía**: el usuario quiere revisar primero cómo se ve la
+  página, y avisará cuando haya que pasar
+  `cero97-ctrl/cuestionarios-ciberseguridad-s02` a `--visibilidad private`
+  (mismo comando que en la semana 01; el CDN puede servir la copia cacheada
+  hasta ~10 min, así que hacerlo con horas de antelación).
