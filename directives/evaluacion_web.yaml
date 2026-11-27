@@ -80,6 +80,12 @@ contract:
     repositorios GitHub para responder el cuestionario». No cambia la huella
     del cuestionario, así que no invalida entregas ya realizadas; por eso se
     decide antes de publicar. Un valor no-texto se rechaza con código 3.
+
+    El bloque «Antes de empezar» que el conversor añade cuando hay
+    `entrega_url` NO debe contradecir este aviso: no manda abrir ni consultar
+    el repositorio del grupo, solo explica el borrador local, la caducidad y
+    que cada pregunta se fija al primer clic. Si el aviso prohíbe consultar el
+    repo, las dos instrucciones deben apuntar en el mismo sentido.
   respuestas: |
     Archivo hermano opcional `fuentes/<fuente>_respuestas.md` con la misma
     estructura de preguntas y opciones, más una línea `**Answer:** X. ...` por

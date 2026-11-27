@@ -57,6 +57,45 @@
         "GRUPOS": "3",
         "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
       }
+    },
+    // SEMANA 02: cuatro Workers nuevos, con ID con sufijo _s2 para no compartir
+    // clave ni carpeta de resultados con SEMANA_01. El repo de resultados puede
+    // ser el mismo porque rutaResultado() prefija el `cuestionario` a la ruta.
+    "s2": {
+      "name": "cuestionarios-worker-s2",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_rojo_cuestionario_s2",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "s2_azul": {
+      "name": "cuestionarios-worker-s2-azul",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_azul_cuestionario_s2",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "s2_purpura": {
+      "name": "cuestionarios-worker-s2-purpura",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_purpura_cuestionario_s2",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
+    },
+    "s2_legal": {
+      "name": "cuestionarios-worker-s2-legal",
+      "vars": {
+        "REPO_RESULTADOS": "cero97-ctrl/cuestionarios-resultados",
+        "CUESTIONARIO_ID": "rol_legal_cuestionario_s2",
+        "GRUPOS": "4",
+        "ORIGENES": "https://cero97-ctrl.github.io,http://localhost:8788"
+      }
     }
   }
 }

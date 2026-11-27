@@ -1574,24 +1574,25 @@ def _datos_alumno(grupos: int | None) -> str:
 
 
 def _aviso_material() -> str:
-    """Instrucciones del examen remoto: repo en otra ventana y borrador local.
+    """Instrucciones del examen remoto: borrador local, sin consultar el repo.
 
     Solo se emite cuando hay `entrega_url`, es decir, cuando el cuestionario se
     rinde desde casa sin el material al lado. En el laboratorio el docente está
     presente y esto se dice en voz alta; imprimirlo allí sería ruido.
 
-    La caducidad del borrador sale de `BORRADOR_CADUCIDAD_HORAS` (la misma
-    constante que recibe el JS), así que el texto y el comportamiento no pueden
-    divergir.
+    El bloque NO menciona abrir ni consultar el repositorio del grupo: el aviso
+    de la fuente prohíbe consultarlo y contradecirlo aquí sería una trampa para
+    el estudiante. La caducidad del borrador sale de
+    `BORRADOR_CADUCIDAD_HORAS` (la misma constante que recibe el JS), así que el
+    texto y el comportamiento no pueden divergir.
     """
     return (
         '<section class="aviso-material" id="aviso-material" '
         'aria-labelledby="aviso-material-titulo">'
         '<h2 id="aviso-material-titulo">Antes de empezar</h2>'
         "<ul>"
-        "<li>Abre el repositorio de tu grupo en <strong>otra pestaña o "
-        "ventana</strong>: es privado, así que necesitas tu sesión de GitHub. "
-        "No navegues fuera de esta página en la misma pestaña.</li>"
+        "<li>No navegues fuera de esta página en la misma pestaña: el borrador "
+        "local no sobreviviría.</li>"
         "<li>No uses una ventana de incógnito ni otro navegador: ahí el borrador "
         "no sobrevive.</li>"
         "<li>Esta página guarda un borrador en este navegador. Si se va la luz o "
@@ -1600,8 +1601,8 @@ def _aviso_material() -> str:
         f"{BORRADOR_CADUCIDAD_HORAS} horas.</li>"
         "<li>Puedes copiar y pegar tu evidencia: queda anotado en el acta del "
         "docente, pero <strong>no invalida</strong> tu entrega.</li>"
-        "<li>Consulta el repositorio <strong>antes</strong> de marcar: cada "
-        "pregunta se fija al primer clic y no se puede cambiar.</li>"
+        "<li>Cada pregunta se fija al primer clic y no se puede cambiar: "
+        "revisa tu respuesta antes de marcarla.</li>"
         "</ul>"
         '<p class="borrador-estado" id="borrador-estado" role="status" '
         'aria-live="polite" hidden></p>'

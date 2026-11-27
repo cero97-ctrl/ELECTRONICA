@@ -214,8 +214,8 @@ def test_validacion() -> None:
 def test_extremo_a_extremo_con_archivo_separable() -> None:
     """Funciona antes y después de separar el archivo real del curso."""
     print("\n[extremo a extremo: archivo con respuestas en español]")
-    real = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO.md"
-    respaldo = real.with_name("ROL_ROJO_CUESTIONARIO_original_con_respuestas.md")
+    real = RAIZ / "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO_S2.md"
+    respaldo = real.with_name("ROL_ROJO_CUESTIONARIO_S2_original_con_respuestas.md")
     if respaldo.is_file():
         origen, esperadas = respaldo, 10
     elif real.is_file() and S.es_separable(real.read_text(encoding="utf-8")):
@@ -224,7 +224,7 @@ def test_extremo_a_extremo_con_archivo_separable() -> None:
         origen, esperadas = None, 2
 
     with tempfile.TemporaryDirectory(dir=RAIZ / ".tmp") as temporal:
-        copia = Path(temporal) / "ROL_ROJO_CUESTIONARIO.md"
+        copia = Path(temporal) / "ROL_ROJO_CUESTIONARIO_S2.md"
         if origen is not None:
             shutil.copy2(origen, copia)
         else:

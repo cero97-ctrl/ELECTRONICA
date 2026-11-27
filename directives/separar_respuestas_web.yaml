@@ -28,7 +28,9 @@ required_inputs:
   - name: --fuente
     description: |
       Ruta al Markdown que trae las respuestas en español. Por defecto
-      `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO.md`.
+      `cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO_S2.md`.
+      El sufijo `_S2` fija el `cuestionario_id` (`rol_rojo_cuestionario_s2`) para
+      que el Worker de SEMANA_02 no comparta clave ni archivo con SEMANA_01.
       Debe tener `## Pregunta N` consecutivas, opciones `- A. ...` y las tres
       marcas en español por pregunta.
   - name: --forzar

@@ -32,7 +32,7 @@ SEPARADOR = EJECUCION / "separar_respuestas_md.py"
 SESION_LOG = EJECUCION / "sesion_log.py"
 ALERTAR = EJECUCION / "alert_user.py"
 FUENTE_POR_DEFECTO = (
-    "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO.md"
+    "cursos/CYBERSEGURIDAD/evaluaciones/web/SEMANA_02/fuentes/ROL_ROJO_CUESTIONARIO_S2.md"
 )
 
 sys.path.insert(0, str(EJECUCION))

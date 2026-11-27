@@ -1,0 +1,68 @@
+goal: |
+  Añadir a cada pregunta de un cuestionario web un recuadro donde el estudiante
+  justifique su respuesta, y enviar ese texto al Worker junto con las respuestas.
+  La instrucción se escribe en el Markdown y la lista de ítems en el front
+  matter; el HTML y el Worker leen la misma lista, sin editar HTML a mano.
+
+layer: orchestration
+
+references:
+  orchestrator: flujo_agregar_justificaciones_web.py
+  script: execution/agregar_justificaciones_web.py
+  validador: execution/md_a_html.py (cargar_clave)
+  tests: python3 execution/test_agregar_justificaciones_web.py
+
+required_inputs:
+  - name: fuentes
+    description: |
+      Markdown ya separado (`<nombre>.md` + `<nombre>_respuestas.md`). Por
+      defecto las cuatro de SEMANA_02: `ROL_*_CUESTIONARIO_S2.md`. El sufijo
+      `_S2` es obligatorio para no colisionar con el `cuestionario_id` de
+      SEMANA_01 en el Worker y en el repo de resultados.
+  - name: --check
+    description: Valida el resultado con el parser compartido sin escribir nada.
+
+contract:
+  instruccion: |
+    Texto canónico: «Explica con tus propias palabras por qué elegiste esa
+    opción, apoyándote en el enunciado y en los conceptos vistos en clase.»
+    Se escribe como `**Justificación:** <texto>` después de la última opción.
+    NO pide citar archivos, fragmentos ni evidencias de un repositorio: el
+    cuestionario se responde sin consultarlo, así que pedir una cita allí
+    obligaría a romper la regla del `aviso`. Cambiar esta instrucción no altera
+    la huella de la página (que solo cubre enunciado y opciones), pero sí hay
+    que regenerar el HTML y volver a publicarlo.
+  front_matter: |
+    `justificacion_items: [1, 2, ..., 10]` y `grupos: 4`. El primero lo consume
+    `md_a_html._items_justificacion` y lo sube el flujo del Worker como secreto
+    `ITEMS_JUSTIFICACION`; el segundo convierte el campo de grupo en un select
+    1..4, coherente con `GRUPOS=4` del Worker.
+  idempotencia: |
+    Si la instrucción ya está presente se conserva; `--forzar` la reemplaza.
+    La fuente y su solucionario se escriben de forma atómica solo después de
+    que `cargar_clave` acepta el par en un directorio temporal.
+
+steps:
+  - paso: 1
+    script: python3 flujo_agregar_justificaciones_web.py --check
+    description: Comprueba que las cuatro fuentes aceptan los diez recuadros.
+  - paso: 2
+    script: python3 flujo_agregar_justificaciones_web.py
+    description: Escribe las fuentes y sus solucionarios.
+  - paso: 3
+    script: python3 flujo_evaluacion_web.py --fuente <fuente> --variantes alumno,docente
+    description: Regenera el HTML; el textarea aparece solo en la variante alumno.
+
+expected_outputs:
+  - Diez `**Justificación:**` por fuente, con su reflejo en `_respuestas.md`.
+  - `justificacion_items: [1..10]` y `grupos: 4` en las cuatro fuentes.
+  - Un `<div class="justificacion">` por pregunta en los cuatro `*_alumno.html`.
+  - Códigos: 0 ok · 1 E/S · 3 fuente inválida · 4 sin fuentes.
+
+edge_cases:
+  - caso: "La fuente y el solucionario difieren en las preguntas"
+    respuesta: El script falla con código 3 antes de escribir cualquiera de los dos.
+  - caso: "Una pregunta no tiene opciones `- X.`"
+    respuesta: Falla con código 3 en esa pregunta; no se inserta una instrucción huérfana.
+  - caso: "Se vuelve a ejecutar el flujo"
+    respuesta: No duplica instrucciones; `--forzar` sí las reemplaza por la canónica.

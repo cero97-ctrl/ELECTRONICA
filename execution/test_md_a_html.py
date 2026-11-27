@@ -850,13 +850,19 @@ def test_aviso_material():
     )
     comprobar("remoto trae el aviso", 'id="aviso-material"' in remoto)
     for frase in (
-        "otra pestaña o ventana",
+        "No navegues fuera de esta página",
         "incógnito",
         "guarda un borrador",
         "no invalida",
         "se fija al primer clic",
     ):
         comprobar(f"aviso dice «{frase}»", frase in remoto)
+    bloque = remoto.split('id="aviso-material"', 1)[1].split("</section>", 1)[0]
+    for prohibida in ("repositorio", "GitHub", "Abre el", "Consulta el"):
+        comprobar(
+            f"aviso no manda abrir/consultar el repo («{prohibida}»)",
+            prohibida.lower() not in bloque.lower(),
+        )
     comprobar(
         "el aviso anuncia la caducidad",
         f"{M.BORRADOR_CADUCIDAD_HORAS} horas" in remoto,
