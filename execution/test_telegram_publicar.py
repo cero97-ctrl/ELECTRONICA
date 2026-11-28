@@ -8,7 +8,10 @@ oficial. No llama a Telegram ni a GitHub.
 
 from __future__ import annotations
 
+import json
+import os
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -136,6 +139,118 @@ def test_offset_persistido_sobrevive_a_reinicio(tmp_path=None):
             assert telegram_api.leer_offset() == 4321
         finally:
             telegram_api.OFFSET_PATH = anterior
+
+
+def test_puente_reenvia_comando_fijo_con_idempotencia():
+    capturado = {}
+
+    def falso(session_id, payload):
+        capturado.update(session_id=session_id, payload=payload)
+        return {"code": 0, "status": "ok"}
+
+    resultado = T.reenviar_a_sesion(
+        "/publicar s02", "ses_ABC123", "98765", enviar=falso
+    )
+    assert resultado["code"] == 0
+    assert capturado["session_id"] == "ses_ABC123"
+    assert capturado["payload"]["text"] == "/publicar s02"
+    assert capturado["payload"]["id"] == "telegram-98765"
+    assert capturado["payload"]["delivery"] == "queue"
+
+
+def test_puente_rechaza_texto_libre_y_sesion_invalida():
+    captured = []
+
+    def falso(session_id, payload):
+        captured.append((session_id, payload))
+        return {"code": 0}
+
+    assert T.reenviar_a_sesion(
+        "publica el cuestionario", "ses_ABC123", "1", enviar=falso
+    )["code"] == 2
+    assert T.reenviar_a_sesion(
+        "/publicar /etc/passwd", "ses_ABC123", "1", enviar=falso
+    )["code"] == 2
+    assert T.reenviar_a_sesion(
+        "/publicar s02", "../ses_ABC123", "1", enviar=falso
+    )["code"] == 2
+    assert captured == []  # nada se envió a la sesión
+
+
+def test_puente_construye_argv_sin_shell_y_parses_respuesta():
+    with tempfile.TemporaryDirectory() as tmp:
+        captura = Path(tmp) / "argv.json"
+        falso = Path(tmp) / "opencode-falso"
+        falso.write_text(
+            '#!/bin/sh\nprintf "%s\\n" "$@" > "$CAPTURA"\n'
+            'printf \'{"ok":true}\'\n',
+            encoding="utf-8",
+        )
+        falso.chmod(0o755)
+        anterior = os.environ.get("CAPTURA")
+        os.environ["CAPTURA"] = str(captura)
+        try:
+            resultado = T.reenviar_a_sesion(
+                "/publicar s02",
+                "ses_ABC123",
+                "42",
+                binario=str(falso),
+                timeout=10,
+            )
+        finally:
+            if anterior is None:
+                os.environ.pop("CAPTURA", None)
+            else:
+                os.environ["CAPTURA"] = anterior
+        assert resultado["code"] == 0
+        assert resultado["session_id"] == "ses_ABC123"
+        argv = captura.read_text(encoding="utf-8").splitlines()
+        assert argv[0] == "api" and argv[1] == "post"
+        assert argv[2] == "/api/session/ses_ABC123/prompt"
+        payload = json.loads(argv[4])
+        assert payload["id"] == "telegram-42"
+        assert payload["delivery"] == "queue"
+        assert payload["text"] == "/publicar s02"
+
+
+def test_mensaje_puente_entrega_token_sin_afirmar_publicacion():
+    orden = T.preparar(8671067338, "/publicar s02", CONFIG, SECRETO, AHORA)
+    mensaje = T.mensaje_puente(orden, {"code": 0})
+    assert "Orden enviada a tu sesión" in mensaje
+    assert orden.token in mensaje
+    assert "Publicado" not in mensaje
+    assert "const CLAVE" not in mensaje
+
+
+def test_gateway_reenvia_y_no_llama_al_publicador():
+    """El gateway despacha al puente; nunca llama a ejecutar_orden."""
+    import importlib
+
+    raiz = str(Path(__file__).resolve().parent.parent)
+    if raiz not in sys.path:
+        sys.path.insert(0, raiz)
+    G = importlib.import_module("flujo_telegram")
+
+    enviados = []
+    reenviados = []
+    originales = (G.send_message, G.reenviar_a_sesion)
+    G.send_message = lambda chat, texto, **kw: enviados.append((chat, texto))
+    G.reenviar_a_sesion = lambda texto, sesion, idem: (
+        reenviados.append((texto, sesion, idem)) or {"code": 0}
+    )
+    try:
+        G.process_message(
+            {"chat": {"id": 8671067338, "username": "u"}, "text": "/publicar s02"},
+            CONFIG,
+            idempotencia="123",
+        )
+    finally:
+        G.send_message, G.reenviar_a_sesion = originales
+    assert len(reenviados) == 1
+    assert reenviados[0][0] == "/publicar s02"
+    assert reenviados[0][2] == "123"
+    assert any("Orden enviada a tu sesión" in t for _, t in enviados)
+    assert not any("Publicado" in t for _, t in enviados)
 
 
 def main() -> int:

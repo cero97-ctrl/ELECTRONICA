@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 
 from execution.telegram_api import get_updates, send_message, leer_offset, guardar_offset
 from execution.mcp_client import call_mcp_tool
-from execution.telegram_publicar import preparar, ejecutar_orden, resumen_telegram
+from execution.telegram_publicar import preparar, reenviar_a_sesion, mensaje_puente
 
 def load_config():
     directive_path = os.path.join("directives", "telegram_gateway.yaml")
     with open(directive_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-def process_message(message, config):
+def process_message(message, config, idempotencia=""):
     chat_id = message["chat"]["id"]
     text = message.get("text", "")
     username = message["chat"].get("username", "Unknown")
@@ -51,17 +51,23 @@ def process_message(message, config):
         send_message(chat_id, "🏓 Pong! El Gateway está activo y escuchando.")
         return
 
-    # 2b. Publicación de cuestionarios (comando fijo, doble confirmación).
-    # La decisión vive en execution/telegram_publicar.py, no en este chat.
+    # 2b. Puente a la sesión de OpenCode (comando fijo, doble confirmación).
+    # El bot NO publica: valida la orden y la deposita en mi sesión. La decisión
+    # vive en execution/telegram_publicar.py, no en el chat ni en un prompt.
     if text.startswith("/publicar ") or text.startswith("/confirmar "):
         secreto = os.getenv("TELEGRAM_PUBLISH_SECRET") or os.getenv("TELEGRAM_BOT_TOKEN") or ""
         orden = preparar(chat_id, text, config, secreto)
         if orden.codigo:
             send_message(chat_id, f"❌ {orden.motivo}", parse_mode=None)
             return
-        send_message(chat_id, f"⏳ Procesando `{orden.accion}` de {orden.etiqueta}...")
-        resultado = ejecutar_orden(orden)
-        send_message(chat_id, resumen_telegram(orden, resultado), parse_mode=None)
+        session_id = os.getenv("OPENCODE_SESSION_ID", "")
+        if not session_id:
+            send_message(chat_id, "❌ Falta OPENCODE_SESSION_ID en .env", parse_mode=None)
+            return
+        reenvio = reenviar_a_sesion(
+            text, session_id, idempotencia or str(int(time.time()))
+        )
+        send_message(chat_id, mensaje_puente(orden, reenvio), parse_mode=None)
         return
         
     # 3. Routing to MCP Servers
@@ -121,7 +127,11 @@ def main():
                     guardar_offset(offset)
                     
                     if "message" in update:
-                        process_message(update["message"], config)
+                        process_message(
+                            update["message"],
+                            config,
+                            idempotencia=str(update["update_id"]),
+                        )
                         
             time.sleep(1) # Pequeña pausa para no saturar la CPU en caso de errores continuos
     except KeyboardInterrupt:

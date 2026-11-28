@@ -28,6 +28,8 @@ import hashlib
 import hmac
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 import time
@@ -202,6 +204,103 @@ def ejecutar_orden(orden: Orden, timeout: int = 900) -> dict:
     datos["curso"] = orden.curso
     datos["etiqueta"] = orden.etiqueta
     return datos
+
+
+def ruta_opencode() -> str:
+    """Resuelve el binario del CLI sin depender del PATH del servicio systemd."""
+    hallado = shutil.which("opencode")
+    if hallado:
+        return hallado
+    candidato = Path.home() / ".opencode" / "bin" / "opencode"
+    if candidato.exists():
+        return str(candidato)
+    raise FileNotFoundError("no se encontró el CLI de opencode")
+
+
+def reenviar_a_sesion(
+    texto: str,
+    session_id: str,
+    idempotencia: str,
+    *,
+    binario: str | None = None,
+    timeout: int = 60,
+    enviar=None,
+) -> dict:
+    """Deposita un comando fijo en la sesión de OpenCode del orquestador.
+
+    No interpreta el texto: lo valida contra el mismo vocabulario que
+    `preparar()` antes de enviarlo. Usa `POST /api/session/{id}/prompt` vía el
+    CLI `opencode api` (descubre servicio y auth) y un `id` de idempotencia
+    derivado del update_id de Telegram, así que un reintento no duplica la orden.
+
+    `enviar` permite inyectar un transporte falso en las pruebas (sin red).
+    """
+    if not re.fullmatch(r"ses_[A-Za-z0-9]+", session_id):
+        return {"status": "error", "code": 2, "message": "session_id inválido"}
+    # Barrera: sólo se reenvían los dos comandos canónicos, nunca texto libre.
+    if not (
+        re.fullmatch(r"/publicar s02", texto)
+        or re.fullmatch(r"/confirmar s02 [0-9a-f]{16}", texto)
+    ):
+        return {
+            "status": "error",
+            "code": 2,
+            "message": "solo se reenvían /publicar s02 o /confirmar s02 <token>",
+        }
+    payload = {
+        "id": f"telegram-{idempotencia}",
+        "text": texto,
+        "delivery": "queue",
+    }
+    if enviar is not None:
+        return enviar(session_id, payload)
+    cmd = [
+        binario or os.getenv("OPENCODE_BIN") or ruta_opencode(),
+        "api",
+        "post",
+        f"/api/session/{session_id}/prompt",
+        "--data",
+        json.dumps(payload, ensure_ascii=False),
+    ]
+    try:
+        proc = subprocess.run(cmd, cwd=RAIZ, capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"status": "error", "code": 4, "message": f"no se pudo reenviar: {exc}"}
+    if proc.returncode != 0:
+        return {
+            "status": "error",
+            "code": 4,
+            "message": (proc.stderr or proc.stdout or "sin salida")[-800:],
+        }
+    try:
+        respuesta = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        respuesta = {"respuesta": proc.stdout.strip()[:400]}
+    respuesta["status"] = "ok"
+    respuesta["code"] = 0
+    respuesta["session_id"] = session_id
+    respuesta["texto"] = texto
+    return respuesta
+
+
+def mensaje_puente(orden: Orden, reenvio: dict) -> str:
+    """Confirmación determinista para Telegram (el token lo calcula este módulo)."""
+    if orden.codigo:
+        return f"❌ {orden.motivo}"
+    if reenvio.get("code", 1) != 0:
+        return f"❌ No pude entregar la orden a la sesión: {reenvio.get('message', 'error')}"
+    if orden.accion == "preparar":
+        return (
+            "✅ Orden enviada a tu sesión de OpenCode: `/publicar s02`.\n"
+            f"Token de confirmación: `{orden.token}` (válido 15 min).\n"
+            "La respuesta del dry-run la verás en OpenCode. "
+            f"Para publicar: `/confirmar s02 {orden.token}`"
+        )
+    return (
+        "✅ Orden de confirmación enviada a tu sesión de OpenCode: "
+        f"`/confirmar s02 {orden.token}`.\n"
+        "La ejecución y su resultado los verás en OpenCode."
+    )
 
 
 def resumen_telegram(orden: Orden, resultado: dict) -> str:

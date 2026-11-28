@@ -1,13 +1,16 @@
-name: Publicar cuestionario desde Telegram
+name: Publicar cuestionario desde Telegram (puente a la sesión)
 description: >-
-  SOP para publicar los cuestionarios SEMANA_02 de Ciberseguridad desde el bot
-  de Telegram del usuario, con comando fijo y doble confirmación.
-version: 1.0.0
+  SOP para que el usuario dé desde Telegram la orden de publicar los
+  cuestionarios SEMANA_02 de Ciberseguridad a su sesión de OpenCode, con
+  comando fijo y doble confirmación.
+version: 2.0.0
 
 goal: >-
-  Permitir que el usuario autorizado ordene la publicación de la variante alumno
-  de los cuatro cuestionarios de SEMANA_02 sin que la lógica de decisión viva en
-  el chat ni en un prompt: el bot solo analiza comandos fijos y delega en la capa 3.
+  Que Telegram sirva como control remoto de la sesión del orquestador: el bot
+  valida un comando fijo, lo deposita en la sesión de OpenCode vía API y el
+  orquestador ejecuta el publicador. La lógica de decisión NO vive en el chat:
+  vive en execution/telegram_publicar.py y en execution/publicar_cuestionario.py.
+  El bot NUNCA publica por su cuenta; sólo transporta la orden.
 
 security:
   chat_ids: [8671067338]   # procede de telegram_gateway.yaml (fuente única)
@@ -19,16 +22,27 @@ security:
     formula: HMAC-SHA256(chat_id|curso|nonce_epoch)[:16]
     window_seconds: 900
     note: >-
-      El token se emite en el dry-run y se valida en execution/telegram_publicar.py
-      con compare_digest. No se almacena en disco ni viaja a ningún repo.
+      El token se calcula en el bot y se valida otra vez en la sesión con
+      compare_digest. No se almacena en disco ni viaja a ningún repo.
+  puente:
+    session_id: OPENCODE_SESSION_ID (.env, no versionado)
+    binario: OPENCODE_BIN o el que resuelva shutil.which("opencode")
+    endpoint: POST /api/session/{sessionID}/prompt
+    payload: >-
+      {id: "telegram-<update_id>", text: "<comando fijo>", delivery: "queue"}.
+      El `id` da idempotencia: reintentar el mismo update no duplica la orden.
+      `delivery: queue` evita interrumpir una respuesta en curso.
 
 commands:
   - name: /publicar s02
-    effect: solo dry-run; muestra los *_alumno.html que se publicarían
-    delegate: execution/telegram_publicar.py -> flujo_publicar_cuestionario.py --dry-run
+    effect: >-
+      El bot calcula el token y envía el comando a la sesión; la sesión ejecuta
+      el dry-run y muestra los *_alumno.html en OpenCode.
+    delegate: execution/telegram_publicar.py -> reenviar_a_sesion()
   - name: "/confirmar s02 <token>"
-    effect: push + visibilidad public; el token debe ser el del dry-run reciente
-    delegate: execution/telegram_publicar.py -> flujo_publicar_cuestionario.py --push --visibilidad public
+    effect: >-
+      El bot valida el token y reenvía la orden; la sesión ejecuta push + visibilidad public.
+    delegate: execution/telegram_publicar.py -> reenviar_a_sesion()
   - name: /ocultar s02
     effect: (fuera de este flujo) se ejecuta desde la terminal con --visibilidad private
 
@@ -38,36 +52,54 @@ allowed_courses:
     repo: cero97-ctrl/cuestionarios-ciberseguridad-s02
     label: Ciberseguridad SEMANA_02 (4 roles)
 
+session_execution:
+  # El orquestador NO interpreta el mensaje que llega a la sesión: ejecuta
+  # exactamente este comando, con el único chat_id autorizado de la directiva
+  # del gateway. La decisión sigue viviendo en el script.
+  chat_id_source: directives/telegram_gateway.yaml -> configuration.security.allowed_chat_ids[0]
+  command: >-
+    python3 execution/telegram_publicar.py --chat-id 8671067338
+    --texto "<comando recibido literalmente>"
+  reglas:
+    - El texto recibido se pasa tal cual; no se reescribe ni se reinterpreta.
+    - El script valida de nuevo el vocabulario, el chat y el token (compare_digest).
+    - Cualquier salida con code != 0 se reporta sin reintentar un push ya hecho.
+    - Después de publicar, el sitio se oculta de nuevo con --visibilidad private
+      solo si el usuario lo pide en la sesión.
+
 steps:
   - step: 1
     action: >-
       El usuario escribe `/publicar s02`. El gateway verifica el chat_id contra
-      directives/telegram_gateway.yaml y llama a execution/telegram_publicar.py.
+      directives/telegram_gateway.yaml y valida el comando con vocabulario cerrado.
     layer: orchestration (flujo_telegram.py)
   - step: 2
     action: >-
-      telegram_publicar.py valida el comando con vocabulario cerrado, calcula el
-      token HMAC y construye el argv de flujo_publicar_cuestionario.py --dry-run.
+      telegram_publicar.py calcula el token HMAC y reenvía el comando fijo a la
+      sesión con `opencode api post /api/session/<id>/prompt` (delivery: queue).
     layer: execution (telegram_publicar.py)
   - step: 3
     action: >-
-      El publicador recolecta SOLO `*_alumno.html`, rechaza marcas de clave y
-      arma el índice sin docente. El bot devuelve el resumen con el token.
-    layer: execution (publicar_cuestionario.py)
+      El bot responde a Telegram con el token y la instrucción de revisar la
+      respuesta en OpenCode. No ejecuta ningún push.
+    layer: orchestration (flujo_telegram.py)
   - step: 4
     action: >-
-      Tras revisar el resumen, el usuario escribe `/confirmar s02 <token>`.
-      La capa 3 valida el token (caduca en 900 s) y ejecuta push + visibilidad public.
-    layer: execution (telegram_publicar.py)
+      En la sesión, el orquestador recibe el comando y ejecuta
+      `execution/telegram_publicar.py --chat-id ... --texto ...`. El script
+      valida de nuevo y llama al publicador: dry-run o push según corresponda.
+    layer: orchestration + execution
   - step: 5
     action: >-
-      El bot responde con repo, visibilidad y URL. Para volver a ocultar se usa
-      el flujo de publicación desde la terminal con --visibilidad private.
-    layer: orchestration (flujo_telegram.py)
+      El publicador recolecta SOLO `*_alumno.html`, rechaza marcas de clave y
+      arma el índice sin docente. El resultado se ve en OpenCode y se reporta
+      al usuario en la sesión.
+    layer: execution (publicar_cuestionario.py)
 
 expected_outputs:
-  - Mensaje de Telegram con el dry-run y el token de confirmación.
-  - Mensaje de Telegram con el resultado del push (repo/visibilidad/URL).
+  - Mensaje de Telegram con el token y confirmación de que la orden fue entregada.
+  - Orden visible en la sesión de OpenCode, ejecutada por el script determinista.
+  - Dry-run o publicación con la barrera anti-fuga intacta.
   - Trazabilidad en .tmp/session_log_*.jsonl y bitácora de sesión actualizada.
 
 edge_cases:
@@ -75,7 +107,7 @@ edge_cases:
     protocol: registrar en log y NO responder (hereda la política del gateway).
   - id: comando_texto_libre
     protocol: >-
-      rechazar con código 2. No se interpreta lenguaje natural: eso metería
+      rechazar con código 2. No se reenvía texto libre a la sesión: eso metería
       decisión en el prompt y violaría el guardrail determinista del proyecto.
   - id: token_caducado_o_equivocado
     protocol: rechazar con código 2 y pedir un nuevo /publicar s02.
@@ -83,10 +115,14 @@ edge_cases:
     protocol: >-
       el vocabulario es cerrado (sólo `s02`); nunca se acepta una ruta ni un
       nombre de repo desde Telegram. Cualquier argumento extra se rechaza.
+  - id: sesion_inexistente_o_api_caida
+    protocol: >-
+      validar el formato `ses_...`, reportar código 4 al usuario y NO publicar.
+      El idempotencia por update_id evita duplicar la orden al reintentar.
   - id: fuga_de_clave
     protocol: >-
       la barrera vive en execution/publicar_cuestionario.py (código 3). Esta
       capa NO la duplica: delega y reporta el resultado.
   - id: publicador_cae
-    protocol: máximo 1 reintento por mensaje; si falla, reportar error al usuario
-      y escalar en la sesión. Nunca repetir un push ya confirmado sin orden nueva.
+    protocol: máximo 1 reintento por mensaje; si falla, reportar error en la
+      sesión. Nunca repetir un push ya confirmado sin orden nueva.
