@@ -29,8 +29,10 @@ security:
     binario: OPENCODE_BIN o el que resuelva shutil.which("opencode")
     endpoint: POST /api/session/{sessionID}/prompt
     payload: >-
-      {id: "telegram-<update_id>", text: "<comando fijo>", delivery: "queue"}.
+      {id: "msg_telegram_<update_id>", text: "<comando fijo>", delivery: "queue"}.
       El `id` da idempotencia: reintentar el mismo update no duplica la orden.
+      El prefijo `msg_` NO es opcional: `Session.Message.ID` del OpenAPI v2.4.2
+      exige `^msg_` y sin él la API devuelve HTTP 400 (fallo real 2026-11-28).
       `delivery: queue` evita interrumpir una respuesta en curso.
 
 commands:

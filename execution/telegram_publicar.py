@@ -248,7 +248,8 @@ def reenviar_a_sesion(
             "message": "solo se reenvían /publicar s02 o /confirmar s02 <token>",
         }
     payload = {
-        "id": f"telegram-{idempotencia}",
+        # Session.Message.ID exige el prefijo msg_ (OpenAPI de v2.4.2).
+        "id": f"msg_telegram_{idempotencia}",
         "text": texto,
         "delivery": "queue",
     }

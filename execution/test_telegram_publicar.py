@@ -154,7 +154,7 @@ def test_puente_reenvia_comando_fijo_con_idempotencia():
     assert resultado["code"] == 0
     assert capturado["session_id"] == "ses_ABC123"
     assert capturado["payload"]["text"] == "/publicar s02"
-    assert capturado["payload"]["id"] == "telegram-98765"
+    assert capturado["payload"]["id"] == "msg_telegram_98765"
     assert capturado["payload"]["delivery"] == "queue"
 
 
@@ -208,7 +208,7 @@ def test_puente_construye_argv_sin_shell_y_parses_respuesta():
         assert argv[0] == "api" and argv[1] == "post"
         assert argv[2] == "/api/session/ses_ABC123/prompt"
         payload = json.loads(argv[4])
-        assert payload["id"] == "telegram-42"
+        assert payload["id"] == "msg_telegram_42"
         assert payload["delivery"] == "queue"
         assert payload["text"] == "/publicar s02"
 
