@@ -48,6 +48,13 @@ def resultado(status: str, code: int, **extra) -> dict:
 
 def entorno_git() -> dict[str, str]:
     entorno = dict(os.environ)
+    # `gh` prioriza GITHUB_TOKEN/GH_TOKEN del entorno por encima de su propio
+    # login (keyring). Un token caducado en .env producía `HTTP 401: Bad
+    # credentials` en `gh repo view` aunque `gh auth status` estuviera sano
+    # (fallo real 2026-11-28). La autenticación la decide `gh auth`: una sola
+    # fuente, sin secretos duplicados que puedan divergir.
+    entorno.pop("GITHUB_TOKEN", None)
+    entorno.pop("GH_TOKEN", None)
     entorno.update(
         {
             "GIT_AUTHOR_NAME": "ELECTRONICA",

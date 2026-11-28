@@ -68,6 +68,21 @@ def test_confirmar_con_token_valido():
     assert "--dry-run" not in argv
 
 
+def test_token_valido_en_segundo_no_multiplo_de_30():
+    """Regresión: el nonce se genera en un segundo arbitrario, no en saltos de 30."""
+    preparada = T.preparar(8671067338, "/publicar s02", CONFIG, SECRETO, AHORA)
+    for delta in (1, 7, 29, 31, 719, 899, 900):
+        orden = T.preparar(
+            8671067338,
+            f"/confirmar s02 {preparada.token}",
+            CONFIG,
+            SECRETO,
+            AHORA + delta,
+        )
+        assert orden.codigo == 0, f"rechazado con delta={delta}"
+        assert orden.accion == "confirmar"
+
+
 def test_token_caducado_se_rechaza():
     preparada = T.preparar(8671067338, "/publicar s02", CONFIG, SECRETO, AHORA)
     vencida = T.preparar(

@@ -145,7 +145,11 @@ def preparar(
         ventana = int(config["configuration"]["telegram"].get("confirm_window_seconds", 900))
     except (KeyError, TypeError, ValueError):
         ventana = 900
-    for delta in range(0, ventana + 1, 30):
+    # El nonce se genera con `int(time.time())`, es decir, un segundo arbitrario.
+    # Buscar sólo en saltos de 30 s hacía que un token válido se rechazara salvo
+    # que la diferencia de segundos fuera múltiplo de 30 (fallo real 2026-11-28).
+    # Son <=901 HMAC baratos; la ventana se respeta exactamente.
+    for delta in range(0, ventana + 1):
         esperado = _token_esperado(chat_id, curso, str(int(ahora) - delta), secreto)
         if hmac.compare_digest(token, esperado):
             return Orden(

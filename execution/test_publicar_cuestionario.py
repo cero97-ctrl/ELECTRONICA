@@ -12,6 +12,7 @@ Ejecutar: python3 execution/test_publicar_cuestionario.py
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -340,6 +341,38 @@ def test_transicion_visibilidad():
     )
     comprobar("propaga el error de Pages", error == "Pages no disponible")
     comprobar("reporta que quedó público aunque Pages falle", privado is False)
+
+
+def test_entorno_git_no_arrastra_token_viejo_de_env():
+    spec = importlib.util.spec_from_file_location(
+        "publicar_github_bajo_test", RAIZ / "execution/publicar_github.py"
+    )
+    modulog = importlib.util.module_from_spec(spec)
+    sys.modules["publicar_github_bajo_test"] = modulog
+    spec.loader.exec_module(modulog)
+
+    anteriores = {
+        k: os.environ.get(k)
+        for k in ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_TOKEN_RESULTADOS_TEST")
+    }
+    os.environ["GITHUB_TOKEN"] = "ghp_caducado"
+    os.environ["GH_TOKEN"] = "ghp_caducado_tambien"
+    os.environ["GITHUB_TOKEN_RESULTADOS_TEST"] = "conservar"
+    try:
+        entorno = modulog.entorno_git()
+    finally:
+        for clave, valor in anteriores.items():
+            if valor is None:
+                os.environ.pop(clave, None)
+            else:
+                os.environ[clave] = valor
+    comprobar("GITHUB_TOKEN viejo no se propaga a gh", "GITHUB_TOKEN" not in entorno)
+    comprobar("GH_TOKEN viejo no se propaga a gh", "GH_TOKEN" not in entorno)
+    comprobar(
+        "otros secretos de entorno se conservan",
+        entorno.get("GITHUB_TOKEN_RESULTADOS_TEST") == "conservar",
+    )
+    comprobar("identidad y fecha fijas intactas", entorno["GIT_AUTHOR_DATE"] == modulog.FECHA_FIJA)
 
 
 def main() -> int:
