@@ -6,6 +6,8 @@ configuration:
   telegram:
     poll_timeout: 30
     parse_mode: Markdown
+    # Ventana de validez del token de confirmación de /publicar (segundos).
+    confirm_window_seconds: 900
   
   security:
     # Celular nuevo (reemplaza al ID antiguo 1315284048, dispositivo ya retirado).
@@ -21,6 +23,13 @@ configuration:
     analizar: mcp_analizar_server.py
     diagnostico: mcp_diagnostico_server.py
     sistema: mcp_sistema_server.py
+
+  # Publicación de cuestionarios: comando fijo + doble confirmación.
+  # SOP completo en directives/telegram_publicar_cuestionario.yaml.
+  publicar_cuestionario:
+    preparar: /publicar s02
+    confirmar: "/confirmar s02 <token>"
+    script: execution/telegram_publicar.py
 
 guidelines:
   - "SECURITY FIRST: Only process commands from chat_ids present in the allowed_chat_ids list. Log rejected attempts but do not reply to them."

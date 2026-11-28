@@ -4,8 +4,9 @@ import yaml
 import time
 from dotenv import load_dotenv
 
-from execution.telegram_api import get_updates, send_message
+from execution.telegram_api import get_updates, send_message, leer_offset, guardar_offset
 from execution.mcp_client import call_mcp_tool
+from execution.telegram_publicar import preparar, ejecutar_orden, resumen_telegram
 
 def load_config():
     directive_path = os.path.join("directives", "telegram_gateway.yaml")
@@ -39,6 +40,8 @@ def process_message(message, config):
             "`/ping` - Prueba de conectividad\n"
             "`/diagnostico` - Ejecuta el servidor de diagnóstico\n"
             "`/latex <código>` - Compila código LaTeX\n"
+            "`/publicar s02` - Prepara los cuestionarios (dry-run)\n"
+            "`/confirmar s02 <token>` - Publica tras revisar el dry-run\n"
             "*(Otros comandos en desarrollo)*"
         )
         send_message(chat_id, help_text)
@@ -46,6 +49,19 @@ def process_message(message, config):
         
     if text == "/ping":
         send_message(chat_id, "🏓 Pong! El Gateway está activo y escuchando.")
+        return
+
+    # 2b. Publicación de cuestionarios (comando fijo, doble confirmación).
+    # La decisión vive en execution/telegram_publicar.py, no en este chat.
+    if text.startswith("/publicar ") or text.startswith("/confirmar "):
+        secreto = os.getenv("TELEGRAM_PUBLISH_SECRET") or os.getenv("TELEGRAM_BOT_TOKEN") or ""
+        orden = preparar(chat_id, text, config, secreto)
+        if orden.codigo:
+            send_message(chat_id, f"❌ {orden.motivo}", parse_mode=None)
+            return
+        send_message(chat_id, f"⏳ Procesando `{orden.accion}` de {orden.etiqueta}...")
+        resultado = ejecutar_orden(orden)
+        send_message(chat_id, resumen_telegram(orden, resultado), parse_mode=None)
         return
         
     # 3. Routing to MCP Servers
@@ -88,7 +104,10 @@ def main():
     config = load_config()
     timeout = config["configuration"]["telegram"]["poll_timeout"]
     
-    offset = None
+    # Persistimos el offset: un reinicio no debe reprocesar un /confirmar viejo.
+    offset = leer_offset()
+    if offset is not None:
+        print(f"Reanudando desde update_id {offset}")
     
     print(f"Escuchando mensajes (Long Polling timeout: {timeout}s)...")
     try:
@@ -96,8 +115,10 @@ def main():
             updates = get_updates(offset=offset, timeout=timeout)
             if updates and "result" in updates:
                 for update in updates["result"]:
-                    # Update offset to acknowledge receipt
+                    # Update offset to acknowledge receipt (y persístelo antes
+                    # de procesar: si el proceso muere a mitad, no se repite).
                     offset = update["update_id"] + 1
+                    guardar_offset(offset)
                     
                     if "message" in update:
                         process_message(update["message"], config)
